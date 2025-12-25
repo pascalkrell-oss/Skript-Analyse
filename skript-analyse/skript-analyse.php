@@ -138,10 +138,6 @@ function ska_shortcode() {
                     <button type="button" class="ska-format-btn" data-action="format-underline">Unterstrichen</button>
                     <button type="button" class="ska-format-btn" data-action="format-highlight">Textmarker</button>
                     <button type="button" class="ska-format-btn" data-action="format-strike">Durchgestrichen</button>
-                    <button type="button" class="ska-format-btn" data-action="format-bullet">Aufzählung</button>
-                    <button type="button" class="ska-format-btn" data-action="format-numbered">Nummerierung</button>
-                    <button type="button" class="ska-format-btn" data-action="format-uppercase">GROSS</button>
-                    <button type="button" class="ska-format-btn" data-action="format-lowercase">klein</button>
                 </div>
                 <div class="ska-textarea-wrapper">
                     <textarea class="skriptanalyse-textarea" placeholder="Hier Text einfügen oder tippen..."></textarea>
@@ -159,6 +155,7 @@ function ska_shortcode() {
         <div class="skriptanalyse-compare-row"></div>
 
         <div class="skriptanalyse-analysis-bottom">
+            <div class="ska-analysis-filterbar"></div>
             <div class="skriptanalyse-analysis-bottom-grid"></div>
             <div class="skriptanalyse-hidden-panel"></div>
             <div class="skriptanalyse-legend-container"></div>

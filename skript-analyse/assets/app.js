@@ -91,6 +91,13 @@
             'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
             'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
         ],
+        PROFILE_CARDS: {
+            sprecher: ['overview', 'char', 'rhythm', 'spread_index', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'audience', 'easy_language'],
+            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath'],
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'audience', 'cta', 'adjective', 'anglicism', 'echo'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism']
+        },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
             news: { label: 'Abendnachrichten', minScore: 55, maxSentence: 20 },
@@ -1168,6 +1175,11 @@
                     const easyLanguage = SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences);
                     const bullshit = SA_Logic.analyzeBullshitIndex(read.cleanedText, (settings.bullshitBlacklist || '').split(/[,|\n]/).map(s => s.trim()).filter(Boolean));
                     const audienceCheck = SA_Logic.evaluateAudienceTarget(read, settings.audienceTarget);
+                    const depthCheck = SA_Logic.analyzeDepthCheck(read.sentences);
+                    const sentimentIntensity = SA_Logic.analyzeSentimentIntensity(read.sentences);
+                    const namingCheck = SA_Logic.analyzeNamingInconsistency(read.sentences);
+                    const verbBalance = SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences);
+                    const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(read.sentences);
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -1220,6 +1232,15 @@
                         addRow("Satz-Spreizung:", spreadIndex.toFixed(2));
                         if (bpmSuggestion.bpm > 0) addRow("Audio-BPM:", `${bpmSuggestion.bpm} BPM (${bpmSuggestion.range[0]}–${bpmSuggestion.range[1]})`);
                         if (audienceCheck && settings.audienceTarget) addRow("Zielgruppen-Check:", audienceCheck.message);
+                        if (verbBalance) addRow("Verb-Fokus:", `Verben ${verbBalance.verbs} / Substantive ${verbBalance.nouns}`);
+                        if (rhetoricalQuestions.length) addRow("Rhetorische Fragen:", `${rhetoricalQuestions.filter(q => q.isRhetorical).length} / ${rhetoricalQuestions.length}`);
+                        if (depthCheck.length) addRow("Satz-Verschachtelung:", `${depthCheck.filter(d => d.isDeep).length} kritisch`);
+                        if (sentimentIntensity.length) {
+                            const start = sentimentIntensity[0]?.score ?? 0;
+                            const end = sentimentIntensity[sentimentIntensity.length - 1]?.score ?? 0;
+                            addRow("Stimmungs-Intensität:", `Start ${start.toFixed(2)} → Ende ${end.toFixed(2)}`);
+                        }
+                        if (namingCheck.length) addRow("Naming-Check:", namingCheck.slice(0, 3).map(n => `${n.first}/${n.second}`));
                         y += 4;
                         doc.setFont(undefined, 'bold'); doc.text("Regie / Coach:", margin, y); doc.setFont(undefined, 'normal'); y+=6;
                         let dynText = "Lebendig & Abwechslungsreich";
@@ -1441,6 +1462,7 @@
             this.legendContainer = q('.skriptanalyse-legend-container'); 
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
+            this.filterBar = q('.ska-analysis-filterbar');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -1573,7 +1595,7 @@
                     <div style="margin-bottom:0.5rem;">
                         <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Bullshit-Blacklist</label>
                         <textarea id="ska-set-bullshit" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:90px;" placeholder="z.B. synergetisch, agil, lösungsorientiert">${this.settings.bullshitBlacklist || ''}</textarea>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Kommagetrennt oder zeilenweise – wird rot markiert.</p>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Hier definierst du Phrasen, die du vermeiden willst. Kommagetrennt oder zeilenweise – wird rot markiert.</p>
                     </div>
                 </div>
                 <div class="ska-modal-footer">
@@ -1793,6 +1815,16 @@
                 this.applyFormatting(act);
                 return true;
             }
+            if (act === 'toggle-card') {
+                const id = btn.dataset.card;
+                if (id) {
+                    if (this.state.excludedCards.has(id)) this.state.excludedCards.delete(id);
+                    else this.state.excludedCards.add(id);
+                    this.saveUIState();
+                    this.analyze(this.textarea.value);
+                }
+                return true;
+            }
             if (act === 'benchmark-toggle') {
                 const modal = document.getElementById('ska-benchmark-modal');
                 if (!modal) return true;
@@ -1904,70 +1936,27 @@
                 textarea.setSelectionRange(cursorStart, cursorEnd);
             };
 
-            const applyLinePrefix = (prefix) => {
-                const base = selected || this.getCurrentLine(textarea.value, start);
-                const lines = base.split('\n').map(line => line.trim().length ? `${prefix}${line}` : line);
-                const newText = lines.join('\n');
-                const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
-                const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
-                const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
-                textarea.value = textarea.value.substring(0, replaceStart) + newText + textarea.value.substring(actualEnd);
-            };
-
-            const transformSelection = (fn) => {
-                const text = selected || this.getCurrentLine(textarea.value, start);
-                const transformed = fn(text);
-                const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
-                const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
-                const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
-                textarea.value = textarea.value.substring(0, replaceStart) + transformed + textarea.value.substring(actualEnd);
-            };
-
             switch (action) {
                 case 'format-bold':
-                    wrapSelection('**', '**');
+                    wrapSelection('<b>', '</b>');
                     break;
                 case 'format-italic':
-                    wrapSelection('*', '*');
+                    wrapSelection('<i>', '</i>');
                     break;
                 case 'format-underline':
-                    wrapSelection('__', '__');
+                    wrapSelection('<u>', '</u>');
                     break;
                 case 'format-highlight':
-                    wrapSelection('==', '==');
+                    wrapSelection('<mark>', '</mark>');
                     break;
                 case 'format-strike':
-                    wrapSelection('~~', '~~');
-                    break;
-                case 'format-bullet':
-                    applyLinePrefix('• ');
-                    break;
-                case 'format-numbered': {
-                    const base = selected || this.getCurrentLine(textarea.value, start);
-                    const lines = base.split('\n').map((line, idx) => line.trim().length ? `${idx + 1}. ${line}` : line);
-                    const newText = lines.join('\n');
-                    const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
-                    const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
-                    const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
-                    textarea.value = textarea.value.substring(0, replaceStart) + newText + textarea.value.substring(actualEnd);
-                    break;
-                }
-                case 'format-uppercase':
-                    transformSelection((text) => text.toUpperCase());
-                    break;
-                case 'format-lowercase':
-                    transformSelection((text) => text.toLowerCase());
+                    wrapSelection('<s>', '</s>');
                     break;
             }
             textarea.focus();
             this.analyze(textarea.value);
         }
 
-        getCurrentLine(text, cursor) {
-            const start = text.lastIndexOf('\n', cursor - 1) + 1;
-            const end = text.indexOf('\n', cursor);
-            return text.substring(start, end === -1 ? text.length : end);
-        }
 
         loadUIState() {
             const h = SA_Utils.storage.load(SA_CONFIG.UI_KEY_HIDDEN);
@@ -2155,6 +2144,11 @@
                     this.state.savedVersion = this.textarea.value; 
                     const h=this.root.querySelector('[data-role-toast]'); if(h){ h.classList.add('is-visible'); setTimeout(()=>h.classList.remove('is-visible'),2500); }
                     this.analyze(this.textarea.value); 
+                    setTimeout(() => {
+                        if (this.compareRow && this.compareRow.classList.contains('is-active')) {
+                            this.compareRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 150);
                 }
 
                 if(act === 'export-marker-json') {
@@ -2265,6 +2259,19 @@
             }
         }
 
+        renderFilterBar() {
+            if (!this.filterBar) return;
+            const profile = this.settings.role;
+            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
+            const html = items.map(id => {
+                if (allowed && !allowed.has(id) && id !== 'overview') return '';
+                const checked = !this.state.excludedCards.has(id);
+                return `<label class="ska-filter-pill"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}>${SA_CONFIG.CARD_TITLES[id]}</label>`;
+            }).join('');
+            this.filterBar.innerHTML = html;
+        }
+
         analyze(text) {
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, text);
             const raw = text || '', read = SA_Logic.analyzeReadability(raw, this.settings);
@@ -2317,13 +2324,17 @@
                 this.bottomGrid.innerHTML = ''; this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active');
                 this.renderHiddenPanel();
                 if(this.legendContainer) this.legendContainer.innerHTML = '';
+                this.renderFilterBar();
                 return;
             }
 
             const isActive = (id) => !this.state.excludedCards.has(id);
 
+            const profile = this.settings.role;
+            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             SA_CONFIG.CARD_ORDER.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
+                if (allowed && !allowed.has(id) && id !== 'overview') return;
                 const active = isActive(id);
 
                 switch(id) {
@@ -2367,6 +2378,7 @@
             });
 
             this.renderHiddenPanel();
+            this.renderFilterBar();
             if(this.state.savedVersion) this.renderComparison(dur, read.wordCount, read.score);
             else { this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active'); }
             this.renderLegend();
@@ -3569,7 +3581,7 @@
                             </div>
                         </div>
                         <div style="margin-top:1.5rem; display:flex; gap:1.5rem; align-items:center; font-size:0.9rem; padding-top:1.2rem; border-top:1px dashed #e2e8f0;">
-                            <strong style="color:#64748b;">Fazit:</strong> 
+                            <strong style="color:#64748b;">Änderungen:</strong> 
                             <div style="display:flex; gap:0.6rem; flex-wrap:wrap; flex:1;">
                                 ${createDeltaPill(curMetrics.time - oldMetrics.time, 's Zeit')}
                                 ${createDeltaPill(curMetrics.words - oldMetrics.words, 'Wörter')}
