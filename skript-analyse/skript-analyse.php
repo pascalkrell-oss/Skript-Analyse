@@ -138,10 +138,10 @@ function ska_shortcode() {
                     <button type="button" class="ska-format-btn" data-action="format-underline">Unterstrichen</button>
                     <button type="button" class="ska-format-btn" data-action="format-highlight">Textmarker</button>
                     <button type="button" class="ska-format-btn" data-action="format-strike">Durchgestrichen</button>
+                    <div class="ska-formatting-actions"></div>
                 </div>
                 <div class="ska-textarea-wrapper">
-                    <textarea class="skriptanalyse-textarea" placeholder="Hier Text einfügen oder tippen..."></textarea>
-                    <div class="ska-format-preview" data-role-format-preview aria-hidden="true"></div>
+                    <div class="skriptanalyse-textarea" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Hier Text einfügen oder tippen..."></div>
                     <div class="ska-save-hint" data-role-save-hint></div>
                     <div class="ska-toast-notification" data-role-toast>Version gespeichert!</div>
                 </div>
@@ -277,7 +277,7 @@ function ska_shortcode() {
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
                                     <strong>Schnell-Überblick</strong>
-                                    <span>Score, WPM & Zeiten</span>
+                                    <span>Score, Tempo, Zielzeit & WPM</span>
                                 </div>
                             </div>
                         </label>
@@ -288,7 +288,7 @@ function ska_shortcode() {
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
                                     <strong>Detail-Analyse</strong>
-                                    <span>Stil, Fehler & Listen</span>
+                                    <span>Stil, Struktur, Fokus, Checks</span>
                                 </div>
                             </div>
                         </label>
@@ -299,7 +299,7 @@ function ska_shortcode() {
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
                                     <strong>Tipps & Hinweise</strong>
-                                    <span>Optimierungsvorschläge</span>
+                                    <span>konkrete Optimierungstipps</span>
                                 </div>
                             </div>
                         </label>
@@ -310,7 +310,7 @@ function ska_shortcode() {
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
                                     <strong>Versions-Vergleich</strong>
-                                    <span>Delta zur Vorversion</span>
+                                    <span>Änderungen zur Vorversion</span>
                                 </div>
                             </div>
                         </label>

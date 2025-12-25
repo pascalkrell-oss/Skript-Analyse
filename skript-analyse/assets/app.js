@@ -259,6 +259,11 @@
             return total;
         },
         insertAtCursor: (field, value) => {
+            if (field.isContentEditable) {
+                field.focus();
+                document.execCommand('insertText', false, value);
+                return;
+            }
             if (field.selectionStart || field.selectionStart === 0) {
                 var startPos = field.selectionStart; var endPos = field.selectionEnd;
                 field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos, field.value.length);
@@ -1410,7 +1415,9 @@
                 SA_CONFIG.TIPS[key].sort((a, b) => a.length - b.length);
             });
 
-            this.textarea.placeholder = "Dein Skript hier einfügen... \n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit. \nEinfach tippen oder Text reinkopieren.";
+            if (this.textarea) {
+                this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
+            }
 
             this.settings = { usecase: 'auto', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '' };
             
@@ -1439,7 +1446,7 @@
             if (saved && saved.trim().length > 0) {
                 this.root.classList.add('is-restoring-now');
                 this.isRestoring = true;
-                this.textarea.value = saved;
+                this.setText(saved);
                 this.analyze(saved);
                 this.isRestoring = false;
                 requestAnimationFrame(() => {
@@ -1463,7 +1470,6 @@
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
             this.filterBar = q('.ska-analysis-filterbar');
-            this.textPreview = q('[data-role-format-preview]');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -1489,6 +1495,18 @@
         }
         
         injectGlobalStyles() { SA_Utils.injectGlobalStyles(); }
+
+        getText() {
+            if (!this.textarea) return '';
+            if (this.textarea.isContentEditable) return this.textarea.innerText || '';
+            return this.textarea.value || '';
+        }
+
+        setText(value) {
+            if (!this.textarea) return;
+            if (this.textarea.isContentEditable) this.textarea.innerText = value;
+            else this.textarea.value = value;
+        }
         
         renderSettingsModal() {
             // Force removal of existing modal to ensure update
@@ -1611,7 +1629,7 @@
                 if(e.target.name === 'ska-char-mode') this.settings.charMode = e.target.value;
                 if(e.target.name === 'ska-num-mode') this.settings.numberMode = e.target.value;
                 this.saveUIState(); 
-                this.analyze(this.textarea.value);
+                this.analyze(this.getText());
             }));
 
             // Bind Target Change
@@ -1623,7 +1641,7 @@
                     
                     const v = e.target.value.trim().split(':');
                     this.settings.targetSec = v.length > 1 ? (parseInt(v[0]||0)*60)+parseInt(v[1]||0) : parseInt(v[0]||0);
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 });
             }
 
@@ -1632,7 +1650,7 @@
                 audienceSelect.addEventListener('change', (e) => {
                     this.settings.audienceTarget = e.target.value;
                     this.saveUIState();
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 });
             }
 
@@ -1641,7 +1659,7 @@
                 bullshitInput.addEventListener('input', (e) => {
                     this.settings.bullshitBlacklist = e.target.value;
                     this.saveUIState();
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 });
             }
         }
@@ -1712,17 +1730,6 @@
                     </div>
                 </div>`;
             document.body.appendChild(m);
-        }
-
-        injectFormattingPreview() {
-            if (!this.textPreview || !this.textarea) return;
-            const hasTags = /<\/?(b|i|u|s|mark)>/i.test(this.textarea.value);
-            if (!hasTags) {
-                this.textPreview.style.display = 'none';
-                return;
-            }
-            this.textPreview.style.display = 'block';
-            this.textPreview.innerHTML = this.textarea.value;
         }
 
         updateTeleprompterMeta(read) {
@@ -1833,7 +1840,7 @@
                     if (this.state.excludedCards.has(id)) this.state.excludedCards.delete(id);
                     else this.state.excludedCards.add(id);
                     this.saveUIState();
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 }
                 return true;
             }
@@ -1892,7 +1899,7 @@
                 if (wpm && wpm > 0) {
                     this.settings.manualWpm = wpm;
                     this.saveUIState();
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 }
                 return true;
             }
@@ -1904,7 +1911,7 @@
                     this.pauseTeleprompter();
                     btn.textContent = 'Start';
                 } else {
-                    const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
+                    const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
                     this.startTeleprompter(read);
                     btn.textContent = 'Pause';
                 }
@@ -1931,7 +1938,7 @@
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
-                this.analyze(this.textarea.value);
+                this.analyze(this.getText());
                 return true;
             }
             return false;
@@ -1940,46 +1947,65 @@
         applyFormatting(action) {
             if (!this.textarea) return;
             const textarea = this.textarea;
+            const isEditable = textarea.isContentEditable;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
-            const selected = textarea.value.substring(start, end);
+            const selected = isEditable ? window.getSelection().toString() : textarea.value.substring(start, end);
 
             const wrapSelection = (prefix, suffix) => {
                 const insertText = selected || 'Text';
                 const newText = `${prefix}${insertText}${suffix}`;
-                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
-                const cursorStart = start + prefix.length;
-                const cursorEnd = cursorStart + insertText.length;
-                textarea.setSelectionRange(cursorStart, cursorEnd);
+                if (isEditable) {
+                    document.execCommand('insertHTML', false, newText);
+                } else {
+                    textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                    const cursorStart = start + prefix.length;
+                    const cursorEnd = cursorStart + insertText.length;
+                    textarea.setSelectionRange(cursorStart, cursorEnd);
+                }
             };
 
             const applyTag = (tag, styleLabel) => {
                 const insertText = selected || styleLabel;
                 wrapSelection(`<${tag}>`, `</${tag}>`);
-                textarea.value = textarea.value.replace(`<${tag}>${styleLabel}</${tag}>`, `<${tag}>${insertText}</${tag}>`);
-                textarea.setSelectionRange(start + (`<${tag}>`).length, start + (`<${tag}>`).length + insertText.length);
-                this.injectFormattingPreview();
+                if (!isEditable) {
+                    textarea.value = textarea.value.replace(`<${tag}>${styleLabel}</${tag}>`, `<${tag}>${insertText}</${tag}>`);
+                    textarea.setSelectionRange(start + (`<${tag}>`).length, start + (`<${tag}>`).length + insertText.length);
+                }
             };
 
             switch (action) {
                 case 'format-bold':
-                    applyTag('b', 'Fett');
+                    if (isEditable) textarea.focus();
+                    if (isEditable) document.execCommand('bold');
+                    else applyTag('b', 'Fett');
                     break;
                 case 'format-italic':
-                    applyTag('i', 'Kursiv');
+                    if (isEditable) textarea.focus();
+                    if (isEditable) document.execCommand('italic');
+                    else applyTag('i', 'Kursiv');
                     break;
                 case 'format-underline':
-                    applyTag('u', 'Unterstrichen');
+                    if (isEditable) textarea.focus();
+                    if (isEditable) document.execCommand('underline');
+                    else applyTag('u', 'Unterstrichen');
                     break;
                 case 'format-highlight':
-                    applyTag('mark', 'Textmarker');
+                    if (isEditable) textarea.focus();
+                    if (isEditable) {
+                        document.execCommand('hiliteColor', false, '#fde68a');
+                    } else {
+                        applyTag('mark', 'Textmarker');
+                    }
                     break;
                 case 'format-strike':
-                    applyTag('s', 'Durchgestrichen');
+                    if (isEditable) textarea.focus();
+                    if (isEditable) document.execCommand('strikeThrough');
+                    else applyTag('s', 'Durchgestrichen');
                     break;
             }
             textarea.focus();
-            this.analyze(textarea.value);
+            this.analyze(this.getText());
         }
 
 
@@ -2022,7 +2048,7 @@
         }
 
         initMarkerDropdown() {
-            const container = this.root.querySelector('.skriptanalyse-input-actions');
+            const container = this.root.querySelector('.ska-formatting-actions') || this.root.querySelector('.skriptanalyse-input-actions');
             if (!container) return;
             const wrap = document.createElement('div'); wrap.style.position = 'relative'; wrap.style.display = 'inline-block';
             const btn = document.createElement('button'); btn.className = 'ska-tool-btn'; 
@@ -2035,7 +2061,7 @@
                 const item = document.createElement('button'); item.className = 'skriptanalyse-dropdown-item';
                 item.innerHTML = `<strong>${m.label.split(' ')[0]}</strong>`;
                 item.setAttribute('data-tooltip', m.desc);
-                item.onclick = (e) => { e.preventDefault(); SA_Utils.insertAtCursor(this.textarea, m.val); this.analyze(this.textarea.value); menu.classList.remove('is-open'); };
+                item.onclick = (e) => { e.preventDefault(); SA_Utils.insertAtCursor(this.textarea, m.val); this.analyze(this.getText()); menu.classList.remove('is-open'); };
                 menu.appendChild(item);
             });
             document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.remove('is-open'); });
@@ -2043,25 +2069,24 @@
         }
 
         bindEvents() {
-            this.textarea.addEventListener('input', SA_Utils.debounce(() => this.analyze(this.textarea.value), 250));
-            this.textarea.addEventListener('input', () => this.injectFormattingPreview());
+            this.textarea.addEventListener('input', SA_Utils.debounce(() => this.analyze(this.getText()), 250));
             this.root.addEventListener('input', (e) => {
                 const slider = e.target.closest('[data-action="wpm-slider"]');
                 if (slider) {
                     const val = parseInt(slider.value, 10);
                     this.settings.manualWpm = val;
                     this.saveUIState();
-                    this.analyze(this.textarea.value);
+                    this.analyze(this.getText());
                 }
             });
             this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
                 const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
-                if(k) this.settings[k] = e.target.value; this.analyze(this.textarea.value);
+                if(k) this.settings[k] = e.target.value; this.analyze(this.getText());
             }));
             if(this.targetInput) this.targetInput.addEventListener('input', (e) => {
                 const v = e.target.value.trim().split(':');
                 this.settings.targetSec = v.length > 1 ? (parseInt(v[0]||0)*60)+parseInt(v[1]||0) : parseInt(v[0]||0);
-                this.analyze(this.textarea.value);
+                this.analyze(this.getText());
             });
             
             this.root.addEventListener('click', (e) => {
@@ -2080,7 +2105,7 @@
                         if(this.state.excludedCards.has(id)) this.state.excludedCards.delete(id);
                         else this.state.excludedCards.add(id);
                         this.saveUIState();
-                        this.analyze(this.textarea.value);
+                        this.analyze(this.getText());
                     }
                     return;
                 }
@@ -2113,8 +2138,8 @@
                             const newM = document.getElementById('ska-teleprompter-modal');
                             if (newM) {
                                 newM.classList.add('is-open');
-                                this.state.teleprompter.words = this.buildTeleprompterContent(this.textarea.value);
-                                const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
+                                this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
+                                const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
                                 this.updateTeleprompterMeta(read);
                                 this.resetTeleprompter();
                             }
@@ -2163,13 +2188,13 @@
                 }
 
                 if(act === 'clean') { 
-                    this.textarea.value = this.textarea.value.replace(/[\t\u00A0]/g,' ').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n'); 
-                    this.analyze(this.textarea.value); 
+                    this.setText(this.getText().replace(/[\t\u00A0]/g,' ').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n')); 
+                    this.analyze(this.getText()); 
                 }
                 if(act === 'save-version') { 
-                    this.state.savedVersion = this.textarea.value; 
+                    this.state.savedVersion = this.getText(); 
                     const h=this.root.querySelector('[data-role-toast]'); if(h){ h.classList.add('is-visible'); setTimeout(()=>h.classList.remove('is-visible'),2500); }
-                    this.analyze(this.textarea.value); 
+                    this.analyze(this.getText()); 
                     setTimeout(() => {
                         if (this.compareRow && this.compareRow.classList.contains('is-active')) {
                             this.compareRow.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2178,7 +2203,7 @@
                 }
 
                 if(act === 'export-marker-json') {
-                    const markers = SA_Logic.generateMarkerData(this.textarea.value, this.settings);
+                    const markers = SA_Logic.generateMarkerData(this.getText(), this.settings);
                     SA_Utils.downloadJSON(markers, 'skript-marker-export.json');
                 }
             });
@@ -2228,11 +2253,11 @@
                         script: modal.querySelector('#pdf-opt-script')?.checked 
                     };
                     const pdfData = { ...this.state.currentData, savedVersion: this.state.savedVersion };
-                    SA_PDF.generate(this.textarea.value, pdfData, this.settings, opts, btn);
+                    SA_PDF.generate(this.getText(), pdfData, this.settings, opts, btn);
                 }
 
                 if(act === 'confirm-reset') {
-                    this.textarea.value=''; 
+                    this.setText(''); 
                     this.settings={usecase:'auto',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:''}; 
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
@@ -2263,7 +2288,7 @@
                 this.state.hiddenCards.delete(id); 
                 this.saveUIState();
                 this.renderHiddenPanel(); 
-                this.analyze(this.textarea.value);
+                this.analyze(this.getText());
             }
         }
 
@@ -2281,7 +2306,7 @@
 
         renderLegend() {
             if(this.legendContainer) {
-                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem;"><h3>Legende & Hilfe</h3></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid"><div class="ska-legend-def"><strong>Auffällige Sätze:</strong> Zeigt Sätze > 25 Wörter oder viele Kommas.</div><div class="ska-legend-def"><strong>Wort-Echos:</strong> Markiert Wiederholungen auf engem Raum.</div><div class="ska-legend-def"><strong>Dynamik-Check:</strong> Findet Passiv-Formulierungen.</div><div class="ska-legend-def"><strong>Bürokratie:</strong> Markiert Nominalstil (Ung/Heit/Keit).</div><div class="ska-legend-def"><strong>Denglisch:</strong> Findet unnötige Anglizismen.</div><div class="ska-legend-def"><strong>Füllwörter:</strong> Erkennt Wörter ohne inhaltlichen Mehrwert.</div><div class="ska-legend-def"><strong>Absätze:</strong> Zeigt die Textdichte / Struktur an.</div><div class="ska-legend-def"><strong>Regie-Tipp:</strong> Hinweise zu Länge & Stil.</div><div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div><div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Die Zeitberechnung basiert auf dem gewählten Genre-WPM (Wörter pro Minute) plus Pausenzeichen.</div></div></div></div>`;
+                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid"><div class="ska-legend-def"><strong>Auffällige Sätze:</strong> Zeigt Sätze > 25 Wörter oder viele Kommas.</div><div class="ska-legend-def"><strong>Wort-Echos:</strong> Markiert Wiederholungen auf engem Raum.</div><div class="ska-legend-def"><strong>Dynamik-Check:</strong> Findet Passiv-Formulierungen.</div><div class="ska-legend-def"><strong>Bürokratie:</strong> Markiert Nominalstil (Ung/Heit/Keit).</div><div class="ska-legend-def"><strong>Denglisch:</strong> Findet unnötige Anglizismen.</div><div class="ska-legend-def"><strong>Buzzword-Check:</strong> Markiert Phrasen aus der Blacklist.</div><div class="ska-legend-def"><strong>Verb-Fokus:</strong> Warnt bei nominalem Stil.</div><div class="ska-legend-def"><strong>Teleprompter:</strong> Scrollt im Tempo der Analyse.</div><div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div><div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div></div></div></div>`;
             }
         }
 
@@ -2291,8 +2316,9 @@
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
             const showAll = this.state.showAllCards || !allowed;
-            const title = allowed ? 'Analyseboxen individualisieren' : 'Analyseboxen auswählen';
+            const title = allowed ? 'Analyseboxen individuell auswählen' : 'Analyseboxen auswählen';
             const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
+            this.filterBar.classList.toggle('is-expanded', showAll);
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
@@ -2966,7 +2992,7 @@
             const rateLabel = isSps ? `${SA_Logic.getSps(this.settings)} SPS` : `${wpm} WPM`;
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Zeiten im Vergleich</h4><div class="ska-genre-grid-layout">';
-            const cP = r ? SA_Utils.getPausenTime(this.textarea.value) : 0;
+            const cP = r ? SA_Utils.getPausenTime(this.getText()) : 0;
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
@@ -3543,7 +3569,7 @@
             const oldWpm = SA_Logic.getWpm(this.settings);
             const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw);
             
-            const curRead = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
+            const curRead = SA_Logic.analyzeReadability(this.getText(), this.settings);
             const curWpm = SA_Logic.getWpm(this.settings);
             
             // Helper to get total weight for comparison
@@ -3558,7 +3584,7 @@
             });
 
             const oldMetrics = { ...countObj(oldRead, oldRaw), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
-            const curMetrics = { ...countObj(curRead, this.textarea.value), score: parseFloat(sc), words: w, time: sec };
+            const curMetrics = { ...countObj(curRead, this.getText()), score: parseFloat(sc), words: w, time: sec };
 
             const createDeltaPill = (v, label, betterIsLower = true) => {
                 let cls = 'ska-pill--neutral';
