@@ -1,5 +1,5 @@
 /**
- * Skript-Analyse App 4.75.40 (Wave Preview & Audio Refinement)
+ * Skript-Analyse App 4.75.9 (Wave Preview & Audio Refinement)
  * Fixes: Rhythm Wave Sentence Preview, Optimized Audio Phrasing, Closer Label Alignment
  */
 
