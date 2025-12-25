@@ -110,7 +110,10 @@
             start_var: '🔄 Satzanfang-Varianz',
             role_dist: '👥 Rollen-Verteilung',
             vocabulary: '📚 Wortschatz-Reichtum',
-            pronunciation: '🗣️ Aussprache-Check'
+            pronunciation: '🗣️ Aussprache-Check',
+            keyword_focus: '🎯 Keyword-Fokus',
+            spread_index: '📈 Satz-Spreizungs-Index',
+            plosive: '💥 Plosiv-Check'
         },
 
         CARD_DESCRIPTIONS: {
@@ -135,10 +138,13 @@
             start_var: 'Findet monotone Satzanfänge (z.B. "Dann... Dann...").',
             role_dist: 'Erkennt Rollen anhand von Großbuchstaben (z.B. "TOM:") und berechnet deren Anteil.',
             vocabulary: 'Berechnet die Type-Token-Ratio (TTR) um den Wortreichtum zu bestimmen.',
-            pronunciation: 'Zeigt Wörter mit besonderer Aussprache und ermöglicht Audiowiedergabe.'
+            pronunciation: 'Zeigt Wörter mit besonderer Aussprache und ermöglicht Audiowiedergabe.',
+            keyword_focus: 'Analysiert dominante Substantive und prüft die Fokus-Schärfe.',
+            spread_index: 'Misst die Streuung der Satzlängen für den Rhythmus-Check.',
+            plosive: 'Warnt vor harten Plosiv-Folgen am Wortanfang.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'vocabulary', 'role_dist', 'pronunciation', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -147,6 +153,16 @@
             'vielleicht': 0.5, 'schon': 0.4, 'glaube ich': 0.8, 'wohl': 0.5, 
             'natürlich': 0.4, 'letztendlich': 0.9, 'absolut': 0.5
         },
+
+        STOPWORDS: [
+            'der', 'die', 'das', 'ein', 'eine', 'einer', 'eines', 'einem', 'einen', 'und', 'oder', 'aber', 'denn', 'weil', 'als', 'wenn', 'dass', 'damit',
+            'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'sie', 'mich', 'dich', 'uns', 'euch', 'ihnen', 'mein', 'dein', 'sein', 'ihr', 'unser', 'euer',
+            'mit', 'von', 'für', 'auf', 'an', 'in', 'im', 'am', 'zum', 'zur', 'bei', 'aus', 'nach', 'vor', 'über', 'unter', 'zwischen', 'durch', 'gegen', 'ohne',
+            'ist', 'sind', 'war', 'waren', 'wird', 'werden', 'hat', 'haben', 'hatte', 'hätte', 'kann', 'können', 'muss', 'müssen', 'soll', 'sollen', 'darf', 'dürfen',
+            'auch', 'noch', 'schon', 'nur', 'hier', 'dort', 'heute', 'morgen', 'gestern', 'immer', 'nie', 'jetzt', 'gleich', 'so', 'wie', 'was', 'wer', 'wo', 'wann',
+            'sehr', 'mehr', 'weniger', 'viel', 'viele', 'wenig', 'etwas', 'nichts', 'alles', 'jeder', 'jede', 'jedes', 'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes',
+            'kein', 'keine', 'keiner', 'keines', 'keinem', 'keinen', 'bitte', 'danke', 'okay', 'ok', 'ja', 'nein'
+        ],
         
         TIPS: {
             fillers: ["Hoch-Gewichtete Wörter sind 'Semantisches Rauschen'.", "Wörter like 'eigentlich' suggerieren Unsicherheit. Sei konkret!", "Nutze Füllwörter nur bewusst für einen sehr lockeren Umgangston.", "Je kürzer der Spot (Werbung), desto tödlicher ist jedes 'vielleicht'.", "Prüfe bei jedem Füllwort: Ändert sich der Sinn, wenn es fehlt? Wenn nein: Weg damit."],
@@ -165,7 +181,10 @@
             gender: ["Sprache schafft Wirklichkeit.", "Oft sind Partizipien ('Mitarbeitende') eine elegante Lösung.", "Vermeide das generische Maskulinum in Corporate Communications.", "Neutrale Sprache wirkt moderner und professioneller.", "Überprüfe, ob 'Kunden' wirklich nur Männer meint, oder ob 'Kundschaft' besser passt."],
             start_var: ["Variiere den Satzanfang für mehr Dynamik.", "Variiere die Satzstruktur: Stell mal das Objekt oder eine Zeitangabe an den Anfang.", "Monotonie im Satzbau überträgt sich sofort auf die Sprechmelodie.", "Wiederholungen sind nur okay, wenn sie als rhetorisches Stilmittel (Anapher) gewollt sind.", "Verbinde kurze Sätze logisch miteinander, statt sie nur aneinanderzureihen."],
             vocabulary: ["Ein hoher TTR-Wert (>60) zeigt Reichtum.", "Ein niedriger Wert (<40) ist typisch für fokussierte Werbebotschaften oder Claims.", "Wiederholungen senken den Wortwert, sind aber für Audio-Branding oft gewollt.", "Überprüfe bei niedrigem Wert: Ist die Wiederholung Absicht oder Faulheit?"],
-            pronunciation: ["Standarddeutsch: -ig wird wie -ich gesprochen.", "Fremdwörter wie 'Chance' oder 'Engagement' stolperfrei auszusprechen, wirkt professionell.", "Achte bei 'sp' und 'st' am Wortanfang immer auf den 'Sch'-Laut (Schtein, Schpiel).", "Klicke auf das Lautsprecher-Symbol, um dir die Standard-Aussprache anzuhören."]
+            pronunciation: ["Standarddeutsch: -ig wird wie -ich gesprochen.", "Fremdwörter wie 'Chance' oder 'Engagement' stolperfrei auszusprechen, wirkt professionell.", "Achte bei 'sp' und 'st' am Wortanfang immer auf den 'Sch'-Laut (Schtein, Schpiel).", "Klicke auf das Lautsprecher-Symbol, um dir die Standard-Aussprache anzuhören."],
+            keyword_focus: ["Ein starkes Kernwort sollte klar dominieren.", "Wenn die Top-Begriffe gleich stark sind, wirkt die Botschaft diffus.", "Produktname & Nutzen sollten in den Top-Keywords sichtbar sein."],
+            spread_index: ["Rhythmus entsteht durch Variation.", "Baue kurze Sätze ein, um lange Passagen aufzubrechen.", "Zu gleichmäßige Satzlängen wirken monoton."],
+            plosive: ["P- und B-Laute können am Mikrofon knallen.", "Entzerrung hilft: Zwischen Plosiv-Wörtern kurze Pausen setzen.", "Im Podcast: leicht seitlich sprechen, um Pop-Geräusche zu vermeiden."]
         },
 
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
@@ -496,6 +515,51 @@
             const ttr = (unique.size / normalized.length) * 100;
             return { ttr: ttr, unique: unique.size, total: normalized.length };
         },
+        analyzeKeywordClusters: (text) => {
+            if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0 };
+            const stopwords = new Set(SA_CONFIG.STOPWORDS);
+            const counts = new Map();
+            let total = 0;
+
+            const sentences = text.split(/[.!?]+/);
+            sentences.forEach(sentence => {
+                const words = sentence.match(/[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9-]*/g) || [];
+                words.forEach((word, idx) => {
+                    let clean = word.replace(/^[^A-Za-zÄÖÜäöüß]+|[^A-Za-zÄÖÜäöüß0-9-]+$/g, '');
+                    if (!clean || clean.length < 3) return;
+
+                    const parts = clean.split('-').filter(Boolean);
+                    parts.forEach(part => {
+                        if (!part || part.length < 3) return;
+                        const lower = part.toLowerCase();
+                        if (stopwords.has(lower)) return;
+
+                        const isAllCaps = /^[A-ZÄÖÜ0-9]+$/.test(part) && part.length > 2;
+                        const hasUpperStart = /^[A-ZÄÖÜ]/.test(part);
+                        const hasInnerUpper = /[A-ZÄÖÜ].*[A-ZÄÖÜ]/.test(part);
+                        const isNounCandidate = isAllCaps || hasUpperStart || hasInnerUpper;
+                        if (!isNounCandidate) return;
+
+                        if (idx === 0 && stopwords.has(lower)) return;
+
+                        const display = isAllCaps ? part : part.charAt(0).toUpperCase() + part.slice(1);
+                        const key = lower;
+                        const entry = counts.get(key) || { word: display, count: 0 };
+                        entry.count += 1;
+                        counts.set(key, entry);
+                        total += 1;
+                    });
+                });
+            });
+
+            const top = [...counts.values()].sort((a, b) => {
+                if (b.count !== a.count) return b.count - a.count;
+                return a.word.localeCompare(b.word);
+            });
+            const topCount = top.length > 0 ? top[0].count : 0;
+            const focusScore = total > 0 ? topCount / total : 0;
+            return { top, total, focusScore };
+        },
         getWpm: (s) => (SA_CONFIG.WPM[s.usecase] || 150),
         getSps: (s) => (SA_CONFIG.SPS[s.usecase] || 3.8),
         getTrafficLight: (read) => {
@@ -561,6 +625,38 @@
                 }
             });
             return killers.sort((a,b) => (b.words + b.commas*2) - (a.words + a.commas*2));
+        },
+        findPlosiveClusters: (text) => {
+            const words = text.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+            const clusters = [];
+            let current = [];
+
+            words.forEach(word => {
+                const clean = word.replace(/[^A-Za-zÄÖÜäöüß]/g, '');
+                if (!clean) return;
+                const lower = clean.toLowerCase();
+                if (/^[pbtk]/.test(lower)) {
+                    current.push(clean);
+                } else {
+                    if (current.length >= 2) clusters.push([...current]);
+                    current = [];
+                }
+            });
+            if (current.length >= 2) clusters.push([...current]);
+
+            const aggregated = new Map();
+            clusters.forEach(cluster => {
+                const phrase = cluster.join(' ');
+                const entry = aggregated.get(phrase) || { phrase, words: cluster.length, occurrences: 0 };
+                entry.occurrences += 1;
+                aggregated.set(phrase, entry);
+            });
+
+            return [...aggregated.values()].sort((a, b) => {
+                if (b.words !== a.words) return b.words - a.words;
+                if (b.occurrences !== a.occurrences) return b.occurrences - a.occurrences;
+                return a.phrase.localeCompare(b.phrase);
+            });
         },
         findWordEchoes: (text) => {
             const words = text.toLowerCase().match(/\b[a-zäöüß]+\b/g) || [];
@@ -869,6 +965,9 @@
                     const nominalChains = SA_Logic.findNominalChains(read.cleanedText);
                     const vocab = SA_Logic.analyzeVocabulary(read.words);
                     const pronunc = SA_Logic.analyzePronunciation(read.cleanedText);
+                    const keywordFocus = SA_Logic.analyzeKeywordClusters(text);
+                    const spreadIndex = SA_Logic.calculateVariance(read.sentences);
+                    const plosiveClusters = SA_Logic.findPlosiveClusters(text);
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -913,6 +1012,12 @@
                         addRow("Stimmung:", sentiment.label);
                         addRow("Zielgruppe:", SA_Logic.estimateAudience(read.score));
                         addRow("Wortschatz-Ratio:", `${vocab.ttr.toFixed(1)}%`);
+                        if (keywordFocus.top.length) {
+                            const focusTop = keywordFocus.top.slice(0, 3).map(k => `${k.word} (${k.count}x)`).join(', ');
+                            addRow("Keyword-Fokus:", focusTop);
+                            addRow("- Dominanz:", `${(keywordFocus.focusScore * 100).toFixed(1)}%`);
+                        }
+                        addRow("Satz-Spreizung:", spreadIndex.toFixed(2));
                         y += 4;
                         doc.setFont(undefined, 'bold'); doc.text("Regie / Coach:", margin, y); doc.setFont(undefined, 'normal'); y+=6;
                         let dynText = "Lebendig & Abwechslungsreich";
@@ -953,6 +1058,10 @@
                         const stumbleArr = [...stumbles.phonetic, ...stumbles.camel, ...stumbles.long, ...stumbles.alliter];
                         if(stumbleArr.length) addRow("Stolpersteine:", stumbleArr);
                         if(stumbles.sibilant_warning) addRow("Warnung:", `Hohe Zischlaut-Dichte (${stumbles.sibilant_density}%)`);
+                        if(plosiveClusters.length) {
+                            const pText = plosiveClusters.slice(0, 3).map(p => `${p.phrase} (${p.words}x)`).join(', ');
+                            addRow("Plosiv-Folgen:", pText);
+                        }
                         if(ctaData.all.length > 0) {
                             addRow("Call to Action (gefunden):", ctaData.all);
                         } else {
@@ -999,6 +1108,9 @@
                         if(genderIssues.length > 0) printTip("Prüfe, ob du generische Maskuline durch neutrale Begriffe ersetzen kannst.");
                         if(startIssues.length > 1) printTip("Vermeide gleiche Satzanfänge hintereinander (Monotonie).");
                         if(stumbles.sibilant_warning) printTip("Achtung Zischlaute! Der Text könnte im Mikrofon zischen/pfeifen.");
+                        if(spreadIndex < 2.2) printTip("Rhythmus-Check: Satzlängen sind sehr ähnlich. Füge kurze Sätze für mehr Dynamik ein.");
+                        if(plosiveClusters.length > 0) printTip("Plosiv-Alarm: P/B/T/K am Wortanfang häufen sich. Etwas Abstand oder Umformulieren hilft.");
+                        if(keywordFocus.focusScore > 0 && keywordFocus.focusScore < 0.14) printTip("Keyword-Fokus: Die Kernbotschaft wirkt verteilt. Wiederhole den Hauptbegriff bewusst.");
                         if(adjectives.length > 5) printTip("Text wirkt 'blumig'. Prüfe, ob du alle Adjektive wirklich brauchst.");
                         if(pronunc.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
                         if(echoes.length > 3) printTip("Achte auf Wortwiederholungen auf engem Raum (Wort-Echos).");
@@ -1074,7 +1186,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0 }, 
                 excludedCards: new Set() 
             };
             
@@ -1590,6 +1702,9 @@
                     case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(raw), active); break;
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
+                    case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw), active); break;
+                    case 'spread_index': this.renderSpreadIndexCard(read.sentences, active); break;
+                    case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
             });
@@ -1631,6 +1746,111 @@
                  h += this.renderTipSection('pronunciation', true);
             }
             this.updateCard('pronunciation', h);
+        }
+
+        renderKeywordFocusCard(data, active) {
+            if(!active) return this.updateCard('keyword_focus', this.renderDisabledState(), this.bottomGrid, '', '', true);
+
+            const total = data.total || 0;
+            const top = data.top || [];
+            let h = '';
+
+            if(total === 0 || top.length === 0) {
+                h = `<p style="color:#64748b; font-size:0.9rem;">Keine aussagekräftigen Substantive erkannt.</p>`;
+                return this.updateCard('keyword_focus', h);
+            }
+
+            const dominant = top[0];
+            const ratio = total > 0 ? (dominant.count / total) * 100 : 0;
+            let label = 'Fokus verteilt';
+            let color = SA_CONFIG.COLORS.warn;
+            if (ratio >= 24) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
+            else if (ratio >= 14) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
+
+            h += `
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Fokus-Score</span>
+                        <span style="font-weight:700; color:${color};">${label}</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${Math.min(100, ratio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${ratio.toFixed(1)}% aller Substantive)</div>
+                </div>
+                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>
+                <div class="ska-filler-list">`;
+
+            const maxVal = top[0].count || 1;
+            top.slice(0, 6).forEach(item => {
+                const pct = (item.count / maxVal) * 100;
+                h += `<div class="ska-filler-item">
+                        <span class="ska-filler-word" style="font-weight:600;">${item.word}</span>
+                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
+                        <span class="ska-filler-count">${item.count}x</span>
+                      </div>`;
+            });
+            h += `</div>`;
+            h += this.renderTipSection('keyword_focus', true);
+            this.updateCard('keyword_focus', h);
+        }
+
+        renderSpreadIndexCard(sentences, active) {
+            if(!active) return this.updateCard('spread_index', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if(!sentences || sentences.length < 3) return this.updateCard('spread_index', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Sätze für eine Analyse.</p>');
+
+            const spread = SA_Logic.calculateVariance(sentences);
+            let label = 'Ausgewogen';
+            let color = SA_CONFIG.COLORS.blue;
+            let hint = 'Guter Wechsel zwischen kurzen und langen Sätzen.';
+            if (spread < 2.2) {
+                label = 'Einschlafgefahr';
+                color = SA_CONFIG.COLORS.warn;
+                hint = 'Hier einen kurzen Satz einfügen, um den Rhythmus zu brechen.';
+            } else if (spread > 5) {
+                label = 'Sehr dynamisch';
+                color = SA_CONFIG.COLORS.success;
+                hint = 'Hohe Varianz – achte darauf, dass der Flow dennoch zusammenhängt.';
+            }
+
+            const h = `
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Standardabweichung</span>
+                        <span style="font-weight:700; color:${color};">${label}</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${Math.min(100, spread * 12)}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.85rem; color:#334155;">Satz-Spreizungs-Index: <strong>${spread.toFixed(2)}</strong></div>
+                </div>
+                <div style="font-size:0.85rem; color:#64748b;">${hint}</div>
+                ${this.renderTipSection('spread_index', spread < 3)}`;
+            this.updateCard('spread_index', h);
+        }
+
+        renderPlosiveCard(clusters, active) {
+            if(!active) return this.updateCard('plosive', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            let h = '';
+
+            if(!clusters || clusters.length === 0) {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
+            } else {
+                h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Folgen: <strong>${clusters.length}</strong></div>`;
+                h += `<div class="ska-problem-list">`;
+                clusters.slice(0, 4).forEach(cluster => {
+                    h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
+                            ${cluster.phrase}
+                            <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
+                          </div>`;
+                });
+                if (clusters.length > 4) {
+                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${clusters.length - 4} weitere</div>`;
+                }
+                h += `</div>`;
+                h += this.renderTipSection('plosive', true);
+            }
+            this.updateCard('plosive', h);
         }
         
         renderVocabularyCard(data, active) {
