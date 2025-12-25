@@ -922,13 +922,12 @@
             });
             const uniqueLong = [...new Map(longWords.map(item => [item.word.toLowerCase(), item])).values()];
 
-            const passiveFindings = SA_Logic.findPassive(text);
             const genitiveRegex = /\b(des|eines|einer|eines|deren|dessen)\b/i;
             const genitiveHits = [];
             (sentences || []).forEach(s => {
                 if (genitiveRegex.test(s)) genitiveHits.push(s.trim());
             });
-            return { longWords: uniqueLong, passive: passiveFindings, genitives: genitiveHits };
+            return { longWords: uniqueLong, genitives: genitiveHits };
         },
         analyzeVerbNounBalance: (text, sentences) => {
             const words = text.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
@@ -1255,7 +1254,6 @@
                             addRow("Redundanz:", rText);
                         }
                         if(easyLanguage.longWords.length) addRow("Leichte Sprache: lange Wörter", easyLanguage.longWords.slice(0, 5).map(w => w.word));
-                        if(easyLanguage.passive.length) addRow("Leichte Sprache: Passiv", easyLanguage.passive.slice(0, 5));
                         if(easyLanguage.genitives.length) addRow("Leichte Sprache: Genitiv", easyLanguage.genitives.slice(0, 2));
 
                         if(genderIssues.length) {
@@ -1323,7 +1321,7 @@
                         if(plosiveClusters.length > 0) printTip("Plosiv-Alarm: P/B/T/K am Wortanfang häufen sich. Etwas Abstand oder Umformulieren hilft.");
                         if(keywordFocus.focusScore > 0 && keywordFocus.focusScore < 0.14) printTip("Keyword-Fokus: Die Kernbotschaft wirkt verteilt. Wiederhole den Hauptbegriff bewusst.");
                         if(redundancy.length > 0) printTip("Redundanz-Check: Entferne doppelte Aussagen in direkt aufeinanderfolgenden Sätzen.");
-                        if(easyLanguage.passive.length > 0 || easyLanguage.genitives.length > 0) printTip("Leichte Sprache: Passiv und Genitiv vermeiden, um verständlicher zu bleiben.");
+                        if(easyLanguage.genitives.length > 0) printTip("Leichte Sprache: Genitiv vermeiden, um verständlicher zu bleiben.");
                         if(adjectives.length > 5) printTip("Text wirkt 'blumig'. Prüfe, ob du alle Adjektive wirklich brauchst.");
                         if(pronunc.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
                         if(echoes.length > 3) printTip("Achte auf Wortwiederholungen auf engem Raum (Wort-Echos).");
@@ -1399,7 +1397,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0 }, 
                 excludedCards: new Set(),
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 }
@@ -1791,6 +1789,10 @@
         }
 
         handleAction(act, btn) {
+            if (act.startsWith('format-')) {
+                this.applyFormatting(act);
+                return true;
+            }
             if (act === 'benchmark-toggle') {
                 const modal = document.getElementById('ska-benchmark-modal');
                 if (!modal) return true;
@@ -1884,6 +1886,87 @@
                 return true;
             }
             return false;
+        }
+
+        applyFormatting(action) {
+            if (!this.textarea) return;
+            const textarea = this.textarea;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selected = textarea.value.substring(start, end);
+
+            const wrapSelection = (prefix, suffix) => {
+                const insertText = selected || 'Text';
+                const newText = `${prefix}${insertText}${suffix}`;
+                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                const cursorStart = start + prefix.length;
+                const cursorEnd = cursorStart + insertText.length;
+                textarea.setSelectionRange(cursorStart, cursorEnd);
+            };
+
+            const applyLinePrefix = (prefix) => {
+                const base = selected || this.getCurrentLine(textarea.value, start);
+                const lines = base.split('\n').map(line => line.trim().length ? `${prefix}${line}` : line);
+                const newText = lines.join('\n');
+                const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
+                const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
+                const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
+                textarea.value = textarea.value.substring(0, replaceStart) + newText + textarea.value.substring(actualEnd);
+            };
+
+            const transformSelection = (fn) => {
+                const text = selected || this.getCurrentLine(textarea.value, start);
+                const transformed = fn(text);
+                const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
+                const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
+                const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
+                textarea.value = textarea.value.substring(0, replaceStart) + transformed + textarea.value.substring(actualEnd);
+            };
+
+            switch (action) {
+                case 'format-bold':
+                    wrapSelection('**', '**');
+                    break;
+                case 'format-italic':
+                    wrapSelection('*', '*');
+                    break;
+                case 'format-underline':
+                    wrapSelection('__', '__');
+                    break;
+                case 'format-highlight':
+                    wrapSelection('==', '==');
+                    break;
+                case 'format-strike':
+                    wrapSelection('~~', '~~');
+                    break;
+                case 'format-bullet':
+                    applyLinePrefix('• ');
+                    break;
+                case 'format-numbered': {
+                    const base = selected || this.getCurrentLine(textarea.value, start);
+                    const lines = base.split('\n').map((line, idx) => line.trim().length ? `${idx + 1}. ${line}` : line);
+                    const newText = lines.join('\n');
+                    const replaceStart = selected ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
+                    const replaceEnd = selected ? end : textarea.value.indexOf('\n', start);
+                    const actualEnd = replaceEnd === -1 ? textarea.value.length : replaceEnd;
+                    textarea.value = textarea.value.substring(0, replaceStart) + newText + textarea.value.substring(actualEnd);
+                    break;
+                }
+                case 'format-uppercase':
+                    transformSelection((text) => text.toUpperCase());
+                    break;
+                case 'format-lowercase':
+                    transformSelection((text) => text.toLowerCase());
+                    break;
+            }
+            textarea.focus();
+            this.analyze(textarea.value);
+        }
+
+        getCurrentLine(text, cursor) {
+            const start = text.lastIndexOf('\n', cursor - 1) + 1;
+            const end = text.indexOf('\n', cursor);
+            return text.substring(start, end === -1 ? text.length : end);
         }
 
         loadUIState() {
@@ -2664,9 +2747,8 @@
         renderEasyLanguageCard(data, active) {
             if(!active) return this.updateCard('easy_language', this.renderDisabledState(), this.bottomGrid, '', '', true);
             const longWords = data.longWords || [];
-            const passive = data.passive || [];
             const genitives = data.genitives || [];
-            const issues = longWords.length + passive.length + genitives.length;
+            const issues = longWords.length + genitives.length;
 
             let h = '';
             if (issues === 0) {
@@ -2678,14 +2760,6 @@
                     h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.8rem;">`;
                     longWords.slice(0, 12).forEach(item => {
                         h += `<span class="skriptanalyse-badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;">${item.word} (${item.syllables})</span>`;
-                    });
-                    h += `</div>`;
-                }
-                if (passive.length) {
-                    h += `<div class="ska-section-title">Passiv-Konstruktionen</div>`;
-                    h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:0.8rem;">`;
-                    passive.slice(0, 6).forEach(p => {
-                        h += `<span class="skriptanalyse-badge" style="background:#e0f2fe; color:#075985; border:1px solid #bae6fd;">${p}</span>`;
                     });
                     h += `</div>`;
                 }
