@@ -82,6 +82,15 @@
             high: ['explosion', 'jetzt', 'sofort', 'sofortig', 'sofortige', 'boom', 'krass', 'schnell', 'dringend', 'extrem', 'feuer', 'stark', 'power', 'heftig', 'wow', 'unglaublich', 'alarm', 'laut', 'aufwachen', 'action'],
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
         },
+        BUZZWORDS: [
+            'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
+            'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
+        ],
+        AUDIENCE_TARGETS: {
+            kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
+            news: { label: 'Abendnachrichten', minScore: 55, maxSentence: 20 },
+            fach: { label: 'Fachpublikum', minScore: 35, maxSentence: 28 }
+        },
 
         CARD_TITLES: { 
             overview: 'Schnell-Überblick', 
@@ -113,7 +122,9 @@
             bpm: '🎵 Audio-BPM-Matching',
             easy_language: '🧩 Leichte Sprache',
             teleprompter: '🪄 Teleprompter-Export',
-            arousal: '⚡ Arousal-Map'
+            arousal: '⚡ Arousal-Map',
+            bullshit: '🧨 Bullshit-Index',
+            audience: '🎯 Zielgruppen-Filter'
         },
 
         CARD_DESCRIPTIONS: {
@@ -146,10 +157,12 @@
             bpm: 'Schlägt ein passendes Musiktempo (BPM) für den Text vor.',
             easy_language: 'Prüft Verständlichkeit nach Leichte-Sprache-Kriterien.',
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
-            arousal: 'Visualisiert Energieverlauf im Skript.'
+            arousal: 'Visualisiert Energieverlauf im Skript.',
+            bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
+            audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -194,7 +207,9 @@
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig."],
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres."],
             teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo."],
-            arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt."]
+            arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt."],
+            bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen."],
+            audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt."]
         },
 
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
@@ -358,8 +373,11 @@
             const matches = word.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
-        analyzeReadability: (text) => {
-            const clean = SA_Utils.cleanTextForCounting(text).trim();
+        analyzeReadability: (text, settings = {}) => {
+            let clean = SA_Utils.cleanTextForCounting(text).trim();
+            if (settings.numberMode === 'word') {
+                clean = SA_Logic.expandNumbersForAudio(clean);
+            }
             if(!clean) return { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0 };
             
             let tempText = clean;
@@ -375,15 +393,15 @@
 
             let speakingWordCount = 0;
             words.forEach(w => {
-                 if (/[0-9]/.test(w)) {
-                     const digits = (w.match(/[0-9]/g) || []).length;
-                     if (digits >= 5) speakingWordCount += 4;
-                     else if (digits === 4) speakingWordCount += 3;
-                     else if (digits === 3) speakingWordCount += 2;
-                     else speakingWordCount += 1;
-                 } else {
-                     speakingWordCount += 1;
-                 }
+                if (/[0-9]/.test(w)) {
+                    const digits = (w.match(/[0-9]/g) || []).length;
+                    if (digits >= 5) speakingWordCount += 4;
+                    else if (digits === 4) speakingWordCount += 3;
+                    else if (digits === 3) speakingWordCount += 2;
+                    else speakingWordCount += 1;
+                } else {
+                    speakingWordCount += 1;
+                }
             });
 
             const paragraphs = clean.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
@@ -401,6 +419,50 @@
             const score = 180 - avgS - (58.5 * avgW);
 
             return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables };
+        },
+        expandNumbersForAudio: (text) => {
+            const toWords = (num) => {
+                const units = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+                const tens = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+                if (num < 20) return units[num];
+                if (num < 100) {
+                    const t = Math.floor(num / 10);
+                    const u = num % 10;
+                    if (u === 0) return tens[t];
+                    const unit = u === 1 ? 'ein' : units[u];
+                    return `${unit}und${tens[t]}`;
+                }
+                if (num < 1000) {
+                    const h = Math.floor(num / 100);
+                    const r = num % 100;
+                    const head = h === 1 ? 'einhundert' : `${units[h]}hundert`;
+                    return r === 0 ? head : `${head}${toWords(r)}`;
+                }
+                if (num < 10000) {
+                    const th = Math.floor(num / 1000);
+                    const r = num % 1000;
+                    const head = th === 1 ? 'eintausend' : `${units[th]}tausend`;
+                    return r === 0 ? head : `${head}${toWords(r)}`;
+                }
+                return String(num).split('').map(d => units[parseInt(d, 10)]).join(' ');
+            };
+
+            const normalize = (match) => {
+                const cleaned = match.replace(/\./g, '').replace(',', '.');
+                const hasPercent = /%$/.test(match);
+                const numeric = parseFloat(cleaned.replace('%', ''));
+                if (Number.isNaN(numeric)) return match;
+                const [intPart, decPart] = cleaned.replace('%', '').split('.');
+                let spoken = toWords(parseInt(intPart, 10));
+                if (decPart) {
+                    const decWords = decPart.split('').map(d => toWords(parseInt(d, 10))).join(' ');
+                    spoken = `${spoken} komma ${decWords}`;
+                }
+                if (hasPercent) spoken += ' prozent';
+                return spoken;
+            };
+
+            return text.replace(/(\d{1,3}(?:\.\d{3})+|\d+)([.,]\d+)?%?/g, (m) => normalize(m));
         },
         analyzeVocabulary: (words) => {
             if(!words || words.length === 0) return { ttr: 0, unique: 0, total: 0 };
@@ -745,7 +807,7 @@
                     seconds: currentTime.toFixed(2),
                     label: p.substring(0, 30).replace(/\n/g, ' ') + '...' 
                 });
-                const read = SA_Logic.analyzeReadability(p);
+                const read = SA_Logic.analyzeReadability(p, settings);
                 const pause = SA_Utils.getPausenTime(p);
                 let dur = 0;
                 if (isSps) dur = (read.totalSyllables / sps) + pause;
@@ -848,6 +910,31 @@
             });
             return { longWords: uniqueLong, passive: passiveFindings, genitives: genitiveHits };
         },
+        analyzeBullshitIndex: (text, customList = []) => {
+            const combined = [...SA_CONFIG.BUZZWORDS, ...customList].filter(Boolean);
+            const findings = {};
+            if (!combined.length) return findings;
+            combined.forEach(term => {
+                const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+                const matches = text.match(regex);
+                if (matches && matches.length) {
+                    findings[term.toLowerCase()] = matches.length;
+                }
+            });
+            return findings;
+        },
+        evaluateAudienceTarget: (read, targetKey) => {
+            const target = SA_CONFIG.AUDIENCE_TARGETS[targetKey];
+            if (!target || !read) return { status: 'neutral', message: 'Kein Zielgruppen-Level gewählt.' };
+            const issues = [];
+            if (read.score < target.minScore) issues.push(`Flesch ${read.score.toFixed(0)} < ${target.minScore}`);
+            if (read.maxSentenceWords > target.maxSentence) issues.push(`Satzlänge ${read.maxSentenceWords} > ${target.maxSentence}`);
+            if (issues.length) {
+                return { status: 'warn', message: `⚠️ Ziel verfehlt: ${issues.join(' · ')}`, target };
+            }
+            return { status: 'ok', message: `✅ Passend für ${target.label}`, target };
+        },
         analyzeArousalMap: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
             const high = SA_CONFIG.AROUSAL.high;
@@ -933,7 +1020,7 @@
                     doc.text("Erstellt am: " + new Date().toLocaleDateString() + " um " + new Date().toLocaleTimeString(), margin, y);
                     y += 15;
 
-                    const read = SA_Logic.analyzeReadability(text);
+                    const read = SA_Logic.analyzeReadability(text, settings);
                     const stumbles = SA_Logic.findStumbles(text);
                     const fillers = SA_Logic.findFillers(read.cleanedText);
                     const passive = SA_Logic.findPassive(read.cleanedText);
@@ -958,6 +1045,8 @@
                     const redundancy = SA_Logic.analyzeRedundancy(read.sentences);
                     const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, settings);
                     const easyLanguage = SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences);
+                    const bullshit = SA_Logic.analyzeBullshitIndex(read.cleanedText, (settings.bullshitBlacklist || '').split(/[,|\n]/).map(s => s.trim()).filter(Boolean));
+                    const audienceCheck = SA_Logic.evaluateAudienceTarget(read, settings.audienceTarget);
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -981,7 +1070,7 @@
                     }
 
                     if(options.compare && data.savedVersion && data.savedVersion !== text) {
-                        const oldRead = SA_Logic.analyzeReadability(data.savedVersion);
+                        const oldRead = SA_Logic.analyzeReadability(data.savedVersion, settings);
                         const oldSec = (oldRead.wordCount / data.wpm * 60) + SA_Utils.getPausenTime(data.savedVersion);
                         const newSec = (read.speakingWordCount / data.wpm * 60) + SA_Utils.getPausenTime(text);
                         const diffSec = newSec - oldSec;
@@ -1009,6 +1098,7 @@
                         }
                         addRow("Satz-Spreizung:", spreadIndex.toFixed(2));
                         if (bpmSuggestion.bpm > 0) addRow("Audio-BPM:", `${bpmSuggestion.bpm} BPM (${bpmSuggestion.range[0]}–${bpmSuggestion.range[1]})`);
+                        if (audienceCheck && settings.audienceTarget) addRow("Zielgruppen-Check:", audienceCheck.message);
                         y += 4;
                         doc.setFont(undefined, 'bold'); doc.text("Regie / Coach:", margin, y); doc.setFont(undefined, 'normal'); y+=6;
                         let dynText = "Lebendig & Abwechslungsreich";
@@ -1037,6 +1127,7 @@
                             const pText = pronunc.map(p => `${p.word} (${p.hint})`).join(', ');
                             addRow("Aussprache:", pText);
                         }
+                        if(Object.keys(bullshit).length) addRow("Bullshit-Index:", Object.keys(bullshit));
                         if(redundancy.length > 0) {
                             const rText = redundancy.slice(0, 2).map(r => `"${r.first}" -> "${r.second}"`).join(' | ');
                             addRow("Redundanz:", rText);
@@ -1180,13 +1271,13 @@
 
             this.textarea.placeholder = "Dein Skript hier einfügen... \n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit. \nEinfach tippen oder Text reinkopieren.";
 
-            this.settings = { usecase: 'auto', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm' };
+            this.settings = { usecase: 'auto', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '' };
             
             this.state = { 
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0 }, 
                 excludedCards: new Set(),
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0 }
@@ -1345,6 +1436,25 @@
                         <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Persönliches Sprechtempo</label>
                         <button type="button" class="ska-btn ska-btn--secondary" style="height:40px; padding:0 1rem;" data-action="open-benchmark">WPM-Test starten</button>
                     </div>
+
+                    <div style="margin-top:1.5rem; margin-bottom:1.5rem; border-top:1px solid #f1f5f9;"></div>
+
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zielgruppe (Komplexität)</label>
+                        <select id="ska-set-audience" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px;">
+                            <option value="">Keine Auswahl</option>
+                            <option value="kinder" ${this.settings.audienceTarget === 'kinder' ? 'selected' : ''}>Kindersendung</option>
+                            <option value="news" ${this.settings.audienceTarget === 'news' ? 'selected' : ''}>Abendnachrichten</option>
+                            <option value="fach" ${this.settings.audienceTarget === 'fach' ? 'selected' : ''}>Fachpublikum</option>
+                        </select>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Das System warnt, wenn Flesch-Score oder Satzlänge das Ziel überschreitet.</p>
+                    </div>
+
+                    <div style="margin-bottom:0.5rem;">
+                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Bullshit-Blacklist</label>
+                        <textarea id="ska-set-bullshit" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:90px;" placeholder="z.B. synergetisch, agil, lösungsorientiert">${this.settings.bullshitBlacklist || ''}</textarea>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Kommagetrennt oder zeilenweise – wird rot markiert.</p>
+                    </div>
                 </div>
                 <div class="ska-modal-footer">
                      <button type="button" class="ska-btn ska-btn--primary" style="display:inline-flex; align-items:center; justify-content:center; height:40px; padding:0 1.5rem; line-height:1; padding-top:1px;" data-action="close-settings">Speichern & Schließen</button>
@@ -1373,6 +1483,151 @@
                     this.analyze(this.textarea.value);
                 });
             }
+
+            const audienceSelect = m.querySelector('#ska-set-audience');
+            if (audienceSelect) {
+                audienceSelect.addEventListener('change', (e) => {
+                    this.settings.audienceTarget = e.target.value;
+                    this.saveUIState();
+                    this.analyze(this.textarea.value);
+                });
+            }
+
+            const bullshitInput = m.querySelector('#ska-set-bullshit');
+            if (bullshitInput) {
+                bullshitInput.addEventListener('input', (e) => {
+                    this.settings.bullshitBlacklist = e.target.value;
+                    this.saveUIState();
+                    this.analyze(this.textarea.value);
+                });
+            }
+        }
+
+        renderBenchmarkModal() {
+            let m = document.getElementById('ska-benchmark-modal');
+            if (m) m.remove();
+
+            const testText = 'Bitte lies diesen kurzen Testtext laut vor. Sprich deutlich und in deinem natürlichen Tempo. Wir messen die Zeit und berechnen daraus dein persönliches WPM. Du kannst den Test jederzeit wiederholen, um ein präzises Ergebnis zu erhalten.';
+            const wordCount = (testText.match(/\S+/g) || []).length;
+
+            m = document.createElement('div');
+            m.className = 'skriptanalyse-modal';
+            m.id = 'ska-benchmark-modal';
+            m.ariaHidden = 'true';
+            m.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-benchmark"></div>
+                <div class="skriptanalyse-modal-content">
+                    <div class="ska-modal-header"><h3>WPM-Kalibrierung</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Lies den Text einmal durch. Starte dann die Stoppuhr und lies ihn laut vor.</p>
+                        <div class="ska-benchmark-text">${testText}</div>
+                        <div class="ska-benchmark-stats">
+                            <div><span>Wörter:</span> <strong>${wordCount}</strong></div>
+                            <div><span>Zeit:</span> <strong data-role-benchmark-time>0:00</strong></div>
+                            <div><span>WPM:</span> <strong data-role-benchmark-wpm>-</strong></div>
+                        </div>
+                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="benchmark-toggle">Stoppuhr starten</button>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-reset">Reset</button>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-apply" disabled>Übernehmen</button>
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                         <button type="button" class="ska-btn ska-btn--secondary" data-action="close-benchmark">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(m);
+            m.dataset.wordCount = String(wordCount);
+        }
+
+        renderTeleprompterModal() {
+            let m = document.getElementById('ska-teleprompter-modal');
+            if (m) m.remove();
+
+            m = document.createElement('div');
+            m.className = 'skriptanalyse-modal';
+            m.id = 'ska-teleprompter-modal';
+            m.ariaHidden = 'true';
+            m.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
+                <div class="ska-teleprompter-modal">
+                    <div class="ska-teleprompter-header">
+                        <strong>Teleprompter</strong>
+                        <div class="ska-teleprompter-controls">
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-smaller">A-</button>
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-bigger">A+</button>
+                            <button class="ska-btn ska-btn--primary" data-action="teleprompter-toggle">Start</button>
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-reset">Reset</button>
+                            <button class="ska-btn ska-btn--ghost" data-action="close-teleprompter">Schließen</button>
+                        </div>
+                    </div>
+                    <div class="ska-teleprompter-body">
+                        <div class="ska-teleprompter-text" data-role-teleprompter-text></div>
+                    </div>
+                    <div class="ska-teleprompter-footer">
+                        <span data-role-teleprompter-meta>Berechne Geschwindigkeit...</span>
+                    </div>
+                </div>`;
+            document.body.appendChild(m);
+        }
+
+        updateTeleprompterMeta(read) {
+            const meta = document.querySelector('[data-role-teleprompter-meta]');
+            if (!meta || !read) return;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const seconds = (read.speakingWordCount / wpm) * 60;
+            meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
+        }
+
+        startTeleprompter(read) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal || !read) return;
+            const body = modal.querySelector('.ska-teleprompter-body');
+            if (!body) return;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const duration = (read.speakingWordCount / wpm) * 60 * 1000;
+            const distance = body.scrollHeight - body.clientHeight;
+            if (distance <= 0) return;
+
+            this.state.teleprompter.playing = true;
+            this.state.teleprompter.duration = duration;
+            this.state.teleprompter.start = performance.now();
+            this.state.teleprompter.startScroll = body.scrollTop;
+
+            const step = (ts) => {
+                if (!this.state.teleprompter.playing) return;
+                const elapsed = ts - this.state.teleprompter.start;
+                const progress = Math.min(1, elapsed / duration);
+                body.scrollTop = this.state.teleprompter.startScroll + (distance * progress);
+                if (progress < 1) {
+                    this.state.teleprompter.rafId = requestAnimationFrame(step);
+                } else {
+                    this.state.teleprompter.playing = false;
+                }
+            };
+            this.state.teleprompter.rafId = requestAnimationFrame(step);
+        }
+
+        pauseTeleprompter() {
+            this.state.teleprompter.playing = false;
+            if (this.state.teleprompter.rafId) cancelAnimationFrame(this.state.teleprompter.rafId);
+            this.state.teleprompter.rafId = null;
+        }
+
+        resetTeleprompter() {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            const body = modal.querySelector('.ska-teleprompter-body');
+            if (body) body.scrollTop = 0;
+            this.pauseTeleprompter();
+        }
+
+        parseBullshitList() {
+            if (!this.settings.bullshitBlacklist) return [];
+            return this.settings.bullshitBlacklist
+                .split(/[,|\n]/)
+                .map(item => item.trim())
+                .filter(Boolean);
         }
 
         renderBenchmarkModal() {
@@ -1507,6 +1762,8 @@
                 if(global.charMode) this.settings.charMode = global.charMode;
                 if(global.numberMode) this.settings.numberMode = global.numberMode;
                 if(global.manualWpm) this.settings.manualWpm = global.manualWpm;
+                if(global.audienceTarget) this.settings.audienceTarget = global.audienceTarget;
+                if(global.bullshitBlacklist) this.settings.bullshitBlacklist = global.bullshitBlacklist;
                 
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
@@ -1524,7 +1781,9 @@
                 timeMode: this.settings.timeMode, 
                 charMode: this.settings.charMode,
                 numberMode: this.settings.numberMode,
-                manualWpm: this.settings.manualWpm
+                manualWpm: this.settings.manualWpm,
+                audienceTarget: this.settings.audienceTarget,
+                bullshitBlacklist: this.settings.bullshitBlacklist
             }));
         }
 
@@ -1657,7 +1916,7 @@
                         this.pauseTeleprompter();
                         btnLabel.textContent = 'Start';
                     } else {
-                        const read = SA_Logic.analyzeReadability(this.textarea.value);
+                        const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
                         this.startTeleprompter(read);
                         btnLabel.textContent = 'Pause';
                     }
@@ -1708,7 +1967,7 @@
                                 newM.classList.add('is-open');
                                 const textEl = newM.querySelector('[data-role-teleprompter-text]');
                                 if (textEl) textEl.textContent = this.textarea.value.trim();
-                                const read = SA_Logic.analyzeReadability(this.textarea.value);
+                                const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
                                 this.updateTeleprompterMeta(read);
                                 this.resetTeleprompter();
                             }
@@ -1825,7 +2084,7 @@
 
                 if(act === 'confirm-reset') {
                     this.textarea.value=''; 
-                    this.settings={usecase:'auto',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm'}; 
+                    this.settings={usecase:'auto',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:''}; 
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
@@ -1879,7 +2138,7 @@
 
         analyze(text) {
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, text);
-            const raw = text || '', read = SA_Logic.analyzeReadability(raw);
+            const raw = text || '', read = SA_Logic.analyzeReadability(raw, this.settings);
             const wpm = SA_Logic.getWpm(this.settings);
             const sps = SA_Logic.getSps(this.settings);
             
@@ -1966,6 +2225,8 @@
                     case 'redundancy': this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), active); break;
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
+                    case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
+                    case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
@@ -2128,6 +2389,39 @@
             h += `<div class="ska-arousal-legend"><span>Low</span><span>High</span></div>`;
             h += this.renderTipSection('arousal', true);
             this.updateCard('arousal', h);
+        }
+
+        renderBullshitCard(findings, active) {
+            if(!active) return this.updateCard('bullshit', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const keys = Object.keys(findings || {});
+            let h = '';
+            if(!keys.length) {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Kein Buzzword-Alarm.</div>`;
+            } else {
+                const sorted = keys.sort((a, b) => findings[b] - findings[a]);
+                h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Buzzwords: <strong>${sorted.length}</strong></div>`;
+                h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
+                sorted.slice(0, 16).forEach(word => {
+                    h += `<span class="skriptanalyse-badge" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca;">${word} (${findings[word]}x)</span>`;
+                });
+                h += `</div>`;
+                h += this.renderTipSection('bullshit', true);
+            }
+            this.updateCard('bullshit', h);
+        }
+
+        renderAudienceCard(result, active) {
+            if(!active) return this.updateCard('audience', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            let h = '';
+            if (!this.settings.audienceTarget) {
+                h = `<p style="color:#94a3b8; font-size:0.9rem;">Keine Zielgruppe ausgewählt.</p>`;
+            } else if (result.status === 'ok') {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">${result.message}</div>`;
+            } else {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.warn}; background:#fff7ed; border-radius:8px;">${result.message}</div>`;
+                h += this.renderTipSection('audience', true);
+            }
+            this.updateCard('audience', h);
         }
 
         renderTeleprompterCard(read, active) {
@@ -2949,11 +3243,11 @@
 
         renderComparison(sec, w, sc) {
             const oldRaw = this.state.savedVersion;
-            const oldRead = SA_Logic.analyzeReadability(oldRaw);
+            const oldRead = SA_Logic.analyzeReadability(oldRaw, this.settings);
             const oldWpm = SA_Logic.getWpm(this.settings);
             const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw);
             
-            const curRead = SA_Logic.analyzeReadability(this.textarea.value);
+            const curRead = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
             const curWpm = SA_Logic.getWpm(this.settings);
             
             // Helper to get total weight for comparison

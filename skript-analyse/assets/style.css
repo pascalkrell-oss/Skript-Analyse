@@ -356,7 +356,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-benchmark-stats strong { color: var(--ska-text-main); }
 
 /* TELEPROMPTER */
-.ska-teleprompter-modal { background: #0f172a; color: #f8fafc; border-radius: 16px; width: min(1100px, 96vw); height: min(80vh, 760px); display: flex; flex-direction: column; box-shadow: var(--ska-shadow-lg); }
+.ska-teleprompter-modal { background: #0f172a; color: #f8fafc; border-radius: 16px; width: min(1100px, 96vw); height: min(80vh, 760px); display: flex; flex-direction: column; box-shadow: var(--ska-shadow-lg); position: relative; z-index: 10; }
 .ska-teleprompter-header { padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .ska-teleprompter-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .ska-teleprompter-body { flex: 1; overflow: auto; padding: 1.5rem; background: #0b1220; }
