@@ -33,10 +33,6 @@
         ],
 
         PRONUNCIATION_DB: {
-            'notwendig': 'Not-wenn-dich',
-            'notwendige': 'Not-wenn-di-ge',
-            'notwendigkeit': 'Not-wenn-dich-keit',
-            'notwendigerweise': 'Not-wenn-di-ger-wei-se',
             'accessoire': 'Ak-sess-oar',
             'abonnement': 'A-bonn-mong',
             'balance': 'Ba-longs',
