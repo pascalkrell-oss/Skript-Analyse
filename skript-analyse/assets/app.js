@@ -1662,6 +1662,131 @@
                     this.analyze(this.getText());
                 });
             }
+            this.state.teleprompter.activeIndex = -1;
+            this.pauseTeleprompter();
+        }
+
+        parseBullshitList() {
+            if (!this.settings.bullshitBlacklist) return [];
+            return this.settings.bullshitBlacklist
+                .split(/[,|\n]/)
+                .map(item => item.trim())
+                .filter(Boolean);
+        }
+
+        handleAction(act, btn) {
+            if (act.startsWith('format-')) {
+                this.applyFormatting(act);
+                return true;
+            }
+            if (act === 'toggle-card') {
+                const id = btn.dataset.card;
+                if (id) {
+                    if (this.state.excludedCards.has(id)) this.state.excludedCards.delete(id);
+                    else this.state.excludedCards.add(id);
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                }
+                return true;
+            }
+            if (act === 'toggle-filter-view') {
+                this.state.showAllCards = !this.state.showAllCards;
+                this.renderFilterBar();
+                return true;
+            }
+            if (act === 'benchmark-toggle') {
+                const modal = document.getElementById('ska-benchmark-modal');
+                if (!modal) return true;
+                const wordCount = parseInt(modal.dataset.wordCount || '0', 10);
+                const timeEl = modal.querySelector('[data-role-benchmark-time]');
+                const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
+                const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
+                if (!this.state.benchmark.running) {
+                    this.state.benchmark.running = true;
+                    this.state.benchmark.start = Date.now() - this.state.benchmark.elapsed;
+                    btn.textContent = 'Stoppuhr stoppen';
+                    this.state.benchmark.timerId = setInterval(() => {
+                        this.state.benchmark.elapsed = Date.now() - this.state.benchmark.start;
+                        const sec = Math.floor(this.state.benchmark.elapsed / 1000);
+                        if (timeEl) timeEl.textContent = SA_Utils.formatMin(sec);
+                    }, 200);
+                } else {
+                    this.state.benchmark.running = false;
+                    btn.textContent = 'Stoppuhr starten';
+                    if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
+                    const sec = Math.max(1, Math.round(this.state.benchmark.elapsed / 1000));
+                    const wpm = Math.round((wordCount / sec) * 60);
+                    this.state.benchmark.wpm = wpm;
+                    if (wpmEl) wpmEl.textContent = `${wpm} WPM`;
+                    if (applyBtn) applyBtn.disabled = false;
+                }
+                return true;
+            }
+
+            if (act === 'benchmark-reset') {
+                const modal = document.getElementById('ska-benchmark-modal');
+                if (!modal) return true;
+                const timeEl = modal.querySelector('[data-role-benchmark-time]');
+                const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
+                const toggleBtn = modal.querySelector('[data-action="benchmark-toggle"]');
+                const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
+                if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
+                this.state.benchmark = { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null };
+                if (timeEl) timeEl.textContent = '0:00';
+                if (wpmEl) wpmEl.textContent = '-';
+                if (toggleBtn) toggleBtn.textContent = 'Stoppuhr starten';
+                if (applyBtn) applyBtn.disabled = true;
+                return true;
+            }
+
+            if (act === 'benchmark-apply') {
+                const wpm = this.state.benchmark.wpm;
+                if (wpm && wpm > 0) {
+                    this.settings.manualWpm = wpm;
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                }
+                return true;
+            }
+
+            if (act === 'teleprompter-toggle') {
+                const modal = document.getElementById('ska-teleprompter-modal');
+                if (!modal) return true;
+                if (this.state.teleprompter.playing) {
+                    this.pauseTeleprompter();
+                    btn.textContent = 'Start';
+                } else {
+                    const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
+                    this.startTeleprompter(read);
+                    btn.textContent = 'Pause';
+                }
+                return true;
+            }
+
+            if (act === 'teleprompter-reset') {
+                this.resetTeleprompter();
+                const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                if (startBtn) startBtn.textContent = 'Start';
+                return true;
+            }
+
+            if (act === 'teleprompter-bigger' || act === 'teleprompter-smaller') {
+                const textEl = document.querySelector('[data-role-teleprompter-text]');
+                if (textEl) {
+                    const current = parseFloat(window.getComputedStyle(textEl).fontSize);
+                    const next = act === 'teleprompter-bigger' ? current + 2 : current - 2;
+                    textEl.style.fontSize = `${Math.max(16, Math.min(36, next))}px`;
+                }
+                return true;
+            }
+
+            if (act === 'reset-wpm') {
+                this.settings.manualWpm = 0;
+                this.saveUIState();
+                this.analyze(this.getText());
+                return true;
+            }
+            return false;
         }
 
         renderBenchmarkModal() {
@@ -3699,6 +3824,7 @@
                 card = document.createElement('div'); 
                 card.className = `skriptanalyse-card ${extraClass||''}`; 
                 card.dataset.cardId = id;
+                card.classList.toggle('is-minimized', isExcluded);
                 if(!this.isRestoring) { card.classList.add('ska-animate-enter'); }
                 let h = ''; if(SA_CONFIG.CARD_TITLES[id]) h = buildHeader();
                 
@@ -3716,6 +3842,7 @@
                 
                 parent.appendChild(card);
             } else {
+                 card.classList.toggle('is-minimized', isExcluded);
                  const body = card.querySelector('.ska-card-body');
                  body.innerHTML = html;
                  // Re-apply flex style just in case
