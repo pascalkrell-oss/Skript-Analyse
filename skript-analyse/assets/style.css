@@ -475,9 +475,60 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-grid { grid-template-columns: 1fr; }
     .ska-toolbar { flex-direction: column; align-items: stretch; }
     .skriptanalyse-analysis-bottom-grid { grid-template-columns: 1fr; }
+    .skriptanalyse-compare-grid { grid-template-columns: 1fr; }
     .ska-footer { flex-direction: column; align-items: stretch; gap: 1.5rem; }
     .ska-footer-intro { text-align: center; }
     .ska-footer-actions { flex-direction: column; width: 100%; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .skriptanalyse-app {
+        padding: 1rem;
+        margin: 0.75rem auto;
+        border-radius: var(--ska-radius-md);
+        max-width: 90%;
+        width: 90%;
+    }
+    .ska-header { flex-direction: column; align-items: stretch; }
+    .ska-header-content h2 { font-size: 1.5rem; }
+    .ska-status-bar { width: 100%; }
+    .ska-status-badge { width: 100%; justify-content: center; margin-left: 0; }
+    .ska-grid { gap: 1rem; }
+    .skriptanalyse-analysis-bottom-grid { gap: 1rem; }
+    .ska-toolbar { gap: 1rem; padding: 0.85rem; }
+    .ska-toolbar-group { width: 100%; }
+    .ska-custom-select-wrapper,
+    .ska-select-wrapper,
+    .ska-select,
+    .ska-input { width: 100%; min-width: 100%; }
+    .ska-toolbar-actions { width: 100%; flex-direction: column; }
+    .ska-toolbar-actions .ska-btn { width: 100%; }
+    .ska-header { gap: 0.75rem; }
+    .ska-header-content { min-width: 0; }
+    .ska-settings-btn-inline {
+        width: 48px;
+        height: 48px;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        margin-left: 0;
+    }
+    .ska-settings-btn-inline svg { width: 24px; height: 24px; }
+    .ska-panel-header { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+    .ska-editor-tools { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
+    .ska-editor-panel { min-height: 420px; }
+    .skriptanalyse-textarea { min-height: 320px; }
+    .skriptanalyse-card { width: 100%; }
+    .ska-overview-stats { grid-template-columns: 1fr; }
+    .ska-genre-grid-layout { grid-template-columns: 1fr; }
+    .ska-filler-item { grid-template-columns: 70px 1fr 36px; }
+    .ska-legend-grid { grid-template-columns: 1fr; }
+    .ska-settings-option-group { flex-direction: column; }
+    .ska-settings-option {
+        min-height: 90px;
+        height: 100%;
+    }
+    .ska-compact-option-inner { min-height: 90px; }
 }
