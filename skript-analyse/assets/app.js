@@ -52,16 +52,7 @@
             'fertig': 'Fer-tich',
             'günstig': 'Güns-tich'
         },
-        TTS_SERVICES: [
-            {
-                id: 'google-translate',
-                buildUrl: (text) => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=de-DE&q=${encodeURIComponent(text)}&ttsspeed=0.9`
-            },
-            {
-                id: 'google-translate-apis',
-                buildUrl: (text) => `https://translate.googleapis.com/translate_tts?client=gtx&tl=de-DE&q=${encodeURIComponent(text)}&ttsspeed=0.9`
-            }
-        ],
+        TTS_SERVICES: [],
 
         GENDER_DB: {
             'mitarbeiter': 'Mitarbeitende',
@@ -247,84 +238,12 @@
                 return aRank - bRank;
             })[0];
         },
-        playAudioFromUrl: (url) => new Promise((resolve, reject) => {
-            const audio = new Audio(url);
-            let settled = false;
-
-            const cleanup = () => {
-                audio.onended = null;
-                audio.onerror = null;
-                audio.onabort = null;
-            };
-
-            audio.preload = 'auto';
-            audio.onended = () => {
-                cleanup();
-                if (SA_Utils.currentAudio === audio) {
-                    SA_Utils.currentAudio = null;
-                }
-                if (!settled) resolve(true);
-            };
-            audio.onerror = () => {
-                cleanup();
-                if (!settled) reject(new Error('audio-error'));
-            };
-            audio.onabort = () => {
-                cleanup();
-                if (!settled) reject(new Error('audio-abort'));
-            };
-
-            audio.play()
-                .then(() => {
-                    SA_Utils.currentAudio = audio;
-                    if (!settled) {
-                        settled = true;
-                        resolve(true);
-                    }
-                })
-                .catch((err) => {
-                    cleanup();
-                    if (!settled) reject(err);
-                });
-        }),
-        splitTextForTts: (text, maxLength = 180) => {
-            if (text.length <= maxLength) return [text];
-            const parts = [];
-            let remaining = text.trim();
-            while (remaining.length > maxLength) {
-                let cut = remaining.lastIndexOf(' ', maxLength);
-                if (cut === -1) cut = maxLength;
-                parts.push(remaining.slice(0, cut).trim());
-                remaining = remaining.slice(cut).trim();
-            }
-            if (remaining.length) parts.push(remaining);
-            return parts;
-        },
-        playRemoteTts: async (text) => {
-            if (!SA_CONFIG.TTS_SERVICES || SA_CONFIG.TTS_SERVICES.length === 0) return false;
-            const chunks = SA_Utils.splitTextForTts(text);
-            for (const service of SA_CONFIG.TTS_SERVICES) {
-                try {
-                    for (const chunk of chunks) {
-                        const url = service.buildUrl(chunk);
-                        await SA_Utils.playAudioFromUrl(url);
-                    }
-                    return true;
-                } catch (err) {
-                    continue;
-                }
-            }
-            return false;
-        },
         speak: async (text) => {
             if (!text) return;
             const cleanText = text.trim();
             if (!cleanText) return;
 
             SA_Utils.stopSpeech();
-
-            const remotePlayed = await SA_Utils.playRemoteTts(cleanText);
-            if (remotePlayed) return;
 
             if (!window.speechSynthesis) return;
 
