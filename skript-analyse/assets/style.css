@@ -95,7 +95,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-format-btn[data-action="format-highlight"] { background: #fef3c7; }
 .ska-analysis-filterbar { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 1rem; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--ska-border); border-radius: var(--ska-radius-md); }
 .ska-analysis-filterbar.is-hidden { display: none; }
-.ska-filterbar-body { display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 140px; overflow: hidden; opacity: 0.85; transition: max-height 0.3s ease, opacity 0.3s ease; }
+.ska-filterbar-body { display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 140px; overflow: hidden; opacity: 0.85; transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease, margin 0.35s ease; }
 .ska-analysis-filterbar.is-expanded .ska-filterbar-body { max-height: 1000px; opacity: 1; }
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-body { max-height: 0; opacity: 0; padding: 0; margin: 0; overflow: hidden; }
 .ska-filter-pill { border: 1px solid var(--ska-border); background: white; color: var(--ska-text-muted); padding: 0.35rem 0.7rem; border-radius: 999px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
