@@ -650,7 +650,7 @@
             // 2. Check Rules (-ig)
             words.forEach(w => {
                 if (w.endsWith('ig') && !seen.has(w) && w.length > 3) {
-                     findings.push({ word: w, hint: w.slice(0, -2) + 'ich (Standard)', audio: w });
+                     findings.push({ word: w, hint: w.slice(0, -2) + 'ich', audio: w });
                      seen.add(w);
                 }
             });
