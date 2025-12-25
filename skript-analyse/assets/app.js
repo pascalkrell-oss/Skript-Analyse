@@ -2482,6 +2482,7 @@
             const overviewCard = overviewPanel.querySelector('.skriptanalyse-card--overview');
             if (!overviewCard) return;
             const height = overviewCard.offsetHeight;
+            const height = overviewCard.getBoundingClientRect().height;
             if (height > 0) {
                 editorPanel.style.height = `${Math.round(height)}px`;
                 editorPanel.style.maxHeight = `${Math.round(height)}px`;
@@ -3734,6 +3735,7 @@
                 card = document.createElement('div'); 
                 card.className = `skriptanalyse-card ${extraClass||''}`; 
                 card.dataset.cardId = id;
+                card.classList.toggle('is-minimized', isExcluded);
                 if(!this.isRestoring) { card.classList.add('ska-animate-enter'); }
                 let h = ''; if(SA_CONFIG.CARD_TITLES[id]) h = buildHeader();
                 
@@ -3751,6 +3753,7 @@
                 
                 parent.appendChild(card);
             } else {
+                 card.classList.toggle('is-minimized', isExcluded);
                  const body = card.querySelector('.ska-card-body');
                  body.innerHTML = html;
                  // Re-apply flex style just in case
