@@ -83,6 +83,10 @@
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
         },
         QUESTION_WORDS: ['wie', 'was', 'warum', 'wieso', 'weshalb', 'wann', 'wo', 'wer', 'wem', 'wen', 'welche', 'welcher', 'welches', 'wozu', 'wodurch', 'wohin'],
+        SENTIMENT_INTENSITY: {
+            positive: { euphorisch: 1.0, begeistert: 0.9, großartig: 0.9, fantastisch: 0.8, wunderbar: 0.8, stark: 0.6, erfreulich: 0.6, angenehm: 0.5, positiv: 0.5, schön: 0.4, gut: 0.3 },
+            negative: { schlimm: -1.0, katastrophal: -0.9, furchtbar: -0.9, traurig: -0.7, unerquicklich: -0.6, ärgerlich: -0.5, kritisch: -0.5, schlecht: -0.4, mühsam: -0.3, kompliziert: -0.2 }
+        },
         BUZZWORDS: [
             'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
             'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
@@ -127,7 +131,10 @@
             bullshit: '🧨 Bullshit-Index',
             audience: '🎯 Zielgruppen-Filter',
             verb_balance: '⚖️ Verb-Fokus',
-            rhet_questions: '❓ Rhetorische Fragen'
+            rhet_questions: '❓ Rhetorische Fragen',
+            depth_check: '🧵 Satz-Verschachtelung',
+            sentiment_intensity: '🌡️ Stimmungs-Intensität',
+            naming_check: '🧩 Naming-Check'
         },
 
         CARD_DESCRIPTIONS: {
@@ -164,10 +171,13 @@
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
             audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
             verb_balance: 'Vergleicht Verben und Substantive für mehr Handlungsfokus.',
-            rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.'
+            rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.',
+            depth_check: 'Markiert Sätze mit zu vielen Nebensatz-Ebenen.',
+            sentiment_intensity: 'Zeigt den emotionalen Vibe-Verlauf im Skript.',
+            naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'verb_balance', 'rhet_questions', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -216,7 +226,10 @@
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen."],
             audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt."],
             verb_balance: ["Verben bringen Bewegung in den Text.", "Nominalstil bremst das Tempo.", "Mehr Verben = mehr Handlung."],
-            rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion."]
+            rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion."],
+            depth_check: ["Mehr als zwei Nebensatz-Ebenen überfordern beim Sprechen.", "Teile lange Schachtelsätze auf.", "Ein Gedanke pro Satz erhöht die Klarheit."],
+            sentiment_intensity: ["Emotionaler Wechsel hält die Aufmerksamkeit hoch.", "Achte auf harte Brüche im Vibe.", "Nutze positive Peaks als Highlights."],
+            naming_check: ["Unklare Namensvarianten wirken unprofessionell.", "Prüfe Eigennamen auf Tippfehler.", "Konsistenz schafft Vertrauen."]
         },
 
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
@@ -949,6 +962,76 @@
                 return { sentence: trimmed, isRhetorical: endsWithQ && startsWithQWord };
             });
         },
+        analyzeDepthCheck: (sentences) => {
+            if (!sentences || sentences.length === 0) return [];
+            return sentences.map(sentence => {
+                const commaCount = (sentence.match(/,/g) || []).length;
+                const depth = commaCount + 1;
+                return { sentence: sentence.trim(), depth, isDeep: depth > 3 };
+            });
+        },
+        analyzeSentimentIntensity: (sentences) => {
+            if (!sentences || sentences.length === 0) return [];
+            const pos = SA_CONFIG.SENTIMENT_INTENSITY.positive;
+            const neg = SA_CONFIG.SENTIMENT_INTENSITY.negative;
+            return sentences.map(sentence => {
+                const words = sentence.toLowerCase().match(/[a-zäöüß]+/g) || [];
+                let score = 0;
+                words.forEach(word => {
+                    if (pos[word]) score += pos[word];
+                    if (neg[word]) score += neg[word];
+                });
+                const normalized = Math.max(-1, Math.min(1, score));
+                return { sentence: sentence.trim(), score: normalized };
+            });
+        },
+        analyzeNamingInconsistency: (sentences) => {
+            if (!sentences || sentences.length === 0) return [];
+            const names = [];
+            sentences.forEach(sentence => {
+                const tokens = sentence.match(/[A-ZÄÖÜ][a-zäöüß]+/g) || [];
+                tokens.forEach(token => {
+                    if (token.length < 3) return;
+                    names.push({ name: token, sentence: sentence.trim() });
+                });
+            });
+            const levenshtein = (a, b) => {
+                const m = a.length;
+                const n = b.length;
+                const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+                for (let i = 0; i <= m; i++) dp[i][0] = i;
+                for (let j = 0; j <= n; j++) dp[0][j] = j;
+                for (let i = 1; i <= m; i++) {
+                    for (let j = 1; j <= n; j++) {
+                        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                        dp[i][j] = Math.min(
+                            dp[i - 1][j] + 1,
+                            dp[i][j - 1] + 1,
+                            dp[i - 1][j - 1] + cost
+                        );
+                    }
+                }
+                return dp[m][n];
+            };
+            const issues = [];
+            for (let i = 0; i < names.length; i++) {
+                for (let j = i + 1; j < names.length; j++) {
+                    const a = names[i].name;
+                    const b = names[j].name;
+                    if (a.toLowerCase() === b.toLowerCase()) continue;
+                    const distance = levenshtein(a.toLowerCase(), b.toLowerCase());
+                    if (distance > 0 && distance <= 2) {
+                        issues.push({ first: names[i].name, second: names[j].name, distance });
+                    }
+                }
+            }
+            const unique = new Map();
+            issues.forEach(item => {
+                const key = [item.first, item.second].sort().join('|');
+                if (!unique.has(key)) unique.set(key, item);
+            });
+            return [...unique.values()];
+        },
         analyzeBullshitIndex: (text, customList = []) => {
             const combined = [...SA_CONFIG.BUZZWORDS, ...customList].filter(Boolean);
             const findings = {};
@@ -1319,7 +1402,7 @@
                 tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0 }, 
                 excludedCards: new Set(),
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0 }
+                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 }
             };
             
             this.isRestoring = false;
@@ -1618,6 +1701,36 @@
             meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
         }
 
+        buildTeleprompterContent(text) {
+            const container = document.querySelector('[data-role-teleprompter-text]');
+            if (!container) return [];
+            const tokens = text.trim().split(/(\s+)/);
+            let wordIndex = 0;
+            const fragments = tokens.map(token => {
+                if (!token.trim()) {
+                    return token;
+                }
+                const span = `<span class="ska-teleprompter-word" data-word-index="${wordIndex++}">${token}</span>`;
+                return span;
+            });
+            container.innerHTML = fragments.join('');
+            return Array.from(container.querySelectorAll('.ska-teleprompter-word'));
+        }
+
+        updateTeleprompterHighlight(progress) {
+            const words = this.state.teleprompter.words || [];
+            if (!words.length) return;
+            const index = Math.min(words.length - 1, Math.floor(progress * words.length));
+            if (this.state.teleprompter.activeIndex !== index) {
+                if (this.state.teleprompter.activeIndex >= 0 && words[this.state.teleprompter.activeIndex]) {
+                    words[this.state.teleprompter.activeIndex].classList.remove('is-active');
+                    words[this.state.teleprompter.activeIndex].classList.add('is-past');
+                }
+                words[index].classList.add('is-active');
+                this.state.teleprompter.activeIndex = index;
+            }
+        }
+
         startTeleprompter(read) {
             const modal = document.getElementById('ska-teleprompter-modal');
             if (!modal || !read) return;
@@ -1632,12 +1745,14 @@
             this.state.teleprompter.duration = duration;
             this.state.teleprompter.start = performance.now();
             this.state.teleprompter.startScroll = body.scrollTop;
+            this.state.teleprompter.activeIndex = -1;
 
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
                 const elapsed = ts - this.state.teleprompter.start;
                 const progress = Math.min(1, elapsed / duration);
                 body.scrollTop = this.state.teleprompter.startScroll + (distance * progress);
+                this.updateTeleprompterHighlight(progress);
                 if (progress < 1) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
@@ -1658,6 +1773,12 @@
             if (!modal) return;
             const body = modal.querySelector('.ska-teleprompter-body');
             if (body) body.scrollTop = 0;
+            if (this.state.teleprompter.words) {
+                this.state.teleprompter.words.forEach(word => {
+                    word.classList.remove('is-active', 'is-past');
+                });
+            }
+            this.state.teleprompter.activeIndex = -1;
             this.pauseTeleprompter();
         }
 
@@ -1894,8 +2015,7 @@
                             const newM = document.getElementById('ska-teleprompter-modal');
                             if (newM) {
                                 newM.classList.add('is-open');
-                                const textEl = newM.querySelector('[data-role-teleprompter-text]');
-                                if (textEl) textEl.textContent = this.textarea.value.trim();
+                                this.state.teleprompter.words = this.buildTeleprompterContent(this.textarea.value);
                                 const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
                                 this.updateTeleprompterMeta(read);
                                 this.resetTeleprompter();
@@ -2155,6 +2275,9 @@
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(read.sentences), active); break;
+                    case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
+                    case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
+                    case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
@@ -2410,6 +2533,69 @@
             }
             h += this.renderTipSection('rhet_questions', true);
             this.updateCard('rhet_questions', h);
+        }
+
+        renderDepthCheckCard(data, active) {
+            if(!active) return this.updateCard('depth_check', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if(!data || data.length === 0) return this.updateCard('depth_check', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für eine Analyse.</p>');
+            const deep = data.filter(item => item.isDeep);
+            let h = '';
+            if (!deep.length) {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">👍 Keine Sprecher-Albträume erkannt.</div>`;
+            } else {
+                h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Kritische Sätze: <strong>${deep.length}</strong></div>`;
+                h += `<div class="ska-problem-list">`;
+                deep.slice(0, 3).forEach(item => {
+                    h += `<div class="ska-problem-item">"${item.sentence}"<div class="ska-problem-meta">⚠️ ${item.depth} Ebenen</div></div>`;
+                });
+                h += `</div>`;
+                h += this.renderTipSection('depth_check', true);
+            }
+            this.updateCard('depth_check', h);
+        }
+
+        renderSentimentIntensityCard(data, active) {
+            if(!active) return this.updateCard('sentiment_intensity', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if(!data || data.length === 0) return this.updateCard('sentiment_intensity', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für einen Vibe-Check.</p>');
+
+            const start = data[0]?.score || 0;
+            const end = data[data.length - 1]?.score || 0;
+            const trend = end - start;
+            let trendLabel = 'Stabil';
+            if (trend > 0.3) trendLabel = 'Steigende Energie';
+            if (trend < -0.3) trendLabel = 'Abkühlend';
+
+            let h = `<div class="ska-intensity-map">`;
+            data.slice(0, 12).forEach(item => {
+                const val = Math.round((item.score + 1) * 50);
+                const color = item.score >= 0.4 ? '#22c55e' : (item.score <= -0.4 ? '#ef4444' : '#94a3b8');
+                h += `<div class="ska-intensity-bar" style="height:${Math.max(10, val)}%;">
+                        <span style="background:${color};"></span>
+                      </div>`;
+            });
+            h += `</div>`;
+            h += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
+                    <span>Start ${start.toFixed(2)}</span>
+                    <span>${trendLabel}</span>
+                    <span>Ende ${end.toFixed(2)}</span>
+                  </div>`;
+            h += this.renderTipSection('sentiment_intensity', true);
+            this.updateCard('sentiment_intensity', h);
+        }
+
+        renderNamingCheckCard(data, active) {
+            if(!active) return this.updateCard('naming_check', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if(!data || data.length === 0) {
+                return this.updateCard('naming_check', `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✅ Keine Namens-Inkonsistenzen gefunden.</div>`);
+            }
+            let h = `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Ähnliche Namen: <strong>${data.length}</strong></div>`;
+            h += `<div class="ska-problem-list">`;
+            data.slice(0, 3).forEach(item => {
+                h += `<div class="ska-problem-item">${item.first} ↔ ${item.second}<div class="ska-problem-meta">⚠️ Distanz ${item.distance}</div></div>`;
+            });
+            h += `</div>`;
+            h += this.renderTipSection('naming_check', true);
+            this.updateCard('naming_check', h);
         }
 
         renderTeleprompterCard(read, active) {

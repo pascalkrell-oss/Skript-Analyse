@@ -365,7 +365,13 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-teleprompter-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .ska-teleprompter-body { flex: 1; overflow: auto; padding: 1.5rem; background: #0b1220; }
 .ska-teleprompter-text { font-size: 22px; line-height: 1.8; white-space: pre-wrap; }
+.ska-teleprompter-word { transition: color 0.2s ease, background 0.2s ease; padding: 2px 2px; border-radius: 4px; }
+.ska-teleprompter-word.is-active { background: #38bdf8; color: #0f172a; }
+.ska-teleprompter-word.is-past { color: #94a3b8; }
 .ska-teleprompter-footer { padding: 0.8rem 1.2rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem; color: #cbd5f5; }
+.ska-intensity-map { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; height: 90px; align-items: end; margin-bottom: 0.6rem; }
+.ska-intensity-bar { width: 100%; display: flex; align-items: flex-end; }
+.ska-intensity-bar span { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 8px; }
 
 /* DROPDOWN & TOOLTIPS (RIGHT SIDE) */
 .skriptanalyse-dropdown-menu { position: absolute; right: 0; top: 100%; background: white; border: 1px solid var(--ska-border); box-shadow: var(--ska-shadow-lg); border-radius: var(--ska-radius-md); padding: 0.5rem; z-index: 1000; width: 220px; opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); overflow: visible; }
