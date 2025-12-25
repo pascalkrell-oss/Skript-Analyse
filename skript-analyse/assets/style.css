@@ -245,7 +245,7 @@ body.ska-modal-open { overflow: hidden !important; }
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
 }
 .ska-card-info-icon:hover .ska-card-info-tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-12px); }
-.ska-section-title { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 0.2rem; }
+.ska-section-title { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: calc(0.2rem - 10px); }
 
 /* --- DISABLED STATE MODERN --- */
 .ska-disabled-state {
