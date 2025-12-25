@@ -2180,7 +2180,7 @@
             h += `</div><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#94a3b8; margin-top:0px;"><span>Start</span><span>Ende</span></div>`;
             
             // ADD PREVIEW BOX
-            h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Satz mit der Maus überfahren...</div></div>`;
+            h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Balkendiagramm mit der Maus überfahren...</div></div>`;
 
             h += this.renderTipSection('rhythm', true);
             this.updateCard('rhythm', h);
@@ -2196,7 +2196,7 @@
                          preview.classList.add('is-active');
                      };
                      b.onmouseleave = () => {
-                         preview.textContent = 'Satz mit der Maus überfahren...';
+                         preview.textContent = 'Balkendiagramm mit der Maus überfahren...';
                          preview.classList.remove('is-active');
                      };
                  });
@@ -2319,7 +2319,7 @@
                             </div>
                         </div>
                         <div style="margin-top:1.5rem; display:flex; gap:1.5rem; align-items:center; font-size:0.9rem; padding-top:1.2rem; border-top:1px dashed #e2e8f0;">
-                            <strong style="color:#64748b; margin-top:0.4rem;">Fazit:</strong> 
+                            <strong style="color:#64748b;">Fazit:</strong> 
                             <div style="display:flex; gap:0.6rem; flex-wrap:wrap; flex:1;">
                                 ${createDeltaPill(curMetrics.time - oldMetrics.time, 's Zeit')}
                                 ${createDeltaPill(curMetrics.words - oldMetrics.words, 'Wörter')}
