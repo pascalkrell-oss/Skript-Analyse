@@ -113,7 +113,7 @@ function ska_shortcode() {
         <div class="ska-grid is-empty">
             <div class="ska-editor-panel">
                 <div class="ska-panel-header">
-                    <h3>Dein Skript</h3>
+                    <h3>Skript Editor</h3>
                     <div class="ska-editor-tools">
                         <div class="ska-tool-wrapper">
                             <button type="button" class="ska-tool-btn" data-action="clean">
@@ -141,6 +141,7 @@ function ska_shortcode() {
                 </div>
                 <div class="ska-textarea-wrapper">
                     <textarea class="skriptanalyse-textarea" placeholder="Hier Text einfügen oder tippen..."></textarea>
+                    <div class="ska-format-preview" data-role-format-preview aria-hidden="true"></div>
                     <div class="ska-save-hint" data-role-save-hint></div>
                     <div class="ska-toast-notification" data-role-toast>Version gespeichert!</div>
                 </div>
@@ -226,7 +227,7 @@ function ska_shortcode() {
                        <li><strong>🧠 Redundanz-Check:</strong> findet doppelte Aussagen in Satzfolgen.</li>
                        <li><strong>🎵 Audio-BPM:</strong> schlägt Musiktempo passend zum Sprechtempo vor.</li>
                        <li><strong>🧩 Leichte Sprache:</strong> prüft lange Wörter und Genitive.</li>
-                       <li><strong>🧨 Bullshit-Index:</strong> markiert Buzzwords und deine Blacklist.</li>
+                       <li><strong>🧨 Buzzword-Check:</strong> markiert Buzzwords und deine Blacklist.</li>
                        <li><strong>⚖️ Verb-Fokus:</strong> warnt vor Nominalstil, wenn Substantive dominieren.</li>
                        <li><strong>❓ Fragen-Heatmap:</strong> zeigt rhetorische Fragen im Text.</li>
                        <li><strong>🧵 Satz-Verschachtelung:</strong> markiert zu tiefe Nebensatz-Struktur.</li>

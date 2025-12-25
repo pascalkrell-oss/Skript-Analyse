@@ -133,9 +133,9 @@
             redundancy: '🧠 Semantische Redundanz',
             bpm: '🎵 Audio-BPM-Matching',
             easy_language: '🧩 Leichte Sprache',
-            teleprompter: '🪄 Teleprompter-Export',
+            teleprompter: '🪄 Teleprompter',
             arousal: '⚡ Arousal-Map',
-            bullshit: '🧨 Bullshit-Index',
+            bullshit: '🧨 Buzzword-Check',
             audience: '🎯 Zielgruppen-Filter',
             verb_balance: '⚖️ Verb-Fokus',
             rhet_questions: '❓ Rhetorische Fragen',
@@ -1269,7 +1269,7 @@
                             const pText = pronunc.map(p => `${p.word} (${p.hint})`).join(', ');
                             addRow("Aussprache:", pText);
                         }
-                        if(Object.keys(bullshit).length) addRow("Bullshit-Index:", Object.keys(bullshit));
+                        if(Object.keys(bullshit).length) addRow("Buzzword-Check:", Object.keys(bullshit));
                         if(redundancy.length > 0) {
                             const rText = redundancy.slice(0, 2).map(r => `"${r.first}" -> "${r.second}"`).join(' | ');
                             addRow("Redundanz:", rText);
@@ -1463,6 +1463,7 @@
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
             this.filterBar = q('.ska-analysis-filterbar');
+            this.textPreview = q('[data-role-format-preview]');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -1593,7 +1594,7 @@
                     </div>
 
                     <div style="margin-bottom:0.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Bullshit-Blacklist</label>
+                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Buzzword-Blacklist</label>
                         <textarea id="ska-set-bullshit" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:90px;" placeholder="z.B. synergetisch, agil, lösungsorientiert">${this.settings.bullshitBlacklist || ''}</textarea>
                         <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Hier definierst du Phrasen, die du vermeiden willst. Kommagetrennt oder zeilenweise – wird rot markiert.</p>
                     </div>
@@ -1713,6 +1714,17 @@
             document.body.appendChild(m);
         }
 
+        injectFormattingPreview() {
+            if (!this.textPreview || !this.textarea) return;
+            const hasTags = /<\/?(b|i|u|s|mark)>/i.test(this.textarea.value);
+            if (!hasTags) {
+                this.textPreview.style.display = 'none';
+                return;
+            }
+            this.textPreview.style.display = 'block';
+            this.textPreview.innerHTML = this.textarea.value;
+        }
+
         updateTeleprompterMeta(read) {
             const meta = document.querySelector('[data-role-teleprompter-meta]');
             if (!meta || !read) return;
@@ -1823,6 +1835,11 @@
                     this.saveUIState();
                     this.analyze(this.textarea.value);
                 }
+                return true;
+            }
+            if (act === 'toggle-filter-view') {
+                this.state.showAllCards = !this.state.showAllCards;
+                this.renderFilterBar();
                 return true;
             }
             if (act === 'benchmark-toggle') {
@@ -1936,21 +1953,29 @@
                 textarea.setSelectionRange(cursorStart, cursorEnd);
             };
 
+            const applyTag = (tag, styleLabel) => {
+                const insertText = selected || styleLabel;
+                wrapSelection(`<${tag}>`, `</${tag}>`);
+                textarea.value = textarea.value.replace(`<${tag}>${styleLabel}</${tag}>`, `<${tag}>${insertText}</${tag}>`);
+                textarea.setSelectionRange(start + (`<${tag}>`).length, start + (`<${tag}>`).length + insertText.length);
+                this.injectFormattingPreview();
+            };
+
             switch (action) {
                 case 'format-bold':
-                    wrapSelection('<b>', '</b>');
+                    applyTag('b', 'Fett');
                     break;
                 case 'format-italic':
-                    wrapSelection('<i>', '</i>');
+                    applyTag('i', 'Kursiv');
                     break;
                 case 'format-underline':
-                    wrapSelection('<u>', '</u>');
+                    applyTag('u', 'Unterstrichen');
                     break;
                 case 'format-highlight':
-                    wrapSelection('<mark>', '</mark>');
+                    applyTag('mark', 'Textmarker');
                     break;
                 case 'format-strike':
-                    wrapSelection('<s>', '</s>');
+                    applyTag('s', 'Durchgestrichen');
                     break;
             }
             textarea.focus();
@@ -2019,6 +2044,7 @@
 
         bindEvents() {
             this.textarea.addEventListener('input', SA_Utils.debounce(() => this.analyze(this.textarea.value), 250));
+            this.textarea.addEventListener('input', () => this.injectFormattingPreview());
             this.root.addEventListener('input', (e) => {
                 const slider = e.target.closest('[data-action="wpm-slider"]');
                 if (slider) {
@@ -2264,11 +2290,21 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
-            const html = items.map(id => {
-                if (allowed && !allowed.has(id) && id !== 'overview') return '';
-                const checked = !this.state.excludedCards.has(id);
-                return `<label class="ska-filter-pill"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}>${SA_CONFIG.CARD_TITLES[id]}</label>`;
-            }).join('');
+            const showAll = this.state.showAllCards || !allowed;
+            const title = allowed ? 'Analyseboxen individualisieren' : 'Analyseboxen auswählen';
+            const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
+            const html = `
+                <div class="ska-filterbar-header">
+                    <span>${title}</span>
+                    ${allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
+                </div>
+                <div class="ska-filterbar-body">
+                    ${items.map(id => {
+                        if (allowed && !showAll && !allowed.has(id) && id !== 'overview') return '';
+                        const checked = !this.state.excludedCards.has(id);
+                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}>${SA_CONFIG.CARD_TITLES[id]}</label>`;
+                    }).join('')}
+                </div>`;
             this.filterBar.innerHTML = html;
         }
 
@@ -2701,7 +2737,7 @@
             const h = `
                 <div style="display:flex; flex-direction:column; gap:0.8rem;">
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
-                    <button class="ska-btn ska-btn--primary" data-action="open-teleprompter">Teleprompter öffnen</button>
+                    <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter">Teleprompter öffnen</button>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
             this.updateCard('teleprompter', h);
@@ -3610,9 +3646,7 @@
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
             const infoHtml = infoText ? `<div class="ska-card-info-icon">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <span class="ska-info-dot">i</span>
                 <div class="ska-card-info-tooltip">${infoText}</div>
             </div>` : '';
 
