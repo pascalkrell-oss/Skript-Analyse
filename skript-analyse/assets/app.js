@@ -1513,7 +1513,7 @@
             if(!issues || issues.length === 0) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
-                 h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Wörter: <strong>${issues.length}</strong></div>`;
+                 h += `<div class="ska-section-title">Gefundene Wörter: <strong>${issues.length}</strong></div>`;
                  
                  // Use Grid only if multiple items
                  const gridStyle = issues.length > 1 ? 'display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;' : '';
@@ -1583,7 +1583,7 @@
             if(!issues || issues.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">👍 Abwechslungsreiche Satzanfänge!</div>`;
             } else {
-                 h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Monotone Wiederholungen</div><div class="ska-problem-list">`;
+                 h += `<div class="ska-section-title">Monotone Wiederholungen</div><div class="ska-problem-list">`;
                  issues.forEach(txt => {
                      h += `<div class="ska-problem-item">${txt}</div>`;
                  });
@@ -1630,7 +1630,7 @@
             if(!chains || chains.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">👍 Kein Behördendeutsch-Alarm!</div>`;
             } else {
-                 h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Kritische Passagen</div><div class="ska-problem-list">`;
+                 h += `<div class="ska-section-title">Kritische Passagen</div><div class="ska-problem-list">`;
                  chains.forEach(txt => {
                      h += `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${txt}</div>`;
                  });
@@ -1765,7 +1765,7 @@
             if(!issues || issues.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🌈 Sprache wirkt inklusiv!</div>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Begriffe</div><div class="ska-problem-list">`;
+                h += `<div class="ska-section-title">Gefundene Begriffe</div><div class="ska-problem-list">`;
                 const uniqueIssues = [...new Map(issues.map(item => [item.word, item])).values()];
                 uniqueIssues.forEach(item => {
                     h += `<div class="ska-problem-item" style="display:flex; justify-content:space-between; align-items:center;">
@@ -1909,7 +1909,7 @@
                         <div style="font-size:0.8rem; color:#166534;">Keine Passiv-Bremser gefunden.</div>
                        </div>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
                 matches.slice(0, 5).forEach(m => {
                     h+=`<div class="skriptanalyse-badge skriptanalyse-badge--passive" style="display:block; width:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m}</div>`;
                 });
@@ -1944,7 +1944,7 @@
             if(!words.length) {
                  h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Adjektive gefunden.</p>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
                 words.slice(0, 20).forEach(w => {
                     h+=`<span class="skriptanalyse-badge" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8;">${w}</span>`;
                 });
@@ -1991,7 +1991,7 @@
             if(!words.length) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Kein auffälliger Nominalstil.</p>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--nominal">${w}</span>`;
                 });
@@ -2008,7 +2008,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🇩🇪 Rein deutsch!</div>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--anglicism">${w}</span>`;
                 });
@@ -2053,7 +2053,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Abwechslungsreich!</div>`;
             } else {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo">${w}</span>`;
                 });
@@ -2072,28 +2072,28 @@
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
                 if(s.phonetic.length) { 
-                    h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
                     s.phonetic.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.camel.length) { 
-                    h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
                     s.camel.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--camel">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.long.length) { 
-                    h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
                     s.long.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--long">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.alliter.length) {
-                    h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
                     s.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
                     });
@@ -2130,7 +2130,7 @@
             }
 
             if(globalCount > 0) {
-                h += `<div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap;">`; 
+                h += `<div class="ska-section-title">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap;">`; 
                 ctaData.all.forEach(x => h += `<span class="skriptanalyse-badge skriptanalyse-badge--cta">${x}</span>`);
                 h += `</div>`;
             }
