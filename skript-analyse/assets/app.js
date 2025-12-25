@@ -359,7 +359,8 @@
             const abbrevs = ['z.B.', 'ca.', 'bzw.', 'vgl.', 'inkl.', 'max.', 'min.', 'Dr.', 'Prof.', 'Hr.', 'Fr.', 'Nr.'];
             abbrevs.forEach(abbr => { tempText = tempText.split(abbr).join(abbr.replace('.', '@@')); });
 
-            const sentences = tempText.split(/[.!?]+(?=\s|$)/).filter(s => s.trim().length > 0);
+            // Restore dots in abbreviations after splitting so UI cards show "z.B." etc.
+            const sentences = tempText.split(/[.!?]+(?=\s|$)/).filter(s => s.trim().length > 0).map(s => s.replace(/@@/g, '.'));
             const words = clean.split(/\s+/).filter(w => w.length > 0);
             const wc = words.length;
 
