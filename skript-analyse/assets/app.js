@@ -1549,7 +1549,7 @@
             let bg = "#eff6ff";
             
             if (ttr < 40) {
-                 label = "Repetitiv / Fokusiert";
+                label = "Repetitiv / Fokussiert";
                  color = SA_CONFIG.COLORS.warn;
                  bg = "#fff7ed";
             } else if (ttr > 60) {
