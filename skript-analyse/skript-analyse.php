@@ -113,7 +113,7 @@ function ska_shortcode() {
         <div class="ska-grid is-empty">
             <div class="ska-editor-panel">
                 <div class="ska-panel-header">
-                    <h3>Dein Skript</h3>
+                    <h3>Skript Editor</h3>
                     <div class="ska-editor-tools">
                         <div class="ska-tool-wrapper">
                             <button type="button" class="ska-tool-btn" data-action="clean">
@@ -132,8 +132,16 @@ function ska_shortcode() {
                         <div class="skriptanalyse-input-actions"></div> 
                     </div>
                 </div>
+                <div class="ska-editor-formatting" role="toolbar" aria-label="Textformatierung">
+                    <button type="button" class="ska-format-btn" data-action="format-bold">Fett</button>
+                    <button type="button" class="ska-format-btn" data-action="format-italic">Kursiv</button>
+                    <button type="button" class="ska-format-btn" data-action="format-underline">Unterstrichen</button>
+                    <button type="button" class="ska-format-btn" data-action="format-highlight">Textmarker</button>
+                    <button type="button" class="ska-format-btn" data-action="format-strike">Durchgestrichen</button>
+                </div>
                 <div class="ska-textarea-wrapper">
                     <textarea class="skriptanalyse-textarea" placeholder="Hier Text einfügen oder tippen..."></textarea>
+                    <div class="ska-format-preview" data-role-format-preview aria-hidden="true"></div>
                     <div class="ska-save-hint" data-role-save-hint></div>
                     <div class="ska-toast-notification" data-role-toast>Version gespeichert!</div>
                 </div>
@@ -148,6 +156,7 @@ function ska_shortcode() {
         <div class="skriptanalyse-compare-row"></div>
 
         <div class="skriptanalyse-analysis-bottom">
+            <div class="ska-analysis-filterbar"></div>
             <div class="skriptanalyse-analysis-bottom-grid"></div>
             <div class="skriptanalyse-hidden-panel"></div>
             <div class="skriptanalyse-legend-container"></div>
@@ -190,51 +199,59 @@ function ska_shortcode() {
                 <button type="button" class="ska-close-icon" data-action="close-help">&times;</button>
                 <div class="ska-modal-header"><h3>Anleitung & Hilfe</h3></div>
                 <div class="skriptanalyse-modal-body">
-                   <p style="margin-bottom:2rem; color:#64748b; line-height:1.6;">Willkommen im Profi-Tool für Autoren und Sprecher. Diese Anwendung analysiert deinen Text in Echtzeit auf Sprechbarkeit, Länge und stilistische Feinheiten.</p>
-                   
-                   <h4 style="margin-bottom:1rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Schritt-für-Schritt Workflow</h4>
-                   <div class="ska-help-grid">
+                   <p style="margin-bottom:2rem; color:#64748b; line-height:1.6;">Willkommen im Profi-Tool für Autoren, Sprecher und Redakteure. Die Analyse läuft lokal im Browser und liefert dir in Echtzeit klare Hinweise für Tempo, Verständlichkeit und Wirkung.</p>
+
+                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem;">
                        <div class="ska-help-card">
-                           <h4>1. Genre & Zielzeit</h4>
-                           <p>Wähle zuerst das <strong>Genre</strong> (z.B. "Werbung" oder "Hörbuch") in der Leiste oben. Dies passt die Sprechgeschwindigkeit (WPM) automatisch an. Setze optional eine <strong>Zielzeit</strong> im Einstellungs-Menü.</p>
+                           <h4>🚀 Schnellstart</h4>
+                           <p>Text einfügen → Genre wählen → Hinweise lesen → optimieren → PDF exportieren. Die Analyse aktualisiert sich automatisch.</p>
                        </div>
                        <div class="ska-help-card">
-                           <h4>2. Text optimieren</h4>
-                           <p>Schreibe oder kopiere deinen Text. Achte auf die farbigen Hinweise: <strong style="color:#16a34a">Grün</strong> ist optimal, <strong style="color:#ea580c">Orange</strong> sind Hinweise, <strong style="color:#dc2626">Rot</strong> zeigt echte Probleme (z.B. Bandwurm-Sätze).</p>
+                           <h4>🎯 Zielgruppe & Zielzeit</h4>
+                           <p>Im Einstellungs-Menü kannst du Zielzeit, Zielgruppe (z.B. Kindersendung) und eine Buzzword-Blacklist festlegen.</p>
                        </div>
                        <div class="ska-help-card">
-                           <h4>3. Versionierung</h4>
-                           <p>Nutze den Button <strong>"Version merken"</strong>, bevor du Änderungen machst. So siehst du unten im Vergleich sofort, wie viel Zeit du eingespart hast.</p>
+                           <h4>⏱️ WPM-Kalibrierung</h4>
+                           <p>Starte die Stoppuhr im WPM-Test. Kein Mikrofon nötig – die Messung ist manuell. Danach kannst du das Tempo als Standard setzen.</p>
                        </div>
                        <div class="ska-help-card">
-                           <h4>4. Export</h4>
-                           <p>Fertig? Erstelle über den Button unten einen sauberen <strong>PDF-Report</strong> für Kunden, Regie oder Kollegen.</p>
+                           <h4>🪄 Teleprompter</h4>
+                           <p>Öffne den Teleprompter aus der Analyse. Der Text scrollt im berechneten Tempo und markiert die Wörter dezent.</p>
                        </div>
                    </div>
 
-                   <h4 style="margin-top:2rem; margin-bottom:1rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Die Analysen im Detail</h4>
+                   <h4 style="margin-bottom:1rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Analysebereiche (Auswahl)</h4>
                    <ul style="list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem; color:#64748b; font-size:0.9rem;">
-                       <li><strong>🫁 Auffällige Sätze:</strong> Findet Sätze mit über 25 Wörtern oder mehr als 4 Kommas. Diese sind schwer flüssig zu sprechen.</li>
-                       <li><strong>🏢 Bürokratie:</strong> Markiert Substantivierungen auf <i>-ung, -heit, -keit</i>. Ersetze sie durch aktive Verben für mehr Dynamik.</li>
-                       <li><strong>🇬🇧 Denglisch-Detektor:</strong> Findet Anglizismen wie "Meeting" oder "Workflow", die ggf. nicht zur Zielgruppe passen.</li>
-                       <li><strong>🔊 Wort-Echos:</strong> Findet unschöne Wortwiederholungen auf engem Raum (weniger als 35 Wörter Abstand).</li>
-                       <li><strong>⏱️ Dauer:</strong> Berechnet die Zeit basierend auf dem gewählten Genre UND deinen gesetzten Pausen-Markern.</li>
+                       <li><strong>🌊 Satz-Rhythmus & Spreizung:</strong> zeigt Abwechslung der Satzlängen.</li>
+                       <li><strong>⚡ Arousal-Map:</strong> visualisiert Energieverlauf für Betonung.</li>
+                       <li><strong>🧠 Redundanz-Check:</strong> findet doppelte Aussagen in Satzfolgen.</li>
+                       <li><strong>🎵 Audio-BPM:</strong> schlägt Musiktempo passend zum Sprechtempo vor.</li>
+                       <li><strong>🧩 Leichte Sprache:</strong> prüft lange Wörter und Genitive.</li>
+                       <li><strong>🧨 Buzzword-Check:</strong> markiert Buzzwords und deine Blacklist.</li>
+                       <li><strong>⚖️ Verb-Fokus:</strong> warnt vor Nominalstil, wenn Substantive dominieren.</li>
+                       <li><strong>❓ Fragen-Heatmap:</strong> zeigt rhetorische Fragen im Text.</li>
+                       <li><strong>🧵 Satz-Verschachtelung:</strong> markiert zu tiefe Nebensatz-Struktur.</li>
+                       <li><strong>🌡️ Vibe-Check:</strong> zeigt Stimmungs-Intensität über den Text.</li>
+                       <li><strong>🧩 Naming-Check:</strong> erkennt ähnliche Namen mit Tippfehlern.</li>
                    </ul>
 
                    <h4 style="margin-bottom:1rem; color:#0f172a;">🖍️ Marker & Regieanweisungen</h4>
-                   <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Setze diese Codes in den Text, um die Zeitberechnung zu präzisieren und dem Sprecher Hinweise zu geben:</p>
-                   
+                   <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Diese Marker beeinflussen Timing und Regie. Einfach in den Text einsetzen:</p>
                    <table class="ska-help-table">
                        <thead><tr><th>Marker / Code</th><th>Funktion</th></tr></thead>
                        <tbody>
-                           <tr><td><code>|</code></td><td>Fügt eine kurze Atempause hinzu (+0.5 Sek)</td></tr>
-                           <tr><td><code>|1S|</code> / <code>|2S|</code></td><td>Fügt eine feste Stille von 1 bzw. 2 Sekunden hinzu</td></tr>
-                           <tr><td><code>[BETONUNG]</code></td><td>Hinweis: Das nächste Wort stark betonen</td></tr>
-                           <tr><td><code>[ATMEN]</code></td><td>Regie: Hörbares, emotionales Einatmen</td></tr>
-                           <tr><td><code>[LAUT]</code> / <code>[LEISE]</code></td><td>Dynamik-Wechsel anzeigen</td></tr>
-                           <tr><td><code>[SZENE]</code></td><td>Markiert einen inhaltlichen Schnitt / Szenenwechsel</td></tr>
+                           <?php foreach ($markers_config as $marker): ?>
+                               <tr>
+                                   <td><code><?php echo esc_html($marker['val']); ?></code></td>
+                                   <td><?php echo esc_html($marker['desc']); ?></td>
+                               </tr>
+                           <?php endforeach; ?>
                        </tbody>
                    </table>
+
+                   <div style="margin-top:2rem; padding:1rem; border-radius:10px; background:#eff6ff; color:#1e3a8a;">
+                       <strong>Hinweis:</strong> Alle Analysen laufen lokal. Dein Text wird nicht an Server gesendet.
+                   </div>
                 </div>
                  <div class="ska-modal-footer" style="display:flex; justify-content:flex-end;">
                      <button type="button" class="ska-btn ska-btn--secondary" data-action="close-help">Fenster schließen</button>
