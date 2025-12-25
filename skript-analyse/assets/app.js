@@ -82,6 +82,7 @@
             high: ['explosion', 'jetzt', 'sofort', 'sofortig', 'sofortige', 'boom', 'krass', 'schnell', 'dringend', 'extrem', 'feuer', 'stark', 'power', 'heftig', 'wow', 'unglaublich', 'alarm', 'laut', 'aufwachen', 'action'],
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
         },
+        QUESTION_WORDS: ['wie', 'was', 'warum', 'wieso', 'weshalb', 'wann', 'wo', 'wer', 'wem', 'wen', 'welche', 'welcher', 'welches', 'wozu', 'wodurch', 'wohin'],
         BUZZWORDS: [
             'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
             'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
@@ -124,7 +125,9 @@
             teleprompter: '🪄 Teleprompter-Export',
             arousal: '⚡ Arousal-Map',
             bullshit: '🧨 Bullshit-Index',
-            audience: '🎯 Zielgruppen-Filter'
+            audience: '🎯 Zielgruppen-Filter',
+            verb_balance: '⚖️ Verb-Fokus',
+            rhet_questions: '❓ Rhetorische Fragen'
         },
 
         CARD_DESCRIPTIONS: {
@@ -159,10 +162,12 @@
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
             arousal: 'Visualisiert Energieverlauf im Skript.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
-            audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.'
+            audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
+            verb_balance: 'Vergleicht Verben und Substantive für mehr Handlungsfokus.',
+            rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'verb_balance', 'rhet_questions', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -209,7 +214,9 @@
             teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo."],
             arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen."],
-            audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt."]
+            audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt."],
+            verb_balance: ["Verben bringen Bewegung in den Text.", "Nominalstil bremst das Tempo.", "Mehr Verben = mehr Handlung."],
+            rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion."]
         },
 
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
@@ -910,6 +917,38 @@
             });
             return { longWords: uniqueLong, passive: passiveFindings, genitives: genitiveHits };
         },
+        analyzeVerbNounBalance: (text, sentences) => {
+            const words = text.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+            const stop = new Set(SA_CONFIG.STOPWORDS);
+            let verbs = 0;
+            let nouns = 0;
+            const verbRegex = /\b[a-zäöüß]+(en|ern|eln|ierst|iert|st|t|te|test|ten|tet)\b/i;
+
+            words.forEach((word, idx) => {
+                const lower = word.toLowerCase();
+                if (stop.has(lower)) return;
+                if (/^[a-zäöüß]/.test(word) && verbRegex.test(word)) {
+                    verbs += 1;
+                    return;
+                }
+                const isSentenceStart = sentences && sentences.some(s => s.trim().startsWith(word));
+                if (/^[A-ZÄÖÜ]/.test(word) && !isSentenceStart) {
+                    nouns += 1;
+                }
+            });
+            const ratio = nouns > 0 ? verbs / nouns : verbs;
+            return { verbs, nouns, ratio };
+        },
+        analyzeRhetoricalQuestions: (sentences) => {
+            if (!sentences || sentences.length === 0) return [];
+            return sentences.map(sentence => {
+                const trimmed = sentence.trim();
+                const firstWord = trimmed.split(/\s+/)[0] ? trimmed.split(/\s+/)[0].toLowerCase() : '';
+                const endsWithQ = /\?$/.test(trimmed);
+                const startsWithQWord = SA_CONFIG.QUESTION_WORDS.includes(firstWord);
+                return { sentence: trimmed, isRhetorical: endsWithQ && startsWithQWord };
+            });
+        },
         analyzeBullshitIndex: (text, customList = []) => {
             const combined = [...SA_CONFIG.BUZZWORDS, ...customList].filter(Boolean);
             const findings = {};
@@ -1277,7 +1316,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0 }, 
                 excludedCards: new Set(),
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0 }
@@ -1519,7 +1558,7 @@
                 <div class="skriptanalyse-modal-content">
                     <div class="ska-modal-header"><h3>WPM-Kalibrierung</h3></div>
                     <div class="skriptanalyse-modal-body">
-                        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Lies den Text einmal durch. Starte dann die Stoppuhr und lies ihn laut vor.</p>
+                        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Lies den Text einmal durch. Starte dann die Stoppuhr und lies ihn laut vor. <strong>Kein Mikrofon nötig</strong> – die Messung ist manuell.</p>
                         <div class="ska-benchmark-text">${testText}</div>
                         <div class="ska-benchmark-stats">
                             <div><span>Wörter:</span> <strong>${wordCount}</strong></div>
@@ -1630,123 +1669,100 @@
                 .filter(Boolean);
         }
 
-        renderBenchmarkModal() {
-            let m = document.getElementById('ska-benchmark-modal');
-            if (m) m.remove();
-
-            const testText = 'Bitte lies diesen kurzen Testtext laut vor. Sprich deutlich und in deinem natürlichen Tempo. Wir messen die Zeit und berechnen daraus dein persönliches WPM. Du kannst den Test jederzeit wiederholen, um ein präzises Ergebnis zu erhalten.';
-            const wordCount = (testText.match(/\S+/g) || []).length;
-
-            m = document.createElement('div');
-            m.className = 'skriptanalyse-modal';
-            m.id = 'ska-benchmark-modal';
-            m.ariaHidden = 'true';
-            m.innerHTML = `
-                <div class="skriptanalyse-modal-overlay" data-action="close-benchmark"></div>
-                <div class="skriptanalyse-modal-content">
-                    <div class="ska-modal-header"><h3>WPM-Kalibrierung</h3></div>
-                    <div class="skriptanalyse-modal-body">
-                        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Lies den Text einmal durch. Starte dann die Stoppuhr und lies ihn laut vor.</p>
-                        <div class="ska-benchmark-text">${testText}</div>
-                        <div class="ska-benchmark-stats">
-                            <div><span>Wörter:</span> <strong>${wordCount}</strong></div>
-                            <div><span>Zeit:</span> <strong data-role-benchmark-time>0:00</strong></div>
-                            <div><span>WPM:</span> <strong data-role-benchmark-wpm>-</strong></div>
-                        </div>
-                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-                            <button type="button" class="ska-btn ska-btn--primary" data-action="benchmark-toggle">Stoppuhr starten</button>
-                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-reset">Reset</button>
-                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-apply" disabled>Übernehmen</button>
-                        </div>
-                    </div>
-                    <div class="ska-modal-footer">
-                         <button type="button" class="ska-btn ska-btn--secondary" data-action="close-benchmark">Schließen</button>
-                    </div>
-                </div>`;
-            document.body.appendChild(m);
-            m.dataset.wordCount = String(wordCount);
-        }
-
-        renderTeleprompterModal() {
-            let m = document.getElementById('ska-teleprompter-modal');
-            if (m) m.remove();
-
-            m = document.createElement('div');
-            m.className = 'skriptanalyse-modal';
-            m.id = 'ska-teleprompter-modal';
-            m.ariaHidden = 'true';
-            m.innerHTML = `
-                <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
-                <div class="ska-teleprompter-modal">
-                    <div class="ska-teleprompter-header">
-                        <strong>Teleprompter</strong>
-                        <div class="ska-teleprompter-controls">
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-smaller">A-</button>
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-bigger">A+</button>
-                            <button class="ska-btn ska-btn--primary" data-action="teleprompter-toggle">Start</button>
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-reset">Reset</button>
-                            <button class="ska-btn ska-btn--ghost" data-action="close-teleprompter">Schließen</button>
-                        </div>
-                    </div>
-                    <div class="ska-teleprompter-body">
-                        <div class="ska-teleprompter-text" data-role-teleprompter-text></div>
-                    </div>
-                    <div class="ska-teleprompter-footer">
-                        <span data-role-teleprompter-meta>Berechne Geschwindigkeit...</span>
-                    </div>
-                </div>`;
-            document.body.appendChild(m);
-        }
-
-        updateTeleprompterMeta(read) {
-            const meta = document.querySelector('[data-role-teleprompter-meta]');
-            if (!meta || !read) return;
-            const wpm = SA_Logic.getWpm(this.settings);
-            const seconds = (read.speakingWordCount / wpm) * 60;
-            meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
-        }
-
-        startTeleprompter(read) {
-            const modal = document.getElementById('ska-teleprompter-modal');
-            if (!modal || !read) return;
-            const body = modal.querySelector('.ska-teleprompter-body');
-            if (!body) return;
-            const wpm = SA_Logic.getWpm(this.settings);
-            const duration = (read.speakingWordCount / wpm) * 60 * 1000;
-            const distance = body.scrollHeight - body.clientHeight;
-            if (distance <= 0) return;
-
-            this.state.teleprompter.playing = true;
-            this.state.teleprompter.duration = duration;
-            this.state.teleprompter.start = performance.now();
-            this.state.teleprompter.startScroll = body.scrollTop;
-
-            const step = (ts) => {
-                if (!this.state.teleprompter.playing) return;
-                const elapsed = ts - this.state.teleprompter.start;
-                const progress = Math.min(1, elapsed / duration);
-                body.scrollTop = this.state.teleprompter.startScroll + (distance * progress);
-                if (progress < 1) {
-                    this.state.teleprompter.rafId = requestAnimationFrame(step);
+        handleAction(act, btn) {
+            if (act === 'benchmark-toggle') {
+                const modal = document.getElementById('ska-benchmark-modal');
+                if (!modal) return true;
+                const wordCount = parseInt(modal.dataset.wordCount || '0', 10);
+                const timeEl = modal.querySelector('[data-role-benchmark-time]');
+                const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
+                const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
+                if (!this.state.benchmark.running) {
+                    this.state.benchmark.running = true;
+                    this.state.benchmark.start = Date.now() - this.state.benchmark.elapsed;
+                    btn.textContent = 'Stoppuhr stoppen';
+                    this.state.benchmark.timerId = setInterval(() => {
+                        this.state.benchmark.elapsed = Date.now() - this.state.benchmark.start;
+                        const sec = Math.floor(this.state.benchmark.elapsed / 1000);
+                        if (timeEl) timeEl.textContent = SA_Utils.formatMin(sec);
+                    }, 200);
                 } else {
-                    this.state.teleprompter.playing = false;
+                    this.state.benchmark.running = false;
+                    btn.textContent = 'Stoppuhr starten';
+                    if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
+                    const sec = Math.max(1, Math.round(this.state.benchmark.elapsed / 1000));
+                    const wpm = Math.round((wordCount / sec) * 60);
+                    this.state.benchmark.wpm = wpm;
+                    if (wpmEl) wpmEl.textContent = `${wpm} WPM`;
+                    if (applyBtn) applyBtn.disabled = false;
                 }
-            };
-            this.state.teleprompter.rafId = requestAnimationFrame(step);
-        }
+                return true;
+            }
 
-        pauseTeleprompter() {
-            this.state.teleprompter.playing = false;
-            if (this.state.teleprompter.rafId) cancelAnimationFrame(this.state.teleprompter.rafId);
-            this.state.teleprompter.rafId = null;
-        }
+            if (act === 'benchmark-reset') {
+                const modal = document.getElementById('ska-benchmark-modal');
+                if (!modal) return true;
+                const timeEl = modal.querySelector('[data-role-benchmark-time]');
+                const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
+                const toggleBtn = modal.querySelector('[data-action="benchmark-toggle"]');
+                const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
+                if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
+                this.state.benchmark = { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null };
+                if (timeEl) timeEl.textContent = '0:00';
+                if (wpmEl) wpmEl.textContent = '-';
+                if (toggleBtn) toggleBtn.textContent = 'Stoppuhr starten';
+                if (applyBtn) applyBtn.disabled = true;
+                return true;
+            }
 
-        resetTeleprompter() {
-            const modal = document.getElementById('ska-teleprompter-modal');
-            if (!modal) return;
-            const body = modal.querySelector('.ska-teleprompter-body');
-            if (body) body.scrollTop = 0;
-            this.pauseTeleprompter();
+            if (act === 'benchmark-apply') {
+                const wpm = this.state.benchmark.wpm;
+                if (wpm && wpm > 0) {
+                    this.settings.manualWpm = wpm;
+                    this.saveUIState();
+                    this.analyze(this.textarea.value);
+                }
+                return true;
+            }
+
+            if (act === 'teleprompter-toggle') {
+                const modal = document.getElementById('ska-teleprompter-modal');
+                if (!modal) return true;
+                if (this.state.teleprompter.playing) {
+                    this.pauseTeleprompter();
+                    btn.textContent = 'Start';
+                } else {
+                    const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
+                    this.startTeleprompter(read);
+                    btn.textContent = 'Pause';
+                }
+                return true;
+            }
+
+            if (act === 'teleprompter-reset') {
+                this.resetTeleprompter();
+                const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                if (startBtn) startBtn.textContent = 'Start';
+                return true;
+            }
+
+            if (act === 'teleprompter-bigger' || act === 'teleprompter-smaller') {
+                const textEl = document.querySelector('[data-role-teleprompter-text]');
+                if (textEl) {
+                    const current = parseFloat(window.getComputedStyle(textEl).fontSize);
+                    const next = act === 'teleprompter-bigger' ? current + 2 : current - 2;
+                    textEl.style.fontSize = `${Math.max(16, Math.min(36, next))}px`;
+                }
+                return true;
+            }
+
+            if (act === 'reset-wpm') {
+                this.settings.manualWpm = 0;
+                this.saveUIState();
+                this.analyze(this.textarea.value);
+                return true;
+            }
+            return false;
         }
 
         loadUIState() {
@@ -1853,93 +1869,6 @@
                 if(!btn) return;
                 const act = btn.dataset.action;
 
-                if (act === 'benchmark-toggle') {
-                    const modal = document.getElementById('ska-benchmark-modal');
-                    if (!modal) return;
-                    const wordCount = parseInt(modal.dataset.wordCount || '0', 10);
-                    const timeEl = modal.querySelector('[data-role-benchmark-time]');
-                    const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
-                    const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
-                    if (!this.state.benchmark.running) {
-                        this.state.benchmark.running = true;
-                        this.state.benchmark.start = Date.now() - this.state.benchmark.elapsed;
-                        btn.textContent = 'Stoppuhr stoppen';
-                        this.state.benchmark.timerId = setInterval(() => {
-                            this.state.benchmark.elapsed = Date.now() - this.state.benchmark.start;
-                            const sec = Math.floor(this.state.benchmark.elapsed / 1000);
-                            if (timeEl) timeEl.textContent = SA_Utils.formatMin(sec);
-                        }, 200);
-                    } else {
-                        this.state.benchmark.running = false;
-                        btn.textContent = 'Stoppuhr starten';
-                        if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
-                        const sec = Math.max(1, Math.round(this.state.benchmark.elapsed / 1000));
-                        const wpm = Math.round((wordCount / sec) * 60);
-                        this.state.benchmark.wpm = wpm;
-                        if (wpmEl) wpmEl.textContent = `${wpm} WPM`;
-                        if (applyBtn) applyBtn.disabled = false;
-                    }
-                    return;
-                }
-
-                if (act === 'benchmark-reset') {
-                    const modal = document.getElementById('ska-benchmark-modal');
-                    if (!modal) return;
-                    const timeEl = modal.querySelector('[data-role-benchmark-time]');
-                    const wpmEl = modal.querySelector('[data-role-benchmark-wpm]');
-                    const toggleBtn = modal.querySelector('[data-action="benchmark-toggle"]');
-                    const applyBtn = modal.querySelector('[data-action="benchmark-apply"]');
-                    if (this.state.benchmark.timerId) clearInterval(this.state.benchmark.timerId);
-                    this.state.benchmark = { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null };
-                    if (timeEl) timeEl.textContent = '0:00';
-                    if (wpmEl) wpmEl.textContent = '-';
-                    if (toggleBtn) toggleBtn.textContent = 'Stoppuhr starten';
-                    if (applyBtn) applyBtn.disabled = true;
-                    return;
-                }
-
-                if (act === 'benchmark-apply') {
-                    const wpm = this.state.benchmark.wpm;
-                    if (wpm && wpm > 0) {
-                        this.settings.manualWpm = wpm;
-                        this.saveUIState();
-                        this.analyze(this.textarea.value);
-                    }
-                    return;
-                }
-
-                if (act === 'teleprompter-toggle') {
-                    const modal = document.getElementById('ska-teleprompter-modal');
-                    if (!modal) return;
-                    const btnLabel = btn;
-                    if (this.state.teleprompter.playing) {
-                        this.pauseTeleprompter();
-                        btnLabel.textContent = 'Start';
-                    } else {
-                        const read = SA_Logic.analyzeReadability(this.textarea.value, this.settings);
-                        this.startTeleprompter(read);
-                        btnLabel.textContent = 'Pause';
-                    }
-                    return;
-                }
-
-                if (act === 'teleprompter-reset') {
-                    this.resetTeleprompter();
-                    const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
-                    if (startBtn) startBtn.textContent = 'Start';
-                    return;
-                }
-
-                if (act === 'teleprompter-bigger' || act === 'teleprompter-smaller') {
-                    const textEl = document.querySelector('[data-role-teleprompter-text]');
-                    if (textEl) {
-                        const current = parseFloat(window.getComputedStyle(textEl).fontSize);
-                        const next = act === 'teleprompter-bigger' ? current + 2 : current - 2;
-                        textEl.style.fontSize = `${Math.max(16, Math.min(36, next))}px`;
-                    }
-                    return;
-                }
-
                 if(act.startsWith('open-')) { 
                     const modalId = 'ska-' + act.replace('open-', '') + '-modal';
                     const m = document.getElementById(modalId);
@@ -1977,12 +1906,7 @@
                     } 
                 }
 
-                if (act === 'reset-wpm') {
-                    this.settings.manualWpm = 0;
-                    this.saveUIState();
-                    this.analyze(this.textarea.value);
-                    return;
-                }
+                if (this.handleAction(act, btn)) return;
 
                 if(act === 'next-tip') {
                     const card = btn.closest('.skriptanalyse-card');
@@ -2069,6 +1993,8 @@
                     }
                     e.preventDefault(); 
                 }
+
+                if (this.handleAction(act, btn)) return;
 
                 if(act === 'generate-pdf-final') {
                     const opts = { 
@@ -2227,6 +2153,8 @@
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
+                    case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
+                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(read.sentences), active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
@@ -2422,6 +2350,66 @@
                 h += this.renderTipSection('audience', true);
             }
             this.updateCard('audience', h);
+        }
+
+        renderVerbBalanceCard(data, active) {
+            if(!active) return this.updateCard('verb_balance', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const verbs = data.verbs || 0;
+            const nouns = data.nouns || 0;
+            const ratio = data.ratio || 0;
+            let label = 'Ausgewogen';
+            let color = SA_CONFIG.COLORS.blue;
+            if (nouns > verbs * 1.3) { label = 'Nominalstil-Lastig'; color = SA_CONFIG.COLORS.warn; }
+            if (verbs > nouns * 1.3) { label = 'Verben treiben'; color = SA_CONFIG.COLORS.success; }
+
+            const total = verbs + nouns || 1;
+            const verbPct = Math.round((verbs / total) * 100);
+            const h = `
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Verb-Fokus</span>
+                        <span style="font-weight:700; color:${color};">${label}</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${verbPct}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Verben: <strong>${verbs}</strong> · Substantive: <strong>${nouns}</strong></div>
+                </div>
+                ${this.renderTipSection('verb_balance', true)}`;
+            this.updateCard('verb_balance', h);
+        }
+
+        renderRhetoricalQuestionsCard(data, active) {
+            if(!active) return this.updateCard('rhet_questions', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if(!data || data.length === 0) return this.updateCard('rhet_questions', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für Fragen-Analyse.</p>');
+
+            const total = data.length;
+            const questions = data.filter(item => item.isRhetorical);
+            const ratio = total > 0 ? (questions.length / total) * 100 : 0;
+            let label = 'Ausgewogen';
+            let color = SA_CONFIG.COLORS.blue;
+            if (ratio > 40) { label = 'Viele Fragen'; color = SA_CONFIG.COLORS.warn; }
+            if (ratio < 10) { label = 'Kaum Fragen'; color = SA_CONFIG.COLORS.muted; }
+
+            let h = `<div class="ska-questions-map">`;
+            data.slice(0, 12).forEach(item => {
+                const cls = item.isRhetorical ? 'is-question' : 'is-normal';
+                h += `<span class="ska-question-dot ${cls}"></span>`;
+            });
+            h += `</div>`;
+            h += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
+                    <span>${questions.length} Fragen</span>
+                    <span>${label}</span>
+                  </div>`;
+            if (questions.length) {
+                h += `<div class="ska-problem-list">`;
+                questions.slice(0, 2).forEach(item => {
+                    h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                });
+                h += `</div>`;
+            }
+            h += this.renderTipSection('rhet_questions', true);
+            this.updateCard('rhet_questions', h);
         }
 
         renderTeleprompterCard(read, active) {

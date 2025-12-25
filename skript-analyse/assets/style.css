@@ -349,6 +349,10 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-arousal-bar { width: 100%; display: flex; align-items: flex-end; }
 .ska-arousal-bar span { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 8px; }
 .ska-arousal-legend { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--ska-text-light); }
+.ska-questions-map { display: flex; gap: 6px; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.ska-question-dot { width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; }
+.ska-question-dot.is-question { background: #f97316; }
+.ska-question-dot.is-normal { background: #cbd5e1; }
 
 /* BENCHMARK MODAL */
 .ska-benchmark-text { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem; font-size: 0.9rem; color: #334155; line-height: 1.6; margin-bottom: 1rem; }
