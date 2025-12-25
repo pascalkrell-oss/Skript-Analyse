@@ -33,10 +33,6 @@
         ],
 
         PRONUNCIATION_DB: {
-            'notwendig': 'Not-wenn-dich',
-            'notwendige': 'Not-wenn-di-ge',
-            'notwendigkeit': 'Not-wenn-dich-keit',
-            'notwendigerweise': 'Not-wenn-di-ger-wei-se',
             'accessoire': 'Ak-sess-oar',
             'abonnement': 'A-bonn-mong',
             'balance': 'Ba-longs',
@@ -56,6 +52,16 @@
             'fertig': 'Fer-tich',
             'günstig': 'Güns-tich'
         },
+        TTS_SERVICES: [
+            {
+                id: 'google-translate',
+                buildUrl: (text) => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=de-DE&q=${encodeURIComponent(text)}&ttsspeed=0.9`
+            },
+            {
+                id: 'google-translate-apis',
+                buildUrl: (text) => `https://translate.googleapis.com/translate_tts?client=gtx&tl=de-DE&q=${encodeURIComponent(text)}&ttsspeed=0.9`
+            }
+        ],
 
         GENDER_DB: {
             'mitarbeiter': 'Mitarbeitende',
@@ -196,31 +202,119 @@
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         },
         
-        speak: (text) => {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            
-            let spokenText = text.toLowerCase().trim();
-            const dictWord = spokenText;
-            
-            if (SA_CONFIG.PRONUNCIATION_DB[dictWord]) {
-                spokenText = SA_CONFIG.PRONUNCIATION_DB[dictWord];
-            } else {
-                spokenText = spokenText
-                    .replace(/([^aeiouäöü])ig\b/g, '$1ich')
-                    .replace(/\bver/g, 'fer')
-                    .replace(/\bvor/g, 'for')
-                    .replace(/\bviel/g, 'fiel')
-                    .replace(/ph/g, 'f')
-                    .replace(/qu/g, 'kw')
-                    .replace(/chs/g, 'ks')
-                    .replace(/\b([v])/g, 'f');
+        currentAudio: null,
+        stopSpeech: () => {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
             }
-            
-            const u = new SpeechSynthesisUtterance(spokenText);
+            if (SA_Utils.currentAudio) {
+                SA_Utils.currentAudio.pause();
+                SA_Utils.currentAudio.currentTime = 0;
+                SA_Utils.currentAudio = null;
+            }
+        },
+        pickGermanVoice: () => {
+            if (!window.speechSynthesis || !window.speechSynthesis.getVoices) return null;
+            const voices = window.speechSynthesis.getVoices();
+            const deVoices = voices.filter((voice) => /^de(-|_)?/i.test(voice.lang));
+            if (!deVoices.length) return null;
+
+            const preferred = ['wavenet', 'neural', 'premium', 'google'];
+            return deVoices.sort((a, b) => {
+                const aScore = preferred.findIndex((p) => a.name.toLowerCase().includes(p));
+                const bScore = preferred.findIndex((p) => b.name.toLowerCase().includes(p));
+                const aRank = aScore === -1 ? preferred.length : aScore;
+                const bRank = bScore === -1 ? preferred.length : bScore;
+                return aRank - bRank;
+            })[0];
+        },
+        playAudioFromUrl: (url) => new Promise((resolve, reject) => {
+            const audio = new Audio(url);
+            let settled = false;
+
+            const cleanup = () => {
+                audio.onended = null;
+                audio.onerror = null;
+                audio.onabort = null;
+            };
+
+            audio.preload = 'auto';
+            audio.onended = () => {
+                cleanup();
+                if (SA_Utils.currentAudio === audio) {
+                    SA_Utils.currentAudio = null;
+                }
+                if (!settled) resolve(true);
+            };
+            audio.onerror = () => {
+                cleanup();
+                if (!settled) reject(new Error('audio-error'));
+            };
+            audio.onabort = () => {
+                cleanup();
+                if (!settled) reject(new Error('audio-abort'));
+            };
+
+            audio.play()
+                .then(() => {
+                    SA_Utils.currentAudio = audio;
+                    if (!settled) {
+                        settled = true;
+                        resolve(true);
+                    }
+                })
+                .catch((err) => {
+                    cleanup();
+                    if (!settled) reject(err);
+                });
+        }),
+        splitTextForTts: (text, maxLength = 180) => {
+            if (text.length <= maxLength) return [text];
+            const parts = [];
+            let remaining = text.trim();
+            while (remaining.length > maxLength) {
+                let cut = remaining.lastIndexOf(' ', maxLength);
+                if (cut === -1) cut = maxLength;
+                parts.push(remaining.slice(0, cut).trim());
+                remaining = remaining.slice(cut).trim();
+            }
+            if (remaining.length) parts.push(remaining);
+            return parts;
+        },
+        playRemoteTts: async (text) => {
+            if (!SA_CONFIG.TTS_SERVICES || SA_CONFIG.TTS_SERVICES.length === 0) return false;
+            const chunks = SA_Utils.splitTextForTts(text);
+            for (const service of SA_CONFIG.TTS_SERVICES) {
+                try {
+                    for (const chunk of chunks) {
+                        const url = service.buildUrl(chunk);
+                        await SA_Utils.playAudioFromUrl(url);
+                    }
+                    return true;
+                } catch (err) {
+                    continue;
+                }
+            }
+            return false;
+        },
+        speak: async (text) => {
+            if (!text) return;
+            const cleanText = text.trim();
+            if (!cleanText) return;
+
+            SA_Utils.stopSpeech();
+
+            const remotePlayed = await SA_Utils.playRemoteTts(cleanText);
+            if (remotePlayed) return;
+
+            if (!window.speechSynthesis) return;
+
+            const u = new SpeechSynthesisUtterance(cleanText);
             u.lang = 'de-DE';
-            u.rate = 0.82;
+            u.rate = 0.9;
             u.pitch = 1.0;
+            const voice = SA_Utils.pickGermanVoice();
+            if (voice) u.voice = voice;
             window.speechSynthesis.speak(u);
         },
 
@@ -556,8 +650,7 @@
             // 2. Check Rules (-ig)
             words.forEach(w => {
                 if (w.endsWith('ig') && !seen.has(w) && w.length > 3) {
-                     const spoken = w.slice(0, -2) + 'ich';
-                     findings.push({ word: w, hint: w.slice(0, -2) + 'ich (Standard)', audio: spoken });
+                     findings.push({ word: w, hint: w.slice(0, -2) + 'ich (Standard)', audio: w });
                      seen.add(w);
                 }
             });
