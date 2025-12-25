@@ -1072,12 +1072,12 @@
                     
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zeichen zählen</label>
-                        <div style="display:flex; gap:1rem; align-items:stretch;">
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                        <div class="ska-settings-option-group">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-char-mode" value="spaces" ${this.settings.charMode === 'spaces' ? 'checked' : ''}>
                                 <span style="font-size:0.9rem;">Inkl. Leerzeichen</span>
                             </label>
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-char-mode" value="no-spaces" ${this.settings.charMode === 'no-spaces' ? 'checked' : ''}>
                                 <span style="font-size:0.9rem;">Ohne Leerzeichen</span>
                             </label>
@@ -1086,19 +1086,19 @@
 
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zahlen Interpretation</label>
-                        <div style="display:flex; gap:1rem; align-items:stretch;">
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                        <div class="ska-settings-option-group">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-num-mode" value="digit" ${this.settings.numberMode === 'digit' ? 'checked' : ''}>
                                 <div>
                                     <span style="font-size:0.9rem; display:block;">Als Zahl</span>
-                                    <span style="font-size:0.75rem; color:#94a3b8;">12 = 2 Zeichen</span>
+                                    <span class="ska-settings-option-subtext">12 = 2 Zeichen</span>
                                 </div>
                             </label>
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-num-mode" value="word" ${this.settings.numberMode === 'word' ? 'checked' : ''}>
                                 <div>
                                     <span style="font-size:0.9rem; display:block;">Als Wort</span>
-                                    <span style="font-size:0.75rem; color:#94a3b8;">Zwölf = 5 Zeichen</span>
+                                    <span class="ska-settings-option-subtext">Zwölf = 5 Zeichen</span>
                                 </div>
                             </label>
                         </div>
@@ -1113,19 +1113,19 @@
 
                     <div style="margin-bottom:1.5rem;">
                         <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zeit-Berechnung (Timer)</label>
-                        <div style="display:flex; gap:1rem; align-items:stretch;">
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                        <div class="ska-settings-option-group">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
                                 <div>
                                     <strong style="display:block; font-size:0.9rem;">WPM (Standard)</strong>
-                                    <span style="font-size:0.75rem; color:#64748b;">Wörter pro Minute</span>
+                                    <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
                                 </div>
                             </label>
-                            <label style="flex:1; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:0.5rem;">
+                            <label class="ska-settings-option">
                                 <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''}>
                                 <div>
                                     <strong style="display:block; font-size:0.9rem;">SPS (Präzise)</strong>
-                                    <span style="font-size:0.75rem; color:#64748b;">Silben pro Sekunde</span>
+                                    <span class="ska-settings-option-subtext is-muted">Silben pro Sekunde</span>
                                 </div>
                             </label>
                         </div>

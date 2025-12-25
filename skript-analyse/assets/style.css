@@ -425,6 +425,22 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.5rem; }
 .ska-setting-item { display: flex; flex-direction: column; gap: 0.5rem; }
 .ska-setting-item label { font-size: 0.75rem; font-weight: 700; color: var(--ska-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.ska-settings-option-group { display: flex; gap: 1rem; align-items: stretch; }
+.ska-settings-option {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 72px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.ska-settings-option-subtext { font-size: 0.75rem; color: #94a3b8; display: block; }
+.ska-settings-option-subtext.is-muted { color: #64748b; }
 
 /* COMPACT PDF OPTIONS */
 .ska-compact-options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; }
