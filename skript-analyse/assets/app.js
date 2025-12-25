@@ -1427,6 +1427,7 @@
                 hiddenCards: new Set(), 
                 tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0 }, 
                 excludedCards: new Set(),
+                filterCollapsed: false,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 }
             };
@@ -1849,6 +1850,11 @@
                 this.renderFilterBar();
                 return true;
             }
+            if (act === 'toggle-filter-collapse') {
+                this.state.filterCollapsed = !this.state.filterCollapsed;
+                this.renderFilterBar();
+                return true;
+            }
             if (act === 'benchmark-toggle') {
                 const modal = document.getElementById('ska-benchmark-modal');
                 if (!modal) return true;
@@ -2079,6 +2085,7 @@
                     this.analyze(this.getText());
                 }
             });
+            window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
             this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
                 const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
                 if(k) this.settings[k] = e.target.value; this.analyze(this.getText());
@@ -2319,10 +2326,15 @@
             const title = allowed ? 'Analyseboxen individuell auswählen' : 'Analyseboxen auswählen';
             const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
             this.filterBar.classList.toggle('is-expanded', showAll);
+            this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
+            const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
-                    ${allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
+                    <div class="ska-filterbar-actions">
+                        <button class="ska-filterbar-toggle" data-action="toggle-filter-collapse">${collapseLabel}</button>
+                        ${allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
+                    </div>
                 </div>
                 <div class="ska-filterbar-body">
                     ${items.map(id => {
@@ -2464,6 +2476,7 @@
             if (!editorPanel) return;
             if (reset || !overviewPanel) {
                 editorPanel.style.height = '';
+                editorPanel.style.maxHeight = '';
                 return;
             }
             const overviewCard = overviewPanel.querySelector('.skriptanalyse-card--overview');
@@ -2471,6 +2484,7 @@
             const height = overviewCard.getBoundingClientRect().height;
             if (height > 0) {
                 editorPanel.style.height = `${Math.round(height)}px`;
+                editorPanel.style.maxHeight = `${Math.round(height)}px`;
             }
         }
         

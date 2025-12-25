@@ -97,11 +97,13 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-analysis-filterbar.is-hidden { display: none; }
 .ska-filterbar-body { display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 140px; overflow: hidden; opacity: 0.85; transition: max-height 0.3s ease, opacity 0.3s ease; }
 .ska-analysis-filterbar.is-expanded .ska-filterbar-body { max-height: 1000px; opacity: 1; }
+.ska-analysis-filterbar.is-collapsed .ska-filterbar-body { max-height: 0; opacity: 0; padding: 0; margin: 0; overflow: hidden; }
 .ska-filter-pill { border: 1px solid var(--ska-border); background: white; color: var(--ska-text-muted); padding: 0.35rem 0.7rem; border-radius: 999px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
 .ska-filterbar-header { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 1rem; font-size: 0.8rem; color: var(--ska-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0; }
 
 .ska-tool-wrapper { position: relative; display: inline-flex; align-items: center; }
