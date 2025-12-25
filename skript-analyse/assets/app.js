@@ -2177,7 +2177,7 @@
                 const safeSentence = s.trim().replace(/"/g, '&quot;');
                 h += `<div class="ska-rhythm-bar" data-words="${len}" data-sentence="${safeSentence}" style="flex:1; background:${col}; height:${hPct}%; border-radius:2px 2px 0 0;"></div>`;
             });
-            h += `</div><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#94a3b8; margin-top:15px;"><span>Start</span><span>Ende</span></div>`;
+            h += `</div><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#94a3b8; margin-top:0px;"><span>Start</span><span>Ende</span></div>`;
             
             // ADD PREVIEW BOX
             h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Satz mit der Maus überfahren...</div></div>`;
