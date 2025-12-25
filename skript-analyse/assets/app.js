@@ -60,10 +60,6 @@
             {
                 id: 'google-translate-apis',
                 buildUrl: (text) => `https://translate.googleapis.com/translate_tts?client=gtx&tl=de-DE&q=${encodeURIComponent(text)}&ttsspeed=0.9`
-            },
-            {
-                id: 'streamelements',
-                buildUrl: (text) => `https://api.streamelements.com/kappa/v2/speech?voice=de-DE-Wavenet-A&text=${encodeURIComponent(text)}`
             }
         ],
 
@@ -217,25 +213,6 @@
                 SA_Utils.currentAudio = null;
             }
         },
-        getSynthText: (text) => {
-            let spokenText = text.toLowerCase().trim();
-            const dictWord = spokenText;
-
-            if (SA_CONFIG.PRONUNCIATION_DB[dictWord]) {
-                spokenText = SA_CONFIG.PRONUNCIATION_DB[dictWord];
-            } else {
-                spokenText = spokenText
-                    .replace(/([^aeiouäöü])ig\b/g, '$1ich')
-                    .replace(/\bver/g, 'fer')
-                    .replace(/\bvor/g, 'for')
-                    .replace(/\bviel/g, 'fiel')
-                    .replace(/ph/g, 'f')
-                    .replace(/qu/g, 'kw')
-                    .replace(/chs/g, 'ks')
-                    .replace(/\b([v])/g, 'f');
-            }
-            return spokenText;
-        },
         pickGermanVoice: () => {
             if (!window.speechSynthesis || !window.speechSynthesis.getVoices) return null;
             const voices = window.speechSynthesis.getVoices();
@@ -332,8 +309,7 @@
 
             if (!window.speechSynthesis) return;
 
-            const spokenText = SA_Utils.getSynthText(cleanText);
-            const u = new SpeechSynthesisUtterance(spokenText);
+            const u = new SpeechSynthesisUtterance(cleanText);
             u.lang = 'de-DE';
             u.rate = 0.9;
             u.pitch = 1.0;
