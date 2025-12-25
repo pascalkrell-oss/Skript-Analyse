@@ -245,7 +245,7 @@
                     
                     /* Sentence Preview Box */
                     .ska-rhythm-preview {
-                        margin-top: 1rem;
+                        margin-top: 0.5rem;
                         padding: 0.85rem;
                         background: #f8fafc;
                         border: 1px solid #e2e8f0;
@@ -2159,7 +2159,7 @@
             if(!active) return this.updateCard('rhythm', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!sentences || sentences.length < 3) return this.updateCard('rhythm', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Sätze für eine Analyse.</p>');
 
-            let h = `<div style="height:100px; display:flex; align-items:flex-end; gap:2px; margin-bottom:4px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">`;
+            let h = `<div style="height:100px; display:flex; align-items:flex-end; gap:2px; margin-bottom:2px; border-bottom:1px solid #e2e8f0; padding-bottom:2px;">`;
             
             // Limit to last 40 sentences for readability
             const slice = sentences.length > 40 ? sentences.slice(sentences.length - 40) : sentences;
@@ -2177,7 +2177,7 @@
                 const safeSentence = s.trim().replace(/"/g, '&quot;');
                 h += `<div class="ska-rhythm-bar" data-words="${len}" data-sentence="${safeSentence}" style="flex:1; background:${col}; height:${hPct}%; border-radius:2px 2px 0 0;"></div>`;
             });
-            h += `</div><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#94a3b8; margin-top:2px;"><span>Start</span><span>Ende</span></div>`;
+            h += `</div><div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; color:#94a3b8; margin-top:0;"><span>Start</span><span>Ende</span></div>`;
             
             // ADD PREVIEW BOX
             h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Satz mit der Maus überfahren...</div>`;
