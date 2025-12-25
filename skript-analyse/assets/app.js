@@ -1630,6 +1630,125 @@
                 .filter(Boolean);
         }
 
+        renderBenchmarkModal() {
+            let m = document.getElementById('ska-benchmark-modal');
+            if (m) m.remove();
+
+            const testText = 'Bitte lies diesen kurzen Testtext laut vor. Sprich deutlich und in deinem natürlichen Tempo. Wir messen die Zeit und berechnen daraus dein persönliches WPM. Du kannst den Test jederzeit wiederholen, um ein präzises Ergebnis zu erhalten.';
+            const wordCount = (testText.match(/\S+/g) || []).length;
+
+            m = document.createElement('div');
+            m.className = 'skriptanalyse-modal';
+            m.id = 'ska-benchmark-modal';
+            m.ariaHidden = 'true';
+            m.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-benchmark"></div>
+                <div class="skriptanalyse-modal-content">
+                    <div class="ska-modal-header"><h3>WPM-Kalibrierung</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <p style="font-size:0.85rem; color:#64748b; margin-top:0;">Lies den Text einmal durch. Starte dann die Stoppuhr und lies ihn laut vor.</p>
+                        <div class="ska-benchmark-text">${testText}</div>
+                        <div class="ska-benchmark-stats">
+                            <div><span>Wörter:</span> <strong>${wordCount}</strong></div>
+                            <div><span>Zeit:</span> <strong data-role-benchmark-time>0:00</strong></div>
+                            <div><span>WPM:</span> <strong data-role-benchmark-wpm>-</strong></div>
+                        </div>
+                        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="benchmark-toggle">Stoppuhr starten</button>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-reset">Reset</button>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="benchmark-apply" disabled>Übernehmen</button>
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                         <button type="button" class="ska-btn ska-btn--secondary" data-action="close-benchmark">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(m);
+            m.dataset.wordCount = String(wordCount);
+        }
+
+        renderTeleprompterModal() {
+            let m = document.getElementById('ska-teleprompter-modal');
+            if (m) m.remove();
+
+            m = document.createElement('div');
+            m.className = 'skriptanalyse-modal';
+            m.id = 'ska-teleprompter-modal';
+            m.ariaHidden = 'true';
+            m.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
+                <div class="ska-teleprompter-modal">
+                    <div class="ska-teleprompter-header">
+                        <strong>Teleprompter</strong>
+                        <div class="ska-teleprompter-controls">
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-smaller">A-</button>
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-bigger">A+</button>
+                            <button class="ska-btn ska-btn--primary" data-action="teleprompter-toggle">Start</button>
+                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-reset">Reset</button>
+                            <button class="ska-btn ska-btn--ghost" data-action="close-teleprompter">Schließen</button>
+                        </div>
+                    </div>
+                    <div class="ska-teleprompter-body">
+                        <div class="ska-teleprompter-text" data-role-teleprompter-text></div>
+                    </div>
+                    <div class="ska-teleprompter-footer">
+                        <span data-role-teleprompter-meta>Berechne Geschwindigkeit...</span>
+                    </div>
+                </div>`;
+            document.body.appendChild(m);
+        }
+
+        updateTeleprompterMeta(read) {
+            const meta = document.querySelector('[data-role-teleprompter-meta]');
+            if (!meta || !read) return;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const seconds = (read.speakingWordCount / wpm) * 60;
+            meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
+        }
+
+        startTeleprompter(read) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal || !read) return;
+            const body = modal.querySelector('.ska-teleprompter-body');
+            if (!body) return;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const duration = (read.speakingWordCount / wpm) * 60 * 1000;
+            const distance = body.scrollHeight - body.clientHeight;
+            if (distance <= 0) return;
+
+            this.state.teleprompter.playing = true;
+            this.state.teleprompter.duration = duration;
+            this.state.teleprompter.start = performance.now();
+            this.state.teleprompter.startScroll = body.scrollTop;
+
+            const step = (ts) => {
+                if (!this.state.teleprompter.playing) return;
+                const elapsed = ts - this.state.teleprompter.start;
+                const progress = Math.min(1, elapsed / duration);
+                body.scrollTop = this.state.teleprompter.startScroll + (distance * progress);
+                if (progress < 1) {
+                    this.state.teleprompter.rafId = requestAnimationFrame(step);
+                } else {
+                    this.state.teleprompter.playing = false;
+                }
+            };
+            this.state.teleprompter.rafId = requestAnimationFrame(step);
+        }
+
+        pauseTeleprompter() {
+            this.state.teleprompter.playing = false;
+            if (this.state.teleprompter.rafId) cancelAnimationFrame(this.state.teleprompter.rafId);
+            this.state.teleprompter.rafId = null;
+        }
+
+        resetTeleprompter() {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            const body = modal.querySelector('.ska-teleprompter-body');
+            if (body) body.scrollTop = 0;
+            this.pauseTeleprompter();
+        }
+
         loadUIState() {
             const h = SA_Utils.storage.load(SA_CONFIG.UI_KEY_HIDDEN);
             if(h) this.state.hiddenCards = new Set(JSON.parse(h));
