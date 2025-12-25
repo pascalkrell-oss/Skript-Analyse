@@ -475,9 +475,37 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-grid { grid-template-columns: 1fr; }
     .ska-toolbar { flex-direction: column; align-items: stretch; }
     .skriptanalyse-analysis-bottom-grid { grid-template-columns: 1fr; }
+    .skriptanalyse-compare-grid { grid-template-columns: 1fr; }
     .ska-footer { flex-direction: column; align-items: stretch; gap: 1.5rem; }
     .ska-footer-intro { text-align: center; }
     .ska-footer-actions { flex-direction: column; width: 100%; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+    .skriptanalyse-app {
+        padding: 1rem;
+        margin: 0.75rem;
+        border-radius: var(--ska-radius-md);
+        max-width: 100%;
+    }
+    .ska-grid { gap: 1rem; }
+    .skriptanalyse-analysis-bottom-grid { gap: 1rem; }
+    .ska-toolbar { gap: 1rem; padding: 0.85rem; }
+    .ska-toolbar-group { width: 100%; }
+    .ska-custom-select-wrapper,
+    .ska-select-wrapper,
+    .ska-select,
+    .ska-input { width: 100%; min-width: 100%; }
+    .ska-toolbar-actions { width: 100%; flex-direction: column; }
+    .ska-toolbar-actions .ska-btn { width: 100%; }
+    .ska-header { gap: 0.75rem; }
+    .ska-header-content { min-width: 0; }
+    .ska-editor-panel { min-height: 420px; }
+    .skriptanalyse-textarea { min-height: 320px; }
+    .skriptanalyse-card { width: 100%; }
+    .ska-overview-stats { grid-template-columns: 1fr; }
+    .ska-genre-grid-layout { grid-template-columns: 1fr; }
+    .ska-filler-item { grid-template-columns: 70px 1fr 36px; }
 }
