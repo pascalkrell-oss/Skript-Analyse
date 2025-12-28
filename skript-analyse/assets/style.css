@@ -112,7 +112,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-tool-btn:hover { border-color: var(--ska-primary); color: var(--ska-primary); }
 
 .ska-textarea-wrapper { flex: 1; padding: 1.5rem; position: relative; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
-.skriptanalyse-textarea { width: 100%; height: 100%; flex: 1; min-height: 0; border: none; resize: none; font-size: 1.05rem; line-height: 1.7; color: var(--ska-text-main); outline: none; font-family: inherit; background: transparent; padding: 0; margin: 0; border-radius: 0 !important; white-space: pre-wrap; overflow-y: auto; }
+.skriptanalyse-textarea { width: 100%; height: 100%; flex: 1; min-height: 0; border: none; resize: none; font-size: 1.05rem; line-height: 1.7; color: var(--ska-text-main); outline: none; font-family: inherit; background: transparent; padding: 0 0 1.5rem; margin: 0; border-radius: 0 !important; white-space: pre-wrap; overflow-y: auto; }
 .skriptanalyse-textarea:empty:before { content: attr(data-placeholder); color: #94a3b8; }
 .skriptanalyse-textarea mark { background: #fde68a; padding: 0 2px; border-radius: 4px; }
 
