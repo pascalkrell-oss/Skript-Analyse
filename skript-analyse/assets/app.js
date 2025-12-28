@@ -2481,7 +2481,6 @@
             }
             const overviewCard = overviewPanel.querySelector('.skriptanalyse-card--overview');
             if (!overviewCard) return;
-            const height = overviewCard.offsetHeight;
             const height = overviewCard.getBoundingClientRect().height;
             if (height > 0) {
                 editorPanel.style.height = `${Math.round(height)}px`;
