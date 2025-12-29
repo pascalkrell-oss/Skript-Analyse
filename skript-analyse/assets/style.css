@@ -104,7 +104,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
 .ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.75rem; color: var(--ska-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; min-height: 40px;
 
-    padding: 0.15rem 0;
+    padding: 0.45rem 0;
     line-height: 1;
 }
 .ska-filterbar-header > span { justify-self: start; }
