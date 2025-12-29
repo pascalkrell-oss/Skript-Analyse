@@ -1643,7 +1643,7 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2 };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2 };
             
             this.state = { 
                 savedVersion: '', 
@@ -2536,6 +2536,7 @@
                 if(global.manualWpm) this.settings.manualWpm = global.manualWpm;
                 if(global.audienceTarget) this.settings.audienceTarget = global.audienceTarget;
                 if(global.bullshitBlacklist) this.settings.bullshitBlacklist = global.bullshitBlacklist;
+                if(typeof global.lastGenre !== 'undefined') this.settings.lastGenre = global.lastGenre;
                 if(typeof global.commaPause !== 'undefined') this.settings.commaPause = global.commaPause;
                 if(typeof global.periodPause !== 'undefined') this.settings.periodPause = global.periodPause;
                 if(typeof global.focusKeywords !== 'undefined') this.settings.focusKeywords = global.focusKeywords;
@@ -2555,6 +2556,7 @@
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
+                lastGenre: this.settings.lastGenre,
                 charMode: this.settings.charMode,
                 numberMode: this.settings.numberMode,
                 manualWpm: this.settings.manualWpm,
@@ -2612,7 +2614,14 @@
             window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
             this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
                 const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
-                if(k) this.settings[k] = e.target.value; this.analyze(this.getText());
+                if(k) {
+                    this.settings[k] = e.target.value;
+                    if (k === 'usecase' && e.target.value !== 'auto') {
+                        this.settings.lastGenre = e.target.value;
+                        this.saveUIState();
+                    }
+                }
+                this.analyze(this.getText());
             }));
             if(this.targetInput) this.targetInput.addEventListener('input', (e) => {
                 const v = e.target.value.trim().split(':');
@@ -2811,7 +2820,7 @@
 
                 if(act === 'confirm-reset') {
                     this.setText(''); 
-                    this.settings={usecase:'auto',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2}; 
+                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2}; 
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
@@ -3772,7 +3781,8 @@
             const cI = this.state.tipIndices[id];
             const tip = tips[cI];
             const tT = tips.length;
-            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
+            const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const genreNote = genreContext ? `<div class="ska-tip-genre">${genreContext.tipNote}</div>` : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;

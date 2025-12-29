@@ -75,7 +75,7 @@ function ska_shortcode() {
                     <label>Profil</label>
                     <div class="ska-custom-select-wrapper">
                         <select class="ska-select" data-role-select>
-                            <option value="">Allgemein</option>
+                            <option value="">🧭 Allgemein</option>
                             <option value="sprecher">🎙️ Sprecher:in</option>
                             <option value="autor">✍️ Autor:in</option>
                             <option value="regie">🎬 Regie</option>
@@ -89,14 +89,14 @@ function ska_shortcode() {
                     <div class="ska-custom-select-wrapper">
                         <select class="ska-select" data-filter="usecase">
                             <option value="auto">⚡ Auto-Detect</option>
-                            <option value="werbung">Werbespot</option>
-                            <option value="imagefilm">Imagefilm</option>
-                            <option value="erklaer">Erklärvideo</option>
-                            <option value="hoerbuch">Hörbuch</option>
-                            <option value="podcast">Podcast</option>
-                            <option value="social">Social Media</option>
-                            <option value="elearning">E-Learning</option>
-                            <option value="buch">Buch/Roman</option>
+                            <option value="werbung">📣 Werbespot</option>
+                            <option value="imagefilm">🎞️ Imagefilm</option>
+                            <option value="erklaer">🧠 Erklärvideo</option>
+                            <option value="hoerbuch">🎧 Hörbuch</option>
+                            <option value="podcast">🎙️ Podcast</option>
+                            <option value="social">📱 Social Media</option>
+                            <option value="elearning">🧑‍🏫 E-Learning</option>
+                            <option value="buch">📖 Buch/Roman</option>
                         </select>
                     </div>
                 </div>
