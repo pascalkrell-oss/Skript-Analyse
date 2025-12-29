@@ -21,15 +21,50 @@
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
-            werbung: { tipBase: 'Werbespot: pointiert und CTA-nah.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
-            imagefilm: { tipBase: 'Imagefilm: ruhig, bildstark, markenklar.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
-            erklaer: { tipBase: 'Erklärvideo: logisch, schrittweise, klar.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
-            hoerbuch: { tipBase: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
-            podcast: { tipBase: 'Podcast: locker, dialogisch, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
-            ansage: { tipBase: 'Ansage: präzise, klar, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
-            elearning: { tipBase: 'E-Learning: ruhig, didaktisch, strukturiert.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
-            social: { tipBase: 'Social Media: schnell, snackable, direkt.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
-            buch: { tipBase: 'Buch/Roman: bildhaft, ruhig, atmosphärisch.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+            werbung: { tipPrefix: 'Werbespot', tipFocus: 'kurz, pointiert, CTA-nah formulieren', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipPrefix: 'Imagefilm', tipFocus: 'ruhige Bilder, klare Markenbotschaft', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipPrefix: 'Erklärvideo', tipFocus: 'logisch führen, Schritt für Schritt', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipPrefix: 'Hörbuch', tipFocus: 'Atempausen setzen, Bögen halten', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipPrefix: 'Podcast', tipFocus: 'locker sprechen, natürlich bleiben', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipPrefix: 'Ansage', tipFocus: 'präzise, klar und schnell erfassbar', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipPrefix: 'E-Learning', tipFocus: 'didaktisch gliedern, Ruhe bewahren', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipPrefix: 'Social Media', tipFocus: 'schnell zum Punkt, snackable', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipPrefix: 'Buch/Roman', tipFocus: 'bildhaft erzählen, Rhythmus halten', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+        },
+        GENRE_CARD_TIPS: {
+            fillers: 'In {focus} unnötige Füllwörter konsequent streichen.',
+            passive: '{focus} profitiert von aktivem Sprachfluss.',
+            nominal: '{focus}: Verben statt Nominalstil einsetzen.',
+            nominal_chain: '{focus}: Nominalketten auflösen, damit der Fluss bleibt.',
+            anglicism: '{focus}: Fremdwörter nur dort, wo sie wirklich nötig sind.',
+            echo: '{focus}: Wortwiederholungen bewusst variieren.',
+            breath: '{focus}: Atemstellen einplanen, Satzbögen nicht überziehen.',
+            stumble: '{focus}: sprecherfreundliche Wörter bevorzugen.',
+            cta: '{focus}: Handlungsaufforderung klar und direkt platzieren.',
+            adjective: '{focus}: Adjektive sparsam setzen, starke Bilder wählen.',
+            rhythm: '{focus}: Satzlängen variieren, damit der Rhythmus lebt.',
+            dialog: '{focus}: Dialoganteile passend zur Szene dosieren.',
+            gender: '{focus}: inklusive Begriffe nutzen, ohne den Flow zu brechen.',
+            start_var: '{focus}: Satzanfänge variieren für Dynamik.',
+            role_dist: '{focus}: Rollenwechsel klar markieren.',
+            vocabulary: '{focus}: Wortschatz kontrolliert variieren.',
+            pronunciation: '{focus}: schwierige Wörter früh glätten.',
+            keyword_focus: '{focus}: Fokusbegriffe konsistent einsetzen.',
+            spread_index: '{focus}: Streuung der Satzlängen bewusst steuern.',
+            plosive: '{focus}: Plosiv-Cluster entschärfen.',
+            redundancy: '{focus}: Wiederholungen nur als Stilmittel.',
+            bpm: '{focus}: Taktgefühl an Stimmung koppeln.',
+            easy_language: '{focus}: einfache Wörter, kurze Sätze.',
+            teleprompter: '{focus}: Zeilen so setzen, dass der Flow ruhig bleibt.',
+            arousal: '{focus}: Energie gezielt auf Peaks setzen.',
+            bullshit: '{focus}: Floskeln durch konkrete Aussagen ersetzen.',
+            metaphor: '{focus}: Bildsprache frisch halten.',
+            audience: '{focus}: Komplexität sauber an die Zielgruppe anpassen.',
+            verb_balance: '{focus}: Verben als Treiber nutzen.',
+            rhet_questions: '{focus}: Fragen gezielt für Aufmerksamkeit einsetzen.',
+            depth_check: '{focus}: Schachtelsätze kürzen.',
+            sentiment_intensity: '{focus}: Emotionen dosiert einsetzen.',
+            naming_check: '{focus}: Namen konsistent halten.'
         },
         
         ANGLICISMS: [
@@ -3784,9 +3819,9 @@
             const tT = tips.length;
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
-            const cardTitle = SA_CONFIG.CARD_TITLES[id] || 'Analyse';
-            const genreNote = genreContext
-                ? `<div class="ska-tip-genre">${genreContext.tipBase} (${cardTitle})</div>`
+            const cardTemplate = SA_CONFIG.GENRE_CARD_TIPS[id];
+            const genreNote = genreContext && cardTemplate
+                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${cardTemplate.replace('{focus}', genreContext.tipFocus)}</div>`
                 : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
@@ -3888,8 +3923,9 @@
             if(wpm > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
             else if(wpm < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
 
-            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
-            const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipNote}</div>` : '';
+            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
+            const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
+            const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipPrefix}: ${genreContext.tipFocus}.</div>` : '';
             const h = `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; margin-bottom:1rem;">
                     <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; border-top:3px solid ${tempoCol}; text-align:center;">
