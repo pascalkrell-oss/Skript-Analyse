@@ -204,44 +204,41 @@ function ska_shortcode() {
                 <button type="button" class="ska-close-icon" data-action="close-help">&times;</button>
                 <div class="ska-modal-header"><h3>Anleitung & Hilfe</h3></div>
                 <div class="skriptanalyse-modal-body">
-                   <p style="margin-bottom:2rem; color:#64748b; line-height:1.6;">Willkommen im Profi-Tool für Autoren, Sprecher und Redakteure. Die Analyse läuft lokal im Browser und liefert dir in Echtzeit klare Hinweise für Tempo, Verständlichkeit und Wirkung.</p>
+                   <p style="margin-bottom:1.5rem; color:#64748b; line-height:1.7;">Dieses Tool analysiert deinen Text live im Browser und erklärt dir verständlich, was am Tempo, an der Struktur und an der Wirkung optimiert werden kann. Keine Vorkenntnisse nötig – du bekommst konkrete Hinweise, was du ändern kannst und warum.</p>
 
                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem;">
                        <div class="ska-help-card">
-                           <h4>🚀 Schnellstart</h4>
-                           <p>Text einfügen → Genre wählen → Hinweise lesen → optimieren → PDF exportieren. Die Analyse aktualisiert sich automatisch.</p>
+                           <h4>🚀 Schnellstart in 60 Sekunden</h4>
+                           <p>Text einfügen → Genre auswählen → Analyse lesen → markierte Stellen anpassen → PDF exportieren. Alles aktualisiert sich automatisch.</p>
                        </div>
                        <div class="ska-help-card">
-                           <h4>🎯 Zielgruppe & Zielzeit</h4>
-                           <p>Im Einstellungs-Menü kannst du Zielzeit, Zielgruppe (z.B. Kindersendung) und eine Buzzword-Blacklist festlegen.</p>
+                           <h4>⏱️ Timing & Tempo</h4>
+                           <p>Wähle WPM (Standard) oder SPS (präziser für lange Wörter). Zielzeit und Pausen werden in die Berechnung einbezogen.</p>
                        </div>
                        <div class="ska-help-card">
-                           <h4>⏱️ WPM-Kalibrierung</h4>
-                           <p>Starte die Stoppuhr im WPM-Test. Kein Mikrofon nötig – die Messung ist manuell. Danach kannst du das Tempo als Standard setzen.</p>
+                           <h4>🎯 Zielgruppe & Wirkung</h4>
+                           <p>Lege Zielgruppe, Keyword-Fokus und Blacklists fest. Das Tool warnt bei zu komplexen Sätzen oder zu hoher Dichte.</p>
                        </div>
                        <div class="ska-help-card">
                            <h4>🪄 Teleprompter</h4>
-                           <p>Öffne den Teleprompter aus der Analyse. Der Text scrollt im berechneten Tempo und markiert die Wörter dezent.</p>
+                           <p>Starte den Teleprompter aus der Analyse. Der Scroll folgt deiner berechneten Dauer und hilft beim Einsprechen.</p>
                        </div>
                    </div>
 
-                   <h4 style="margin-bottom:1rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Analysebereiche (Auswahl)</h4>
+                   <h4 style="margin-bottom:0.75rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">So liest du die Analyse</h4>
                    <ul style="list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem; color:#64748b; font-size:0.9rem;">
-                       <li><strong>🌊 Satz-Rhythmus & Spreizung:</strong> zeigt Abwechslung der Satzlängen.</li>
-                       <li><strong>⚡ Arousal-Map:</strong> visualisiert Energieverlauf für Betonung.</li>
-                       <li><strong>🧠 Redundanz-Check:</strong> findet doppelte Aussagen in Satzfolgen.</li>
-                       <li><strong>🎵 Audio-BPM:</strong> schlägt Musiktempo passend zum Sprechtempo vor.</li>
-                       <li><strong>🧩 Leichte Sprache:</strong> prüft lange Wörter und Genitive.</li>
-                       <li><strong>🧨 Buzzword-Check:</strong> markiert Buzzwords und deine Blacklist.</li>
-                       <li><strong>⚖️ Verb-Fokus:</strong> warnt vor Nominalstil, wenn Substantive dominieren.</li>
-                       <li><strong>❓ Fragen-Heatmap:</strong> zeigt rhetorische Fragen im Text.</li>
-                       <li><strong>🧵 Satz-Verschachtelung:</strong> markiert zu tiefe Nebensatz-Struktur.</li>
-                       <li><strong>🌡️ Vibe-Check:</strong> zeigt Stimmungs-Intensität über den Text.</li>
-                       <li><strong>🧩 Naming-Check:</strong> erkennt ähnliche Namen mit Tippfehlern.</li>
+                       <li><strong>⚖️ Tempo & Dauer:</strong> reale Sprechzeit inkl. Pausenmarker.</li>
+                       <li><strong>📏 Satzlänge & Rhythmus:</strong> zu lange oder monotone Abschnitte werden markiert.</li>
+                       <li><strong>🎯 Fokus & Keywords:</strong> zeigt, ob Kernbegriffe dominant genug sind.</li>
+                       <li><strong>🧠 Verständlichkeit:</strong> entdeckt Schachtelsätze und komplizierte Wörter.</li>
+                       <li><strong>🎵 Audio-BPM:</strong> empfiehlt Musiktempo passend zur Lesegeschwindigkeit.</li>
+                       <li><strong>🧨 Buzzwords:</strong> markiert Floskeln oder Blacklist-Begriffe.</li>
+                       <li><strong>🗣️ Sprecherlichkeit:</strong> warnt bei schwierigen Kombinationen oder Betonungsfallen.</li>
+                       <li><strong>📍 Marker-Übersicht:</strong> listet alle Marker und ihre Wirkung im Timing.</li>
                    </ul>
 
-                   <h4 style="margin-bottom:1rem; color:#0f172a;">🖍️ Marker & Regieanweisungen</h4>
-                   <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Diese Marker beeinflussen Timing und Regie. Einfach in den Text einsetzen:</p>
+                   <h4 style="margin-bottom:0.75rem; color:#0f172a;">🖍️ Marker & Regieanweisungen</h4>
+                   <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Marker steuern Pausen, Dynamik und Sprecheranweisungen. Sie beeinflussen das Timing, werden aber nicht als Text gezählt:</p>
                    <table class="ska-help-table">
                        <thead><tr><th>Marker / Code</th><th>Funktion</th></tr></thead>
                        <tbody>
@@ -254,8 +251,19 @@ function ska_shortcode() {
                        </tbody>
                    </table>
 
+                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
+                       <div class="ska-help-card">
+                           <h4>💡 Tipps & Tricks</h4>
+                           <p>Setze kurze Pausen nach Sinnabschnitten. Vermeide drei lange Sätze hintereinander. Wiederhole Kernwörter an Satzanfängen.</p>
+                       </div>
+                       <div class="ska-help-card">
+                           <h4>✅ Best Practices</h4>
+                           <p>Ein Gedanke pro Satz. Aktiv statt Passiv. Zahlen in Wörter umwandeln, wenn sie gesprochen werden sollen.</p>
+                       </div>
+                   </div>
+
                    <div style="margin-top:2rem; padding:1rem; border-radius:10px; background:#eff6ff; color:#1e3a8a;">
-                       <strong>Hinweis:</strong> Alle Analysen laufen lokal. Dein Text wird nicht an Server gesendet.
+                       <strong>Datenschutz:</strong> Alle Analysen laufen lokal im Browser. Dein Text verlässt dein Gerät nicht.
                    </div>
                 </div>
                  <div class="ska-modal-footer" style="display:flex; justify-content:flex-end;">
