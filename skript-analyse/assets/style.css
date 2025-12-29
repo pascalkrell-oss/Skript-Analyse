@@ -116,13 +116,12 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
-.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.82rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; min-height: 40px;
+.ska-filterbar-header { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 40px;
 
     padding: 0.45rem 0;
-    line-height: 1;
 }
-.ska-filterbar-header > span { justify-self: center; grid-column: 2; }
-.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; justify-self: end; grid-column: 3; }
+.ska-filterbar-header > span { text-align: left; font-family: "Rubik", sans-serif; font-size: 14.4px; font-weight: 700; line-height: 21.6px; color: rgb(100, 116, 139); text-transform: none; letter-spacing: normal; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
@@ -631,9 +630,7 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 
 .ska-filterbar-header { align-items: center; justify-content: space-between; }
-.ska-filterbar-header > span { display: flex; align-items: center;
-
-    line-height: 1;
+.ska-filterbar-header > span { display: flex; align-items: center; text-align: left; font-family: "Rubik", sans-serif; font-size: 14.4px; font-weight: 700; line-height: 21.6px; color: rgb(100, 116, 139); text-transform: none; letter-spacing: normal;
 }
 .ska-filterbar-actions { align-items: center; }
 .ska-filterbar-toggle { line-height: 1; }
