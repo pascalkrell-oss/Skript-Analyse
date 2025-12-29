@@ -21,15 +21,15 @@
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
-            werbung: { tipNote: 'Werbespot: kurz, pointiert, klare CTA-Impulse.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
-            imagefilm: { tipNote: 'Imagefilm: markenpräzise, ruhig, bildstark.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
-            erklaer: { tipNote: 'Erklärvideo: Schritt-für-Schritt, klare Logik.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
-            hoerbuch: { tipNote: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
-            podcast: { tipNote: 'Podcast: dialogisch, locker, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
-            ansage: { tipNote: 'Ansage: sehr klar, präzise, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
-            elearning: { tipNote: 'E-Learning: didaktisch, ruhig, verständlich.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
-            social: { tipNote: 'Social Media: schnell, energisch, kurz.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
-            buch: { tipNote: 'Buch/Roman: erzählerisch, lebendige Bilder.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+            werbung: { tipBase: 'Werbespot: pointiert und CTA-nah.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipBase: 'Imagefilm: ruhig, bildstark, markenklar.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipBase: 'Erklärvideo: logisch, schrittweise, klar.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipBase: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipBase: 'Podcast: locker, dialogisch, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipBase: 'Ansage: präzise, klar, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipBase: 'E-Learning: ruhig, didaktisch, strukturiert.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipBase: 'Social Media: schnell, snackable, direkt.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipBase: 'Buch/Roman: bildhaft, ruhig, atmosphärisch.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
         },
         
         ANGLICISMS: [
@@ -3148,8 +3148,6 @@
                         h += `</div>`;
                     }
                 }
-            } else {
-                h += `<div style="margin-bottom:1rem; font-size:0.85rem; color:#94a3b8;">Hinterlege Fokus-Keywords in den Einstellungen, um die Keyword-Dichte (SEO vs. Voice) zu prüfen.</div>`;
             }
 
             const dominant = top[0];
@@ -3183,6 +3181,9 @@
                       </div>`;
             });
             h += `</div>`;
+            if (!focusKeywords.length) {
+                h += `<div style="margin:0.8rem 0 0.6rem; font-size:0.85rem; color:#94a3b8;">Hinterlege Fokus-Keywords in den Einstellungen, um die Keyword-Dichte (SEO vs. Voice) zu prüfen.</div>`;
+            }
             h += this.renderTipSection('keyword_focus', true);
             this.updateCard('keyword_focus', h);
         }
@@ -3783,7 +3784,10 @@
             const tT = tips.length;
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
-            const genreNote = genreContext ? `<div class="ska-tip-genre">${genreContext.tipNote}</div>` : '';
+            const cardTitle = SA_CONFIG.CARD_TITLES[id] || 'Analyse';
+            const genreNote = genreContext
+                ? `<div class="ska-tip-genre">${genreContext.tipBase} (${cardTitle})</div>`
+                : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
         }
