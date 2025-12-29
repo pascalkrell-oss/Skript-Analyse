@@ -21,6 +21,15 @@
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
+            werbung: { tipPrefix: 'Werbespot', tipFocus: 'kurz, pointiert, CTA-nah formulieren', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipPrefix: 'Imagefilm', tipFocus: 'ruhige Bilder, klare Markenbotschaft', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipPrefix: 'Erklärvideo', tipFocus: 'logisch führen, Schritt für Schritt', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipPrefix: 'Hörbuch', tipFocus: 'Atempausen setzen, Bögen halten', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipPrefix: 'Podcast', tipFocus: 'locker sprechen, natürlich bleiben', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipPrefix: 'Ansage', tipFocus: 'präzise, klar und schnell erfassbar', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipPrefix: 'E-Learning', tipFocus: 'didaktisch gliedern, Ruhe bewahren', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipPrefix: 'Social Media', tipFocus: 'schnell zum Punkt, snackable', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipPrefix: 'Buch/Roman', tipFocus: 'bildhaft erzählen, Rhythmus halten', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
             werbung: { tipBase: 'Werbespot: pointiert und CTA-nah.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
             imagefilm: { tipBase: 'Imagefilm: ruhig, bildstark, markenklar.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
             erklaer: { tipBase: 'Erklärvideo: logisch, schrittweise, klar.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
@@ -3785,8 +3794,9 @@
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const cardTitle = SA_CONFIG.CARD_TITLES[id] || 'Analyse';
+            const cardDescription = SA_CONFIG.CARD_DESCRIPTIONS[id];
             const genreNote = genreContext
-                ? `<div class="ska-tip-genre">${genreContext.tipBase} (${cardTitle})</div>`
+                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${genreContext.tipFocus} – ${cardTitle}. ${cardDescription || ''}</div>`
                 : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
