@@ -1,11 +1,17 @@
 const cleanTextForCounting = (text) =>
-    text.replace(/\|[0-9\.]+S?\|/g, '').replace(/\[PAUSE:.*?\]/g, '').replace(/\|/g, '');
+    text
+        .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
+        .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+        .replace(/\s*\|\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
 const countSyllables = (word) => {
-    let w = word.toLowerCase();
-    if (w.length <= 3) return 1;
-    w = w.replace(/(?:eu|au|ei|ie|äu|oi|ui)/g, 'a');
-    const matches = w.match(/[aeiouäöü]/g);
+    const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
+    if (!clean) return 0;
+    if (clean.length <= 3) return 1;
+    const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
+    const matches = normalized.match(/[aeiouäöü]/g);
     return matches ? matches.length : 1;
 };
 

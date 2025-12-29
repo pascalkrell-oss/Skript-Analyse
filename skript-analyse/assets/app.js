@@ -12,12 +12,25 @@
         UI_KEY_HIDDEN: 'skriptanalyse_hidden_cards',
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
+        PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
+        WORKER_TEXT_THRESHOLD: 12000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
-        WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, default: 150 },
-        SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, default: 3.8 },
+        WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
+        SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, buch: 3.2, default: 3.8 },
 
-        GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media' },
+        GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
+        GENRE_CONTEXT: {
+            werbung: { tipNote: 'Werbespot: kurz, pointiert, klare CTA-Impulse.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipNote: 'Imagefilm: markenpräzise, ruhig, bildstark.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipNote: 'Erklärvideo: Schritt-für-Schritt, klare Logik.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipNote: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipNote: 'Podcast: dialogisch, locker, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipNote: 'Ansage: sehr klar, präzise, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipNote: 'E-Learning: didaktisch, ruhig, verständlich.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipNote: 'Social Media: schnell, energisch, kurz.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipNote: 'Buch/Roman: erzählerisch, lebendige Bilder.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+        },
         
         ANGLICISMS: [
             'meeting', 'call', 'download', 'workflow', 'brainstorming', 'feedback', 
@@ -78,6 +91,8 @@
             negative: ['problem', 'fehler', 'gefahr', 'risiko', 'schlecht', 'verlust', 'angst', 'sorge', 'schwierig', 'nein', 'leider', 'kritik', 'störung', 'kosten', 'teuer', 'falsch', 'warnung', 'schaden', 'krise', 'düster', 'traurig'],
             emotional: ['!', 'wirklich', 'absolut', 'nie', 'immer', 'sofort', 'jetzt', 'unglaublich', 'wahnsinn', 'liebe', 'hass', 'dringend', 'herz', 'leidenschaft', 'feuer', 'eis']
         },
+        SENTIMENT_NEGATIONS: ['nicht', 'kein', 'keine', 'keiner', 'keinem', 'keinen', 'keines', 'nie', 'nichts', 'ohne', 'niemals'],
+        NEGATION_WINDOW: 3,
         AROUSAL: {
             high: ['explosion', 'jetzt', 'sofort', 'sofortig', 'sofortige', 'boom', 'krass', 'schnell', 'dringend', 'extrem', 'feuer', 'stark', 'power', 'heftig', 'wow', 'unglaublich', 'alarm', 'laut', 'aufwachen', 'action'],
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
@@ -90,6 +105,10 @@
         BUZZWORDS: [
             'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
             'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
+        ],
+        NOMINAL_WHITELIST: [
+            'zeitung', 'kleidung', 'meinung', 'wohnung', 'nutzung', 'rechnung', 'bedienung', 'förderung', 'lösung', 'beziehung',
+            'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'spread_index', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
@@ -245,7 +264,12 @@
     const SA_Utils = {
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
-        cleanTextForCounting: (text) => text.replace(/\|[0-9\.]+S?\|/g, '').replace(/\[PAUSE:.*?\]/g, '').replace(/\|/g, ''),
+        cleanTextForCounting: (text) => text
+            .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
+            .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+            .replace(/\s*\|\s*/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim(),
         getPausenTime: (text) => {
             let total = 0;
             const legacy = text.match(/\|([0-9\.]+)S?\|/g) || [];
@@ -398,11 +422,63 @@
     };
 
     const SA_Logic = {
+        getHyphenator: () => {
+            if (SA_Logic._hyphenatorChecked) return SA_Logic._hyphenator;
+            SA_Logic._hyphenatorChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Hypher = window.Hypher;
+            const patterns = window.hyphenationPatternsDe
+                || window.hyphenationPatterns
+                || (window.HyphenationPatterns && (window.HyphenationPatterns.de || window.HyphenationPatterns.de_DE))
+                || window.HypherPatternsDe
+                || window.HypherPatternsDE;
+            if (Hypher && patterns) {
+                SA_Logic._hyphenator = new Hypher(patterns);
+            }
+            return SA_Logic._hyphenator;
+        },
+        getSentimentEngine: () => {
+            if (SA_Logic._sentimentChecked) return SA_Logic._sentimentEngine;
+            SA_Logic._sentimentChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Sentiment = window.Sentiment;
+            if (Sentiment) SA_Logic._sentimentEngine = new Sentiment();
+            return SA_Logic._sentimentEngine;
+        },
+        getTokenData: (text) => {
+            const tokens = text.toLowerCase().match(/[a-zäöüß]+/g) || [];
+            const negations = new Set(SA_CONFIG.SENTIMENT_NEGATIONS);
+            const negated = new Array(tokens.length).fill(false);
+            let windowSize = 0;
+            for (let i = 0; i < tokens.length; i++) {
+                if (negations.has(tokens[i])) {
+                    windowSize = SA_CONFIG.NEGATION_WINDOW;
+                    continue;
+                }
+                if (windowSize > 0) {
+                    negated[i] = true;
+                    windowSize -= 1;
+                }
+            }
+            return { tokens, negated };
+        },
+        getSentimentLexicon: () => {
+            const lexicon = {};
+            SA_CONFIG.SENTIMENT.positive.forEach(word => { lexicon[word] = 2; });
+            SA_CONFIG.SENTIMENT.negative.forEach(word => { lexicon[word] = -2; });
+            return lexicon;
+        },
         countSyllables: (word) => {
-            word = word.toLowerCase();
-            if (word.length <= 3) return 1; 
-            word = word.replace(/(?:eu|au|ei|ie|äu|oi|ui)/g, 'a');
-            const matches = word.match(/[aeiouäöü]/g);
+            const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
+            if (!clean) return 0;
+            if (clean.length <= 3) return 1;
+            const hyphenator = SA_Logic.getHyphenator();
+            if (hyphenator) {
+                const syllables = hyphenator.hyphenate(clean);
+                if (syllables && syllables.length) return syllables.length;
+            }
+            const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
+            const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
         analyzeReadability: (text, settings = {}) => {
@@ -569,17 +645,26 @@
             }); 
             return f; 
         },
-        findNominalStyle: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findNominalStyle: (text) => {
+            const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
+            const matches = text.match(regex) || [];
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const filtered = matches.filter(word => !whitelist.has(word.toLowerCase()));
+            return [...new Set(filtered)];
+        },
         
         findNominalChains: (text) => {
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const chains = [];
             const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
 
             sentences.forEach(s => {
                 const words = s.trim().split(/\s+/);
                 let count = 0;
                 words.forEach(w => {
+                    const cleaned = w.toLowerCase().replace(/[^a-zäöüß]/g, '');
+                    if (!cleaned || whitelist.has(cleaned)) return;
                     if (nominalRegex.test(w)) count++;
                 });
                 
@@ -795,13 +880,30 @@
              return { ratio: ratio, count: matches.length };
         },
         analyzeSentiment: (text) => {
-            const l = text.toLowerCase(); 
-            let posScore = 0; let negScore = 0;
-            SA_CONFIG.SENTIMENT.positive.forEach(w => { if(l.includes(w)) posScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            SA_CONFIG.SENTIMENT.negative.forEach(w => { if(l.includes(w)) negScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            const total = posScore + negScore;
-            let temp = 0;
-            if(total > 0) temp = ((posScore - negScore) / total) * 100;
+            const engine = SA_Logic.getSentimentEngine();
+            let posScore = 0; let negScore = 0; let temp = 0;
+            if (engine) {
+                const result = engine.analyze(text, { extras: SA_Logic.getSentimentLexicon() });
+                posScore = (result.positive || []).length;
+                negScore = (result.negative || []).length;
+                temp = Math.max(-100, Math.min(100, (result.comparative || 0) * 100));
+            } else {
+                const { tokens, negated } = SA_Logic.getTokenData(text);
+                const positives = new Set(SA_CONFIG.SENTIMENT.positive);
+                const negatives = new Set(SA_CONFIG.SENTIMENT.negative);
+                tokens.forEach((token, idx) => {
+                    if (positives.has(token)) {
+                        if (negated[idx]) negScore += 1;
+                        else posScore += 1;
+                    }
+                    if (negatives.has(token)) {
+                        if (negated[idx]) posScore += 1;
+                        else negScore += 1;
+                    }
+                });
+                const total = posScore + negScore;
+                if (total > 0) temp = ((posScore - negScore) / total) * 100;
+            }
             let label = 'Neutral';
             if (temp > 30) label = 'Positiv / Warm';
             else if (temp < -30) label = 'Kritisch / Kühl';
@@ -963,15 +1065,19 @@
             const ratio = nouns > 0 ? verbs / nouns : verbs;
             return { verbs, nouns, ratio };
         },
-        analyzeRhetoricalQuestions: (sentences) => {
-            if (!sentences || sentences.length === 0) return [];
-            return sentences.map(sentence => {
-                const trimmed = sentence.trim();
+        analyzeRhetoricalQuestions: (text, sentences = []) => {
+            const cleaned = SA_Utils.cleanTextForCounting(text || '').trim();
+            const source = cleaned.length ? cleaned : (sentences || []).join(' ');
+            if (!source) return [];
+            const parts = source.match(/[^.!?]+[!?]?/g) || [];
+            return parts.map(segment => {
+                const trimmed = segment.trim();
+                if (!trimmed) return null;
                 const firstWord = trimmed.split(/\s+/)[0] ? trimmed.split(/\s+/)[0].toLowerCase() : '';
-                const endsWithQ = /\?$/.test(trimmed);
+                const isQuestion = /\?\s*$/.test(trimmed);
                 const startsWithQWord = SA_CONFIG.QUESTION_WORDS.includes(firstWord);
-                return { sentence: trimmed, isRhetorical: endsWithQ && startsWithQWord };
-            });
+                return { sentence: trimmed, isQuestion, isRhetorical: isQuestion && startsWithQWord };
+            }).filter(Boolean);
         },
         analyzeDepthCheck: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
@@ -1070,13 +1176,15 @@
         },
         analyzeArousalMap: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
-            const high = SA_CONFIG.AROUSAL.high;
-            const low = SA_CONFIG.AROUSAL.low;
+            const high = new Set(SA_CONFIG.AROUSAL.high);
+            const low = new Set(SA_CONFIG.AROUSAL.low);
             return sentences.map(sentence => {
-                const l = sentence.toLowerCase();
                 let score = 0;
-                high.forEach(w => { if (l.includes(w)) score += 2; });
-                low.forEach(w => { if (l.includes(w)) score -= 1; });
+                const { tokens, negated } = SA_Logic.getTokenData(sentence);
+                tokens.forEach((token, idx) => {
+                    if (high.has(token)) score += negated[idx] ? -1 : 2;
+                    if (low.has(token)) score += negated[idx] ? 1 : -1;
+                });
                 const normalized = Math.max(-4, Math.min(6, score));
                 return { sentence: sentence.trim(), score: normalized };
             });
@@ -1184,7 +1292,7 @@
                     const sentimentIntensity = SA_Logic.analyzeSentimentIntensity(read.sentences);
                     const namingCheck = SA_Logic.analyzeNamingInconsistency(read.sentences);
                     const verbBalance = SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences);
-                    const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(read.sentences);
+                    const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(text, read.sentences);
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -1238,7 +1346,11 @@
                         if (bpmSuggestion.bpm > 0) addRow("Audio-BPM:", `${bpmSuggestion.bpm} BPM (${bpmSuggestion.range[0]}–${bpmSuggestion.range[1]})`);
                         if (audienceCheck && settings.audienceTarget) addRow("Zielgruppen-Check:", audienceCheck.message);
                         if (verbBalance) addRow("Verb-Fokus:", `Verben ${verbBalance.verbs} / Substantive ${verbBalance.nouns}`);
-                        if (rhetoricalQuestions.length) addRow("Rhetorische Fragen:", `${rhetoricalQuestions.filter(q => q.isRhetorical).length} / ${rhetoricalQuestions.length}`);
+                        if (rhetoricalQuestions.length) {
+                            const questionCount = rhetoricalQuestions.filter(q => q.isQuestion).length;
+                            const rhetoricalCount = rhetoricalQuestions.filter(q => q.isRhetorical).length;
+                            addRow("Rhetorische Fragen:", `${rhetoricalCount} rhetorisch · ${questionCount} Fragen`);
+                        }
                         if (depthCheck.length) addRow("Satz-Verschachtelung:", `${depthCheck.filter(d => d.isDeep).length} kritisch`);
                         if (sentimentIntensity.length) {
                             const start = sentimentIntensity[0]?.score ?? 0;
@@ -1429,9 +1541,14 @@
                 excludedCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 }
+                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
+                analysisToken: 0,
+                readabilityCache: []
             };
             
+            this.analysisWorker = null;
+            this.workerRequests = new Map();
+            this.workerRequestId = 0;
             this.isRestoring = false;
 
             this.loadUIState();
@@ -1439,6 +1556,7 @@
             this.renderSettingsModal();
             this.renderBenchmarkModal();
             this.renderTeleprompterModal();
+            this.initAnalysisWorker();
             this.bindEvents();
             
             this.injectGlobalStyles(); // CSS Overrides
@@ -1636,11 +1754,47 @@
             </div>`;
             document.body.appendChild(m);
             
+            const wpmSlider = m.querySelector('[data-action="wpm-slider"]');
+            if (wpmSlider) {
+                wpmSlider.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value, 10);
+                    this.settings.manualWpm = val;
+                    this.saveUIState();
+                    this.updateWpmUI();
+                });
+                wpmSlider.addEventListener('change', () => this.analyze(this.getText()));
+            }
+
+            const benchmarkBtn = m.querySelector('[data-action="open-benchmark"]');
+            if (benchmarkBtn) {
+                benchmarkBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.renderBenchmarkModal();
+                    const modal = document.getElementById('ska-benchmark-modal');
+                    if (modal) {
+                        modal.classList.add('is-open');
+                        document.body.classList.add('ska-modal-open');
+                    }
+                });
+            }
+
+            const resetWpmBtn = m.querySelector('[data-action="reset-wpm"]');
+            if (resetWpmBtn) {
+                resetWpmBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleAction('reset-wpm', resetWpmBtn);
+                    this.updateWpmUI();
+                });
+            }
+
             // Bind radio changes
             m.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', (e) => {
                 if(e.target.name === 'ska-time-mode') this.settings.timeMode = e.target.value;
                 if(e.target.name === 'ska-char-mode') this.settings.charMode = e.target.value;
-                if(e.target.name === 'ska-num-mode') this.settings.numberMode = e.target.value;
+                if(e.target.name === 'ska-num-mode') {
+                    this.settings.numberMode = e.target.value;
+                    this.state.readabilityCache = [];
+                }
                 this.saveUIState(); 
                 this.analyze(this.getText());
             }));
@@ -1675,6 +1829,122 @@
                     this.analyze(this.getText());
                 });
             }
+        }
+
+        updateWpmUI() {
+            const modal = document.getElementById('ska-settings-modal');
+            if (!modal) return;
+            const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
+            const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
+            const label = modal.querySelector('.ska-wpm-header strong');
+            const slider = modal.querySelector('[data-action="wpm-slider"]');
+            if (label) label.textContent = manualLabel;
+            if (slider) slider.value = sliderValue;
+        }
+
+        initAnalysisWorker() {
+            const workerUrl = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.workerUrl;
+            if (!workerUrl || !window.Worker) return;
+            try {
+                this.analysisWorker = new Worker(workerUrl);
+                this.analysisWorker.onmessage = (event) => {
+                    const { id, results } = event.data || {};
+                    if (!id || !this.workerRequests.has(id)) return;
+                    const { resolve } = this.workerRequests.get(id);
+                    this.workerRequests.delete(id);
+                    resolve(results || []);
+                };
+                this.analysisWorker.onerror = () => {
+                    this.analysisWorker = null;
+                    this.workerRequests.clear();
+                };
+            } catch (err) {
+                this.analysisWorker = null;
+            }
+        }
+
+        requestWorkerReadability(paragraphs) {
+            if (!this.analysisWorker) return Promise.resolve([]);
+            const id = ++this.workerRequestId;
+            return new Promise((resolve) => {
+                this.workerRequests.set(id, { resolve });
+                this.analysisWorker.postMessage({
+                    id,
+                    type: 'paragraphs',
+                    paragraphs,
+                    settings: { numberMode: this.settings.numberMode }
+                });
+            });
+        }
+
+        buildReadabilityFromCache(paragraphs) {
+            const combinedSentences = [];
+            const combinedWords = [];
+            let totalSyllables = 0;
+            let wordCount = 0;
+            let speakingWordCount = 0;
+            let maxSentenceWords = 0;
+            let paragraphsCount = 0;
+            const cleanedParts = [];
+
+            paragraphs.forEach((entry) => {
+                if (!entry || !entry.result) return;
+                const res = entry.result;
+                if (res.wordCount > 0) paragraphsCount += 1;
+                totalSyllables += res.totalSyllables;
+                wordCount += res.wordCount;
+                speakingWordCount += res.speakingWordCount;
+                maxSentenceWords = Math.max(maxSentenceWords, res.maxSentenceWords || 0);
+                if (res.sentences && res.sentences.length) combinedSentences.push(...res.sentences);
+                if (res.words && res.words.length) combinedWords.push(...res.words);
+                if (res.cleanedText) cleanedParts.push(res.cleanedText);
+            });
+
+            const avgS = wordCount / (combinedSentences.length || 1);
+            const avgW = wordCount > 0 ? totalSyllables / wordCount : 0;
+            const score = 180 - avgS - (58.5 * avgW);
+
+            return {
+                score: Math.max(0, Math.min(100, score)),
+                avgSentence: avgS,
+                syllablesPerWord: avgW,
+                wordCount,
+                speakingWordCount,
+                words: combinedWords,
+                sentences: combinedSentences,
+                cleanedText: cleanedParts.join('\n\n'),
+                paragraphs: paragraphsCount,
+                maxSentenceWords,
+                totalSyllables
+            };
+        }
+
+        getReadabilityWithDiff(text) {
+            const parts = text.split(/\n\s*\n/);
+            const cache = this.state.readabilityCache;
+            const updates = [];
+
+            parts.forEach((part, index) => {
+                const cached = cache[index];
+                if (!cached || cached.text !== part) {
+                    updates.push({ index, text: part });
+                }
+            });
+
+            cache.length = parts.length;
+
+            if (!updates.length) {
+                return Promise.resolve(this.buildReadabilityFromCache(cache));
+            }
+
+            return this.requestWorkerReadability(updates).then((results) => {
+                results.forEach((item) => {
+                    cache[item.index] = { text: item.text, result: item.result };
+                });
+                return this.buildReadabilityFromCache(cache);
+            });
         }
 
         renderBenchmarkModal() {
@@ -1748,9 +2018,12 @@
         updateTeleprompterMeta(read) {
             const meta = document.querySelector('[data-role-teleprompter-meta]');
             if (!meta || !read) return;
+            const isSps = this.settings.timeMode === 'sps';
             const wpm = SA_Logic.getWpm(this.settings);
-            const seconds = (read.speakingWordCount / wpm) * 60;
-            meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
+            const sps = SA_Logic.getSps(this.settings);
+            const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
+            const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
+            meta.textContent = `Tempo: ${rateLabel} • Dauer: ${SA_Utils.formatMin(seconds)}`;
         }
 
         buildTeleprompterContent(text) {
@@ -1785,13 +2058,19 @@
 
         startTeleprompter(read) {
             const modal = document.getElementById('ska-teleprompter-modal');
-            if (!modal || !read) return;
+            if (!modal || !read) return false;
             const body = modal.querySelector('.ska-teleprompter-body');
-            if (!body) return;
+            if (!body) return false;
+            const isSps = this.settings.timeMode === 'sps';
             const wpm = SA_Logic.getWpm(this.settings);
-            const duration = (read.speakingWordCount / wpm) * 60 * 1000;
+            const sps = SA_Logic.getSps(this.settings);
+            const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
+            const duration = seconds * 1000;
             const distance = body.scrollHeight - body.clientHeight;
-            if (distance <= 0) return;
+            if (distance <= 0) {
+                this.state.teleprompter.playing = false;
+                return false;
+            }
 
             this.state.teleprompter.playing = true;
             this.state.teleprompter.duration = duration;
@@ -1812,6 +2091,7 @@
                 }
             };
             this.state.teleprompter.rafId = requestAnimationFrame(step);
+            return true;
         }
 
         pauseTeleprompter() {
@@ -1947,6 +2227,7 @@
                 if (wpm && wpm > 0) {
                     this.settings.manualWpm = wpm;
                     this.saveUIState();
+                    this.updateWpmUI();
                     this.analyze(this.getText());
                 }
                 return true;
@@ -1960,8 +2241,8 @@
                     btn.textContent = 'Start';
                 } else {
                     const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
-                    this.startTeleprompter(read);
-                    btn.textContent = 'Pause';
+                    const started = this.startTeleprompter(read);
+                    btn.textContent = started ? 'Pause' : 'Start';
                 }
                 return true;
             }
@@ -1986,6 +2267,7 @@
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
+                this.updateWpmUI();
                 this.analyze(this.getText());
                 return true;
             }
@@ -2235,16 +2517,38 @@
                     return; 
                 }
 
-                if(act === 'toggle-breath-more') {
-                     const hiddenBox = this.root.querySelector('#ska-breath-hidden');
-                     if(hiddenBox) {
-                         const isHidden = !hiddenBox.classList.contains('is-expanded');
-                         hiddenBox.classList.toggle('is-expanded');
-                         const total = parseInt(btn.dataset.total || 0);
-                         btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
-                     }
-                     e.preventDefault();
+            if(act === 'toggle-breath-more') {
+                 const hiddenBox = this.root.querySelector('#ska-breath-hidden');
+                 if(hiddenBox) {
+                     const isHidden = !hiddenBox.classList.contains('is-expanded');
+                     hiddenBox.classList.toggle('is-expanded');
+                     const total = parseInt(btn.dataset.total || 0);
+                     btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
+                 }
+                 e.preventDefault();
+            }
+
+            if(act === 'toggle-rhet-questions') {
+                const hiddenBox = this.root.querySelector('#ska-rhet-questions-hidden');
+                if(hiddenBox) {
+                    const isHidden = !hiddenBox.classList.contains('is-expanded');
+                    hiddenBox.classList.toggle('is-expanded');
+                    const total = parseInt(btn.dataset.total || 0);
+                    btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
                 }
+                e.preventDefault();
+            }
+
+            if(act === 'toggle-plosive') {
+                const hiddenBox = this.root.querySelector('#ska-plosive-hidden');
+                if(hiddenBox) {
+                    const isHidden = !hiddenBox.classList.contains('is-expanded');
+                    hiddenBox.classList.toggle('is-expanded');
+                    const total = parseInt(btn.dataset.total || 0);
+                    btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
+                }
+                e.preventDefault();
+            }
 
                 if(act === 'clean') { 
                     this.setText(this.getText().replace(/[\t\u00A0]/g,' ').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n')); 
@@ -2321,6 +2625,7 @@
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
+                    this.state.readabilityCache = [];
                     this.saveUIState();
                     this.renderHiddenPanel();
                     this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
@@ -2404,8 +2709,21 @@
         }
 
         analyze(text) {
-            SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, text);
-            const raw = text || '', read = SA_Logic.analyzeReadability(raw, this.settings);
+            const raw = text || '';
+            this.state.analysisToken += 1;
+            const token = this.state.analysisToken;
+            if (this.analysisWorker && raw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
+                this.getReadabilityWithDiff(raw).then((read) => {
+                    if (token !== this.state.analysisToken) return;
+                    this.performAnalysis(raw, read);
+                });
+                return;
+            }
+            this.performAnalysis(raw, SA_Logic.analyzeReadability(raw, this.settings));
+        }
+
+        performAnalysis(raw, read) {
+            SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
             const wpm = SA_Logic.getWpm(this.settings);
             const sps = SA_Logic.getSps(this.settings);
             
@@ -2435,6 +2753,7 @@
                     return 'x'.repeat(Math.ceil(match.length * 4.5));
                 });
             }
+            countText = SA_Utils.cleanTextForCounting(countText);
             
             if (this.settings.charMode === 'no-spaces') {
                 countText = countText.replace(/\s/g, '');
@@ -2510,7 +2829,7 @@
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
-                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(read.sentences), active); break;
+                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
                     case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
@@ -2660,17 +2979,28 @@
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
             } else {
                 h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Folgen: <strong>${clusters.length}</strong></div>`;
+                const initial = clusters.slice(0, 4);
+                const remaining = clusters.slice(4);
                 h += `<div class="ska-problem-list">`;
-                clusters.slice(0, 4).forEach(cluster => {
+                initial.forEach(cluster => {
                     h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
                             ${cluster.phrase}
                             <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
                           </div>`;
                 });
-                if (clusters.length > 4) {
-                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${clusters.length - 4} weitere</div>`;
-                }
                 h += `</div>`;
+                if (remaining.length) {
+                    h += `<div id="ska-plosive-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
+                    h += `<div class="ska-problem-list">`;
+                    remaining.forEach(cluster => {
+                        h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
+                                ${cluster.phrase}
+                                <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
+                              </div>`;
+                    });
+                    h += `</div></div>`;
+                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                }
                 h += this.renderTipSection('plosive', true);
             }
             this.updateCard('plosive', h);
@@ -2763,7 +3093,8 @@
             if(!data || data.length === 0) return this.updateCard('rhet_questions', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für Fragen-Analyse.</p>');
 
             const total = data.length;
-            const questions = data.filter(item => item.isRhetorical);
+            const questions = data.filter(item => item.isQuestion);
+            const rhetorical = data.filter(item => item.isRhetorical);
             const ratio = total > 0 ? (questions.length / total) * 100 : 0;
             let label = 'Ausgewogen';
             let color = SA_CONFIG.COLORS.blue;
@@ -2772,7 +3103,7 @@
 
             let h = `<div class="ska-questions-map">`;
             data.slice(0, 12).forEach(item => {
-                const cls = item.isRhetorical ? 'is-question' : 'is-normal';
+                const cls = item.isQuestion ? 'is-question' : 'is-normal';
                 h += `<span class="ska-question-dot ${cls}"></span>`;
             });
             h += `</div>`;
@@ -2780,12 +3111,24 @@
                     <span>${questions.length} Fragen</span>
                     <span>${label}</span>
                   </div>`;
-            if (questions.length) {
+            const listItems = rhetorical.length ? rhetorical : questions;
+            if (listItems.length) {
+                const initial = listItems.slice(0, 3);
+                const remaining = listItems.slice(3);
                 h += `<div class="ska-problem-list">`;
-                questions.slice(0, 2).forEach(item => {
+                initial.forEach(item => {
                     h += `<div class="ska-problem-item">${item.sentence}</div>`;
                 });
                 h += `</div>`;
+                if (remaining.length) {
+                    h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
+                    h += `<div class="ska-problem-list">`;
+                    remaining.forEach(item => {
+                        h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                    });
+                    h += `</div></div>`;
+                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                }
             }
             h += this.renderTipSection('rhet_questions', true);
             this.updateCard('rhet_questions', h);
@@ -3095,7 +3438,7 @@
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
-            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast'].forEach(g => {
+            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social', 'buch'].forEach(g => {
                  if(g === this.settings.usecase) return;
                  let d = 0;
                  if(isSps) {
@@ -3110,6 +3453,8 @@
 
             const gLbl = this.settings.usecase !== 'auto' ? (SA_CONFIG.GENRE_LABELS[this.settings.usecase] || this.settings.usecase).toUpperCase() : 'AUTO-DETECT';
             const pauseText = pause > 0 ? ` &bull; ${pause.toFixed(1)}s Pause` : '';
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreNote = genreContext ? `<div class="ska-genre-context">${genreContext.overviewNote}</div>` : '';
 
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
@@ -3131,6 +3476,7 @@
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
                     <div style="font-size:0.8rem; color:#64748b; font-weight:500;">Ø ${rateLabel}${pauseText}</div>
+                    ${genreNote}
                 </div>
                 ${meterHtml}
                 ${targetStatusHtml}
@@ -3166,8 +3512,10 @@
             const cI = this.state.tipIndices[id];
             const tip = tips[cI];
             const tT = tips.length;
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreNote = genreContext ? `<div class="ska-tip-genre">${genreContext.tipNote}</div>` : '';
 
-            return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p></div>`;
+            return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
         }
 
         renderGenderCard(issues, active) {
@@ -3266,6 +3614,8 @@
             if(wpm > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
             else if(wpm < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
 
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipNote}</div>` : '';
             const h = `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; margin-bottom:1rem;">
                     <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; border-top:3px solid ${tempoCol}; text-align:center;">
@@ -3284,6 +3634,16 @@
                         <div style="font-size:0.7rem; text-transform:uppercase; color:#1e40af; font-weight:700;">Sprech-Haltung</div>
                         <div style="font-weight:600; color:#1e3a8a; font-size:0.95rem;">${tone.label}</div>
                     </div>
+                </div>
+                <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
+                    <ul style="margin:0; padding-left:1.1rem; color:#475569; font-size:0.85rem; line-height:1.5;">
+                        <li>Betonung planen: markiere Schlüsselsätze für klare Peaks.</li>
+                        <li>Atmung führen: nach Sinnabschnitten bewusst Pausen setzen.</li>
+                        <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
+                        <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
+                    </ul>
+                    ${genreCoachNote}
                 </div>`;
             
             this.updateCard('coach', h);

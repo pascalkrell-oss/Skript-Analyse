@@ -32,19 +32,23 @@ function ska_shortcode() {
     wp_enqueue_script( 'skript-analyse-js' );
 
     $markers_config = [
-        ['label' => '| (Kurze Pause)', 'val' => ' | ', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
-        ['label' => '1 Sekunde', 'val' => ' |1S| ', 'desc' => 'Feste Pause von einer Sekunde'],
-        ['label' => '2 Sekunden', 'val' => ' |2S| ', 'desc' => 'Feste Pause von zwei Sekunden'],
-        ['label' => '[ATMEN]', 'val' => ' [ATMEN] ', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
-        ['label' => '[BETONUNG]', 'val' => ' [BETONUNG] ', 'desc' => 'Das folgende Wort stark hervorheben'],
+        ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
+        ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
+        ['label' => '2 Sekunden', 'val' => '|2S|', 'desc' => 'Feste Pause von zwei Sekunden'],
+        ['label' => '[ATMEN]', 'val' => '[ATMEN]', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
+        ['label' => '[BETONUNG]', 'val' => '[BETONUNG]', 'desc' => 'Das folgende Wort stark hervorheben'],
         ['label' => '[SZENE]', 'val' => "\n\n[SZENE]\n", 'desc' => 'Neuer Abschnitt / Szenenwechsel'],
-        ['label' => '[LAUT]', 'val' => ' [LAUT] ', 'desc' => 'Dynamik steigern / Lauter werden'],
-        ['label' => '[LEISE]', 'val' => ' [LEISE] ', 'desc' => 'Dynamik senken / Leiser werden'],
-        ['label' => '[SCHNELL]', 'val' => ' [SCHNELL] ', 'desc' => 'Tempo deutlich anziehen'],
-        ['label' => '[LANGSAM]', 'val' => ' [LANGSAM] ', 'desc' => 'Tempo drosseln / Getragen sprechen']
+        ['label' => '[LAUT]', 'val' => '[LAUT]', 'desc' => 'Dynamik steigern / Lauter werden'],
+        ['label' => '[LEISE]', 'val' => '[LEISE]', 'desc' => 'Dynamik senken / Leiser werden'],
+        ['label' => '[SCHNELL]', 'val' => '[SCHNELL]', 'desc' => 'Tempo deutlich anziehen'],
+        ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
     ];
     
-    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array('markers' => $markers_config));
+    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
+        'markers' => $markers_config,
+        'pro' => (bool) apply_filters( 'ska_pro_mode', false ),
+        'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
+    ));
 
     ob_start();
     ?>
@@ -71,7 +75,7 @@ function ska_shortcode() {
                     <label>Profil</label>
                     <div class="ska-custom-select-wrapper">
                         <select class="ska-select" data-role-select>
-                            <option value="">Automatisch</option>
+                            <option value="">Allgemein</option>
                             <option value="sprecher">🎙️ Sprecher:in</option>
                             <option value="autor">✍️ Autor:in</option>
                             <option value="regie">🎬 Regie</option>
@@ -92,6 +96,7 @@ function ska_shortcode() {
                             <option value="podcast">Podcast</option>
                             <option value="social">Social Media</option>
                             <option value="elearning">E-Learning</option>
+                            <option value="buch">Buch/Roman</option>
                         </select>
                     </div>
                 </div>
