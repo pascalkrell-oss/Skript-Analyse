@@ -12,6 +12,7 @@
         UI_KEY_HIDDEN: 'skriptanalyse_hidden_cards',
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
+        SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         WORKER_TEXT_THRESHOLD: 12000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
@@ -181,6 +182,7 @@
             vocabulary: '📚 Wortschatz-Reichtum',
             pronunciation: '🗣️ Aussprache-Check',
             keyword_focus: '🎯 Keyword-Fokus',
+            chapter_calc: '📚 Hörbuch-Kapitel-Kalkulator',
             plosive: '💥 Plosiv-Check',
             redundancy: '🧠 Semantische Redundanz',
             bpm: '🎵 Audio-BPM-Matching',
@@ -221,6 +223,7 @@
             vocabulary: 'Berechnet die Type-Token-Ratio (TTR) um den Wortreichtum zu bestimmen.',
             pronunciation: 'Zeigt Wörter mit besonderer Aussprache.',
             keyword_focus: 'Analysiert dominante Substantive und prüft die Fokus-Schärfe.',
+            chapter_calc: 'Erkennt Kapitel-Überschriften und berechnet die Dauer je Kapitel.',
             plosive: 'Warnt vor harten Plosiv-Folgen am Wortanfang.',
             redundancy: 'Findet inhaltliche Dopplungen in aufeinanderfolgenden Sätzen.',
             bpm: 'Schlägt ein passendes Musiktempo (BPM) für den Text vor.',
@@ -237,7 +240,7 @@
             naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'chapter_calc', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -327,6 +330,12 @@
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
         escapeRegex: (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        escapeHtml: (text) => text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;'),
         cleanTextForCounting: (text) => text
             .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
             .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
@@ -334,6 +343,62 @@
             .replace(/\s*\|\s*/g, ' ')
             .replace(/\s+/g, ' ')
             .trim(),
+        generateWordDiff: (oldText, newText, maxWords = 260) => {
+            const oldWords = (oldText || '').trim().split(/\s+/).filter(Boolean);
+            const newWords = (newText || '').trim().split(/\s+/).filter(Boolean);
+            if (!oldWords.length || !newWords.length) return { html: '', additions: 0, deletions: 0, tooLarge: false };
+            if (oldWords.length > maxWords || newWords.length > maxWords) {
+                return { html: '', additions: 0, deletions: 0, tooLarge: true };
+            }
+
+            const rows = oldWords.length + 1;
+            const cols = newWords.length + 1;
+            const dp = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+            for (let i = rows - 2; i >= 0; i -= 1) {
+                for (let j = cols - 2; j >= 0; j -= 1) {
+                    dp[i][j] = oldWords[i] === newWords[j]
+                        ? dp[i + 1][j + 1] + 1
+                        : Math.max(dp[i + 1][j], dp[i][j + 1]);
+                }
+            }
+
+            let i = 0;
+            let j = 0;
+            let additions = 0;
+            let deletions = 0;
+            const htmlParts = [];
+
+            while (i < oldWords.length && j < newWords.length) {
+                if (oldWords[i] === newWords[j]) {
+                    htmlParts.push(SA_Utils.escapeHtml(oldWords[i]));
+                    i += 1;
+                    j += 1;
+                } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+                    deletions += 1;
+                    htmlParts.push(`<span class="ska-diff-removed">${SA_Utils.escapeHtml(oldWords[i])}</span>`);
+                    i += 1;
+                } else {
+                    additions += 1;
+                    htmlParts.push(`<span class="ska-diff-added">${SA_Utils.escapeHtml(newWords[j])}</span>`);
+                    j += 1;
+                }
+            }
+
+            while (i < oldWords.length) {
+                deletions += 1;
+                htmlParts.push(`<span class="ska-diff-removed">${SA_Utils.escapeHtml(oldWords[i])}</span>`);
+                i += 1;
+            }
+
+            while (j < newWords.length) {
+                additions += 1;
+                htmlParts.push(`<span class="ska-diff-added">${SA_Utils.escapeHtml(newWords[j])}</span>`);
+                j += 1;
+            }
+
+            return { html: htmlParts.join(' '), additions, deletions, tooLarge: false };
+        },
         getPausenTime: (text, settings = {}) => {
             let total = 0;
             const safeText = text || '';
@@ -1683,6 +1748,11 @@
             
             this.injectGlobalStyles(); // CSS Overrides
 
+            const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
+            if (savedVersion && savedVersion.trim().length > 0) {
+                this.state.savedVersion = savedVersion;
+            }
+
             const saved = SA_Utils.storage.load(SA_CONFIG.STORAGE_KEY);
             if (saved && saved.trim().length > 0) {
                 this.root.classList.add('is-restoring-now');
@@ -2756,6 +2826,7 @@
                 }
                 if(act === 'save-version') { 
                     this.state.savedVersion = this.getText(); 
+                    SA_Utils.storage.save(SA_CONFIG.SAVED_VERSION_KEY, this.state.savedVersion);
                     const h=this.root.querySelector('[data-role-toast]'); if(h){ h.classList.add('is-visible'); setTimeout(()=>h.classList.remove('is-visible'),2500); }
                     this.analyze(this.getText()); 
                     setTimeout(() => {
@@ -2823,6 +2894,7 @@
                     this.setText(''); 
                     this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2}; 
                     this.state.savedVersion=''; 
+                    SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
                     this.state.readabilityCache = [];
@@ -3013,6 +3085,7 @@
                     case 'cta': this.renderCtaCard(raw, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
                     case 'rhythm': this.renderRhythmCard(read.sentences, read.maxSentenceWords, active); break;
+                    case 'chapter_calc': this.renderChapterCalculatorCard(raw, active); break;
                     case 'dialog': this.renderDialogCard(SA_Logic.analyzeDialog(raw), active); break;
                     case 'gender': this.renderGenderCard(SA_Logic.findGenderBias(raw), active); break;
                     case 'start_var': this.renderRepetitiveStartsCard(SA_Logic.analyzeSentenceStarts(read.sentences), active); break;
@@ -4242,6 +4315,94 @@
             }
         }
 
+        renderChapterCalculatorCard(raw, active) {
+            if(!active) return this.updateCard('chapter_calc', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const isHoerbuch = this.settings.usecase === 'hoerbuch' || (this.settings.usecase === 'auto' && this.settings.lastGenre === 'hoerbuch');
+            if (!isHoerbuch) {
+                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>');
+            }
+
+            const chapters = this.extractChapters(raw);
+            if (!chapters.length) {
+                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p>');
+            }
+
+            let total = 0;
+            const rows = chapters.map((chapter, index) => {
+                const duration = this.calculateDurationForText(chapter.content);
+                total += duration;
+                return `
+                    <div class="ska-chapter-row">
+                        <div class="ska-chapter-title">${index + 1}. ${SA_Utils.escapeHtml(chapter.title)}</div>
+                        <div class="ska-chapter-meta">
+                            <span>${chapter.wordCount} Wörter</span>
+                            <strong>${SA_Utils.formatMin(duration)}</strong>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            const html = `
+                <div class="ska-chapter-summary">
+                    <span>Gefundene Kapitel: <strong>${chapters.length}</strong></span>
+                    <span>Gesamtzeit: <strong>${SA_Utils.formatMin(total)}</strong></span>
+                </div>
+                <div class="ska-chapter-list">${rows}</div>`;
+            this.updateCard('chapter_calc', html);
+        }
+
+        extractChapters(raw) {
+            const lines = (raw || '').split(/\r?\n/);
+            const chapters = [];
+            let current = null;
+
+            const headingRegex = /^\s*(?:#+\s*)?(kapitel|chapter)\s+([0-9ivxlcdm]+|[0-9]+|[a-zäöü]+)\b.*$/i;
+
+            lines.forEach((line) => {
+                const trimmed = line.trim();
+                const isHeading = headingRegex.test(trimmed);
+
+                if (isHeading) {
+                    if (current) chapters.push(current);
+                    current = { title: trimmed, lines: [trimmed] };
+                    return;
+                }
+
+                if (!current) {
+                    if (trimmed.length > 0) {
+                        current = { title: 'Vorspann', lines: [line] };
+                    }
+                    return;
+                }
+
+                current.lines.push(line);
+            });
+
+            if (current) chapters.push(current);
+
+            return chapters
+                .map((chapter) => {
+                    const content = chapter.lines.join('\n').trim();
+                    const read = SA_Logic.analyzeReadability(content, this.settings);
+                    return {
+                        title: chapter.title,
+                        content,
+                        wordCount: read.wordCount
+                    };
+                })
+                .filter((chapter) => chapter.content.length > 0);
+        }
+
+        calculateDurationForText(text) {
+            const read = SA_Logic.analyzeReadability(text, this.settings);
+            const pause = SA_Utils.getPausenTime(text, this.settings);
+            const wpm = SA_Logic.getWpm(this.settings);
+            const sps = SA_Logic.getSps(this.settings);
+            if (this.settings.timeMode === 'sps') {
+                return (read.totalSyllables / sps) + pause;
+            }
+            return (read.speakingWordCount / wpm * 60) + pause;
+        }
+
         renderDialogCard(d, active) {
             if(!active) return this.updateCard('dialog', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
@@ -4333,6 +4494,20 @@
                 }
             }
 
+            const diff = SA_Utils.generateWordDiff(oldRaw, this.getText());
+            const diffHtml = diff.tooLarge
+                ? `<div class="ska-diff-warning">Diff-Ansicht deaktiviert (Text zu lang). Tipp: kürzere Abschnitte vergleichen.</div>`
+                : (diff.html
+                    ? `<div class="ska-diff-panel">
+                            <div class="ska-diff-header">Diff-Ansicht (Wortbasis)</div>
+                            <div class="ska-diff-body">${diff.html}</div>
+                            <div class="ska-diff-legend">
+                                <span class="ska-diff-added">Hinzugefügt</span>
+                                <span class="ska-diff-removed">Entfernt</span>
+                            </div>
+                        </div>`
+                    : '');
+
             this.compareRow.innerHTML = `
                 <div class="skriptanalyse-card" style="width:100%; border-color:#93c5fd;">
                     <div class="ska-card-header"><h3>${SA_CONFIG.CARD_TITLES.compare}</h3></div>
@@ -4367,6 +4542,7 @@
                                 ${targetFazitHtml}
                             </div>
                         </div>
+                        ${diffHtml}
                     </div>
                 </div>`;
             this.compareRow.classList.add('is-active');
