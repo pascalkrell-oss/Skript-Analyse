@@ -146,11 +146,11 @@
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
-            sprecher: ['overview', 'char', 'rhythm', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language'],
-            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism']
+            sprecher: ['overview', 'char', 'rhythm', 'chapter_calc', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc'],
+            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath', 'chapter_calc'],
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc']
         },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -241,6 +241,18 @@
         },
 
         CARD_ORDER: ['char', 'rhythm', 'chapter_calc', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+
+        GENRE_CARDS: {
+            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'start_var', 'echo', 'passive', 'fillers', 'anglicism'],
+            imagefilm: ['char', 'coach', 'rhythm', 'breath', 'teleprompter', 'bpm', 'arousal', 'metaphor', 'pronunciation', 'plosive'],
+            erklaer: ['char', 'coach', 'rhythm', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble'],
+            hoerbuch: ['char', 'rhythm', 'chapter_calc', 'coach', 'breath', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm'],
+            podcast: ['char', 'coach', 'rhythm', 'dialog', 'teleprompter', 'breath', 'bpm', 'arousal', 'pronunciation'],
+            ansage: ['char', 'coach', 'rhythm', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm'],
+            elearning: ['char', 'coach', 'rhythm', 'easy_language', 'audience', 'verb_balance', 'teleprompter', 'pronunciation', 'stumble'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'start_var', 'adjective', 'echo', 'anglicism'],
+            buch: ['char', 'rhythm', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var']
+        },
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -1846,123 +1858,132 @@
             <div class="skriptanalyse-modal-content">
                 <div class="ska-modal-header"><h3>Einstellungen</h3></div>
                 <div class="skriptanalyse-modal-body">
-                    
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zeichen zählen</label>
-                        <div class="ska-settings-option-group">
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-char-mode" value="spaces" ${this.settings.charMode === 'spaces' ? 'checked' : ''}>
-                                <span style="font-size:0.9rem;">Inkl. Leerzeichen</span>
-                            </label>
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-char-mode" value="no-spaces" ${this.settings.charMode === 'no-spaces' ? 'checked' : ''}>
-                                <span style="font-size:0.9rem;">Ohne Leerzeichen</span>
-                            </label>
+                    <div class="ska-settings-section">
+                        <div class="ska-settings-section-header">
+                            <h4>Text-Zählung</h4>
+                            <p>Bestimme, wie Zeichen und Zahlen gewichtet werden.</p>
                         </div>
-                    </div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zahlen Interpretation</label>
-                        <div class="ska-settings-option-group">
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-num-mode" value="digit" ${this.settings.numberMode === 'digit' ? 'checked' : ''}>
-                                <div>
-                                    <span style="font-size:0.9rem; display:block;">Als Zahl</span>
-                                    <span class="ska-settings-option-subtext">12 = 2 Zeichen</span>
-                                </div>
-                            </label>
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-num-mode" value="word" ${this.settings.numberMode === 'word' ? 'checked' : ''}>
-                                <div>
-                                    <span style="font-size:0.9rem; display:block;">Als Wort</span>
-                                    <span class="ska-settings-option-subtext">Zwölf = 5 Zeichen</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div style="border-top:1px solid #f1f5f9; margin:1.5rem 0;"></div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zielzeit (Min:Sek)</label>
-                        <input type="text" id="ska-set-target" value="${targetVal}" placeholder="z.B. 1:30" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px;">
-                    </div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zeit-Berechnung (Timer)</label>
-                        <div class="ska-settings-option-group">
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
-                                <div>
-                                    <strong style="display:block; font-size:0.9rem;">WPM (Standard)</strong>
-                                    <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
-                                </div>
-                            </label>
-                            <label class="ska-settings-option">
-                                <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''}>
-                                <div>
-                                    <strong style="display:block; font-size:0.9rem;">SPS (Präzise)</strong>
-                                    <span class="ska-settings-option-subtext is-muted">Silben pro Sekunde</span>
-                                </div>
-                            </label>
-                        </div>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">SPS bietet eine höhere Genauigkeit für Synchronsprecher, da lange Wörter (z.B. "Donaudampfschifffahrt") korrekt als länger berechnet werden als kurze.</p>
-                    </div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Pausen-Automatik (Punkt & Komma)</label>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-                            <div>
-                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:0.35rem;">Komma-Pause (Sekunden)</span>
-                                <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause ?? 0.2}" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px;">
-                            </div>
-                            <div>
-                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:0.35rem;">Punkt-Pause (Sekunden)</span>
-                                <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause ?? 0.5}" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px;">
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Zeichen zählen</label>
+                            <div class="ska-settings-option-group">
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-char-mode" value="spaces" ${this.settings.charMode === 'spaces' ? 'checked' : ''}>
+                                    <span>Inkl. Leerzeichen</span>
+                                </label>
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-char-mode" value="no-spaces" ${this.settings.charMode === 'no-spaces' ? 'checked' : ''}>
+                                    <span>Ohne Leerzeichen</span>
+                                </label>
                             </div>
                         </div>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Diese Mikro-Pausen werden zur Gesamtzeit addiert – ideal für Voice-Optimierung.</p>
-                    </div>
-
-                    <div class="ska-wpm-calibration">
-                        <div class="ska-wpm-header">
-                            <span>Persönliches WPM</span>
-                            <strong>${manualLabel}</strong>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Zahlen-Interpretation</label>
+                            <div class="ska-settings-option-group">
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-num-mode" value="digit" ${this.settings.numberMode === 'digit' ? 'checked' : ''}>
+                                    <div>
+                                        <span class="ska-settings-option-title">Als Zahl</span>
+                                        <span class="ska-settings-option-subtext">12 = 2 Zeichen</span>
+                                    </div>
+                                </label>
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-num-mode" value="word" ${this.settings.numberMode === 'word' ? 'checked' : ''}>
+                                    <div>
+                                        <span class="ska-settings-option-title">Als Wort</span>
+                                        <span class="ska-settings-option-subtext">Zwölf = 5 Zeichen</span>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
-                        <input type="range" min="90" max="200" step="1" value="${sliderValue}" data-action="wpm-slider">
-                        <div class="ska-wpm-actions">
-                            <button class="ska-btn ska-btn--secondary" data-action="open-benchmark">Kalibrieren</button>
-                            <button class="ska-btn ska-btn--ghost" data-action="reset-wpm">Auto</button>
+                    </div>
+
+                    <div class="ska-settings-section">
+                        <div class="ska-settings-section-header">
+                            <h4>Timing & Pausen</h4>
+                            <p>Kalibriere Zieldauer, Tempo und Pausenlogik.</p>
+                        </div>
+                        <div class="ska-settings-grid-two">
+                            <div class="ska-settings-field">
+                                <label class="ska-settings-label">Zielzeit (Min:Sek)</label>
+                                <input type="text" id="ska-set-target" value="${targetVal}" placeholder="z.B. 1:30" class="ska-settings-input">
+                            </div>
+                            <div class="ska-settings-field">
+                                <label class="ska-settings-label">Zeit-Berechnung</label>
+                                <div class="ska-settings-option-group">
+                                    <label class="ska-settings-option">
+                                        <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
+                                        <div>
+                                            <span class="ska-settings-option-title">WPM (Standard)</span>
+                                            <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
+                                        </div>
+                                    </label>
+                                    <label class="ska-settings-option">
+                                        <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''}>
+                                        <div>
+                                            <span class="ska-settings-option-title">SPS (Präzise)</span>
+                                            <span class="ska-settings-option-subtext is-muted">Silben pro Sekunde</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                <p class="ska-settings-help">SPS eignet sich für präzise Synchron-Strecken mit langen Wörtern.</p>
+                            </div>
+                        </div>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Pausen-Automatik</label>
+                            <div class="ska-settings-grid-two">
+                                <div>
+                                    <span class="ska-settings-helper-label">Komma-Pause (Sekunden)</span>
+                                    <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause ?? 0.2}" class="ska-settings-input">
+                                </div>
+                                <div>
+                                    <span class="ska-settings-helper-label">Punkt-Pause (Sekunden)</span>
+                                    <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause ?? 0.5}" class="ska-settings-input">
+                                </div>
+                            </div>
+                            <p class="ska-settings-help">Mikro-Pausen werden zur Gesamtzeit addiert – ideal für Voice-Optimierung.</p>
+                        </div>
+                        <div class="ska-wpm-calibration">
+                            <div class="ska-wpm-header">
+                                <span>Persönliches WPM</span>
+                                <strong>${manualLabel}</strong>
+                            </div>
+                            <input type="range" min="90" max="200" step="1" value="${sliderValue}" data-action="wpm-slider">
+                            <div class="ska-wpm-actions">
+                                <button class="ska-btn ska-btn--secondary" data-action="open-benchmark">Kalibrieren</button>
+                                <button class="ska-btn ska-btn--ghost" data-action="reset-wpm">Auto</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div style="margin-top:1.5rem; margin-bottom:1.5rem; border-top:1px solid #f1f5f9;"></div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Zielgruppe (Komplexität)</label>
-                        <select id="ska-set-audience" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px;">
-                            <option value="">Keine Auswahl</option>
-                            <option value="kinder" ${this.settings.audienceTarget === 'kinder' ? 'selected' : ''}>Kindersendung</option>
-                            <option value="news" ${this.settings.audienceTarget === 'news' ? 'selected' : ''}>Abendnachrichten</option>
-                            <option value="fach" ${this.settings.audienceTarget === 'fach' ? 'selected' : ''}>Fachpublikum</option>
-                        </select>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Das System warnt, wenn Flesch-Score oder Satzlänge das Ziel überschreitet.</p>
-                    </div>
-
-                    <div style="margin-bottom:1.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Keyword-Dichte (SEO vs. Voice)</label>
-                        <textarea id="ska-set-focus-keywords" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:70px;" placeholder="z.B. Produktname, Kernbegriff">${this.settings.focusKeywords || ''}</textarea>
-                        <div style="display:flex; gap:0.75rem; align-items:center; margin-top:0.6rem;">
-                            <span style="font-size:0.85rem; color:#64748b;">Dichte-Limit (%)</span>
-                            <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit ?? 2}" style="width:120px; padding:0.4rem; border:1px solid #cbd5e1; border-radius:6px;">
+                    <div class="ska-settings-section">
+                        <div class="ska-settings-section-header">
+                            <h4>Inhalt & Zielgruppe</h4>
+                            <p>Verfeinere Lesbarkeit und Keyword-Fokus.</p>
                         </div>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
-                    </div>
-
-                    <div style="margin-bottom:0.5rem;">
-                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Buzzword-Blacklist</label>
-                        <textarea id="ska-set-bullshit" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:90px;" placeholder="z.B. synergetisch, agil, lösungsorientiert">${this.settings.bullshitBlacklist || ''}</textarea>
-                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Hier definierst du Phrasen, die du vermeiden willst. Kommagetrennt oder zeilenweise – wird rot markiert.</p>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Zielgruppe (Komplexität)</label>
+                            <select id="ska-set-audience" class="ska-settings-select">
+                                <option value="">Keine Auswahl</option>
+                                <option value="kinder" ${this.settings.audienceTarget === 'kinder' ? 'selected' : ''}>Kindersendung</option>
+                                <option value="news" ${this.settings.audienceTarget === 'news' ? 'selected' : ''}>Abendnachrichten</option>
+                                <option value="fach" ${this.settings.audienceTarget === 'fach' ? 'selected' : ''}>Fachpublikum</option>
+                            </select>
+                            <p class="ska-settings-help">Warnung bei zu langen Sätzen oder geringer Lesbarkeit für die Zielgruppe.</p>
+                        </div>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Keyword-Dichte (SEO vs. Voice)</label>
+                            <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff">${this.settings.focusKeywords || ''}</textarea>
+                            <div class="ska-settings-inline">
+                                <span class="ska-settings-helper-label">Dichte-Limit (%)</span>
+                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit ?? 2}" class="ska-settings-input ska-settings-input--compact">
+                            </div>
+                            <p class="ska-settings-help">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
+                        </div>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Buzzword-Blacklist</label>
+                            <textarea id="ska-set-bullshit" class="ska-settings-textarea ska-settings-textarea--lg" placeholder="z.B. synergetisch, agil, lösungsorientiert">${this.settings.bullshitBlacklist || ''}</textarea>
+                            <p class="ska-settings-help">Kommagetrennt oder zeilenweise – wird rot markiert.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="ska-modal-footer">
@@ -4324,7 +4345,7 @@
 
         renderChapterCalculatorCard(raw, active) {
             if(!active) return this.updateCard('chapter_calc', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            const isHoerbuch = this.settings.usecase === 'hoerbuch';
+            const isHoerbuch = this.settings.usecase === 'hoerbuch' || this.settings.usecase === 'auto';
             if (!isHoerbuch) {
                 return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>');
             }
@@ -4411,8 +4432,10 @@
         }
 
         isCardAvailable(id) {
-            if (id === 'chapter_calc') {
-                return this.settings.usecase === 'hoerbuch';
+            if (this.settings.usecase === 'auto') return true;
+            const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
+            if (Array.isArray(genreCards)) {
+                return genreCards.includes(id);
             }
             return true;
         }
