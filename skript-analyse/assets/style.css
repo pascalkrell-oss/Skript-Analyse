@@ -86,7 +86,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-editor-tools { display: flex; gap: 0.5rem; align-items: center; position: relative; }
 .ska-editor-formatting { display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--ska-border); background: #fdfdfd; }
 .ska-formatting-actions { display: flex; align-items: center; }
-.ska-format-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; height: 32px; line-height: 1; }
+.ska-format-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; height: 32px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .ska-format-btn:hover { border-color: var(--ska-primary); color: var(--ska-primary); }
 .ska-format-btn[data-action="format-bold"] { font-weight: 700; }
 .ska-format-btn[data-action="format-italic"] { font-style: italic; }
@@ -458,7 +458,7 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .ska-tip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem; }
 .ska-tip-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--ska-primary); letter-spacing: 0.05em; }
-.ska-tip-next-btn { white-space: nowrap; background: white; border: 1px solid #e2e8f0; color: var(--ska-primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 0.2rem 0.8rem; border-radius: 99px; transition: all 0.2s ease; }
+.ska-tip-next-btn { white-space: nowrap; background: white; border: 1px solid #e2e8f0; color: var(--ska-primary); font-size: 0.75rem; font-weight: 600; cursor: pointer; padding: 0.2rem 0.8rem; border-radius: 99px; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .ska-tip-next-btn:hover { border-color: var(--ska-primary); background: var(--ska-primary-light); }
 .ska-tip-content { margin: 0; color: var(--ska-text-main); transition: opacity 0.3s ease, transform 0.3s ease; opacity: 1; transform: translateY(0); }
 .ska-tip-content.is-changing { opacity: 0; transform: translateY(5px); }
@@ -485,7 +485,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem 1.5rem; }
 .ska-legend-def { line-height: 1.5; }
 .ska-legend-def strong { color: var(--ska-text-main); font-weight: 600; margin-right: 0.3rem; }
-.ska-legend-help-btn { border: 1px solid var(--ska-border); background: #f8fafc; color: var(--ska-text-muted); padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.75rem; cursor: pointer; }
+.ska-legend-help-btn { border: 1px solid var(--ska-border); background: #f8fafc; color: var(--ska-text-muted); padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .ska-legend-help-btn:hover { border-color: var(--ska-primary); color: var(--ska-primary); background: var(--ska-primary-light); }
 
 /* --- FOOTER FIX (FINAL ALIGNMENT) --- */
@@ -528,7 +528,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.5rem; }
 .ska-setting-item { display: flex; flex-direction: column; gap: 0.5rem; }
 .ska-setting-item label { font-size: 0.75rem; font-weight: 700; color: var(--ska-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.ska-settings-option-group { display: flex; gap: 1rem; align-items: stretch; flex-wrap: wrap; }
+.ska-settings-option-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
 .ska-settings-option {
     flex: 1 1 220px;
     min-width: 0;
@@ -744,7 +744,7 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-genre-grid-layout { grid-template-columns: 1fr; }
     .ska-filler-item { grid-template-columns: 70px 1fr 36px; }
     .ska-legend-grid { grid-template-columns: 1fr; }
-    .ska-settings-option-group { flex-direction: column; }
+    .ska-settings-option-group { grid-template-columns: 1fr; }
     .ska-settings-option {
         min-height: 90px;
         height: 100%;
@@ -829,6 +829,10 @@ body.ska-modal-open { overflow: hidden !important; }
     line-height: 1;
     cursor: pointer;
     transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .ska-filterbar-bulk-btn:hover {

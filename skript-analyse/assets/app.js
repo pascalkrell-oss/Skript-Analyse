@@ -348,13 +348,31 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
-        cleanTextForCounting: (text) => text
-            .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
-            .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
-            .replace(/\s*\[[A-ZÄÖÜ]{2,}\]\s*/g, ' ')
-            .replace(/\s*\|\s*/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim(),
+        cleanTextForCounting: (text) => {
+            const markerTokens = (SA_CONFIG.MARKERS || [])
+                .map((marker) => String(marker.val || '').trim())
+                .filter(Boolean);
+            let cleaned = text;
+            markerTokens.forEach((marker) => {
+                cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
+            });
+            return cleaned
+                .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
+                .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+                .replace(/\s*\[[^\]]+\]\s*/g, ' ')
+                .replace(/\s*\|\s*/g, ' ')
+                .replace(/[\u200B\uFEFF]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        },
+        renderMarkersToHtml: (text) => {
+            const safeText = SA_Utils.escapeHtml(String(text || ''));
+            return safeText
+                .replace(/\n/g, '<br>')
+                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" contenteditable="false" data-marker="${label}">[${label}]</span>`)
+                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" contenteditable="false" data-marker="pause">|${val}|</span>`)
+                .replace(/\|/g, `<span class="ska-inline-marker" contenteditable="false" data-marker="pause">|</span>`);
+        },
         generateWordDiff: (oldText, newText, maxWords = 260) => {
             const oldWords = (oldText || '').trim().split(/\s+/).filter(Boolean);
             const newWords = (newText || '').trim().split(/\s+/).filter(Boolean);
@@ -1855,7 +1873,10 @@
 
         setText(value) {
             if (!this.textarea) return;
-            if (this.textarea.isContentEditable) this.textarea.innerText = value;
+            if (this.textarea.isContentEditable) {
+                this.textarea.innerHTML = SA_Utils.renderMarkersToHtml(value);
+                return;
+            }
             else this.textarea.value = value;
         }
         
@@ -1930,31 +1951,29 @@
                             <h4>Timing & Pausen</h4>
                             <p>Kalibriere Zieldauer, Tempo und Pausenlogik.</p>
                         </div>
-                        <div class="ska-settings-grid-two">
-                            <div class="ska-settings-field">
-                                <label class="ska-settings-label">Zielzeit (Min:Sek)</label>
-                                <input type="text" id="ska-set-target" value="${targetVal}" placeholder="z.B. 1:30" class="ska-settings-input">
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Zielzeit (Min:Sek)</label>
+                            <input type="text" id="ska-set-target" value="${targetVal}" placeholder="z.B. 1:30" class="ska-settings-input">
+                        </div>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Zeit-Berechnung</label>
+                            <div class="ska-settings-option-group">
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
+                                    <div>
+                                        <span class="ska-settings-option-title">WPM (Standard)</span>
+                                        <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
+                                    </div>
+                                </label>
+                                <label class="ska-settings-option">
+                                    <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''}>
+                                    <div>
+                                        <span class="ska-settings-option-title">SPS (Präzise)</span>
+                                        <span class="ska-settings-option-subtext is-muted">Silben pro Sekunde</span>
+                                    </div>
+                                </label>
                             </div>
-                            <div class="ska-settings-field">
-                                <label class="ska-settings-label">Zeit-Berechnung</label>
-                                <div class="ska-settings-option-group">
-                                    <label class="ska-settings-option">
-                                        <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
-                                        <div>
-                                            <span class="ska-settings-option-title">WPM (Standard)</span>
-                                            <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
-                                        </div>
-                                    </label>
-                                    <label class="ska-settings-option">
-                                        <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''}>
-                                        <div>
-                                            <span class="ska-settings-option-title">SPS (Präzise)</span>
-                                            <span class="ska-settings-option-subtext is-muted">Silben pro Sekunde</span>
-                                        </div>
-                                    </label>
-                                </div>
-                                <p class="ska-settings-help">SPS eignet sich für präzise Synchron-Strecken mit langen Wörtern.</p>
-                            </div>
+                            <p class="ska-settings-help">SPS eignet sich für präzise Synchron-Strecken mit langen Wörtern.</p>
                         </div>
                         <div class="ska-settings-field">
                             <label class="ska-settings-label">Pausen-Automatik</label>
