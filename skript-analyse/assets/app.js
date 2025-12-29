@@ -50,7 +50,6 @@
             vocabulary: 'Wortschatz kontrolliert variieren, ohne den Fokus zu verlieren.',
             pronunciation: 'Schwierige Wörter früh glätten und gut aussprechbar machen.',
             keyword_focus: 'Fokusbegriffe konsistent einsetzen und Wiederholungen dosieren.',
-            spread_index: 'Streuung der Satzlängen bewusst steuern.',
             plosive: 'Plosiv-Cluster entschärfen, damit es weich klingt.',
             redundancy: 'Wiederholungen nur gezielt als Stilmittel einsetzen.',
             bpm: 'Taktgefühl an die Stimmung und den Textfluss koppeln.',
@@ -146,7 +145,7 @@
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
-            sprecher: ['overview', 'char', 'rhythm', 'spread_index', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
+            sprecher: ['overview', 'char', 'rhythm', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
             autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath'],
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo'],
@@ -182,7 +181,6 @@
             vocabulary: '📚 Wortschatz-Reichtum',
             pronunciation: '🗣️ Aussprache-Check',
             keyword_focus: '🎯 Keyword-Fokus',
-            spread_index: '📈 Satz-Spreizungs-Index',
             plosive: '💥 Plosiv-Check',
             redundancy: '🧠 Semantische Redundanz',
             bpm: '🎵 Audio-BPM-Matching',
@@ -223,7 +221,6 @@
             vocabulary: 'Berechnet die Type-Token-Ratio (TTR) um den Wortreichtum zu bestimmen.',
             pronunciation: 'Zeigt Wörter mit besonderer Aussprache.',
             keyword_focus: 'Analysiert dominante Substantive und prüft die Fokus-Schärfe.',
-            spread_index: 'Misst die Streuung der Satzlängen für den Rhythmus-Check.',
             plosive: 'Warnt vor harten Plosiv-Folgen am Wortanfang.',
             redundancy: 'Findet inhaltliche Dopplungen in aufeinanderfolgenden Sätzen.',
             bpm: 'Schlägt ein passendes Musiktempo (BPM) für den Text vor.',
@@ -240,7 +237,7 @@
             naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -307,7 +304,6 @@
             vocabulary: ["Ein hoher TTR-Wert (>60) zeigt Reichtum.", "Ein niedriger Wert (<40) ist typisch für fokussierte Werbebotschaften oder Claims.", "Wiederholungen senken den Wortwert, sind aber für Audio-Branding oft gewollt.", "Überprüfe bei niedrigem Wert: Ist die Wiederholung Absicht oder Faulheit?", "Variiere Wortfelder bewusst, statt Synonyme wahllos zu streuen."],
             pronunciation: ["Standarddeutsch: -ig wird wie -ich gesprochen.", "Fremdwörter wie 'Chance' oder 'Engagement' stolperfrei auszusprechen, wirkt professionell.", "Achte bei 'sp' und 'st' am Wortanfang immer auf den 'Sch'-Laut (Schtein, Schpiel).", "Schwierige Wörter früh erkennen und alternative Formulierungen bereithalten.", "Eigennamen: Schreibweise für Aussprache notieren (z.B. phonetisch)."],
             keyword_focus: ["Ein starkes Kernwort sollte klar dominieren.", "Wenn die Top-Begriffe gleich stark sind, wirkt die Botschaft diffus.", "Produktname & Nutzen sollten in den Top-Keywords sichtbar sein.", "Setze Keywords an Satzanfänge – dort wirken sie am stärksten.", "Zu viele Fokuswörter verwässern die Botschaft – priorisieren."],
-            spread_index: ["Rhythmus entsteht durch Variation.", "Baue kurze Sätze ein, um lange Passagen aufzubrechen.", "Zu gleichmäßige Satzlängen wirken monoton.", "Gleichmäßige Satzlängen wirken ruhiger – Ausreißer gezielt einsetzen.", "Nutze kurze Sätze als Zäsur nach komplexen Informationen."],
             plosive: ["P- und B-Laute können am Mikrofon knallen.", "Entzerrung hilft: Zwischen Plosiv-Wörtern kurze Pausen setzen.", "Bei Nahbesprechung (z. B. im Podcast) leicht seitlich sprechen, um Pop-Geräusche zu vermeiden.", "Bei harten Plosiven (P/T/K) ggf. umformulieren oder mit weicherem Wort ersetzen.", "Sprecherfreundlich schreiben: Konsonanten-Cluster reduzieren."],
             redundancy: ["Wiederholungen direkt hintereinander wirken unfreiwillig.", "Formuliere den zweiten Satz mit anderem Fokus oder streiche ihn.", "Achte auf doppelte Bedeutungen ('weißer Schimmel').", "Streiche Dopplungen: Eine Aussage, ein Bild, ein Satz.", "Wiederholungen nur als Stilmittel – sonst kürzen."],
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig.", "Längere Sätze mit Kommas strukturieren, damit die Atmung mitkommt.", "Tempo entsteht durch Variation – nicht durch dauerhafte Beschleunigung."],
@@ -1663,7 +1659,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, spread_index: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0 }, 
                 excludedCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
@@ -2894,7 +2890,7 @@
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
-                        <button class="ska-filterbar-toggle" data-action="toggle-filter-collapse">${collapseLabel}</button>
+                        <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                         ${allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
                     </div>
                 </div>
@@ -3024,7 +3020,6 @@
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
                     case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), active); break;
-                    case 'spread_index': this.renderSpreadIndexCard(read.sentences, active); break;
                     case 'arousal': this.renderArousalCard(SA_Logic.analyzeArousalMap(read.sentences), active); break;
                     case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
                     case 'redundancy': this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), active); break;
@@ -3191,40 +3186,6 @@
             }
             h += this.renderTipSection('keyword_focus', true);
             this.updateCard('keyword_focus', h);
-        }
-
-        renderSpreadIndexCard(sentences, active) {
-            if(!active) return this.updateCard('spread_index', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            if(!sentences || sentences.length < 3) return this.updateCard('spread_index', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Sätze für eine Analyse.</p>');
-
-            const spread = SA_Logic.calculateVariance(sentences);
-            let label = 'Ausgewogen';
-            let color = SA_CONFIG.COLORS.blue;
-            let hint = 'Guter Wechsel zwischen kurzen und langen Sätzen.';
-            if (spread < 2.2) {
-                label = 'Einschlafgefahr';
-                color = SA_CONFIG.COLORS.warn;
-                hint = 'Hier einen kurzen Satz einfügen, um den Rhythmus zu brechen.';
-            } else if (spread > 5) {
-                label = 'Sehr dynamisch';
-                color = SA_CONFIG.COLORS.success;
-                hint = 'Hohe Varianz – achte darauf, dass der Flow dennoch zusammenhängt.';
-            }
-
-            const h = `
-                <div style="margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
-                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Standardabweichung</span>
-                        <span style="font-weight:700; color:${color};">${label}</span>
-                    </div>
-                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                        <div style="width:${Math.min(100, spread * 12)}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${color}); transition:width 0.5s;"></div>
-                    </div>
-                    <div style="margin-top:0.4rem; font-size:0.85rem; color:#334155;">Satz-Spreizungs-Index: <strong>${spread.toFixed(2)}</strong></div>
-                </div>
-                <div style="font-size:0.85rem; color:#64748b;">${hint}</div>
-                ${this.renderTipSection('spread_index', spread < 3)}`;
-            this.updateCard('spread_index', h);
         }
 
         renderPlosiveCard(clusters, active) {
@@ -4237,15 +4198,27 @@
             const spreadIndex = SA_Logic.calculateVariance(sentences);
             let spreadLabel = 'Ausgewogen';
             let spreadColor = SA_CONFIG.COLORS.blue;
-            if (spreadIndex < 2.2) { spreadLabel = 'Sehr gleichmäßig'; spreadColor = SA_CONFIG.COLORS.warn; }
-            else if (spreadIndex > 6) { spreadLabel = 'Stark variierend'; spreadColor = SA_CONFIG.COLORS.success; }
+            let spreadHint = 'Guter Wechsel zwischen kurzen und langen Sätzen.';
+            if (spreadIndex < 2.2) {
+                spreadLabel = 'Einschlafgefahr';
+                spreadColor = SA_CONFIG.COLORS.warn;
+                spreadHint = 'Hier einen kurzen Satz einfügen, um den Rhythmus zu brechen.';
+            } else if (spreadIndex > 5) {
+                spreadLabel = 'Sehr dynamisch';
+                spreadColor = SA_CONFIG.COLORS.success;
+                spreadHint = 'Hohe Varianz – achte darauf, dass der Flow dennoch zusammenhängt.';
+            }
             h += `
                 <div style="margin-top:0.75rem; padding:0.75rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">
-                        <span>Satz-Spreizungs-Index</span>
-                        <span style="color:${spreadColor}; font-weight:700;">${spreadLabel}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase;">Standardabweichung</span>
+                        <span style="font-weight:700; color:${spreadColor};">${spreadLabel}</span>
                     </div>
-                    <div style="margin-top:0.4rem; font-size:0.9rem; color:#334155;">${spreadIndex.toFixed(2)}</div>
+                    <div style="width:100%; height:6px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                        <div style="width:${Math.min(100, spreadIndex * 12)}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${spreadColor});"></div>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.9rem; color:#334155;">Satz-Spreizungs-Index: <strong>${spreadIndex.toFixed(2)}</strong></div>
+                    <div style="margin-top:0.35rem; font-size:0.85rem; color:#64748b;">${spreadHint}</div>
                 </div>`;
 
             h += this.renderTipSection('rhythm', true);
