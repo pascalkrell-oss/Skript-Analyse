@@ -1749,6 +1749,7 @@
             this.workerRequests = new Map();
             this.workerRequestId = 0;
             this.isRestoring = false;
+            this.overviewResizeObserver = null;
 
             this.loadUIState();
             this.initMarkerDropdown();
@@ -3164,6 +3165,16 @@
                 editorPanel.style.maxHeight = `${Math.round(height)}px`;
             }
         }
+
+        observeOverviewHeight() {
+            const overviewCard = this.topPanel?.querySelector('.skriptanalyse-card--overview');
+            if (!overviewCard || typeof ResizeObserver === 'undefined') return;
+            if (!this.overviewResizeObserver) {
+                this.overviewResizeObserver = new ResizeObserver(() => this.syncEditorHeight());
+            }
+            this.overviewResizeObserver.disconnect();
+            this.overviewResizeObserver.observe(overviewCard);
+        }
         
         renderPronunciationCard(issues, active) {
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
@@ -3828,6 +3839,7 @@
                 ${genreList}</div>`;
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
+            this.observeOverviewHeight();
         }
 
         renderDisabledState(id) {
