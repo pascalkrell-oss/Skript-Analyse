@@ -454,12 +454,24 @@
             }
             field.focus();
             const safeMarker = String(marker);
+            const markerId = `ska-marker-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            const caretId = `ska-caret-${Date.now()}-${Math.random().toString(16).slice(2)}`;
             const html = safeMarker
                 .replace(/\n/g, '<br>')
-                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" data-marker="${label}">[${label}]</span>`)
-                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" data-marker="pause">|${val}|</span>`)
-                .replace(/\|/g, '<span class="ska-inline-marker" data-marker="pause">|</span>');
-            document.execCommand('insertHTML', false, html);
+                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" contenteditable="false" data-marker="${label}" data-marker-id="${markerId}">[${label}]</span>`)
+                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" contenteditable="false" data-marker="pause" data-marker-id="${markerId}">|${val}|</span>`)
+                .replace(/\|/g, `<span class="ska-inline-marker" contenteditable="false" data-marker="pause" data-marker-id="${markerId}">|</span>`);
+            document.execCommand('insertHTML', false, `${html}<span data-marker-caret="${caretId}" contenteditable="false">\u200B</span>`);
+            const caretSpan = field.querySelector(`[data-marker-caret="${caretId}"]`);
+            if (caretSpan) {
+                const range = document.createRange();
+                range.setStartAfter(caretSpan);
+                range.collapse(true);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                caretSpan.removeAttribute('data-marker-caret');
+            }
         },
         downloadJSON: (data, filename) => {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
