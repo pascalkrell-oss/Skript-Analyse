@@ -361,8 +361,17 @@
                 .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
                 .replace(/\s*\[[^\]]+\]\s*/g, ' ')
                 .replace(/\s*\|\s*/g, ' ')
+                .replace(/[\u200B\uFEFF]/g, '')
                 .replace(/\s+/g, ' ')
                 .trim();
+        },
+        renderMarkersToHtml: (text) => {
+            const safeText = SA_Utils.escapeHtml(String(text || ''));
+            return safeText
+                .replace(/\n/g, '<br>')
+                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" contenteditable="false" data-marker="${label}">[${label}]</span>`)
+                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" contenteditable="false" data-marker="pause">|${val}|</span>`)
+                .replace(/\|/g, `<span class="ska-inline-marker" contenteditable="false" data-marker="pause">|</span>`);
         },
         generateWordDiff: (oldText, newText, maxWords = 260) => {
             const oldWords = (oldText || '').trim().split(/\s+/).filter(Boolean);
@@ -1864,7 +1873,10 @@
 
         setText(value) {
             if (!this.textarea) return;
-            if (this.textarea.isContentEditable) this.textarea.innerText = value;
+            if (this.textarea.isContentEditable) {
+                this.textarea.innerHTML = SA_Utils.renderMarkersToHtml(value);
+                return;
+            }
             else this.textarea.value = value;
         }
         

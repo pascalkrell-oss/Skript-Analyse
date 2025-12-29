@@ -4,6 +4,7 @@ const cleanTextForCounting = (text) =>
         .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
         .replace(/\s*\[[^\]]+\]\s*/g, ' ')
         .replace(/\s*\|\s*/g, ' ')
+        .replace(/[\u200B\uFEFF]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
 
