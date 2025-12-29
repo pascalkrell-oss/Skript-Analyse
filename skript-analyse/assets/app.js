@@ -446,6 +446,21 @@
             } else { field.value += value; }
             field.focus();
         },
+        insertMarkerAtCursor: (field, marker) => {
+            if (!marker) return;
+            if (!field.isContentEditable) {
+                SA_Utils.insertAtCursor(field, marker);
+                return;
+            }
+            field.focus();
+            const safeMarker = String(marker);
+            const html = safeMarker
+                .replace(/\n/g, '<br>')
+                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" data-marker="${label}">[${label}]</span>`)
+                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" data-marker="pause">|${val}|</span>`)
+                .replace(/\|/g, '<span class="ska-inline-marker" data-marker="pause">|</span>');
+            document.execCommand('insertHTML', false, html);
+        },
         downloadJSON: (data, filename) => {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -1749,6 +1764,7 @@
             this.workerRequests = new Map();
             this.workerRequestId = 0;
             this.isRestoring = false;
+            this.overviewResizeObserver = null;
 
             this.loadUIState();
             this.initMarkerDropdown();
@@ -2675,7 +2691,12 @@
                 const item = document.createElement('button'); item.className = 'skriptanalyse-dropdown-item';
                 item.innerHTML = `<strong>${m.label.split(' ')[0]}</strong>`;
                 item.setAttribute('data-tooltip', m.desc);
-                item.onclick = (e) => { e.preventDefault(); SA_Utils.insertAtCursor(this.textarea, m.val); this.analyze(this.getText()); menu.classList.remove('is-open'); };
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    SA_Utils.insertMarkerAtCursor(this.textarea, m.val);
+                    this.analyze(this.getText());
+                    menu.classList.remove('is-open');
+                };
                 menu.appendChild(item);
             });
             document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.remove('is-open'); });
@@ -3163,6 +3184,16 @@
                 editorPanel.style.height = `${Math.round(height)}px`;
                 editorPanel.style.maxHeight = `${Math.round(height)}px`;
             }
+        }
+
+        observeOverviewHeight() {
+            const overviewCard = this.topPanel?.querySelector('.skriptanalyse-card--overview');
+            if (!overviewCard || typeof ResizeObserver === 'undefined') return;
+            if (!this.overviewResizeObserver) {
+                this.overviewResizeObserver = new ResizeObserver(() => this.syncEditorHeight());
+            }
+            this.overviewResizeObserver.disconnect();
+            this.overviewResizeObserver.observe(overviewCard);
         }
         
         renderPronunciationCard(issues, active) {
@@ -3828,6 +3859,7 @@
                 ${genreList}</div>`;
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
+            this.observeOverviewHeight();
         }
 
         renderDisabledState(id) {
