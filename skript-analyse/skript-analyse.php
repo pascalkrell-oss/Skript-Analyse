@@ -44,7 +44,10 @@ function ska_shortcode() {
         ['label' => '[LANGSAM]', 'val' => ' [LANGSAM] ', 'desc' => 'Tempo drosseln / Getragen sprechen']
     ];
     
-    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array('markers' => $markers_config));
+    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
+        'markers' => $markers_config,
+        'pro' => (bool) apply_filters( 'ska_pro_mode', false ),
+    ));
 
     ob_start();
     ?>

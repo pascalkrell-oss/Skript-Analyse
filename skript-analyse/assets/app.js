@@ -12,6 +12,7 @@
         UI_KEY_HIDDEN: 'skriptanalyse_hidden_cards',
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
+        PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, default: 150 },
@@ -78,6 +79,8 @@
             negative: ['problem', 'fehler', 'gefahr', 'risiko', 'schlecht', 'verlust', 'angst', 'sorge', 'schwierig', 'nein', 'leider', 'kritik', 'störung', 'kosten', 'teuer', 'falsch', 'warnung', 'schaden', 'krise', 'düster', 'traurig'],
             emotional: ['!', 'wirklich', 'absolut', 'nie', 'immer', 'sofort', 'jetzt', 'unglaublich', 'wahnsinn', 'liebe', 'hass', 'dringend', 'herz', 'leidenschaft', 'feuer', 'eis']
         },
+        SENTIMENT_NEGATIONS: ['nicht', 'kein', 'keine', 'keiner', 'keinem', 'keinen', 'keines', 'nie', 'nichts', 'ohne', 'niemals'],
+        NEGATION_WINDOW: 3,
         AROUSAL: {
             high: ['explosion', 'jetzt', 'sofort', 'sofortig', 'sofortige', 'boom', 'krass', 'schnell', 'dringend', 'extrem', 'feuer', 'stark', 'power', 'heftig', 'wow', 'unglaublich', 'alarm', 'laut', 'aufwachen', 'action'],
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
@@ -398,11 +401,63 @@
     };
 
     const SA_Logic = {
+        getHyphenator: () => {
+            if (SA_Logic._hyphenatorChecked) return SA_Logic._hyphenator;
+            SA_Logic._hyphenatorChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Hypher = window.Hypher;
+            const patterns = window.hyphenationPatternsDe
+                || window.hyphenationPatterns
+                || (window.HyphenationPatterns && (window.HyphenationPatterns.de || window.HyphenationPatterns.de_DE))
+                || window.HypherPatternsDe
+                || window.HypherPatternsDE;
+            if (Hypher && patterns) {
+                SA_Logic._hyphenator = new Hypher(patterns);
+            }
+            return SA_Logic._hyphenator;
+        },
+        getSentimentEngine: () => {
+            if (SA_Logic._sentimentChecked) return SA_Logic._sentimentEngine;
+            SA_Logic._sentimentChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Sentiment = window.Sentiment;
+            if (Sentiment) SA_Logic._sentimentEngine = new Sentiment();
+            return SA_Logic._sentimentEngine;
+        },
+        getTokenData: (text) => {
+            const tokens = text.toLowerCase().match(/[a-zäöüß]+/g) || [];
+            const negations = new Set(SA_CONFIG.SENTIMENT_NEGATIONS);
+            const negated = new Array(tokens.length).fill(false);
+            let windowSize = 0;
+            for (let i = 0; i < tokens.length; i++) {
+                if (negations.has(tokens[i])) {
+                    windowSize = SA_CONFIG.NEGATION_WINDOW;
+                    continue;
+                }
+                if (windowSize > 0) {
+                    negated[i] = true;
+                    windowSize -= 1;
+                }
+            }
+            return { tokens, negated };
+        },
+        getSentimentLexicon: () => {
+            const lexicon = {};
+            SA_CONFIG.SENTIMENT.positive.forEach(word => { lexicon[word] = 2; });
+            SA_CONFIG.SENTIMENT.negative.forEach(word => { lexicon[word] = -2; });
+            return lexicon;
+        },
         countSyllables: (word) => {
-            word = word.toLowerCase();
-            if (word.length <= 3) return 1; 
-            word = word.replace(/(?:eu|au|ei|ie|äu|oi|ui)/g, 'a');
-            const matches = word.match(/[aeiouäöü]/g);
+            const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
+            if (!clean) return 0;
+            if (clean.length <= 3) return 1;
+            const hyphenator = SA_Logic.getHyphenator();
+            if (hyphenator) {
+                const syllables = hyphenator.hyphenate(clean);
+                if (syllables && syllables.length) return syllables.length;
+            }
+            const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
+            const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
         analyzeReadability: (text, settings = {}) => {
@@ -795,13 +850,30 @@
              return { ratio: ratio, count: matches.length };
         },
         analyzeSentiment: (text) => {
-            const l = text.toLowerCase(); 
-            let posScore = 0; let negScore = 0;
-            SA_CONFIG.SENTIMENT.positive.forEach(w => { if(l.includes(w)) posScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            SA_CONFIG.SENTIMENT.negative.forEach(w => { if(l.includes(w)) negScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            const total = posScore + negScore;
-            let temp = 0;
-            if(total > 0) temp = ((posScore - negScore) / total) * 100;
+            const engine = SA_Logic.getSentimentEngine();
+            let posScore = 0; let negScore = 0; let temp = 0;
+            if (engine) {
+                const result = engine.analyze(text, { extras: SA_Logic.getSentimentLexicon() });
+                posScore = (result.positive || []).length;
+                negScore = (result.negative || []).length;
+                temp = Math.max(-100, Math.min(100, (result.comparative || 0) * 100));
+            } else {
+                const { tokens, negated } = SA_Logic.getTokenData(text);
+                const positives = new Set(SA_CONFIG.SENTIMENT.positive);
+                const negatives = new Set(SA_CONFIG.SENTIMENT.negative);
+                tokens.forEach((token, idx) => {
+                    if (positives.has(token)) {
+                        if (negated[idx]) negScore += 1;
+                        else posScore += 1;
+                    }
+                    if (negatives.has(token)) {
+                        if (negated[idx]) posScore += 1;
+                        else negScore += 1;
+                    }
+                });
+                const total = posScore + negScore;
+                if (total > 0) temp = ((posScore - negScore) / total) * 100;
+            }
             let label = 'Neutral';
             if (temp > 30) label = 'Positiv / Warm';
             else if (temp < -30) label = 'Kritisch / Kühl';
@@ -1070,13 +1142,15 @@
         },
         analyzeArousalMap: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
-            const high = SA_CONFIG.AROUSAL.high;
-            const low = SA_CONFIG.AROUSAL.low;
+            const high = new Set(SA_CONFIG.AROUSAL.high);
+            const low = new Set(SA_CONFIG.AROUSAL.low);
             return sentences.map(sentence => {
-                const l = sentence.toLowerCase();
                 let score = 0;
-                high.forEach(w => { if (l.includes(w)) score += 2; });
-                low.forEach(w => { if (l.includes(w)) score -= 1; });
+                const { tokens, negated } = SA_Logic.getTokenData(sentence);
+                tokens.forEach((token, idx) => {
+                    if (high.has(token)) score += negated[idx] ? -1 : 2;
+                    if (low.has(token)) score += negated[idx] ? 1 : -1;
+                });
                 const normalized = Math.max(-4, Math.min(6, score));
                 return { sentence: sentence.trim(), score: normalized };
             });
