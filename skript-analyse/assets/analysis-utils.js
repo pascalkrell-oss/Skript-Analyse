@@ -90,16 +90,26 @@ const analyzeReadability = (text) => {
     };
 };
 
-const getPausenTime = (text) => {
+const getPausenTime = (text, settings = {}) => {
     let total = 0;
-    const legacy = text.match(/\|([0-9\.]+)S?\|/g) || [];
+    const safeText = text || '';
+    const cleaned = cleanTextForCounting(safeText);
+    const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
     total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
-    const newFormat = text.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
+    const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
     total += newFormat.reduce((acc, m) => {
         const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
         return acc + (val ? parseFloat(val[1]) : 0);
     }, 0);
-    total += ((text.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+    total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+    const commaPause = parseFloat(settings.commaPause ?? 0);
+    const periodPause = parseFloat(settings.periodPause ?? 0);
+    if (commaPause > 0) {
+        total += (cleaned.match(/,/g) || []).length * commaPause;
+    }
+    if (periodPause > 0) {
+        total += (cleaned.match(/[.!?]/g) || []).length * periodPause;
+    }
     return total;
 };
 
