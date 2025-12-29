@@ -708,8 +708,8 @@ body.ska-modal-open { overflow: hidden !important; }
         padding: 1rem;
         margin: 0.75rem auto;
         border-radius: var(--ska-radius-md);
-        max-width: 90%;
-        width: 90%;
+        max-width: 100%;
+        width: 100%;
     }
     .ska-header { flex-direction: column; align-items: stretch; }
     .ska-header-content h2 { font-size: 1.5rem; }
@@ -754,6 +754,46 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-wpm-actions { flex-direction: column; }
     .ska-benchmark-stats { grid-template-columns: 1fr; }
     .ska-teleprompter-modal { height: 85vh; }
+}
+
+@media (max-width: 520px) {
+    .skriptanalyse-app {
+        padding: 0.9rem;
+        margin: 0.5rem auto;
+    }
+    .ska-toolbar { padding: 0.75rem; }
+    .ska-btn,
+    .ska-select,
+    .ska-input { height: 40px; }
+    .ska-header-content h2 { font-size: 1.35rem; }
+    .ska-editor-panel {
+        min-height: 380px;
+        height: auto;
+        max-height: none;
+    }
+    .skriptanalyse-textarea { min-height: 260px; }
+    .ska-analysis-filterbar { padding: 0.75rem 0.85rem; }
+    .ska-filter-pill { width: 100%; justify-content: flex-start; }
+    .ska-filterbar-actions { width: 100%; justify-content: space-between; }
+}
+
+@media (max-width: 400px) {
+    .skriptanalyse-app {
+        padding: 0.75rem;
+        margin: 0.4rem auto;
+        border-radius: var(--ska-radius-sm);
+    }
+    .ska-toolbar { gap: 0.75rem; }
+    .ska-header-content h2 { font-size: 1.2rem; }
+    .ska-editor-panel { min-height: 340px; }
+    .skriptanalyse-textarea { min-height: 230px; font-size: 0.98rem; }
+    .ska-panel-header { padding: 0.75rem 1rem; }
+    .ska-editor-formatting { padding: 0.6rem 1rem; }
+    .ska-textarea-wrapper { padding: 1rem; }
+    .ska-card-body { padding: 1rem; }
+    .ska-card-header { padding: 0.85rem 1rem; }
+    .ska-filterbar-actions { flex-direction: column; align-items: stretch; }
+    .ska-filterbar-toggle { width: 100%; text-align: left; }
 }
 
 .ska-filterbar-header { align-items: center; justify-content: space-between; }
