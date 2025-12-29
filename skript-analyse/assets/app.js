@@ -32,39 +32,39 @@
             buch: { tipPrefix: 'Buch/Roman', tipFocus: 'bildhaft erzählen, Rhythmus halten', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
         },
         GENRE_CARD_TIPS: {
-            fillers: 'In {focus} unnötige Füllwörter konsequent streichen.',
-            passive: '{focus} profitiert von aktivem Sprachfluss.',
-            nominal: '{focus}: Verben statt Nominalstil einsetzen.',
-            nominal_chain: '{focus}: Nominalketten auflösen, damit der Fluss bleibt.',
-            anglicism: '{focus}: Fremdwörter nur dort, wo sie wirklich nötig sind.',
-            echo: '{focus}: Wortwiederholungen bewusst variieren.',
-            breath: '{focus}: Atemstellen einplanen, Satzbögen nicht überziehen.',
-            stumble: '{focus}: sprecherfreundliche Wörter bevorzugen.',
-            cta: '{focus}: Handlungsaufforderung klar und direkt platzieren.',
-            adjective: '{focus}: Adjektive sparsam setzen, starke Bilder wählen.',
-            rhythm: '{focus}: Satzlängen variieren, damit der Rhythmus lebt.',
-            dialog: '{focus}: Dialoganteile passend zur Szene dosieren.',
-            gender: '{focus}: inklusive Begriffe nutzen, ohne den Flow zu brechen.',
-            start_var: '{focus}: Satzanfänge variieren für Dynamik.',
-            role_dist: '{focus}: Rollenwechsel klar markieren.',
-            vocabulary: '{focus}: Wortschatz kontrolliert variieren.',
-            pronunciation: '{focus}: schwierige Wörter früh glätten.',
-            keyword_focus: '{focus}: Fokusbegriffe konsistent einsetzen.',
-            spread_index: '{focus}: Streuung der Satzlängen bewusst steuern.',
-            plosive: '{focus}: Plosiv-Cluster entschärfen.',
-            redundancy: '{focus}: Wiederholungen nur als Stilmittel.',
-            bpm: '{focus}: Taktgefühl an Stimmung koppeln.',
-            easy_language: '{focus}: einfache Wörter, kurze Sätze.',
-            teleprompter: '{focus}: Zeilen so setzen, dass der Flow ruhig bleibt.',
-            arousal: '{focus}: Energie gezielt auf Peaks setzen.',
-            bullshit: '{focus}: Floskeln durch konkrete Aussagen ersetzen.',
-            metaphor: '{focus}: Bildsprache frisch halten.',
-            audience: '{focus}: Komplexität sauber an die Zielgruppe anpassen.',
-            verb_balance: '{focus}: Verben als Treiber nutzen.',
-            rhet_questions: '{focus}: Fragen gezielt für Aufmerksamkeit einsetzen.',
-            depth_check: '{focus}: Schachtelsätze kürzen.',
-            sentiment_intensity: '{focus}: Emotionen dosiert einsetzen.',
-            naming_check: '{focus}: Namen konsistent halten.'
+            fillers: 'Füllwörter konsequent streichen, damit die Aussage fokussiert bleibt.',
+            passive: 'Aktiv formulieren, damit der Text Energie behält.',
+            nominal: 'Nominalstil reduzieren und Verben nach vorn holen.',
+            nominal_chain: 'Nominalketten auflösen, damit der Satz luftiger wirkt.',
+            anglicism: 'Fremdwörter nur dort nutzen, wo sie wirklich nötig sind.',
+            echo: 'Wortwiederholungen variieren, damit es lebendig bleibt.',
+            breath: 'Atemstellen einplanen und Satzbögen nicht überziehen.',
+            stumble: 'Sprecherfreundliche Wörter bevorzugen und Zungenbrecher glätten.',
+            cta: 'Handlungsaufforderung klar und direkt platzieren.',
+            adjective: 'Adjektive sparsam setzen und starke Bilder wählen.',
+            rhythm: 'Satzlängen variieren, damit der Rhythmus trägt.',
+            dialog: 'Dialoganteile passend zur Szene dosieren.',
+            gender: 'Inklusive Begriffe nutzen, ohne den Flow zu brechen.',
+            start_var: 'Satzanfänge variieren, damit Dynamik entsteht.',
+            role_dist: 'Rollenwechsel klar markieren, damit es sofort verständlich ist.',
+            vocabulary: 'Wortschatz kontrolliert variieren, ohne den Fokus zu verlieren.',
+            pronunciation: 'Schwierige Wörter früh glätten und gut aussprechbar machen.',
+            keyword_focus: 'Fokusbegriffe konsistent einsetzen und Wiederholungen dosieren.',
+            spread_index: 'Streuung der Satzlängen bewusst steuern.',
+            plosive: 'Plosiv-Cluster entschärfen, damit es weich klingt.',
+            redundancy: 'Wiederholungen nur gezielt als Stilmittel einsetzen.',
+            bpm: 'Taktgefühl an die Stimmung und den Textfluss koppeln.',
+            easy_language: 'Einfache Wörter und kurze Sätze priorisieren.',
+            teleprompter: 'Zeilen so setzen, dass der Flow ruhig bleibt.',
+            arousal: 'Energie gezielt auf Peaks setzen und Ruhepunkte lassen.',
+            bullshit: 'Floskeln durch konkrete Aussagen ersetzen.',
+            metaphor: 'Bildsprache frisch halten und Klischees vermeiden.',
+            audience: 'Komplexität sauber an die Zielgruppe anpassen.',
+            verb_balance: 'Verben als Treiber nutzen, Nominalstil bremsen.',
+            rhet_questions: 'Fragen gezielt für Aufmerksamkeit einsetzen.',
+            depth_check: 'Schachtelsätze kürzen, damit es klar bleibt.',
+            sentiment_intensity: 'Emotionen dosiert einsetzen.',
+            naming_check: 'Namen konsistent halten, damit keine Irritation entsteht.'
         },
         
         ANGLICISMS: [
@@ -3821,7 +3821,7 @@
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const cardTemplate = SA_CONFIG.GENRE_CARD_TIPS[id];
             const genreNote = genreContext && cardTemplate
-                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${cardTemplate.replace('{focus}', genreContext.tipFocus)}</div>`
+                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${cardTemplate} (${genreContext.tipFocus}).</div>`
                 : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
