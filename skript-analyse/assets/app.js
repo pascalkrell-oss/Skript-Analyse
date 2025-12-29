@@ -1049,15 +1049,19 @@
             const ratio = nouns > 0 ? verbs / nouns : verbs;
             return { verbs, nouns, ratio };
         },
-        analyzeRhetoricalQuestions: (sentences) => {
-            if (!sentences || sentences.length === 0) return [];
-            return sentences.map(sentence => {
-                const trimmed = sentence.trim();
+        analyzeRhetoricalQuestions: (text, sentences = []) => {
+            const cleaned = SA_Utils.cleanTextForCounting(text || '').trim();
+            const source = cleaned.length ? cleaned : (sentences || []).join(' ');
+            if (!source) return [];
+            const parts = source.match(/[^.!?]+[!?]?/g) || [];
+            return parts.map(segment => {
+                const trimmed = segment.trim();
+                if (!trimmed) return null;
                 const firstWord = trimmed.split(/\s+/)[0] ? trimmed.split(/\s+/)[0].toLowerCase() : '';
-                const endsWithQ = /\?$/.test(trimmed);
+                const isQuestion = /\?\s*$/.test(trimmed);
                 const startsWithQWord = SA_CONFIG.QUESTION_WORDS.includes(firstWord);
-                return { sentence: trimmed, isRhetorical: endsWithQ && startsWithQWord };
-            });
+                return { sentence: trimmed, isQuestion, isRhetorical: isQuestion && startsWithQWord };
+            }).filter(Boolean);
         },
         analyzeDepthCheck: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
@@ -1272,7 +1276,7 @@
                     const sentimentIntensity = SA_Logic.analyzeSentimentIntensity(read.sentences);
                     const namingCheck = SA_Logic.analyzeNamingInconsistency(read.sentences);
                     const verbBalance = SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences);
-                    const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(read.sentences);
+                    const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(text, read.sentences);
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -1326,7 +1330,11 @@
                         if (bpmSuggestion.bpm > 0) addRow("Audio-BPM:", `${bpmSuggestion.bpm} BPM (${bpmSuggestion.range[0]}–${bpmSuggestion.range[1]})`);
                         if (audienceCheck && settings.audienceTarget) addRow("Zielgruppen-Check:", audienceCheck.message);
                         if (verbBalance) addRow("Verb-Fokus:", `Verben ${verbBalance.verbs} / Substantive ${verbBalance.nouns}`);
-                        if (rhetoricalQuestions.length) addRow("Rhetorische Fragen:", `${rhetoricalQuestions.filter(q => q.isRhetorical).length} / ${rhetoricalQuestions.length}`);
+                        if (rhetoricalQuestions.length) {
+                            const questionCount = rhetoricalQuestions.filter(q => q.isQuestion).length;
+                            const rhetoricalCount = rhetoricalQuestions.filter(q => q.isRhetorical).length;
+                            addRow("Rhetorische Fragen:", `${rhetoricalCount} rhetorisch · ${questionCount} Fragen`);
+                        }
                         if (depthCheck.length) addRow("Satz-Verschachtelung:", `${depthCheck.filter(d => d.isDeep).length} kritisch`);
                         if (sentimentIntensity.length) {
                             const start = sentimentIntensity[0]?.score ?? 0;
@@ -2772,7 +2780,7 @@
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
-                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(read.sentences), active); break;
+                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
                     case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
@@ -3025,7 +3033,8 @@
             if(!data || data.length === 0) return this.updateCard('rhet_questions', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für Fragen-Analyse.</p>');
 
             const total = data.length;
-            const questions = data.filter(item => item.isRhetorical);
+            const questions = data.filter(item => item.isQuestion);
+            const rhetorical = data.filter(item => item.isRhetorical);
             const ratio = total > 0 ? (questions.length / total) * 100 : 0;
             let label = 'Ausgewogen';
             let color = SA_CONFIG.COLORS.blue;
@@ -3034,7 +3043,7 @@
 
             let h = `<div class="ska-questions-map">`;
             data.slice(0, 12).forEach(item => {
-                const cls = item.isRhetorical ? 'is-question' : 'is-normal';
+                const cls = item.isQuestion ? 'is-question' : 'is-normal';
                 h += `<span class="ska-question-dot ${cls}"></span>`;
             });
             h += `</div>`;
@@ -3042,9 +3051,10 @@
                     <span>${questions.length} Fragen</span>
                     <span>${label}</span>
                   </div>`;
-            if (questions.length) {
+            const listItems = rhetorical.length ? rhetorical : questions;
+            if (listItems.length) {
                 h += `<div class="ska-problem-list">`;
-                questions.slice(0, 2).forEach(item => {
+                listItems.slice(0, 2).forEach(item => {
                     h += `<div class="ska-problem-item">${item.sentence}</div>`;
                 });
                 h += `</div>`;
