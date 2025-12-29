@@ -3,6 +3,7 @@ const cleanTextForCounting = (text) =>
     text
         .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
         .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+        .replace(/\s*\[[A-ZÄÖÜ]{2,}\]\s*/g, ' ')
         .replace(/\s*\|\s*/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();

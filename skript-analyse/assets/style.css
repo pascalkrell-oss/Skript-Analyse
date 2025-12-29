@@ -447,12 +447,12 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-problem-list { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem; }
 .ska-problem-item { background: #fff5f5; border-left: 3px solid #ef4444; padding: 0.8rem; border-radius: 0 6px 6px 0; font-size: 0.85rem; color: #450a0a; line-height: 1.5; }
 .ska-problem-meta { display: flex; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #b91c1c; }
-.ska-expand-link { background: none; border: none; padding: 0.5rem; color: var(--ska-text-light); font-size: 0.8rem; cursor: pointer; width: 100%; text-align: center; }
+.ska-expand-link { background: none; border: none; padding: 0.35rem 0.5rem; color: var(--ska-text-light); font-size: 0.8rem; cursor: pointer; width: 100%; text-align: center; }
 .ska-expand-link:hover { color: var(--ska-primary); }
 .ska-hidden-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 0.8rem; }
 .ska-hidden-content.is-expanded { max-height: 1000px; opacity: 1; margin-top: 0; }
 .ska-hidden-content--compact.is-expanded { margin-top: 0.3rem; }
-.ska-more-toggle { margin-top: 0.3rem; }
+.ska-more-toggle { margin-top: 0.2rem; }
 .ska-tip-genre { margin-top: 0.35rem; font-size: 0.78rem; color: #94a3b8; }
 .ska-genre-context { margin-top: 0.35rem; font-size: 0.8rem; color: #94a3b8; }
 

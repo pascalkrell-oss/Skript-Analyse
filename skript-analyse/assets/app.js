@@ -267,6 +267,7 @@
         cleanTextForCounting: (text) => text
             .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
             .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+            .replace(/\s*\[[A-ZÄÖÜ]{2,}\]\s*/g, ' ')
             .replace(/\s*\|\s*/g, ' ')
             .replace(/\s+/g, ' ')
             .trim(),
@@ -2999,7 +3000,7 @@
                               </div>`;
                     });
                     h += `</div></div>`;
-                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                    h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
                 }
                 h += this.renderTipSection('plosive', true);
             }
@@ -3127,7 +3128,7 @@
                         h += `<div class="ska-problem-item">${item.sentence}</div>`;
                     });
                     h += `</div></div>`;
-                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                    h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
                 }
             }
             h += this.renderTipSection('rhet_questions', true);
@@ -3808,9 +3809,9 @@
                 killers.slice(0, 3).forEach(k => { h += renderItem(k); });
                 if(killers.length > 3) {
                     const hiddenCount = killers.length - 3;
-                    h += `<div id="ska-breath-hidden" class="ska-hidden-content">`;
+                    h += `<div id="ska-breath-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     killers.slice(3).forEach(k => { h += renderItem(k); });
-                    h += `</div><button class="ska-expand-link" data-action="toggle-breath-more" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
+                    h += `</div><button class="ska-expand-link ska-more-toggle" data-action="toggle-breath-more" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
                 }
                 h += `</div>`;
                 h += this.renderTipSection('breath', true);
