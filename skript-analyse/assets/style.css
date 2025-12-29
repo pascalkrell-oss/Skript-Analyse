@@ -121,8 +121,8 @@ body.ska-modal-open { overflow: hidden !important; }
     padding: 0.45rem 0;
     line-height: 1;
 }
-.ska-filterbar-header > span { justify-self: start; }
-.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; justify-self: end; }
+.ska-filterbar-header > span { justify-self: center; grid-column: 2; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; justify-self: end; grid-column: 3; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
