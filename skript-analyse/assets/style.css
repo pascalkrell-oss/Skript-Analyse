@@ -102,13 +102,13 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
-.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.75rem; color: var(--ska-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; min-height: 40px;
+.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; font-size: 0.75rem; color: var(--ska-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; min-height: 40px;
 
     padding: 0.15rem 0;
     line-height: 1;
 }
-.ska-filterbar-header > span { justify-self: start; }
-.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; justify-self: end; }
+.ska-filterbar-header > span { justify-self: center; grid-column: 2; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; justify-self: end; grid-column: 3; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
