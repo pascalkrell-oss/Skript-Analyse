@@ -529,6 +529,11 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-setting-item { display: flex; flex-direction: column; gap: 0.5rem; }
 .ska-setting-item label { font-size: 0.75rem; font-weight: 700; color: var(--ska-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .ska-settings-option-group { display: flex; gap: 1rem; align-items: stretch; flex-wrap: wrap; }
+.ska-settings-option-group--time {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
 .ska-settings-option {
     flex: 1 1 220px;
     min-width: 0;
@@ -700,6 +705,7 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-footer-actions { flex-direction: column; width: 100%; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
+    .ska-settings-option-group--time { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {

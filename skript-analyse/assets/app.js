@@ -1937,7 +1937,7 @@
                             </div>
                             <div class="ska-settings-field">
                                 <label class="ska-settings-label">Zeit-Berechnung</label>
-                                <div class="ska-settings-option-group">
+                                <div class="ska-settings-option-group ska-settings-option-group--time">
                                     <label class="ska-settings-option">
                                         <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
                                         <div>
@@ -2525,12 +2525,22 @@
             }
 
             if (act === 'benchmark-apply') {
+                const modal = document.getElementById('ska-benchmark-modal');
                 const wpm = this.state.benchmark.wpm;
                 if (wpm && wpm > 0) {
                     this.settings.manualWpm = wpm;
                     this.saveUIState();
                     this.updateWpmUI();
                     this.analyze(this.getText());
+                }
+                if (modal) {
+                    modal.classList.remove('is-open');
+                    document.body.classList.remove('ska-modal-open');
+                    if (this.state.benchmark.timerId) {
+                        clearInterval(this.state.benchmark.timerId);
+                        this.state.benchmark.timerId = null;
+                    }
+                    this.state.benchmark.running = false;
                 }
                 return true;
             }
