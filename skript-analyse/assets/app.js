@@ -2931,7 +2931,7 @@
 
         renderHiddenPanel() {
             this.hiddenPanel.innerHTML = '';
-            const sorted = SA_CONFIG.CARD_ORDER.filter(id => this.state.hiddenCards.has(id));
+            const sorted = SA_CONFIG.CARD_ORDER.filter(id => this.state.hiddenCards.has(id) && this.isCardAvailable(id));
             if(sorted.length) {
                 this.hiddenPanel.innerHTML = '<div class="ska-hidden-label">Ausgeblendet (Klicken zum Wiederherstellen):</div>';
                 sorted.forEach(id => {
@@ -2958,6 +2958,7 @@
             this.filterBar.classList.toggle('is-expanded', showAll);
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
+            const filteredItems = items.filter((id) => this.isCardAvailable(id));
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
@@ -2971,7 +2972,7 @@
                         <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
                         <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
                     </div>
-                    ${items.map(id => {
+                    ${filteredItems.map(id => {
                         if (allowed && !showAll && !allowed.has(id) && id !== 'overview') return '';
                         const checked = !this.state.hiddenCards.has(id);
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
@@ -3065,7 +3066,13 @@
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            SA_CONFIG.CARD_ORDER.forEach((id, idx) => {
+            const availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
+            SA_CONFIG.CARD_ORDER.forEach((id) => {
+                if (this.isCardAvailable(id)) return;
+                const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                if (existing) existing.remove();
+            });
+            availableCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
                 if (allowed && !allowed.has(id) && id !== 'overview') return;
                 const active = isActive(id);
@@ -4317,7 +4324,7 @@
 
         renderChapterCalculatorCard(raw, active) {
             if(!active) return this.updateCard('chapter_calc', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            const isHoerbuch = this.settings.usecase === 'hoerbuch' || (this.settings.usecase === 'auto' && this.settings.lastGenre === 'hoerbuch');
+            const isHoerbuch = this.settings.usecase === 'hoerbuch';
             if (!isHoerbuch) {
                 return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>');
             }
@@ -4401,6 +4408,13 @@
                 return (read.totalSyllables / sps) + pause;
             }
             return (read.speakingWordCount / wpm * 60) + pause;
+        }
+
+        isCardAvailable(id) {
+            if (id === 'chapter_calc') {
+                return this.settings.usecase === 'hoerbuch';
+            }
+            return true;
         }
 
         renderDialogCard(d, active) {
