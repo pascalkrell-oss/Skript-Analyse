@@ -12,6 +12,8 @@
         UI_KEY_HIDDEN: 'skriptanalyse_hidden_cards',
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
+        PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
+        WORKER_TEXT_THRESHOLD: 12000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, default: 150 },
@@ -78,6 +80,8 @@
             negative: ['problem', 'fehler', 'gefahr', 'risiko', 'schlecht', 'verlust', 'angst', 'sorge', 'schwierig', 'nein', 'leider', 'kritik', 'störung', 'kosten', 'teuer', 'falsch', 'warnung', 'schaden', 'krise', 'düster', 'traurig'],
             emotional: ['!', 'wirklich', 'absolut', 'nie', 'immer', 'sofort', 'jetzt', 'unglaublich', 'wahnsinn', 'liebe', 'hass', 'dringend', 'herz', 'leidenschaft', 'feuer', 'eis']
         },
+        SENTIMENT_NEGATIONS: ['nicht', 'kein', 'keine', 'keiner', 'keinem', 'keinen', 'keines', 'nie', 'nichts', 'ohne', 'niemals'],
+        NEGATION_WINDOW: 3,
         AROUSAL: {
             high: ['explosion', 'jetzt', 'sofort', 'sofortig', 'sofortige', 'boom', 'krass', 'schnell', 'dringend', 'extrem', 'feuer', 'stark', 'power', 'heftig', 'wow', 'unglaublich', 'alarm', 'laut', 'aufwachen', 'action'],
             low: ['sanft', 'ruhig', 'leise', 'vielleicht', 'behutsam', 'sicher', 'sachte', 'entspannt', 'gelassen', 'still', 'warm', 'weich', 'sorgfältig', 'bedacht', 'gemächlich', 'leise', 'harmonie']
@@ -90,6 +94,10 @@
         BUZZWORDS: [
             'synergetisch', 'agil', 'lösungsorientiert', 'innovativ', 'disruptiv', 'ganzheitlich', 'skalierbar', 'wertschöpfend',
             'kundenfokussiert', 'state of the art', 'best practice', 'low hanging fruits', 'win-win', 'touchpoint', 'mindset'
+        ],
+        NOMINAL_WHITELIST: [
+            'zeitung', 'kleidung', 'meinung', 'wohnung', 'nutzung', 'rechnung', 'bedienung', 'förderung', 'lösung', 'beziehung',
+            'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'spread_index', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
@@ -398,11 +406,63 @@
     };
 
     const SA_Logic = {
+        getHyphenator: () => {
+            if (SA_Logic._hyphenatorChecked) return SA_Logic._hyphenator;
+            SA_Logic._hyphenatorChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Hypher = window.Hypher;
+            const patterns = window.hyphenationPatternsDe
+                || window.hyphenationPatterns
+                || (window.HyphenationPatterns && (window.HyphenationPatterns.de || window.HyphenationPatterns.de_DE))
+                || window.HypherPatternsDe
+                || window.HypherPatternsDE;
+            if (Hypher && patterns) {
+                SA_Logic._hyphenator = new Hypher(patterns);
+            }
+            return SA_Logic._hyphenator;
+        },
+        getSentimentEngine: () => {
+            if (SA_Logic._sentimentChecked) return SA_Logic._sentimentEngine;
+            SA_Logic._sentimentChecked = true;
+            if (!SA_CONFIG.PRO_MODE) return null;
+            const Sentiment = window.Sentiment;
+            if (Sentiment) SA_Logic._sentimentEngine = new Sentiment();
+            return SA_Logic._sentimentEngine;
+        },
+        getTokenData: (text) => {
+            const tokens = text.toLowerCase().match(/[a-zäöüß]+/g) || [];
+            const negations = new Set(SA_CONFIG.SENTIMENT_NEGATIONS);
+            const negated = new Array(tokens.length).fill(false);
+            let windowSize = 0;
+            for (let i = 0; i < tokens.length; i++) {
+                if (negations.has(tokens[i])) {
+                    windowSize = SA_CONFIG.NEGATION_WINDOW;
+                    continue;
+                }
+                if (windowSize > 0) {
+                    negated[i] = true;
+                    windowSize -= 1;
+                }
+            }
+            return { tokens, negated };
+        },
+        getSentimentLexicon: () => {
+            const lexicon = {};
+            SA_CONFIG.SENTIMENT.positive.forEach(word => { lexicon[word] = 2; });
+            SA_CONFIG.SENTIMENT.negative.forEach(word => { lexicon[word] = -2; });
+            return lexicon;
+        },
         countSyllables: (word) => {
-            word = word.toLowerCase();
-            if (word.length <= 3) return 1; 
-            word = word.replace(/(?:eu|au|ei|ie|äu|oi|ui)/g, 'a');
-            const matches = word.match(/[aeiouäöü]/g);
+            const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
+            if (!clean) return 0;
+            if (clean.length <= 3) return 1;
+            const hyphenator = SA_Logic.getHyphenator();
+            if (hyphenator) {
+                const syllables = hyphenator.hyphenate(clean);
+                if (syllables && syllables.length) return syllables.length;
+            }
+            const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
+            const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
         analyzeReadability: (text, settings = {}) => {
@@ -569,17 +629,26 @@
             }); 
             return f; 
         },
-        findNominalStyle: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findNominalStyle: (text) => {
+            const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
+            const matches = text.match(regex) || [];
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const filtered = matches.filter(word => !whitelist.has(word.toLowerCase()));
+            return [...new Set(filtered)];
+        },
         
         findNominalChains: (text) => {
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const chains = [];
             const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
 
             sentences.forEach(s => {
                 const words = s.trim().split(/\s+/);
                 let count = 0;
                 words.forEach(w => {
+                    const cleaned = w.toLowerCase().replace(/[^a-zäöüß]/g, '');
+                    if (!cleaned || whitelist.has(cleaned)) return;
                     if (nominalRegex.test(w)) count++;
                 });
                 
@@ -795,13 +864,30 @@
              return { ratio: ratio, count: matches.length };
         },
         analyzeSentiment: (text) => {
-            const l = text.toLowerCase(); 
-            let posScore = 0; let negScore = 0;
-            SA_CONFIG.SENTIMENT.positive.forEach(w => { if(l.includes(w)) posScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            SA_CONFIG.SENTIMENT.negative.forEach(w => { if(l.includes(w)) negScore += (l.match(new RegExp(w, 'g')) || []).length; });
-            const total = posScore + negScore;
-            let temp = 0;
-            if(total > 0) temp = ((posScore - negScore) / total) * 100;
+            const engine = SA_Logic.getSentimentEngine();
+            let posScore = 0; let negScore = 0; let temp = 0;
+            if (engine) {
+                const result = engine.analyze(text, { extras: SA_Logic.getSentimentLexicon() });
+                posScore = (result.positive || []).length;
+                negScore = (result.negative || []).length;
+                temp = Math.max(-100, Math.min(100, (result.comparative || 0) * 100));
+            } else {
+                const { tokens, negated } = SA_Logic.getTokenData(text);
+                const positives = new Set(SA_CONFIG.SENTIMENT.positive);
+                const negatives = new Set(SA_CONFIG.SENTIMENT.negative);
+                tokens.forEach((token, idx) => {
+                    if (positives.has(token)) {
+                        if (negated[idx]) negScore += 1;
+                        else posScore += 1;
+                    }
+                    if (negatives.has(token)) {
+                        if (negated[idx]) posScore += 1;
+                        else negScore += 1;
+                    }
+                });
+                const total = posScore + negScore;
+                if (total > 0) temp = ((posScore - negScore) / total) * 100;
+            }
             let label = 'Neutral';
             if (temp > 30) label = 'Positiv / Warm';
             else if (temp < -30) label = 'Kritisch / Kühl';
@@ -1070,13 +1156,15 @@
         },
         analyzeArousalMap: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
-            const high = SA_CONFIG.AROUSAL.high;
-            const low = SA_CONFIG.AROUSAL.low;
+            const high = new Set(SA_CONFIG.AROUSAL.high);
+            const low = new Set(SA_CONFIG.AROUSAL.low);
             return sentences.map(sentence => {
-                const l = sentence.toLowerCase();
                 let score = 0;
-                high.forEach(w => { if (l.includes(w)) score += 2; });
-                low.forEach(w => { if (l.includes(w)) score -= 1; });
+                const { tokens, negated } = SA_Logic.getTokenData(sentence);
+                tokens.forEach((token, idx) => {
+                    if (high.has(token)) score += negated[idx] ? -1 : 2;
+                    if (low.has(token)) score += negated[idx] ? 1 : -1;
+                });
                 const normalized = Math.max(-4, Math.min(6, score));
                 return { sentence: sentence.trim(), score: normalized };
             });
@@ -1429,9 +1517,14 @@
                 excludedCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 }
+                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
+                analysisToken: 0,
+                readabilityCache: []
             };
             
+            this.analysisWorker = null;
+            this.workerRequests = new Map();
+            this.workerRequestId = 0;
             this.isRestoring = false;
 
             this.loadUIState();
@@ -1439,6 +1532,7 @@
             this.renderSettingsModal();
             this.renderBenchmarkModal();
             this.renderTeleprompterModal();
+            this.initAnalysisWorker();
             this.bindEvents();
             
             this.injectGlobalStyles(); // CSS Overrides
@@ -1636,11 +1730,47 @@
             </div>`;
             document.body.appendChild(m);
             
+            const wpmSlider = m.querySelector('[data-action="wpm-slider"]');
+            if (wpmSlider) {
+                wpmSlider.addEventListener('input', (e) => {
+                    const val = parseInt(e.target.value, 10);
+                    this.settings.manualWpm = val;
+                    this.saveUIState();
+                    this.updateWpmUI();
+                });
+                wpmSlider.addEventListener('change', () => this.analyze(this.getText()));
+            }
+
+            const benchmarkBtn = m.querySelector('[data-action="open-benchmark"]');
+            if (benchmarkBtn) {
+                benchmarkBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.renderBenchmarkModal();
+                    const modal = document.getElementById('ska-benchmark-modal');
+                    if (modal) {
+                        modal.classList.add('is-open');
+                        document.body.classList.add('ska-modal-open');
+                    }
+                });
+            }
+
+            const resetWpmBtn = m.querySelector('[data-action="reset-wpm"]');
+            if (resetWpmBtn) {
+                resetWpmBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.handleAction('reset-wpm', resetWpmBtn);
+                    this.updateWpmUI();
+                });
+            }
+
             // Bind radio changes
             m.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', (e) => {
                 if(e.target.name === 'ska-time-mode') this.settings.timeMode = e.target.value;
                 if(e.target.name === 'ska-char-mode') this.settings.charMode = e.target.value;
-                if(e.target.name === 'ska-num-mode') this.settings.numberMode = e.target.value;
+                if(e.target.name === 'ska-num-mode') {
+                    this.settings.numberMode = e.target.value;
+                    this.state.readabilityCache = [];
+                }
                 this.saveUIState(); 
                 this.analyze(this.getText());
             }));
@@ -1675,6 +1805,122 @@
                     this.analyze(this.getText());
                 });
             }
+        }
+
+        updateWpmUI() {
+            const modal = document.getElementById('ska-settings-modal');
+            if (!modal) return;
+            const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
+            const wpm = SA_Logic.getWpm(this.settings);
+            const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
+            const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
+            const label = modal.querySelector('.ska-wpm-header strong');
+            const slider = modal.querySelector('[data-action="wpm-slider"]');
+            if (label) label.textContent = manualLabel;
+            if (slider) slider.value = sliderValue;
+        }
+
+        initAnalysisWorker() {
+            const workerUrl = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.workerUrl;
+            if (!workerUrl || !window.Worker) return;
+            try {
+                this.analysisWorker = new Worker(workerUrl);
+                this.analysisWorker.onmessage = (event) => {
+                    const { id, results } = event.data || {};
+                    if (!id || !this.workerRequests.has(id)) return;
+                    const { resolve } = this.workerRequests.get(id);
+                    this.workerRequests.delete(id);
+                    resolve(results || []);
+                };
+                this.analysisWorker.onerror = () => {
+                    this.analysisWorker = null;
+                    this.workerRequests.clear();
+                };
+            } catch (err) {
+                this.analysisWorker = null;
+            }
+        }
+
+        requestWorkerReadability(paragraphs) {
+            if (!this.analysisWorker) return Promise.resolve([]);
+            const id = ++this.workerRequestId;
+            return new Promise((resolve) => {
+                this.workerRequests.set(id, { resolve });
+                this.analysisWorker.postMessage({
+                    id,
+                    type: 'paragraphs',
+                    paragraphs,
+                    settings: { numberMode: this.settings.numberMode }
+                });
+            });
+        }
+
+        buildReadabilityFromCache(paragraphs) {
+            const combinedSentences = [];
+            const combinedWords = [];
+            let totalSyllables = 0;
+            let wordCount = 0;
+            let speakingWordCount = 0;
+            let maxSentenceWords = 0;
+            let paragraphsCount = 0;
+            const cleanedParts = [];
+
+            paragraphs.forEach((entry) => {
+                if (!entry || !entry.result) return;
+                const res = entry.result;
+                if (res.wordCount > 0) paragraphsCount += 1;
+                totalSyllables += res.totalSyllables;
+                wordCount += res.wordCount;
+                speakingWordCount += res.speakingWordCount;
+                maxSentenceWords = Math.max(maxSentenceWords, res.maxSentenceWords || 0);
+                if (res.sentences && res.sentences.length) combinedSentences.push(...res.sentences);
+                if (res.words && res.words.length) combinedWords.push(...res.words);
+                if (res.cleanedText) cleanedParts.push(res.cleanedText);
+            });
+
+            const avgS = wordCount / (combinedSentences.length || 1);
+            const avgW = wordCount > 0 ? totalSyllables / wordCount : 0;
+            const score = 180 - avgS - (58.5 * avgW);
+
+            return {
+                score: Math.max(0, Math.min(100, score)),
+                avgSentence: avgS,
+                syllablesPerWord: avgW,
+                wordCount,
+                speakingWordCount,
+                words: combinedWords,
+                sentences: combinedSentences,
+                cleanedText: cleanedParts.join('\n\n'),
+                paragraphs: paragraphsCount,
+                maxSentenceWords,
+                totalSyllables
+            };
+        }
+
+        getReadabilityWithDiff(text) {
+            const parts = text.split(/\n\s*\n/);
+            const cache = this.state.readabilityCache;
+            const updates = [];
+
+            parts.forEach((part, index) => {
+                const cached = cache[index];
+                if (!cached || cached.text !== part) {
+                    updates.push({ index, text: part });
+                }
+            });
+
+            cache.length = parts.length;
+
+            if (!updates.length) {
+                return Promise.resolve(this.buildReadabilityFromCache(cache));
+            }
+
+            return this.requestWorkerReadability(updates).then((results) => {
+                results.forEach((item) => {
+                    cache[item.index] = { text: item.text, result: item.result };
+                });
+                return this.buildReadabilityFromCache(cache);
+            });
         }
 
         renderBenchmarkModal() {
@@ -1947,6 +2193,7 @@
                 if (wpm && wpm > 0) {
                     this.settings.manualWpm = wpm;
                     this.saveUIState();
+                    this.updateWpmUI();
                     this.analyze(this.getText());
                 }
                 return true;
@@ -1986,6 +2233,7 @@
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
+                this.updateWpmUI();
                 this.analyze(this.getText());
                 return true;
             }
@@ -2321,6 +2569,7 @@
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
+                    this.state.readabilityCache = [];
                     this.saveUIState();
                     this.renderHiddenPanel();
                     this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
@@ -2404,8 +2653,21 @@
         }
 
         analyze(text) {
-            SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, text);
-            const raw = text || '', read = SA_Logic.analyzeReadability(raw, this.settings);
+            const raw = text || '';
+            this.state.analysisToken += 1;
+            const token = this.state.analysisToken;
+            if (this.analysisWorker && raw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
+                this.getReadabilityWithDiff(raw).then((read) => {
+                    if (token !== this.state.analysisToken) return;
+                    this.performAnalysis(raw, read);
+                });
+                return;
+            }
+            this.performAnalysis(raw, SA_Logic.analyzeReadability(raw, this.settings));
+        }
+
+        performAnalysis(raw, read) {
+            SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
             const wpm = SA_Logic.getWpm(this.settings);
             const sps = SA_Logic.getSps(this.settings);
             
