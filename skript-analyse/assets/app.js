@@ -2539,6 +2539,17 @@
                 e.preventDefault();
             }
 
+            if(act === 'toggle-plosive') {
+                const hiddenBox = this.root.querySelector('#ska-plosive-hidden');
+                if(hiddenBox) {
+                    const isHidden = !hiddenBox.classList.contains('is-expanded');
+                    hiddenBox.classList.toggle('is-expanded');
+                    const total = parseInt(btn.dataset.total || 0);
+                    btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
+                }
+                e.preventDefault();
+            }
+
                 if(act === 'clean') { 
                     this.setText(this.getText().replace(/[\t\u00A0]/g,' ').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n')); 
                     this.analyze(this.getText()); 
@@ -2968,17 +2979,28 @@
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
             } else {
                 h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Folgen: <strong>${clusters.length}</strong></div>`;
+                const initial = clusters.slice(0, 4);
+                const remaining = clusters.slice(4);
                 h += `<div class="ska-problem-list">`;
-                clusters.slice(0, 4).forEach(cluster => {
+                initial.forEach(cluster => {
                     h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
                             ${cluster.phrase}
                             <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
                           </div>`;
                 });
-                if (clusters.length > 4) {
-                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${clusters.length - 4} weitere</div>`;
-                }
                 h += `</div>`;
+                if (remaining.length) {
+                    h += `<div id="ska-plosive-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
+                    h += `<div class="ska-problem-list">`;
+                    remaining.forEach(cluster => {
+                        h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
+                                ${cluster.phrase}
+                                <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
+                              </div>`;
+                    });
+                    h += `</div></div>`;
+                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                }
                 h += this.renderTipSection('plosive', true);
             }
             this.updateCard('plosive', h);
@@ -3592,6 +3614,8 @@
             if(wpm > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
             else if(wpm < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
 
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipNote}</div>` : '';
             const h = `
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; margin-bottom:1rem;">
                     <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; border-top:3px solid ${tempoCol}; text-align:center;">
@@ -3610,6 +3634,16 @@
                         <div style="font-size:0.7rem; text-transform:uppercase; color:#1e40af; font-weight:700;">Sprech-Haltung</div>
                         <div style="font-weight:600; color:#1e3a8a; font-size:0.95rem;">${tone.label}</div>
                     </div>
+                </div>
+                <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
+                    <ul style="margin:0; padding-left:1.1rem; color:#475569; font-size:0.85rem; line-height:1.5;">
+                        <li>Betonung planen: markiere Schlüsselsätze für klare Peaks.</li>
+                        <li>Atmung führen: nach Sinnabschnitten bewusst Pausen setzen.</li>
+                        <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
+                        <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
+                    </ul>
+                    ${genreCoachNote}
                 </div>`;
             
             this.updateCard('coach', h);
