@@ -21,15 +21,15 @@
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
-            werbung: { tipNote: 'Werbespot: kurz, pointiert, klare CTA-Impulse.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
-            imagefilm: { tipNote: 'Imagefilm: markenpräzise, ruhig, bildstark.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
-            erklaer: { tipNote: 'Erklärvideo: Schritt-für-Schritt, klare Logik.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
-            hoerbuch: { tipNote: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
-            podcast: { tipNote: 'Podcast: dialogisch, locker, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
-            ansage: { tipNote: 'Ansage: sehr klar, präzise, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
-            elearning: { tipNote: 'E-Learning: didaktisch, ruhig, verständlich.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
-            social: { tipNote: 'Social Media: schnell, energisch, kurz.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
-            buch: { tipNote: 'Buch/Roman: erzählerisch, lebendige Bilder.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+            werbung: { tipPrefix: 'Werbespot', tipFocus: 'kurz, pointiert, CTA-nah formulieren', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipPrefix: 'Imagefilm', tipFocus: 'ruhige Bilder, klare Markenbotschaft', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipPrefix: 'Erklärvideo', tipFocus: 'logisch führen, Schritt für Schritt', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipPrefix: 'Hörbuch', tipFocus: 'Atempausen setzen, Bögen halten', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipPrefix: 'Podcast', tipFocus: 'locker sprechen, natürlich bleiben', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipPrefix: 'Ansage', tipFocus: 'präzise, klar und schnell erfassbar', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipPrefix: 'E-Learning', tipFocus: 'didaktisch gliedern, Ruhe bewahren', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipPrefix: 'Social Media', tipFocus: 'schnell zum Punkt, snackable', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipPrefix: 'Buch/Roman', tipFocus: 'bildhaft erzählen, Rhythmus halten', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
         },
         
         ANGLICISMS: [
@@ -112,10 +112,10 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'spread_index', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'audience', 'easy_language'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'audience', 'cta', 'adjective', 'anglicism', 'echo'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism']
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism']
         },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -155,6 +155,7 @@
             teleprompter: '🪄 Teleprompter',
             arousal: '⚡ Arousal-Map',
             bullshit: '🧨 Buzzword-Check',
+            metaphor: '🪞 Metaphern & Phrasen',
             audience: '🎯 Zielgruppen-Filter',
             verb_balance: '⚖️ Verb-Fokus',
             rhet_questions: '❓ Rhetorische Fragen',
@@ -195,6 +196,7 @@
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
             arousal: 'Visualisiert Energieverlauf im Skript.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
+            metaphor: 'Zählt bekannte Redewendungen, um Klischees sichtbar zu machen.',
             audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
             verb_balance: 'Vergleicht Verben und Substantive für mehr Handlungsfokus.',
             rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.',
@@ -203,7 +205,7 @@
             naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'spread_index', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
         
         FILLER_DB: {
             'eigentlich': 1.0, 'sozusagen': 1.0, 'irgendwie': 1.0, 'quasi': 1.0, 
@@ -212,6 +214,34 @@
             'vielleicht': 0.5, 'schon': 0.4, 'glaube ich': 0.8, 'wohl': 0.5, 
             'natürlich': 0.4, 'letztendlich': 0.9, 'absolut': 0.5
         },
+
+        METAPHOR_DB: [
+            'das rad nicht neu erfinden',
+            'zwei fliegen mit einer klappe',
+            'ins kalte wasser springen',
+            'mit offenen karten spielen',
+            'auf dem richtigen weg',
+            'der rote faden',
+            'die kirche im dorf lassen',
+            'unter den teppich kehren',
+            'am selben strang ziehen',
+            'den nagel auf den kopf treffen',
+            'das kind beim namen nennen',
+            'die sprichwörtliche nadel im heuhaufen',
+            'den stein ins rollen bringen',
+            'den ball ins rollen bringen',
+            'im gleichen boot sitzen',
+            'auf wolke sieben',
+            'jemandem den spiegel vorhalten',
+            'der elefant im raum',
+            'auf ganzer linie',
+            'die sache auf den punkt bringen',
+            'den teufel an die wand malen',
+            'den faden verlieren',
+            'auf der leitung stehen',
+            'den roten faden verlieren',
+            'in den sauren apfel beißen'
+        ],
 
         STOPWORDS: [
             'der', 'die', 'das', 'ein', 'eine', 'einer', 'eines', 'einem', 'einen', 'und', 'oder', 'aber', 'denn', 'weil', 'als', 'wenn', 'dass', 'damit',
@@ -250,6 +280,7 @@
             teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
             arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt.", "Baue Spannungswechsel ein: ruhig erklären, dann punktuell betonen.", "Zu hohe Dauerintensität ermüdet – Peaks gezielt setzen."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen.", "Konkrete Beispiele schlagen Buzzwords – ersetze Floskeln durch Nutzen.", "Wenn ein Satz nichts messbar sagt, streichen oder präzisieren."],
+            metaphor: ["Klischees wirken vorhersehbar – prüfe Alternativen.", "Ein frisches Bild bleibt länger im Kopf als bekannte Sprüche.", "Metaphern sind stark, wenn sie zur Zielgruppe passen.", "Ein einziges gutes Bild schlägt fünf Floskeln.", "Originalität steigert die Sprecher-Wirkung spürbar."],
             audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt.", "Sprich die Zielgruppe direkt an (Du/Sie) und bleibe konsistent.", "Teste jeden Satz: Würde die Zielgruppe das so sagen?"],
             verb_balance: ["Verben bringen Bewegung in den Text.", "Nominalstil bremst das Tempo.", "Mehr Verben = mehr Handlung.", "Mehr starke Verben, weniger Hilfsverben – das klingt entschlossener.", "Verben machen Audio lebendig: Aktiv statt Zustand."],
             rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion.", "Rhetorische Fragen sparsam einsetzen – sonst wirkt es unsicher.", "Beantworte die Frage unmittelbar, damit kein Leerlauf entsteht."],
@@ -264,6 +295,7 @@
     const SA_Utils = {
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
+        escapeRegex: (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
         cleanTextForCounting: (text) => text
             .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
             .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
@@ -271,16 +303,26 @@
             .replace(/\s*\|\s*/g, ' ')
             .replace(/\s+/g, ' ')
             .trim(),
-        getPausenTime: (text) => {
+        getPausenTime: (text, settings = {}) => {
             let total = 0;
-            const legacy = text.match(/\|([0-9\.]+)S?\|/g) || [];
+            const safeText = text || '';
+            const cleaned = SA_Utils.cleanTextForCounting(safeText);
+            const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
             total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
-            const newFormat = text.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
+            const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
             total += newFormat.reduce((acc, m) => {
                 const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
                 return acc + (val ? parseFloat(val[1]) : 0);
             }, 0);
-            total += ((text.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+            total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+            const commaPause = parseFloat(settings.commaPause ?? 0);
+            const periodPause = parseFloat(settings.periodPause ?? 0);
+            if (commaPause > 0) {
+                total += (cleaned.match(/,/g) || []).length * commaPause;
+            }
+            if (periodPause > 0) {
+                total += (cleaned.match(/[.!?]/g) || []).length * periodPause;
+            }
             return total;
         },
         insertAtCursor: (field, value) => {
@@ -580,11 +622,35 @@
             const ttr = (unique.size / normalized.length) * 100;
             return { ttr: ttr, unique: unique.size, total: normalized.length };
         },
-        analyzeKeywordClusters: (text) => {
-            if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0 };
+        analyzeKeywordClusters: (text, settings = {}) => {
+            if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
             const stopwords = new Set(SA_CONFIG.STOPWORDS);
             const counts = new Map();
             let total = 0;
+
+            const cleanedText = SA_Utils.cleanTextForCounting(text);
+            const totalWords = cleanedText.match(/[A-Za-zÄÖÜäöüß0-9]+/g) || [];
+            const focusKeywords = (settings.focusKeywords || '')
+                .split(/[,|\n]/)
+                .map(k => k.trim())
+                .filter(Boolean);
+            const focusCounts = [];
+            let focusTotalCount = 0;
+
+            focusKeywords.forEach(keyword => {
+                const parts = keyword.split(/\s+/).filter(Boolean).map(SA_Utils.escapeRegex);
+                const pattern = parts.length ? parts.join('\\s+') : '';
+                if (!pattern) return;
+                const regex = new RegExp(`\\b${pattern}\\b`, 'gi');
+                const matches = cleanedText.match(regex) || [];
+                const count = matches.length;
+                focusTotalCount += count;
+                focusCounts.push({ keyword, count });
+            });
+
+            const focusDensity = totalWords.length > 0 ? (focusTotalCount / totalWords.length) * 100 : 0;
+            const focusLimit = Number.isFinite(parseFloat(settings.keywordDensityLimit)) ? parseFloat(settings.keywordDensityLimit) : 0;
+            const focusOverLimit = focusLimit > 0 && focusDensity > focusLimit;
 
             const sentences = text.split(/[.!?]+/);
             sentences.forEach(sentence => {
@@ -623,7 +689,7 @@
             });
             const topCount = top.length > 0 ? top[0].count : 0;
             const focusScore = total > 0 ? topCount / total : 0;
-            return { top, total, focusScore };
+            return { top, total, focusScore, focusKeywords, focusCounts, focusTotalCount, focusDensity, focusLimit, focusOverLimit, totalWords: totalWords.length };
         },
         getWpm: (s) => {
             if (s.manualWpm && s.manualWpm > 0) return s.manualWpm;
@@ -750,6 +816,30 @@
                 lastSeen.set(current, i);
             }
             return [...echoes];
+        },
+        analyzeMetaphorPhrases: (text) => {
+            if (!text || !text.trim()) return { total: 0, matches: [] };
+            const cleaned = text.toLowerCase();
+            const results = [];
+            let total = 0;
+            SA_CONFIG.METAPHOR_DB.forEach((phrase) => {
+                const pattern = phrase
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map(SA_Utils.escapeRegex)
+                    .join('\\s+');
+                const regex = new RegExp(`\\b${pattern}\\b`, 'gi');
+                const matches = cleaned.match(regex) || [];
+                if (matches.length) {
+                    total += matches.length;
+                    results.push({ phrase, count: matches.length });
+                }
+            });
+            results.sort((a, b) => {
+                if (b.count !== a.count) return b.count - a.count;
+                return a.phrase.localeCompare(b.phrase);
+            });
+            return { total, matches: results };
         },
         findPassive: (text) => { 
             const sentences = text.split(/[.!?]+(?=\s|$)/);
@@ -943,7 +1033,7 @@
                     label: p.substring(0, 30).replace(/\n/g, ' ') + '...' 
                 });
                 const read = SA_Logic.analyzeReadability(p, settings);
-                const pause = SA_Utils.getPausenTime(p);
+                const pause = SA_Utils.getPausenTime(p, settings);
                 let dur = 0;
                 if (isSps) dur = (read.totalSyllables / sps) + pause;
                 else dur = (read.speakingWordCount / wpm * 60) + pause;
@@ -1281,7 +1371,7 @@
                     const nominalChains = SA_Logic.findNominalChains(read.cleanedText);
                     const vocab = SA_Logic.analyzeVocabulary(read.words);
                     const pronunc = SA_Logic.analyzePronunciation(read.cleanedText);
-                    const keywordFocus = SA_Logic.analyzeKeywordClusters(text);
+                    const keywordFocus = SA_Logic.analyzeKeywordClusters(text, settings);
                     const spreadIndex = SA_Logic.calculateVariance(read.sentences);
                     const plosiveClusters = SA_Logic.findPlosiveClusters(text);
                     const redundancy = SA_Logic.analyzeRedundancy(read.sentences);
@@ -1318,8 +1408,8 @@
 
                     if(options.compare && data.savedVersion && data.savedVersion !== text) {
                         const oldRead = SA_Logic.analyzeReadability(data.savedVersion, settings);
-                        const oldSec = (oldRead.wordCount / data.wpm * 60) + SA_Utils.getPausenTime(data.savedVersion);
-                        const newSec = (read.speakingWordCount / data.wpm * 60) + SA_Utils.getPausenTime(text);
+                        const oldSec = (oldRead.wordCount / data.wpm * 60) + SA_Utils.getPausenTime(data.savedVersion, settings);
+                        const newSec = (read.speakingWordCount / data.wpm * 60) + SA_Utils.getPausenTime(text, settings);
                         const diffSec = newSec - oldSec;
                         const diffWords = read.wordCount - oldRead.wordCount;
                         addSectionTitle("Versions-Vergleich");
@@ -1532,7 +1622,7 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '' };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2 };
             
             this.state = { 
                 savedVersion: '', 
@@ -1718,6 +1808,21 @@
                         <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">SPS bietet eine höhere Genauigkeit für Synchronsprecher, da lange Wörter (z.B. "Donaudampfschifffahrt") korrekt als länger berechnet werden als kurze.</p>
                     </div>
 
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Pausen-Automatik (Punkt & Komma)</label>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                            <div>
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:0.35rem;">Komma-Pause (Sekunden)</span>
+                                <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause ?? 0.2}" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                            <div>
+                                <span style="font-size:0.85rem; color:#64748b; display:block; margin-bottom:0.35rem;">Punkt-Pause (Sekunden)</span>
+                                <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause ?? 0.5}" style="width:100%; padding:0.5rem; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                        </div>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Diese Mikro-Pausen werden zur Gesamtzeit addiert – ideal für Voice-Optimierung.</p>
+                    </div>
+
                     <div class="ska-wpm-calibration">
                         <div class="ska-wpm-header">
                             <span>Persönliches WPM</span>
@@ -1741,6 +1846,16 @@
                             <option value="fach" ${this.settings.audienceTarget === 'fach' ? 'selected' : ''}>Fachpublikum</option>
                         </select>
                         <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Das System warnt, wenn Flesch-Score oder Satzlänge das Ziel überschreitet.</p>
+                    </div>
+
+                    <div style="margin-bottom:1.5rem;">
+                        <label style="display:block; font-weight:700; color:#334155; margin-bottom:0.5rem;">Keyword-Dichte (SEO vs. Voice)</label>
+                        <textarea id="ska-set-focus-keywords" style="width:100%; padding:0.6rem; border:1px solid #cbd5e1; border-radius:6px; min-height:70px;" placeholder="z.B. Produktname, Kernbegriff">${this.settings.focusKeywords || ''}</textarea>
+                        <div style="display:flex; gap:0.75rem; align-items:center; margin-top:0.6rem;">
+                            <span style="font-size:0.85rem; color:#64748b;">Dichte-Limit (%)</span>
+                            <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit ?? 2}" style="width:120px; padding:0.4rem; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                        <p style="font-size:0.8rem; color:#94a3b8; margin-top:0.5rem;">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
                     </div>
 
                     <div style="margin-bottom:0.5rem;">
@@ -1817,6 +1932,42 @@
             if (audienceSelect) {
                 audienceSelect.addEventListener('change', (e) => {
                     this.settings.audienceTarget = e.target.value;
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                });
+            }
+
+            const commaPauseInput = m.querySelector('#ska-set-comma-pause');
+            if (commaPauseInput) {
+                commaPauseInput.addEventListener('input', (e) => {
+                    this.settings.commaPause = Math.max(0, parseFloat(e.target.value) || 0);
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                });
+            }
+
+            const periodPauseInput = m.querySelector('#ska-set-period-pause');
+            if (periodPauseInput) {
+                periodPauseInput.addEventListener('input', (e) => {
+                    this.settings.periodPause = Math.max(0, parseFloat(e.target.value) || 0);
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                });
+            }
+
+            const focusInput = m.querySelector('#ska-set-focus-keywords');
+            if (focusInput) {
+                focusInput.addEventListener('input', (e) => {
+                    this.settings.focusKeywords = e.target.value;
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                });
+            }
+
+            const keywordLimitInput = m.querySelector('#ska-set-keyword-limit');
+            if (keywordLimitInput) {
+                keywordLimitInput.addEventListener('input', (e) => {
+                    this.settings.keywordDensityLimit = Math.max(0, parseFloat(e.target.value) || 0);
                     this.saveUIState();
                     this.analyze(this.getText());
                 });
@@ -2355,6 +2506,11 @@
                 if(global.manualWpm) this.settings.manualWpm = global.manualWpm;
                 if(global.audienceTarget) this.settings.audienceTarget = global.audienceTarget;
                 if(global.bullshitBlacklist) this.settings.bullshitBlacklist = global.bullshitBlacklist;
+                if(typeof global.lastGenre !== 'undefined') this.settings.lastGenre = global.lastGenre;
+                if(typeof global.commaPause !== 'undefined') this.settings.commaPause = global.commaPause;
+                if(typeof global.periodPause !== 'undefined') this.settings.periodPause = global.periodPause;
+                if(typeof global.focusKeywords !== 'undefined') this.settings.focusKeywords = global.focusKeywords;
+                if(typeof global.keywordDensityLimit !== 'undefined') this.settings.keywordDensityLimit = global.keywordDensityLimit;
                 
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
@@ -2370,11 +2526,16 @@
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
+                lastGenre: this.settings.lastGenre,
                 charMode: this.settings.charMode,
                 numberMode: this.settings.numberMode,
                 manualWpm: this.settings.manualWpm,
                 audienceTarget: this.settings.audienceTarget,
-                bullshitBlacklist: this.settings.bullshitBlacklist
+                bullshitBlacklist: this.settings.bullshitBlacklist,
+                commaPause: this.settings.commaPause,
+                periodPause: this.settings.periodPause,
+                focusKeywords: this.settings.focusKeywords,
+                keywordDensityLimit: this.settings.keywordDensityLimit
             }));
         }
 
@@ -2423,7 +2584,14 @@
             window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
             this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
                 const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
-                if(k) this.settings[k] = e.target.value; this.analyze(this.getText());
+                if(k) {
+                    this.settings[k] = e.target.value;
+                    if (k === 'usecase' && e.target.value !== 'auto') {
+                        this.settings.lastGenre = e.target.value;
+                        this.saveUIState();
+                    }
+                }
+                this.analyze(this.getText());
             }));
             if(this.targetInput) this.targetInput.addEventListener('input', (e) => {
                 const v = e.target.value.trim().split(':');
@@ -2622,7 +2790,7 @@
 
                 if(act === 'confirm-reset') {
                     this.setText(''); 
-                    this.settings={usecase:'auto',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:''}; 
+                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2}; 
                     this.state.savedVersion=''; 
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
@@ -2728,7 +2896,7 @@
             const wpm = SA_Logic.getWpm(this.settings);
             const sps = SA_Logic.getSps(this.settings);
             
-            const pause = SA_Utils.getPausenTime(raw);
+            const pause = SA_Utils.getPausenTime(raw, this.settings);
             
             // TIME CALCULATION SWITCH
             let dur = 0;
@@ -2820,7 +2988,7 @@
                     case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(raw), active); break;
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
-                    case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw), active); break;
+                    case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), active); break;
                     case 'spread_index': this.renderSpreadIndexCard(read.sentences, active); break;
                     case 'arousal': this.renderArousalCard(SA_Logic.analyzeArousalMap(read.sentences), active); break;
                     case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
@@ -2828,6 +2996,7 @@
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
+                    case 'metaphor': this.renderMetaphorCard(SA_Logic.analyzeMetaphorPhrases(raw), active); break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
@@ -2896,11 +3065,59 @@
 
             const total = data.total || 0;
             const top = data.top || [];
+            const focusKeywords = data.focusKeywords || [];
+            const focusCounts = data.focusCounts || [];
+            const focusDensity = data.focusDensity || 0;
+            const focusLimit = data.focusLimit || 0;
+            const focusOverLimit = data.focusOverLimit;
+            const focusTotalCount = data.focusTotalCount || 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
                 h = `<p style="color:#64748b; font-size:0.9rem;">Keine aussagekräftigen Substantive erkannt.</p>`;
                 return this.updateCard('keyword_focus', h);
+            }
+
+            if (focusKeywords.length) {
+                const statusLabel = focusLimit > 0
+                    ? (focusOverLimit ? 'Keyword-Stuffing möglich' : 'Im grünen Bereich')
+                    : 'Keine Limitierung gesetzt';
+                const statusColor = focusOverLimit ? SA_CONFIG.COLORS.error : (focusLimit > 0 ? SA_CONFIG.COLORS.success : SA_CONFIG.COLORS.muted);
+                const barWidth = focusLimit > 0 ? Math.min(100, (focusDensity / focusLimit) * 100) : Math.min(100, focusDensity * 10);
+
+                h += `
+                    <div style="margin-bottom:1rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                            <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Keyword-Dichte</span>
+                            <span style="font-weight:700; color:${statusColor};">${statusLabel}</span>
+                        </div>
+                        <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                            <div style="width:${barWidth}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${statusColor}); transition:width 0.5s;"></div>
+                        </div>
+                        <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Fokus-Keywords: <strong style="color:#334155;">${focusTotalCount} Treffer</strong> (${focusDensity.toFixed(2)}% von ${data.totalWords || 0} Wörtern)</div>
+                    </div>`;
+
+                if (focusCounts.length) {
+                    const nonZero = focusCounts.filter(item => item.count > 0);
+                    h += `<div class="ska-section-title">Fokus-Keywords</div>`;
+                    if (!nonZero.length) {
+                        h += `<p style="font-size:0.85rem; color:#94a3b8;">Keine Treffer für die hinterlegten Keywords.</p>`;
+                    } else {
+                        h += `<div class="ska-filler-list">`;
+                        const maxFocus = Math.max(...nonZero.map(item => item.count), 1);
+                        nonZero
+                            .sort((a, b) => b.count - a.count || a.keyword.localeCompare(b.keyword))
+                            .forEach(item => {
+                                const pct = (item.count / maxFocus) * 100;
+                                h += `<div class="ska-filler-item">
+                                        <span class="ska-filler-word" style="font-weight:600;">${item.keyword}</span>
+                                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
+                                        <span class="ska-filler-count">${item.count}x</span>
+                                      </div>`;
+                            });
+                        h += `</div>`;
+                    }
+                }
             }
 
             const dominant = top[0];
@@ -2934,6 +3151,9 @@
                       </div>`;
             });
             h += `</div>`;
+            if (!focusKeywords.length) {
+                h += `<div style="margin:0.8rem 0 0.6rem; font-size:0.85rem; color:#94a3b8;">Hinterlege Fokus-Keywords in den Einstellungen, um die Keyword-Dichte (SEO vs. Voice) zu prüfen.</div>`;
+            }
             h += this.renderTipSection('keyword_focus', true);
             this.updateCard('keyword_focus', h);
         }
@@ -3046,6 +3266,25 @@
                 h += this.renderTipSection('bullshit', true);
             }
             this.updateCard('bullshit', h);
+        }
+
+        renderMetaphorCard(data, active) {
+            if(!active) return this.updateCard('metaphor', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const matches = data.matches || [];
+            let h = '';
+            if(!matches.length) {
+                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Keine Klischee-Phrasen entdeckt.</div>`;
+            } else {
+                h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Redewendungen: <strong>${data.total}</strong></div>`;
+                h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
+                matches.slice(0, 16).forEach(item => {
+                    h += `<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${item.phrase} (${item.count}x)</span>`;
+                });
+                h += `</div>`;
+                if(matches.length > 16) h += `<div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">...und ${matches.length - 16} weitere</div>`;
+                h += this.renderTipSection('metaphor', true);
+            }
+            this.updateCard('metaphor', h);
         }
 
         renderAudienceCard(result, active) {
@@ -3434,12 +3673,12 @@
             const isSps = this.settings.timeMode === 'sps';
             const rateLabel = isSps ? `${SA_Logic.getSps(this.settings)} SPS` : `${wpm} WPM`;
 
-            let genreList = '<div class="ska-overview-genre-box"><h4>Zeiten im Vergleich</h4><div class="ska-genre-grid-layout">';
-            const cP = r ? SA_Utils.getPausenTime(this.getText()) : 0;
+            let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
+            const cP = r ? SA_Utils.getPausenTime(this.getText(), this.settings) : 0;
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
-            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social', 'buch'].forEach(g => {
+            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social'].forEach(g => {
                  if(g === this.settings.usecase) return;
                  let d = 0;
                  if(isSps) {
@@ -3513,8 +3752,13 @@
             const cI = this.state.tipIndices[id];
             const tip = tips[cI];
             const tT = tips.length;
-            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
-            const genreNote = genreContext ? `<div class="ska-tip-genre">${genreContext.tipNote}</div>` : '';
+            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
+            const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
+            const cardTitle = SA_CONFIG.CARD_TITLES[id] || 'Analyse';
+            const cardDescription = SA_CONFIG.CARD_DESCRIPTIONS[id];
+            const genreNote = genreContext
+                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${genreContext.tipFocus} – ${cardTitle}. ${cardDescription || ''}</div>`
+                : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
         }
@@ -3524,14 +3768,14 @@
 
             let h = '';
             if(!issues || issues.length === 0) {
-                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🌈 Sprache wirkt inklusiv!</div>`;
+                 h = `<div style="text-align:center; padding:1rem; color:#6366f1; background:#eef2ff; border-radius:8px;">🌈 Sprache wirkt inklusiv!</div>`;
             } else {
                 h += `<div class="ska-section-title">Gefundene Begriffe</div><div class="ska-problem-list">`;
                 const uniqueIssues = [...new Map(issues.map(item => [item.word, item])).values()];
                 uniqueIssues.forEach(item => {
                     h += `<div class="ska-problem-item" style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="color:#ef4444; text-decoration:line-through; opacity:0.8;">${item.word}</span>
-                            <span style="font-weight:bold; color:#22c55e;">➔ ${item.suggestion}</span>
+                            <span style="font-weight:bold; color:#6366f1;">➔ ${item.suggestion}</span>
                           </div>`;
                 });
                 h += `</div>`;
@@ -3736,10 +3980,10 @@
             let h = '';
             
             if(!k.length) {
-                h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Sauber!</div>`;
+                h += `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Sauber!</div>`;
             } else {
                 const maxVal = k.length > 0 ? (fillers[k[0]].count * fillers[k[0]].weight) : 1;
-                h = '<div class="ska-filler-list">';
+                h += '<div class="ska-filler-list">';
                 k.forEach(w => { 
                     const item = fillers[w];
                     const impact = item.count * item.weight;
@@ -3955,6 +4199,20 @@
             // ADD PREVIEW BOX
             h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Balkendiagramm mit der Maus überfahren...</div></div>`;
 
+            const spreadIndex = SA_Logic.calculateVariance(sentences);
+            let spreadLabel = 'Ausgewogen';
+            let spreadColor = SA_CONFIG.COLORS.blue;
+            if (spreadIndex < 2.2) { spreadLabel = 'Sehr gleichmäßig'; spreadColor = SA_CONFIG.COLORS.warn; }
+            else if (spreadIndex > 6) { spreadLabel = 'Stark variierend'; spreadColor = SA_CONFIG.COLORS.success; }
+            h += `
+                <div style="margin-top:0.75rem; padding:0.75rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">
+                        <span>Satz-Spreizungs-Index</span>
+                        <span style="color:${spreadColor}; font-weight:700;">${spreadLabel}</span>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.9rem; color:#334155;">${spreadIndex.toFixed(2)}</div>
+                </div>`;
+
             h += this.renderTipSection('rhythm', true);
             this.updateCard('rhythm', h);
 
@@ -4016,7 +4274,7 @@
             const oldRaw = this.state.savedVersion;
             const oldRead = SA_Logic.analyzeReadability(oldRaw, this.settings);
             const oldWpm = SA_Logic.getWpm(this.settings);
-            const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw);
+            const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw, this.settings);
             
             const curRead = SA_Logic.analyzeReadability(this.getText(), this.settings);
             const curWpm = SA_Logic.getWpm(this.settings);
