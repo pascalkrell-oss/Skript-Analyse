@@ -32,16 +32,16 @@ function ska_shortcode() {
     wp_enqueue_script( 'skript-analyse-js' );
 
     $markers_config = [
-        ['label' => '| (Kurze Pause)', 'val' => ' | ', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
-        ['label' => '1 Sekunde', 'val' => ' |1S| ', 'desc' => 'Feste Pause von einer Sekunde'],
-        ['label' => '2 Sekunden', 'val' => ' |2S| ', 'desc' => 'Feste Pause von zwei Sekunden'],
-        ['label' => '[ATMEN]', 'val' => ' [ATMEN] ', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
-        ['label' => '[BETONUNG]', 'val' => ' [BETONUNG] ', 'desc' => 'Das folgende Wort stark hervorheben'],
+        ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
+        ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
+        ['label' => '2 Sekunden', 'val' => '|2S|', 'desc' => 'Feste Pause von zwei Sekunden'],
+        ['label' => '[ATMEN]', 'val' => '[ATMEN]', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
+        ['label' => '[BETONUNG]', 'val' => '[BETONUNG]', 'desc' => 'Das folgende Wort stark hervorheben'],
         ['label' => '[SZENE]', 'val' => "\n\n[SZENE]\n", 'desc' => 'Neuer Abschnitt / Szenenwechsel'],
-        ['label' => '[LAUT]', 'val' => ' [LAUT] ', 'desc' => 'Dynamik steigern / Lauter werden'],
-        ['label' => '[LEISE]', 'val' => ' [LEISE] ', 'desc' => 'Dynamik senken / Leiser werden'],
-        ['label' => '[SCHNELL]', 'val' => ' [SCHNELL] ', 'desc' => 'Tempo deutlich anziehen'],
-        ['label' => '[LANGSAM]', 'val' => ' [LANGSAM] ', 'desc' => 'Tempo drosseln / Getragen sprechen']
+        ['label' => '[LAUT]', 'val' => '[LAUT]', 'desc' => 'Dynamik steigern / Lauter werden'],
+        ['label' => '[LEISE]', 'val' => '[LEISE]', 'desc' => 'Dynamik senken / Leiser werden'],
+        ['label' => '[SCHNELL]', 'val' => '[SCHNELL]', 'desc' => 'Tempo deutlich anziehen'],
+        ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
     ];
     
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(

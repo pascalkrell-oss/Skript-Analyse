@@ -1,6 +1,11 @@
 /* eslint-disable no-restricted-globals */
 const cleanTextForCounting = (text) =>
-    text.replace(/\|[0-9\.]+S?\|/g, '').replace(/\[PAUSE:.*?\]/g, '').replace(/\|/g, '');
+    text
+        .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
+        .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+        .replace(/\s*\|\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
 const countSyllables = (word) => {
     const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');

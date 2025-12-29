@@ -253,7 +253,12 @@
     const SA_Utils = {
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
-        cleanTextForCounting: (text) => text.replace(/\|[0-9\.]+S?\|/g, '').replace(/\[PAUSE:.*?\]/g, '').replace(/\|/g, ''),
+        cleanTextForCounting: (text) => text
+            .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
+            .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
+            .replace(/\s*\|\s*/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim(),
         getPausenTime: (text) => {
             let total = 0;
             const legacy = text.match(/\|([0-9\.]+)S?\|/g) || [];
@@ -2039,13 +2044,16 @@
 
         startTeleprompter(read) {
             const modal = document.getElementById('ska-teleprompter-modal');
-            if (!modal || !read) return;
+            if (!modal || !read) return false;
             const body = modal.querySelector('.ska-teleprompter-body');
-            if (!body) return;
+            if (!body) return false;
             const wpm = SA_Logic.getWpm(this.settings);
             const duration = (read.speakingWordCount / wpm) * 60 * 1000;
             const distance = body.scrollHeight - body.clientHeight;
-            if (distance <= 0) return;
+            if (distance <= 0) {
+                this.state.teleprompter.playing = false;
+                return false;
+            }
 
             this.state.teleprompter.playing = true;
             this.state.teleprompter.duration = duration;
@@ -2066,6 +2074,7 @@
                 }
             };
             this.state.teleprompter.rafId = requestAnimationFrame(step);
+            return true;
         }
 
         pauseTeleprompter() {
@@ -2215,8 +2224,8 @@
                     btn.textContent = 'Start';
                 } else {
                     const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
-                    this.startTeleprompter(read);
-                    btn.textContent = 'Pause';
+                    const started = this.startTeleprompter(read);
+                    btn.textContent = started ? 'Pause' : 'Start';
                 }
                 return true;
             }
@@ -2491,16 +2500,27 @@
                     return; 
                 }
 
-                if(act === 'toggle-breath-more') {
-                     const hiddenBox = this.root.querySelector('#ska-breath-hidden');
-                     if(hiddenBox) {
-                         const isHidden = !hiddenBox.classList.contains('is-expanded');
-                         hiddenBox.classList.toggle('is-expanded');
-                         const total = parseInt(btn.dataset.total || 0);
-                         btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
-                     }
-                     e.preventDefault();
+            if(act === 'toggle-breath-more') {
+                 const hiddenBox = this.root.querySelector('#ska-breath-hidden');
+                 if(hiddenBox) {
+                     const isHidden = !hiddenBox.classList.contains('is-expanded');
+                     hiddenBox.classList.toggle('is-expanded');
+                     const total = parseInt(btn.dataset.total || 0);
+                     btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
+                 }
+                 e.preventDefault();
+            }
+
+            if(act === 'toggle-rhet-questions') {
+                const hiddenBox = this.root.querySelector('#ska-rhet-questions-hidden');
+                if(hiddenBox) {
+                    const isHidden = !hiddenBox.classList.contains('is-expanded');
+                    hiddenBox.classList.toggle('is-expanded');
+                    const total = parseInt(btn.dataset.total || 0);
+                    btn.textContent = isHidden ? 'Weniger anzeigen' : `...und ${total} weitere anzeigen`;
                 }
+                e.preventDefault();
+            }
 
                 if(act === 'clean') { 
                     this.setText(this.getText().replace(/[\t\u00A0]/g,' ').replace(/ +/g,' ').replace(/\n{3,}/g,'\n\n')); 
@@ -2705,6 +2725,7 @@
                     return 'x'.repeat(Math.ceil(match.length * 4.5));
                 });
             }
+            countText = SA_Utils.cleanTextForCounting(countText);
             
             if (this.settings.charMode === 'no-spaces') {
                 countText = countText.replace(/\s/g, '');
@@ -3053,11 +3074,22 @@
                   </div>`;
             const listItems = rhetorical.length ? rhetorical : questions;
             if (listItems.length) {
+                const initial = listItems.slice(0, 3);
+                const remaining = listItems.slice(3);
                 h += `<div class="ska-problem-list">`;
-                listItems.slice(0, 2).forEach(item => {
+                initial.forEach(item => {
                     h += `<div class="ska-problem-item">${item.sentence}</div>`;
                 });
                 h += `</div>`;
+                if (remaining.length) {
+                    h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content">`;
+                    h += `<div class="ska-problem-list">`;
+                    remaining.forEach(item => {
+                        h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                    });
+                    h += `</div></div>`;
+                    h += `<button class="ska-btn ska-btn--ghost" style="margin-top:0.5rem;" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                }
             }
             h += this.renderTipSection('rhet_questions', true);
             this.updateCard('rhet_questions', h);
