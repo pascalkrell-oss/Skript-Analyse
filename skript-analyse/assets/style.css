@@ -451,7 +451,9 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-expand-link:hover { color: var(--ska-primary); }
 .ska-hidden-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 0.8rem; }
 .ska-hidden-content.is-expanded { max-height: 1000px; opacity: 1; margin-top: 0; }
-.ska-hidden-content--compact.is-expanded { margin-top: 0.3rem; }
+.ska-hidden-content--compact.is-expanded { margin-top: 0.2rem; }
+.ska-problem-list + .ska-hidden-content--compact { margin-top: -0.5rem; }
+.ska-hidden-content--compact .ska-problem-list { margin-bottom: 0; }
 .ska-more-toggle { margin-top: 0.2rem; }
 .ska-tip-genre { margin-top: 0.35rem; font-size: 0.78rem; color: #94a3b8; }
 .ska-genre-context { margin-top: 0.35rem; font-size: 0.8rem; color: #94a3b8; }
