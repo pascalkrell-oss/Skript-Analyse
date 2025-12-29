@@ -116,7 +116,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
-.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.74rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; min-height: 40px;
+.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.82rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; min-height: 40px;
 
     padding: 0.45rem 0;
     line-height: 1;
