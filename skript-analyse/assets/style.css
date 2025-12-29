@@ -451,6 +451,10 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-expand-link:hover { color: var(--ska-primary); }
 .ska-hidden-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 0.8rem; }
 .ska-hidden-content.is-expanded { max-height: 1000px; opacity: 1; margin-top: 0; }
+.ska-hidden-content--compact.is-expanded { margin-top: 0.3rem; }
+.ska-more-toggle { margin-top: 0.3rem; }
+.ska-tip-genre { margin-top: 0.35rem; font-size: 0.78rem; color: #94a3b8; }
+.ska-genre-context { margin-top: 0.35rem; font-size: 0.8rem; color: #94a3b8; }
 
 /* LEGEND (DESIGN RESTORED) */
 .ska-legend-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--ska-radius-md); padding: 0; font-size: 0.85rem; color: var(--ska-text-muted); display: flex; flex-direction: column; box-shadow: var(--ska-shadow); margin-top: var(--ska-grid-gap); margin-bottom: 2rem; }

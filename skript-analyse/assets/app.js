@@ -16,10 +16,21 @@
         WORKER_TEXT_THRESHOLD: 12000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
-        WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, default: 150 },
-        SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, default: 3.8 },
+        WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
+        SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, buch: 3.2, default: 3.8 },
 
-        GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media' },
+        GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
+        GENRE_CONTEXT: {
+            werbung: { tipNote: 'Werbespot: kurz, pointiert, klare CTA-Impulse.', overviewNote: 'Werbespot: Tempo darf höher sein, Formulierungen kurz halten.' },
+            imagefilm: { tipNote: 'Imagefilm: markenpräzise, ruhig, bildstark.', overviewNote: 'Imagefilm: ruhiger Flow, klare Bildsprache priorisieren.' },
+            erklaer: { tipNote: 'Erklärvideo: Schritt-für-Schritt, klare Logik.', overviewNote: 'Erklärvideo: kurze Sätze, didaktische Struktur.' },
+            hoerbuch: { tipNote: 'Hörbuch: erzählerisch, mit Atempausen.', overviewNote: 'Hörbuch: längere Bögen, mehr Pausen einplanen.' },
+            podcast: { tipNote: 'Podcast: dialogisch, locker, natürlich.', overviewNote: 'Podcast: natürlicher Sprachfluss, nicht zu schnell.' },
+            ansage: { tipNote: 'Ansage: sehr klar, präzise, gut verständlich.', overviewNote: 'Ansage: klare Betonung, keine unnötigen Schachteln.' },
+            elearning: { tipNote: 'E-Learning: didaktisch, ruhig, verständlich.', overviewNote: 'E-Learning: Lernpausen und klare Struktur.' },
+            social: { tipNote: 'Social Media: schnell, energisch, kurz.', overviewNote: 'Social Media: kurzer Spannungsbogen, hohe Dichte.' },
+            buch: { tipNote: 'Buch/Roman: erzählerisch, lebendige Bilder.', overviewNote: 'Buch/Roman: längere Satzbögen, ruhiger Rhythmus.' }
+        },
         
         ANGLICISMS: [
             'meeting', 'call', 'download', 'workflow', 'brainstorming', 'feedback', 
@@ -2007,9 +2018,12 @@
         updateTeleprompterMeta(read) {
             const meta = document.querySelector('[data-role-teleprompter-meta]');
             if (!meta || !read) return;
+            const isSps = this.settings.timeMode === 'sps';
             const wpm = SA_Logic.getWpm(this.settings);
-            const seconds = (read.speakingWordCount / wpm) * 60;
-            meta.textContent = `Tempo: ${wpm} WPM • Dauer: ${SA_Utils.formatMin(seconds)}`;
+            const sps = SA_Logic.getSps(this.settings);
+            const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
+            const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
+            meta.textContent = `Tempo: ${rateLabel} • Dauer: ${SA_Utils.formatMin(seconds)}`;
         }
 
         buildTeleprompterContent(text) {
@@ -2047,8 +2061,11 @@
             if (!modal || !read) return false;
             const body = modal.querySelector('.ska-teleprompter-body');
             if (!body) return false;
+            const isSps = this.settings.timeMode === 'sps';
             const wpm = SA_Logic.getWpm(this.settings);
-            const duration = (read.speakingWordCount / wpm) * 60 * 1000;
+            const sps = SA_Logic.getSps(this.settings);
+            const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
+            const duration = seconds * 1000;
             const distance = body.scrollHeight - body.clientHeight;
             if (distance <= 0) {
                 this.state.teleprompter.playing = false;
@@ -3082,13 +3099,13 @@
                 });
                 h += `</div>`;
                 if (remaining.length) {
-                    h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content">`;
+                    h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     h += `<div class="ska-problem-list">`;
                     remaining.forEach(item => {
                         h += `<div class="ska-problem-item">${item.sentence}</div>`;
                     });
                     h += `</div></div>`;
-                    h += `<button class="ska-btn ska-btn--ghost" style="margin-top:0.5rem;" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                    h += `<button class="ska-btn ska-btn--ghost ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
                 }
             }
             h += this.renderTipSection('rhet_questions', true);
@@ -3399,7 +3416,7 @@
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
-            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast'].forEach(g => {
+            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social', 'buch'].forEach(g => {
                  if(g === this.settings.usecase) return;
                  let d = 0;
                  if(isSps) {
@@ -3414,6 +3431,8 @@
 
             const gLbl = this.settings.usecase !== 'auto' ? (SA_CONFIG.GENRE_LABELS[this.settings.usecase] || this.settings.usecase).toUpperCase() : 'AUTO-DETECT';
             const pauseText = pause > 0 ? ` &bull; ${pause.toFixed(1)}s Pause` : '';
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreNote = genreContext ? `<div class="ska-genre-context">${genreContext.overviewNote}</div>` : '';
 
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
@@ -3435,6 +3454,7 @@
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
                     <div style="font-size:0.8rem; color:#64748b; font-weight:500;">Ø ${rateLabel}${pauseText}</div>
+                    ${genreNote}
                 </div>
                 ${meterHtml}
                 ${targetStatusHtml}
@@ -3470,8 +3490,10 @@
             const cI = this.state.tipIndices[id];
             const tip = tips[cI];
             const tT = tips.length;
+            const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
+            const genreNote = genreContext ? `<div class="ska-tip-genre">${genreContext.tipNote}</div>` : '';
 
-            return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p></div>`;
+            return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
         }
 
         renderGenderCard(issues, active) {

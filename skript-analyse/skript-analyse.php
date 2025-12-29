@@ -75,7 +75,7 @@ function ska_shortcode() {
                     <label>Profil</label>
                     <div class="ska-custom-select-wrapper">
                         <select class="ska-select" data-role-select>
-                            <option value="">Automatisch</option>
+                            <option value="">Allgemein</option>
                             <option value="sprecher">🎙️ Sprecher:in</option>
                             <option value="autor">✍️ Autor:in</option>
                             <option value="regie">🎬 Regie</option>
@@ -96,6 +96,7 @@ function ska_shortcode() {
                             <option value="podcast">Podcast</option>
                             <option value="social">Social Media</option>
                             <option value="elearning">E-Learning</option>
+                            <option value="buch">Buch/Roman</option>
                         </select>
                     </div>
                 </div>
