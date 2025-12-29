@@ -747,6 +747,27 @@
             }); 
             return f; 
         },
+        removeFillers: (text) => {
+            if (!text) return '';
+            const phrases = Object.keys(SA_CONFIG.FILLER_DB).sort((a, b) => b.length - a.length);
+            let cleaned = text;
+            phrases.forEach(phrase => {
+                const pattern = phrase
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map(SA_Utils.escapeRegex)
+                    .join('\\s+');
+                const regex = new RegExp(`\\b${pattern}\\b`, 'gi');
+                cleaned = cleaned.replace(regex, '');
+            });
+            return cleaned
+                .replace(/\s{2,}/g, ' ')
+                .replace(/\s+([.,!?;:])/g, '$1')
+                .replace(/([.,!?;:])(?=[A-Za-zÄÖÜäöüß])/g, '$1 ')
+                .replace(/\s+\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        },
         findNominalStyle: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
             const matches = text.match(regex) || [];
@@ -2451,6 +2472,15 @@
                 return true;
             }
 
+            if (act === 'crunch-fillers') {
+                const current = this.getText();
+                if (!current.trim()) return true;
+                const cleaned = SA_Logic.removeFillers(current);
+                this.setText(cleaned);
+                this.analyze(this.getText());
+                return true;
+            }
+
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
@@ -4013,6 +4043,9 @@
             // Sort by Impact (Weight * Count) desc
             const k = Object.keys(fillers).sort((a,b) => (fillers[b].count * fillers[b].weight) - (fillers[a].count * fillers[a].weight));
             let h = '';
+            h += `<div style="display:flex; justify-content:flex-end; margin-bottom:0.75rem;">
+                    <button class="ska-btn ska-btn--secondary" data-action="crunch-fillers" ${k.length ? '' : 'disabled'}>Füllwörter markieren & löschen</button>
+                  </div>`;
             
             if(!k.length) {
                 h += `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Sauber!</div>`;
