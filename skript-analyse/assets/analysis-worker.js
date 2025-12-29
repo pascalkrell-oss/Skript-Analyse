@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 const cleanTextForCounting = (text) =>
     text
         .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
@@ -16,8 +17,56 @@ const countSyllables = (word) => {
     return matches ? matches.length : 1;
 };
 
-const analyzeReadability = (text) => {
-    const clean = cleanTextForCounting(text).trim();
+const expandNumbersForAudio = (text) => {
+    const toWords = (num) => {
+        const units = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
+        const tens = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+        if (num < 20) return units[num];
+        if (num < 100) {
+            const t = Math.floor(num / 10);
+            const u = num % 10;
+            if (u === 0) return tens[t];
+            const unit = u === 1 ? 'ein' : units[u];
+            return `${unit}und${tens[t]}`;
+        }
+        if (num < 1000) {
+            const h = Math.floor(num / 100);
+            const r = num % 100;
+            const head = h === 1 ? 'einhundert' : `${units[h]}hundert`;
+            return r === 0 ? head : `${head}${toWords(r)}`;
+        }
+        if (num < 10000) {
+            const th = Math.floor(num / 1000);
+            const r = num % 1000;
+            const head = th === 1 ? 'eintausend' : `${units[th]}tausend`;
+            return r === 0 ? head : `${head}${toWords(r)}`;
+        }
+        return String(num).split('').map(d => units[parseInt(d, 10)]).join(' ');
+    };
+
+    const normalize = (match) => {
+        const cleaned = match.replace(/\./g, '').replace(',', '.');
+        const hasPercent = /%$/.test(match);
+        const numeric = parseFloat(cleaned.replace('%', ''));
+        if (Number.isNaN(numeric)) return match;
+        const [intPart, decPart] = cleaned.replace('%', '').split('.');
+        let spoken = toWords(parseInt(intPart, 10));
+        if (decPart) {
+            const decWords = decPart.split('').map(d => toWords(parseInt(d, 10))).join(' ');
+            spoken = `${spoken} komma ${decWords}`;
+        }
+        if (hasPercent) spoken += ' prozent';
+        return spoken;
+    };
+
+    return text.replace(/(\d{1,3}(?:\.\d{3})+|\d+)([.,]\d+)?%?/g, (m) => normalize(m));
+};
+
+const analyzeReadability = (text, settings = {}) => {
+    let clean = cleanTextForCounting(text).trim();
+    if (settings.numberMode === 'word') {
+        clean = expandNumbersForAudio(clean);
+    }
     if (!clean) {
         return {
             score: 0,
@@ -29,7 +78,8 @@ const analyzeReadability = (text) => {
             sentences: [],
             paragraphs: 0,
             maxSentenceWords: 0,
-            totalSyllables: 0
+            totalSyllables: 0,
+            cleanedText: ''
         };
     }
 
@@ -90,20 +140,12 @@ const analyzeReadability = (text) => {
     };
 };
 
-const getPausenTime = (text) => {
-    let total = 0;
-    const legacy = text.match(/\|([0-9\.]+)S?\|/g) || [];
-    total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
-    const newFormat = text.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
-    total += newFormat.reduce((acc, m) => {
-        const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
-        return acc + (val ? parseFloat(val[1]) : 0);
-    }, 0);
-    total += ((text.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
-    return total;
-};
-
-module.exports = {
-    analyzeReadability,
-    getPausenTime
+self.onmessage = (event) => {
+    const { id, type, paragraphs, settings } = event.data || {};
+    if (type !== 'paragraphs') return;
+    const results = (paragraphs || []).map((entry) => {
+        const result = analyzeReadability(entry.text || '', settings || {});
+        return { index: entry.index, text: entry.text || '', result };
+    });
+    self.postMessage({ id, results });
 };
