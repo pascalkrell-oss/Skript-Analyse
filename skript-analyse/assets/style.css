@@ -700,6 +700,7 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-footer-actions { flex-direction: column; width: 100%; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
+    .ska-settings-option-group--time { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {

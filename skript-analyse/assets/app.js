@@ -2544,12 +2544,22 @@
             }
 
             if (act === 'benchmark-apply') {
+                const modal = document.getElementById('ska-benchmark-modal');
                 const wpm = this.state.benchmark.wpm;
                 if (wpm && wpm > 0) {
                     this.settings.manualWpm = wpm;
                     this.saveUIState();
                     this.updateWpmUI();
                     this.analyze(this.getText());
+                }
+                if (modal) {
+                    modal.classList.remove('is-open');
+                    document.body.classList.remove('ska-modal-open');
+                    if (this.state.benchmark.timerId) {
+                        clearInterval(this.state.benchmark.timerId);
+                        this.state.benchmark.timerId = null;
+                    }
+                    this.state.benchmark.running = false;
                 }
                 return true;
             }
