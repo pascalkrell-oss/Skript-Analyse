@@ -3693,12 +3693,12 @@
             const isSps = this.settings.timeMode === 'sps';
             const rateLabel = isSps ? `${SA_Logic.getSps(this.settings)} SPS` : `${wpm} WPM`;
 
-            let genreList = '<div class="ska-overview-genre-box"><h4>Zeiten im Vergleich</h4><div class="ska-genre-grid-layout">';
+            let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), this.settings) : 0;
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
-            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social', 'buch'].forEach(g => {
+            ['werbung', 'imagefilm', 'erklaer', 'hoerbuch', 'podcast', 'ansage', 'elearning', 'social'].forEach(g => {
                  if(g === this.settings.usecase) return;
                  let d = 0;
                  if(isSps) {
@@ -3783,14 +3783,14 @@
 
             let h = '';
             if(!issues || issues.length === 0) {
-                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🌈 Sprache wirkt inklusiv!</div>`;
+                 h = `<div style="text-align:center; padding:1rem; color:#6366f1; background:#eef2ff; border-radius:8px;">🌈 Sprache wirkt inklusiv!</div>`;
             } else {
                 h += `<div class="ska-section-title">Gefundene Begriffe</div><div class="ska-problem-list">`;
                 const uniqueIssues = [...new Map(issues.map(item => [item.word, item])).values()];
                 uniqueIssues.forEach(item => {
                     h += `<div class="ska-problem-item" style="display:flex; justify-content:space-between; align-items:center;">
                             <span style="color:#ef4444; text-decoration:line-through; opacity:0.8;">${item.word}</span>
-                            <span style="font-weight:bold; color:#22c55e;">➔ ${item.suggestion}</span>
+                            <span style="font-weight:bold; color:#6366f1;">➔ ${item.suggestion}</span>
                           </div>`;
                 });
                 h += `</div>`;
@@ -4216,6 +4216,20 @@
             
             // ADD PREVIEW BOX
             h += `<div class="ska-rhythm-preview" id="ska-preview-rhythm">Balkendiagramm mit der Maus überfahren...</div></div>`;
+
+            const spreadIndex = SA_Logic.calculateVariance(sentences);
+            let spreadLabel = 'Ausgewogen';
+            let spreadColor = SA_CONFIG.COLORS.blue;
+            if (spreadIndex < 2.2) { spreadLabel = 'Sehr gleichmäßig'; spreadColor = SA_CONFIG.COLORS.warn; }
+            else if (spreadIndex > 6) { spreadLabel = 'Stark variierend'; spreadColor = SA_CONFIG.COLORS.success; }
+            h += `
+                <div style="margin-top:0.75rem; padding:0.75rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">
+                        <span>Satz-Spreizungs-Index</span>
+                        <span style="color:${spreadColor}; font-weight:700;">${spreadLabel}</span>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.9rem; color:#334155;">${spreadIndex.toFixed(2)}</div>
+                </div>`;
 
             h += this.renderTipSection('rhythm', true);
             this.updateCard('rhythm', h);
