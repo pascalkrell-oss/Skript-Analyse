@@ -446,6 +446,21 @@
             } else { field.value += value; }
             field.focus();
         },
+        insertMarkerAtCursor: (field, marker) => {
+            if (!marker) return;
+            if (!field.isContentEditable) {
+                SA_Utils.insertAtCursor(field, marker);
+                return;
+            }
+            field.focus();
+            const safeMarker = String(marker);
+            const html = safeMarker
+                .replace(/\n/g, '<br>')
+                .replace(/\[([^\]]+)\]/g, (_, label) => `<span class="ska-inline-marker" data-marker="${label}">[${label}]</span>`)
+                .replace(/\|([0-9.]+S?)\|/g, (_, val) => `<span class="ska-inline-marker" data-marker="pause">|${val}|</span>`)
+                .replace(/\|/g, '<span class="ska-inline-marker" data-marker="pause">|</span>');
+            document.execCommand('insertHTML', false, html);
+        },
         downloadJSON: (data, filename) => {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -2676,7 +2691,12 @@
                 const item = document.createElement('button'); item.className = 'skriptanalyse-dropdown-item';
                 item.innerHTML = `<strong>${m.label.split(' ')[0]}</strong>`;
                 item.setAttribute('data-tooltip', m.desc);
-                item.onclick = (e) => { e.preventDefault(); SA_Utils.insertAtCursor(this.textarea, m.val); this.analyze(this.getText()); menu.classList.remove('is-open'); };
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    SA_Utils.insertMarkerAtCursor(this.textarea, m.val);
+                    this.analyze(this.getText());
+                    menu.classList.remove('is-open');
+                };
                 menu.appendChild(item);
             });
             document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.remove('is-open'); });
