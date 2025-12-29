@@ -93,7 +93,21 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-format-btn[data-action="format-underline"] { text-decoration: underline; }
 .ska-format-btn[data-action="format-strike"] { text-decoration: line-through; }
 .ska-format-btn[data-action="format-highlight"] { background: #fef3c7; }
-.ska-analysis-filterbar { display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0.9rem 1.1rem 0.7rem; margin-top: 1.5rem; background: #f8fafc; border: 1px solid var(--ska-border); border-radius: var(--ska-radius-md); width: 100%; max-width: 100%; margin-left: 0; margin-right: 0; box-shadow: 0 10px 25px -20px rgba(15, 23, 42, 0.25); }
+.ska-analysis-filterbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 1.1rem 0.75rem;
+    margin-top: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    box-shadow: 0 8px 22px -18px rgba(15, 23, 42, 0.22);
+}
 .ska-analysis-filterbar.is-hidden { display: none; }
 .ska-filterbar-body { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.6rem; margin-top: 0.6rem; border-top: 1px solid var(--ska-border); width: 100%; transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), padding 0.55s cubic-bezier(0.4, 0, 0.2, 1), margin 0.55s cubic-bezier(0.4, 0, 0.2, 1); }
 .ska-analysis-filterbar.is-expanded .ska-filterbar-body { max-height: 1000px; opacity: 1; }
@@ -102,9 +116,9 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
-.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.75rem; color: var(--ska-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; min-height: 40px;
+.ska-filterbar-header { width: 100%; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 1rem; font-size: 0.82rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; min-height: 40px;
 
-    padding: 0.15rem 0;
+    padding: 0.45rem 0;
     line-height: 1;
 }
 .ska-filterbar-header > span { justify-self: start; }
@@ -640,8 +654,8 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 
 .ska-analysis-filterbar.is-collapsed {
-    padding-top: 0.55rem;
-    padding-bottom: 0.45rem;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
 }
 
 
