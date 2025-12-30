@@ -396,6 +396,9 @@ body.ska-modal-open { overflow: hidden !important; }
 
 .ska-teleprompter-export { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
+.ska-entropy-modal-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ska-entropy-modal-list .ska-compliance-item { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+
 /* BOTTOM GRID */
 .skriptanalyse-analysis-bottom { position: relative; z-index: 50; } 
 .skriptanalyse-analysis-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ska-grid-gap); align-items: stretch; margin-top: 1.5rem; position: relative; z-index: 10; }

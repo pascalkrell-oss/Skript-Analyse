@@ -1662,6 +1662,14 @@
                     const namingCheck = SA_Logic.analyzeNamingInconsistency(read.sentences);
                     const verbBalance = SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences);
                     const rhetoricalQuestions = SA_Logic.analyzeRhetoricalQuestions(text, read.sentences);
+                    const syllableEntropy = SA_Logic.analyzeSyllableEntropy(read.sentences);
+                    const compliancePhrases = (settings.complianceText || '')
+                        .split(/\n+/)
+                        .map(line => line.trim())
+                        .filter(Boolean);
+                    const complianceResult = compliancePhrases.length
+                        ? SA_Logic.analyzeCompliance(text, compliancePhrases)
+                        : null;
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -1727,6 +1735,13 @@
                             addRow("Stimmungs-Intensität:", `Start ${start.toFixed(2)} → Ende ${end.toFixed(2)}`);
                         }
                         if (namingCheck.length) addRow("Naming-Check:", namingCheck.slice(0, 3).map(n => `${n.first}/${n.second}`));
+                        if (options.syllableEntropy && syllableEntropy) {
+                            addRow("Silben-Entropie:", `${(syllableEntropy.entropy * 100).toFixed(0)}% (${syllableEntropy.label})`);
+                        }
+                        if (options.compliance && complianceResult) {
+                            const status = complianceResult.missing.length ? `Fehlt ${complianceResult.missing.length}` : 'Alles vorhanden';
+                            addRow("Pflichttext-Check:", `${status} (${complianceResult.matched.length}/${complianceResult.total})`);
+                        }
                         y += 4;
                         doc.setFont(undefined, 'bold'); doc.text("Regie / Coach:", margin, y); doc.setFont(undefined, 'normal'); y+=6;
                         let dynText = "Lebendig & Abwechslungsreich";
@@ -1912,6 +1927,7 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
+                syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: []
             };
@@ -3071,7 +3087,11 @@
                         if(modalId === 'ska-settings-modal') {
                             this.renderSettingsModal();
                             const newM = document.getElementById('ska-settings-modal');
-                            if(newM) newM.classList.add('is-open');
+                            if(newM) {
+                                requestAnimationFrame(() => {
+                                    newM.classList.add('is-open');
+                                });
+                            }
                         }
 
                         if (modalId === 'ska-benchmark-modal') {
@@ -3091,9 +3111,23 @@
                                 this.resetTeleprompter();
                             }
                         }
+
+                        if (modalId === 'ska-syllable-entropy-modal') {
+                            this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
+                            const newM = document.getElementById('ska-syllable-entropy-modal');
+                            if (newM) newM.classList.add('is-open');
+                        }
                         
                         e.preventDefault(); 
-                    } 
+                    } else if (modalId === 'ska-syllable-entropy-modal') {
+                        this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
+                        const newM = document.getElementById('ska-syllable-entropy-modal');
+                        if (newM) {
+                            newM.classList.add('is-open');
+                            document.body.classList.add('ska-modal-open');
+                        }
+                        e.preventDefault();
+                    }
                 }
 
                 if (this.handleAction(act, btn)) return;
@@ -3220,7 +3254,9 @@
                         details: modal.querySelector('#pdf-opt-details')?.checked, 
                         tips: modal.querySelector('#pdf-opt-tips')?.checked, 
                         compare: modal.querySelector('#pdf-opt-compare')?.checked, 
-                        script: modal.querySelector('#pdf-opt-script')?.checked 
+                        script: modal.querySelector('#pdf-opt-script')?.checked,
+                        syllableEntropy: modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
+                        compliance: modal.querySelector('#pdf-opt-compliance')?.checked
                     };
                     const pdfData = { ...this.state.currentData, savedVersion: this.state.savedVersion };
                     SA_PDF.generate(this.getText(), pdfData, this.settings, opts, btn);
@@ -3949,6 +3985,7 @@
             if (entropyPct > 65) color = SA_CONFIG.COLORS.warn;
             if (entropyPct < 35) color = SA_CONFIG.COLORS.blue;
 
+            this.state.syllableEntropyIssues = data.issues || [];
             let h = `
                 <div style="margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.4rem;">
@@ -3962,20 +3999,56 @@
                 </div>`;
 
             if (data.issues && data.issues.length) {
+                const totalIssues = data.issues.length;
                 h += `<div class="ska-section-title">Stolperstellen</div><div class="ska-problem-list">`;
                 data.issues.slice(0, 3).forEach((item) => {
                     h += `<div class="ska-problem-item">${item.sentence}<div class="ska-problem-meta">⚠️ Entropie ${(item.entropy * 100).toFixed(0)}%</div></div>`;
                 });
-                if (data.issues.length > 3) {
-                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${data.issues.length - 3} weitere</div>`;
+                if (totalIssues > 3 && totalIssues <= 20) {
+                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${totalIssues - 3} weitere</div>`;
                 }
                 h += `</div>`;
+                if (totalIssues > 20) {
+                    h += `<button class="ska-expand-link ska-more-toggle" data-action="open-syllable-entropy">Alle ${totalIssues} anzeigen</button>`;
+                }
             } else {
                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Rhythmus-Brüche erkannt.</p>`;
             }
 
             h += this.renderTipSection('syllable_entropy', true);
             this.updateCard('syllable_entropy', h);
+        }
+
+        renderSyllableEntropyModal(issues) {
+            const existing = document.getElementById('ska-syllable-entropy-modal');
+            if (existing) existing.remove();
+
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal';
+            modal.id = 'ska-syllable-entropy-modal';
+            modal.ariaHidden = 'true';
+            const listHtml = (issues || [])
+                .map(item => `<div class="ska-compliance-item is-missing"><span class="ska-compliance-icon">⚠️</span><span class="ska-compliance-text">${SA_Utils.escapeHtml(item.sentence)}<br><small>Entropie ${(item.entropy * 100).toFixed(0)}%</small></span></div>`)
+                .join('');
+
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-syllable-entropy-modal"></div>
+                <div class="skriptanalyse-modal-content" style="max-width:640px;">
+                    <button type="button" class="ska-close-icon" data-action="close-syllable-entropy-modal">&times;</button>
+                    <div class="ska-modal-header">
+                        <h3>Silben-Entropie – Stolperstellen</h3>
+                        <p style="margin:0.2rem 0 0 0; color:#64748b; font-size:0.9rem; font-weight:normal;">Alle auffälligen Passagen im Überblick.</p>
+                    </div>
+                    <div class="skriptanalyse-modal-body">
+                        <div class="ska-entropy-modal-list">
+                            ${listHtml || '<p style="color:#94a3b8; font-size:0.9rem;">Keine Auffälligkeiten.</p>'}
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                        <button type="button" class="ska-btn ska-btn--secondary" data-action="close-syllable-entropy-modal">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
         }
 
         renderRedundancyCard(issues, active) {
