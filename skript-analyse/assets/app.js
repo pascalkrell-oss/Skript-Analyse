@@ -3362,8 +3362,8 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
-            const showAll = !allowed && this.state.showAllCards;
-            const title = allowed ? 'Profil-Analyseboxen' : 'Analyseboxen auswählen';
+            const showAll = this.state.showAllCards;
+            const title = 'Analyseboxen auswählen';
             const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
             this.filterBar.classList.toggle('is-expanded', showAll);
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
@@ -3374,7 +3374,7 @@
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
-                        ${!allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
+                        <button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
