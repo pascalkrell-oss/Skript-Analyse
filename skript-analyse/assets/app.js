@@ -849,11 +849,25 @@
             return (SA_CONFIG.WPM[s.usecase] || 150);
         },
         getSps: (s) => (SA_CONFIG.SPS[s.usecase] || 3.8),
+        getReadabilityScore: (read) => {
+            if (!read || read.wordCount === 0) return 0;
+            const base = Number.isFinite(read.score) ? read.score : 0;
+            const avgSentence = Number.isFinite(read.avgSentence) ? read.avgSentence : 0;
+            const maxSentence = Number.isFinite(read.maxSentenceWords) ? read.maxSentenceWords : 0;
+
+            let penalty = 0;
+            if (avgSentence > 18) penalty += (avgSentence - 18) * 2.5;
+            if (maxSentence > 30) penalty += (maxSentence - 30) * 2.5;
+
+            const score = Math.max(0, Math.min(100, base - penalty));
+            return score;
+        },
         getTrafficLight: (read) => {
-            if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral' };
-            if (read.score < 40 || read.maxSentenceWords > 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red' };
-            if (read.score < 60 || read.maxSentenceWords > 30) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow' };
-            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green' };
+            if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral', score: 0 };
+            const score = SA_Logic.getReadabilityScore(read);
+            if (score < 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red', score };
+            if (score < 60) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
+            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green', score };
         },
         findFillers: (text) => { 
             const l = text.toLowerCase(); 
@@ -3806,7 +3820,7 @@
             let targetStatusHtml = '';
 
             const traffic = SA_Logic.getTrafficLight(r);
-            const scorePct = r ? Math.min(100, Math.max(0, r.score)) : 0;
+            const scorePct = r ? Math.min(100, Math.max(0, traffic.score)) : 0;
 
             // AMPELSLIDER Tied to Flesch Score (Quality indicator)
             meterHtml = `
@@ -3868,7 +3882,7 @@
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
             let scoreHintHtml = '';
-            if (r && r.score < 60 && traffic.class !== 'neutral') {
+            if (r && traffic.score < 60 && traffic.class !== 'neutral') {
                 let hintText = 'Text vereinfachen.';
                 if (r.avgSentence > 15 && r.syllablesPerWord > 1.6) hintText = 'Sätze kürzen & einfachere Wörter nutzen.';
                 else if (r.avgSentence > 15) hintText = 'Sätze sind zu lang (Ø > 15 Wörter).';
