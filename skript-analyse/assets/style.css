@@ -438,10 +438,6 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-wpm-actions { display: flex; gap: 0.6rem; }
 
 /* AROUSAL MAP */
-.ska-arousal-map { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; height: 90px; align-items: end; margin-bottom: 0.6rem; }
-.ska-arousal-bar { width: 100%; display: flex; align-items: flex-end; }
-.ska-arousal-bar span { display: block; width: 100%; border-radius: 4px 4px 0 0; min-height: 8px; }
-.ska-arousal-legend { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--ska-text-light); }
 .ska-questions-map { display: flex; gap: 6px; margin-bottom: 0.6rem; flex-wrap: wrap; }
 .ska-question-dot { width: 14px; height: 14px; border-radius: 50%; background: #e2e8f0; }
 .ska-question-dot.is-question { background: #f97316; }

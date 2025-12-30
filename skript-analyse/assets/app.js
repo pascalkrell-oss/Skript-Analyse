@@ -58,7 +58,6 @@
             easy_language: 'Einfache Wörter und kurze Sätze priorisieren.',
             teleprompter: 'Zeilen so setzen, dass der Flow ruhig bleibt.',
             pacing: 'Timing mit dem Scroll-Takt trainieren, bis der Rhythmus sitzt.',
-            arousal: 'Energie gezielt auf Peaks setzen und Ruhepunkte lassen.',
             bullshit: 'Floskeln durch konkrete Aussagen ersetzen.',
             metaphor: 'Bildsprache frisch halten und Klischees vermeiden.',
             audience: 'Komplexität sauber an die Zielgruppe anpassen.',
@@ -149,9 +148,9 @@
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
-            sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
+            sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
             autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
-            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'arousal', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
+            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
@@ -193,7 +192,6 @@
             easy_language: '🧩 Leichte Sprache',
             teleprompter: '🪄 Teleprompter',
             pacing: '⏱️ Sprech-Pacing',
-            arousal: '⚡ Arousal-Map',
             bullshit: '🧨 Buzzword-Check',
             metaphor: '🪞 Metaphern & Phrasen',
             audience: '🎯 Zielgruppen-Filter',
@@ -237,7 +235,6 @@
             easy_language: 'Prüft Verständlichkeit nach Leichte-Sprache-Kriterien.',
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
             pacing: 'Visualisiert den Soll-Fortschritt fürs Timing-Training.',
-            arousal: 'Visualisiert Energieverlauf im Skript.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
             metaphor: 'Zählt bekannte Redewendungen, um Klischees sichtbar zu machen.',
             audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
@@ -249,18 +246,18 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'pacing', 'teleprompter', 'compliance_check', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'easy_language', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'gender', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check'],
-            imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'arousal', 'metaphor', 'pronunciation', 'plosive', 'compliance_check'],
-            erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check'],
-            hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'compliance_check'],
-            podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'arousal', 'pronunciation', 'compliance_check'],
-            ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'compliance_check'],
-            elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'syllable_entropy', 'start_var', 'adjective', 'echo', 'anglicism', 'pacing', 'compliance_check'],
-            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var', 'pacing', 'compliance_check']
+            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
+            imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
+            erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
+            hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
+            podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
+            ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
+            elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'adjective', 'echo', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
+            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var', 'pacing', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
         },
         
         FILLER_DB: {
@@ -335,7 +332,6 @@
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres.", "Ein Gedanke pro Satz – das erhöht Verständlichkeit sofort.", "Fachbegriffe nur, wenn nötig – sonst erklären oder ersetzen."],
             teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
             pacing: ["Starte den Pacing-Takt und sprich synchron zum Balken.", "Der Soll-Fortschritt zeigt dir, wo du nach X Sekunden sein solltest.", "Trainiere mit verschiedenen Genres, um Tempo-Gefühl zu entwickeln.", "Halte Pausen sichtbar – sie zählen in die Timing-Logik ein.", "Nutze den Takt als Metronom für Sprecher-Rhythmus."],
-            arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt.", "Baue Spannungswechsel ein: ruhig erklären, dann punktuell betonen.", "Zu hohe Dauerintensität ermüdet – Peaks gezielt setzen."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen.", "Konkrete Beispiele schlagen Buzzwords – ersetze Floskeln durch Nutzen.", "Wenn ein Satz nichts messbar sagt, streichen oder präzisieren."],
             metaphor: ["Klischees wirken vorhersehbar – prüfe Alternativen.", "Ein frisches Bild bleibt länger im Kopf als bekannte Sprüche.", "Metaphern sind stark, wenn sie zur Zielgruppe passen.", "Ein einziges gutes Bild schlägt fünf Floskeln.", "Originalität steigert die Sprecher-Wirkung spürbar."],
             audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt.", "Sprich die Zielgruppe direkt an (Du/Sie) und bleibe konsistent.", "Teste jeden Satz: Würde die Zielgruppe das so sagen?"],
@@ -1941,7 +1937,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
@@ -3146,12 +3142,6 @@
                             const newM = document.getElementById('ska-syllable-entropy-modal');
                             if (newM) SA_Utils.openModal(newM);
                         }
-
-                        if (modalId === 'ska-syllable-entropy-modal') {
-                            this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
-                            const newM = document.getElementById('ska-syllable-entropy-modal');
-                            if (newM) newM.classList.add('is-open');
-                        }
                         
                         e.preventDefault(); 
                     } else if (modalId === 'ska-syllable-entropy-modal') {
@@ -3513,7 +3503,6 @@
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
                     case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), active); break;
-                    case 'arousal': this.renderArousalCard(SA_Logic.analyzeArousalMap(read.sentences), active); break;
                     case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
                     case 'redundancy': this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), active); break;
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
@@ -3728,28 +3717,7 @@
             this.updateCard('plosive', h);
         }
 
-        renderArousalCard(data, active) {
-            if(!active) return this.updateCard('arousal', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            if(!data || data.length === 0) return this.updateCard('arousal', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für eine Arousal-Map.</p>');
-
-            const maxScore = Math.max(...data.map(d => d.score));
-            const minScore = Math.min(...data.map(d => d.score));
-            const range = Math.max(1, maxScore - minScore);
-            let h = `<div class="ska-arousal-map">`;
-            data.slice(0, 12).forEach(item => {
-                const normalized = (item.score - minScore) / range;
-                const height = Math.max(10, Math.round(normalized * 100));
-                const color = item.score >= 3 ? '#f97316' : (item.score <= -2 ? '#38bdf8' : '#94a3b8');
-                h += `<div class="ska-arousal-bar" style="height:${height}%;">
-                        <span style="background:${color};"></span>
-                      </div>`;
-            });
-            h += `</div>`;
-            h += `<div class="ska-arousal-legend"><span>Low</span><span>High</span></div>`;
-            h += this.renderTipSection('arousal', true);
-            this.updateCard('arousal', h);
-        }
-
+        
         renderBullshitCard(findings, active) {
             if(!active) return this.updateCard('bullshit', this.renderDisabledState(), this.bottomGrid, '', '', true);
             const keys = Object.keys(findings || {});
