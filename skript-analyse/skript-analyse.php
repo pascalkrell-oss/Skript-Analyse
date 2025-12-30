@@ -307,6 +307,28 @@ function ska_shortcode() {
                         </label>
 
                         <label class="ska-compact-option">
+                            <input type="checkbox" id="pdf-opt-syllable-entropy" checked>
+                            <div class="ska-compact-option-inner">
+                                <div class="ska-option-check"></div>
+                                <div class="ska-option-text">
+                                    <strong>Silben-Entropie</strong>
+                                    <span>Rhythmus-Analyse im Detailteil</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="ska-compact-option">
+                            <input type="checkbox" id="pdf-opt-compliance" checked>
+                            <div class="ska-compact-option-inner">
+                                <div class="ska-option-check"></div>
+                                <div class="ska-option-text">
+                                    <strong>Pflichttext-Check</strong>
+                                    <span>Legal-Status im Detailteil</span>
+                                </div>
+                            </div>
+                        </label>
+
+                        <label class="ska-compact-option">
                             <input type="checkbox" id="pdf-opt-tips" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
