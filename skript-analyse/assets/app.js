@@ -3146,6 +3146,12 @@
                             const newM = document.getElementById('ska-syllable-entropy-modal');
                             if (newM) SA_Utils.openModal(newM);
                         }
+
+                        if (modalId === 'ska-syllable-entropy-modal') {
+                            this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
+                            const newM = document.getElementById('ska-syllable-entropy-modal');
+                            if (newM) newM.classList.add('is-open');
+                        }
                         
                         e.preventDefault(); 
                     } else if (modalId === 'ska-syllable-entropy-modal') {
