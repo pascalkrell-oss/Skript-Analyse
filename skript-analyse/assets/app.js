@@ -44,6 +44,7 @@
             cta: 'Handlungsaufforderung klar und direkt platzieren.',
             adjective: 'Adjektive sparsam setzen und starke Bilder wählen.',
             rhythm: 'Satzlängen variieren, damit der Rhythmus trägt.',
+            syllable_entropy: 'Unruhige Silbenfolgen glätten, damit der Flow sauber bleibt.',
             dialog: 'Dialoganteile passend zur Szene dosieren.',
             gender: 'Inklusive Begriffe nutzen, ohne den Flow zu brechen.',
             start_var: 'Satzanfänge variieren, damit Dynamik entsteht.',
@@ -56,6 +57,7 @@
             bpm: 'Taktgefühl an die Stimmung und den Textfluss koppeln.',
             easy_language: 'Einfache Wörter und kurze Sätze priorisieren.',
             teleprompter: 'Zeilen so setzen, dass der Flow ruhig bleibt.',
+            pacing: 'Timing mit dem Scroll-Takt trainieren, bis der Rhythmus sitzt.',
             arousal: 'Energie gezielt auf Peaks setzen und Ruhepunkte lassen.',
             bullshit: 'Floskeln durch konkrete Aussagen ersetzen.',
             metaphor: 'Bildsprache frisch halten und Klischees vermeiden.',
@@ -64,7 +66,8 @@
             rhet_questions: 'Fragen gezielt für Aufmerksamkeit einsetzen.',
             depth_check: 'Schachtelsätze kürzen, damit es klar bleibt.',
             sentiment_intensity: 'Emotionen dosiert einsetzen.',
-            naming_check: 'Namen konsistent halten, damit keine Irritation entsteht.'
+            naming_check: 'Namen konsistent halten, damit keine Irritation entsteht.',
+            compliance_check: 'Pflichttexte exakt hinterlegen und im Skript prüfen.'
         },
         
         ANGLICISMS: [
@@ -146,11 +149,11 @@
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_CARDS: {
-            sprecher: ['overview', 'char', 'rhythm', 'chapter_calc', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc'],
-            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'teleprompter', 'arousal', 'bpm', 'breath', 'chapter_calc'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc']
+            sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'arousal', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'arousal', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -175,6 +178,7 @@
             compare: '⚖️ Versions-Vergleich', 
             adjective: '🌸 Adjektiv-Dichte',
             rhythm: '🌊 Satz-Rhythmus',
+            syllable_entropy: '🎼 Silben-Entropie',
             dialog: '💬 Dialog-Balance',
             gender: '🌈 Gender-Neutralität',
             start_var: '🔄 Satzanfang-Varianz',
@@ -188,6 +192,7 @@
             bpm: '🎵 Audio-BPM-Matching',
             easy_language: '🧩 Leichte Sprache',
             teleprompter: '🪄 Teleprompter',
+            pacing: '⏱️ Sprech-Pacing',
             arousal: '⚡ Arousal-Map',
             bullshit: '🧨 Buzzword-Check',
             metaphor: '🪞 Metaphern & Phrasen',
@@ -196,7 +201,8 @@
             rhet_questions: '❓ Rhetorische Fragen',
             depth_check: '🧵 Satz-Verschachtelung',
             sentiment_intensity: '🌡️ Stimmungs-Intensität',
-            naming_check: '🧩 Naming-Check'
+            naming_check: '🧩 Naming-Check',
+            compliance_check: '✅ Pflichttext-Check'
         },
 
         CARD_DESCRIPTIONS: {
@@ -216,6 +222,7 @@
             compare: 'Vergleich mit der gespeicherten Version.',
             adjective: 'Prüft, ob der Text durch zu viele Adjektive (Endungen wie -ig, -lich) überladen wirkt.',
             rhythm: 'Visualisiert die Abfolge von kurzen und langen Sätzen (Short-Short-Long Prinzip).',
+            syllable_entropy: 'Analysiert betonte/unbetonte Silbenfolgen für Rhythmus-Stolperstellen.',
             dialog: 'Zeigt das Verhältnis zwischen Erzähler-Text und wörtlicher Rede (Dialog).',
             gender: 'Findet generische Maskuline und schlägt neutrale Alternativen vor.',
             start_var: 'Findet monotone Satzanfänge (z.B. "Dann... Dann...").',
@@ -229,6 +236,7 @@
             bpm: 'Schlägt ein passendes Musiktempo (BPM) für den Text vor.',
             easy_language: 'Prüft Verständlichkeit nach Leichte-Sprache-Kriterien.',
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
+            pacing: 'Visualisiert den Soll-Fortschritt fürs Timing-Training.',
             arousal: 'Visualisiert Energieverlauf im Skript.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
             metaphor: 'Zählt bekannte Redewendungen, um Klischees sichtbar zu machen.',
@@ -237,21 +245,22 @@
             rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.',
             depth_check: 'Markiert Sätze mit zu vielen Nebensatz-Ebenen.',
             sentiment_intensity: 'Zeigt den emotionalen Vibe-Verlauf im Skript.',
-            naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.'
+            naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.',
+            compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'chapter_calc', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'teleprompter', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
+        CARD_ORDER: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'arousal', 'coach', 'vocabulary', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'bpm', 'easy_language', 'bullshit', 'metaphor', 'audience', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'pacing', 'teleprompter', 'compliance_check', 'gender', 'dialog', 'start_var', 'stumble', 'breath', 'adjective', 'echo', 'passive', 'fillers', 'anglicism', 'nominal_chain', 'nominal', 'marker', 'cta'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'start_var', 'echo', 'passive', 'fillers', 'anglicism'],
-            imagefilm: ['char', 'coach', 'rhythm', 'breath', 'teleprompter', 'bpm', 'arousal', 'metaphor', 'pronunciation', 'plosive'],
-            erklaer: ['char', 'coach', 'rhythm', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble'],
-            hoerbuch: ['char', 'rhythm', 'chapter_calc', 'coach', 'breath', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm'],
-            podcast: ['char', 'coach', 'rhythm', 'dialog', 'teleprompter', 'breath', 'bpm', 'arousal', 'pronunciation'],
-            ansage: ['char', 'coach', 'rhythm', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm'],
-            elearning: ['char', 'coach', 'rhythm', 'easy_language', 'audience', 'verb_balance', 'teleprompter', 'pronunciation', 'stumble'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'start_var', 'adjective', 'echo', 'anglicism'],
-            buch: ['char', 'rhythm', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var']
+            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check'],
+            imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'arousal', 'metaphor', 'pronunciation', 'plosive', 'compliance_check'],
+            erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check'],
+            hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'compliance_check'],
+            podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'arousal', 'pronunciation', 'compliance_check'],
+            ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'compliance_check'],
+            elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'rhythm', 'syllable_entropy', 'start_var', 'adjective', 'echo', 'anglicism', 'pacing', 'compliance_check'],
+            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var', 'pacing', 'compliance_check']
         },
         
         FILLER_DB: {
@@ -313,6 +322,7 @@
             cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
             adjective: ["Streiche Adjektive, die im Substantiv stecken.", "Show, don't tell: Statt 'es war ein gefährlicher Hund', beschreibe das Knurren.", "Zu viele Adjektive wirken oft 'blumig' und schwächen starke Substantive und Verben.", "Nutze Adjektive sparsam, um echte Highlights zu setzen.", "Wörter auf -lich oder -ig klingen in Häufung oft nach Werbesprache."],
             rhythm: ["Short-Short-Long ist ein klassischer Rhythmus.", "Monotonie tötet die Aufmerksamkeit. Vermeide viele gleich lange Sätze hintereinander.", "Nutze kurze Sätze für Fakten und Tempo. Nutze längere für Erklärungen.", "Ein guter Text tanzt: Variiere zwischen kurzen und mittellangen Sätzen.", "Die visuelle Welle zeigt dir sofort, wo dein Text ins Stocken gerät."],
+            syllable_entropy: ["Betonte und unbetonte Silben sollten rhythmisch balanciert sein.", "Viele Silben-Klumpen erzeugen Stolpern im Vortrag.", "Kürze Bandwurmwörter, wenn der Rhythmus hart bricht.", "Nutze Silbenwechsel als Taktgefühl für Claims.", "Glätte harte Übergänge durch Umstellen oder Kürzen."],
             dialog: ["Achte auf klare Sprecherwechsel.", "Werbespots wirken durch Dialoge ('Szenen') oft authentischer als reine Ansagen.", "Zu viel Dialog ohne Erzähler kann den Hörer orientierungslos machen.", "Hörbücher brauchen lebendige Figuren. Zu wenig Dialog wirkt oft trocken.", "Dialoge lockern lange Erklär-Passagen auf und erhöhen die Aufmerksamkeit."],
             gender: ["Sprache schafft Wirklichkeit.", "Oft sind Partizipien ('Mitarbeitende') eine elegante Lösung.", "Vermeide das generische Maskulinum in Corporate Communications.", "Neutrale Sprache wirkt moderner und professioneller.", "Überprüfe, ob 'Kunden' wirklich nur Männer meint, oder ob 'Kundschaft' besser passt."],
             start_var: ["Variiere den Satzanfang für mehr Dynamik.", "Variiere die Satzstruktur: Stell mal das Objekt oder eine Zeitangabe an den Anfang.", "Monotonie im Satzbau überträgt sich sofort auf die Sprechmelodie.", "Wiederholungen sind nur okay, wenn sie als rhetorisches Stilmittel (Anapher) gewollt sind.", "Verbinde kurze Sätze logisch miteinander, statt sie nur aneinanderzureihen."],
@@ -324,6 +334,7 @@
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig.", "Längere Sätze mit Kommas strukturieren, damit die Atmung mitkommt.", "Tempo entsteht durch Variation – nicht durch dauerhafte Beschleunigung."],
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres.", "Ein Gedanke pro Satz – das erhöht Verständlichkeit sofort.", "Fachbegriffe nur, wenn nötig – sonst erklären oder ersetzen."],
             teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
+            pacing: ["Starte den Pacing-Takt und sprich synchron zum Balken.", "Der Soll-Fortschritt zeigt dir, wo du nach X Sekunden sein solltest.", "Trainiere mit verschiedenen Genres, um Tempo-Gefühl zu entwickeln.", "Halte Pausen sichtbar – sie zählen in die Timing-Logik ein.", "Nutze den Takt als Metronom für Sprecher-Rhythmus."],
             arousal: ["Hohe Peaks markieren emotionale Stellen im Skript.", "Low-Energy-Zonen bewusst ruhiger sprechen.", "Variiere Energie, damit der Text lebendig bleibt.", "Baue Spannungswechsel ein: ruhig erklären, dann punktuell betonen.", "Zu hohe Dauerintensität ermüdet – Peaks gezielt setzen."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen.", "Konkrete Beispiele schlagen Buzzwords – ersetze Floskeln durch Nutzen.", "Wenn ein Satz nichts messbar sagt, streichen oder präzisieren."],
             metaphor: ["Klischees wirken vorhersehbar – prüfe Alternativen.", "Ein frisches Bild bleibt länger im Kopf als bekannte Sprüche.", "Metaphern sind stark, wenn sie zur Zielgruppe passen.", "Ein einziges gutes Bild schlägt fünf Floskeln.", "Originalität steigert die Sprecher-Wirkung spürbar."],
@@ -332,7 +343,8 @@
             rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion.", "Rhetorische Fragen sparsam einsetzen – sonst wirkt es unsicher.", "Beantworte die Frage unmittelbar, damit kein Leerlauf entsteht."],
             depth_check: ["Mehr als zwei Nebensatz-Ebenen überfordern beim Sprechen.", "Teile lange Schachtelsätze auf.", "Ein Gedanke pro Satz erhöht die Klarheit.", "Prüfe: Liefert der Satz neue Information oder nur Wiederholung?", "Details nur dort, wo sie die Aussage wirklich stützen."],
             sentiment_intensity: ["Emotionaler Wechsel hält die Aufmerksamkeit hoch.", "Achte auf harte Brüche im Vibe.", "Nutze positive Peaks als Highlights.", "Emotionalität dosieren: neutral erklären, dann gezielt färben.", "Vermeide extreme Superlative ohne Beleg – wirkt unglaubwürdig."],
-            naming_check: ["Unklare Namensvarianten wirken unprofessionell.", "Prüfe Eigennamen auf Tippfehler.", "Konsistenz schafft Vertrauen.", "Begriffe einheitlich verwenden: nicht 'Produkt' und später 'Tool' mischen.", "Schreibe Abkürzungen beim ersten Auftreten aus."]
+            naming_check: ["Unklare Namensvarianten wirken unprofessionell.", "Prüfe Eigennamen auf Tippfehler.", "Konsistenz schafft Vertrauen.", "Begriffe einheitlich verwenden: nicht 'Produkt' und später 'Tool' mischen.", "Schreibe Abkürzungen beim ersten Auftreten aus."],
+            compliance_check: ["Pflichttexte genau wie vorgegeben einfügen.", "Jede Passage separat prüfen (eine pro Zeile).", "Kleine Abweichungen führen zu Rot – Wortlaut exakt halten.", "Vermeide zusätzliche Satzzeichen im Pflichttext.", "Prüfe die Passagen vor dem finalen Export."]
         },
 
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
@@ -348,6 +360,14 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
+        normalizeWhitespace: (text) => String(text || '').replace(/\s+/g, ' ').trim(),
+        formatMarkerTime: (sec) => {
+            const total = Math.max(0, sec || 0);
+            const h = Math.floor(total / 3600);
+            const m = Math.floor((total % 3600) / 60);
+            const s = (total % 60).toFixed(2);
+            return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        },
         cleanTextForCounting: (text) => {
             const markerTokens = (SA_CONFIG.MARKERS || [])
                 .map((marker) => String(marker.val || '').trim())
@@ -493,6 +513,12 @@
         },
         downloadJSON: (data, filename) => {
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = filename;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        },
+        downloadText: (text, filename) => {
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = filename;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -849,11 +875,110 @@
             return (SA_CONFIG.WPM[s.usecase] || 150);
         },
         getSps: (s) => (SA_CONFIG.SPS[s.usecase] || 3.8),
+        getReadabilityScore: (read) => {
+            if (!read || read.wordCount === 0) return 0;
+            const base = Number.isFinite(read.score) ? read.score : 0;
+            const avgSentence = Number.isFinite(read.avgSentence) ? read.avgSentence : 0;
+            const maxSentence = Number.isFinite(read.maxSentenceWords) ? read.maxSentenceWords : 0;
+
+            let penalty = 0;
+            if (avgSentence > 18) penalty += (avgSentence - 18) * 2.5;
+            if (maxSentence > 30) penalty += (maxSentence - 30) * 2.5;
+
+            const score = Math.max(0, Math.min(100, base - penalty));
+            return score;
+        },
         getTrafficLight: (read) => {
-            if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral' };
-            if (read.score < 40 || read.maxSentenceWords > 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red' };
-            if (read.score < 60 || read.maxSentenceWords > 30) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow' };
-            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green' };
+            if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral', score: 0 };
+            const score = SA_Logic.getReadabilityScore(read);
+            if (score < 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red', score };
+            if (score < 60) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
+            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green', score };
+        },
+        analyzeCompliance: (text, phrases) => {
+            const normalizedText = SA_Utils.normalizeWhitespace(text).toLowerCase();
+            const normalizedPhrases = phrases
+                .map((phrase) => SA_Utils.normalizeWhitespace(phrase))
+                .filter(Boolean);
+            const results = normalizedPhrases.map((phrase) => {
+                const normalizedPhrase = phrase.toLowerCase();
+                const found = normalizedText.includes(normalizedPhrase);
+                return { phrase, found };
+            });
+            const matched = results.filter((item) => item.found);
+            const missing = results.filter((item) => !item.found);
+            return { total: normalizedPhrases.length, matched, missing, results };
+        },
+        analyzeSyllableEntropy: (sentences) => {
+            const syllablePattern = [];
+            const sentenceResults = [];
+            const collectPattern = (text) => {
+                const words = text.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+                words.forEach((word) => {
+                    const syllables = Math.max(1, SA_Logic.countSyllables(word));
+                    syllablePattern.push(1);
+                    for (let i = 1; i < syllables; i += 1) syllablePattern.push(0);
+                });
+            };
+
+            if (Array.isArray(sentences)) {
+                sentences.forEach((sentence) => {
+                    collectPattern(sentence);
+                    const local = SA_Logic.calculateSyllableEntropy(sentence);
+                    if (local.stumble && sentence.split(/\s+/).length > 6) {
+                        sentenceResults.push({ sentence, entropy: local.entropy });
+                    }
+                });
+            }
+
+            const entropy = SA_Logic.calculateEntropyFromPattern(syllablePattern);
+            const label = entropy > 0.65 ? 'Unruhig / Stolpernd' : (entropy > 0.4 ? 'Ausgewogen' : 'Monoton');
+            return { entropy, label, issues: sentenceResults };
+        },
+        calculateSyllableEntropy: (text) => {
+            const pattern = [];
+            const words = text.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+            words.forEach((word) => {
+                const syllables = Math.max(1, SA_Logic.countSyllables(word));
+                pattern.push(1);
+                for (let i = 1; i < syllables; i += 1) pattern.push(0);
+            });
+            const entropy = SA_Logic.calculateEntropyFromPattern(pattern);
+            return { entropy, stumble: entropy > 0.72 };
+        },
+        calculateEntropyFromPattern: (pattern) => {
+            if (!pattern.length) return 0;
+            const counts = { '00': 0, '01': 0, '10': 0, '11': 0 };
+            for (let i = 0; i < pattern.length - 1; i += 1) {
+                const key = `${pattern[i]}${pattern[i + 1]}`;
+                counts[key] += 1;
+            }
+            const total = Object.values(counts).reduce((sum, val) => sum + val, 0);
+            if (!total) return 0;
+            const entropy = Object.values(counts).reduce((sum, val) => {
+                if (!val) return sum;
+                const p = val / total;
+                return sum - (p * Math.log2(p));
+            }, 0);
+            return entropy / 2;
+        },
+        generateTeleprompterExport: (text, settings) => {
+            const parts = text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+            const markers = [];
+            let currentTime = 0;
+            const wpm = SA_Logic.getWpm(settings);
+            const sps = SA_Logic.getSps(settings);
+            const isSps = settings.timeMode === 'sps';
+
+            parts.forEach((p, idx) => {
+                const read = SA_Logic.analyzeReadability(p, settings);
+                const pause = SA_Utils.getPausenTime(p, settings);
+                const dur = isSps ? (read.totalSyllables / sps) + pause : (read.speakingWordCount / wpm * 60) + pause;
+                const timeStr = SA_Utils.formatMarkerTime(currentTime);
+                markers.push({ id: idx + 1, time: timeStr, seconds: Number(currentTime.toFixed(2)), text: p });
+                currentTime += dur;
+            });
+            return markers;
         },
         findFillers: (text) => { 
             const l = text.toLowerCase(); 
@@ -1775,17 +1900,18 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2 };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2, complianceText: '' };
             
             this.state = { 
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, arousal: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
+                pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 analysisToken: 0,
                 readabilityCache: []
             };
@@ -2032,6 +2158,18 @@
                             <p class="ska-settings-help">Kommagetrennt oder zeilenweise – wird rot markiert.</p>
                         </div>
                     </div>
+
+                    <div class="ska-settings-section">
+                        <div class="ska-settings-section-header">
+                            <h4>Rechtliche Pflichttexte</h4>
+                            <p>Hinterlege Pflichtpassagen (eine Passage pro Zeile).</p>
+                        </div>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Pflichtpassagen (exakter Wortlaut)</label>
+                            <textarea id="ska-set-compliance" class="ska-settings-textarea ska-settings-textarea--lg" placeholder="z.B. Dies ist keine Anlageberatung.">${this.settings.complianceText || ''}</textarea>
+                            <p class="ska-settings-help">Der Check gibt nur grünes Licht, wenn jede Passage exakt im Skript vorkommt.</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="ska-modal-footer">
                      <button type="button" class="ska-btn ska-btn--primary" style="display:inline-flex; align-items:center; justify-content:center; height:40px; padding:0 1.5rem; line-height:1; padding-top:1px;" data-action="close-settings">Speichern & Schließen</button>
@@ -2146,6 +2284,15 @@
             if (bullshitInput) {
                 bullshitInput.addEventListener('input', (e) => {
                     this.settings.bullshitBlacklist = e.target.value;
+                    this.saveUIState();
+                    this.analyze(this.getText());
+                });
+            }
+
+            const complianceInput = m.querySelector('#ska-set-compliance');
+            if (complianceInput) {
+                complianceInput.addEventListener('input', (e) => {
+                    this.settings.complianceText = e.target.value;
                     this.saveUIState();
                     this.analyze(this.getText());
                 });
@@ -2435,11 +2582,82 @@
             this.pauseTeleprompter();
         }
 
+        updatePacingUI(progress = null) {
+            const card = this.bottomGrid?.querySelector('[data-card-id="pacing"]');
+            if (!card) return;
+            const fill = card.querySelector('[data-role="pacing-fill"]');
+            const marker = card.querySelector('[data-role="pacing-marker"]');
+            const timeLabel = card.querySelector('[data-role="pacing-time"]');
+            const targetLabel = card.querySelector('[data-role="pacing-target"]');
+            const preview = card.querySelector('[data-role="pacing-preview"]');
+            const duration = this.state.pacing.duration || 0;
+            const currentProgress = progress === null ? (duration > 0 ? this.state.pacing.elapsed / duration : 0) : progress;
+            const clamped = Math.max(0, Math.min(1, currentProgress));
+
+            if (fill) fill.style.width = `${clamped * 100}%`;
+            if (marker) marker.style.left = `${clamped * 100}%`;
+
+            if (timeLabel) {
+                const elapsedSec = Math.round((duration * clamped) / 1000);
+                timeLabel.textContent = `${SA_Utils.formatMin(elapsedSec)} / ${SA_Utils.formatMin(duration / 1000)}`;
+            }
+            if (targetLabel) {
+                const targetPct = Math.round(clamped * 100);
+                targetLabel.textContent = `${targetPct}% Soll-Position`;
+            }
+            if (preview) {
+                const maxScroll = Math.max(0, preview.scrollHeight - preview.clientHeight);
+                preview.scrollTop = maxScroll * clamped;
+            }
+        }
+
+        startPacing(durationSec) {
+            if (!durationSec || durationSec <= 0) return false;
+            this.state.pacing.duration = durationSec * 1000;
+            this.state.pacing.start = performance.now() - (this.state.pacing.elapsed || 0);
+            this.state.pacing.playing = true;
+            const step = (ts) => {
+                if (!this.state.pacing.playing) return;
+                const elapsed = ts - this.state.pacing.start;
+                this.state.pacing.elapsed = Math.min(elapsed, this.state.pacing.duration);
+                const progress = this.state.pacing.duration > 0 ? this.state.pacing.elapsed / this.state.pacing.duration : 0;
+                this.updatePacingUI(progress);
+                if (progress < 1) {
+                    this.state.pacing.rafId = requestAnimationFrame(step);
+                } else {
+                    this.state.pacing.playing = false;
+                }
+            };
+            if (this.state.pacing.rafId) cancelAnimationFrame(this.state.pacing.rafId);
+            this.state.pacing.rafId = requestAnimationFrame(step);
+            return true;
+        }
+
+        pausePacing() {
+            this.state.pacing.playing = false;
+            if (this.state.pacing.rafId) cancelAnimationFrame(this.state.pacing.rafId);
+            this.state.pacing.rafId = null;
+        }
+
+        resetPacing() {
+            this.pausePacing();
+            this.state.pacing.elapsed = 0;
+            this.updatePacingUI(0);
+        }
+
         parseBullshitList() {
             if (!this.settings.bullshitBlacklist) return [];
             return this.settings.bullshitBlacklist
                 .split(/[,|\n]/)
                 .map(item => item.trim())
+                .filter(Boolean);
+        }
+
+        parseComplianceList() {
+            if (!this.settings.complianceText) return [];
+            return this.settings.complianceText
+                .split(/\n+/)
+                .map((item) => item.trim())
                 .filter(Boolean);
         }
 
@@ -2595,6 +2813,39 @@
                 return true;
             }
 
+            if (act === 'teleprompter-export-txt' || act === 'teleprompter-export-json') {
+                const text = this.getText();
+                if (!text.trim()) return true;
+                const exportData = SA_Logic.generateTeleprompterExport(text, this.settings);
+                if (act === 'teleprompter-export-txt') {
+                    const lines = exportData.map(item => `[${item.time}] ${item.text}`);
+                    SA_Utils.downloadText(lines.join('\n\n'), 'teleprompter-export.txt');
+                } else {
+                    SA_Utils.downloadJSON(exportData, 'teleprompter-export.json');
+                }
+                return true;
+            }
+
+            if (act === 'pacing-toggle') {
+                const btnLabel = btn;
+                if (this.state.pacing.playing) {
+                    this.pausePacing();
+                    if (btnLabel) btnLabel.textContent = 'Start';
+                } else {
+                    const durationSec = parseFloat(btn.dataset.duration || '0');
+                    const started = this.startPacing(durationSec);
+                    if (btnLabel) btnLabel.textContent = started ? 'Pause' : 'Start';
+                }
+                return true;
+            }
+
+            if (act === 'pacing-reset') {
+                this.resetPacing();
+                const startBtn = this.bottomGrid?.querySelector('[data-action="pacing-toggle"]');
+                if (startBtn) startBtn.textContent = 'Start';
+                return true;
+            }
+
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
@@ -2690,6 +2941,7 @@
                 if(typeof global.periodPause !== 'undefined') this.settings.periodPause = global.periodPause;
                 if(typeof global.focusKeywords !== 'undefined') this.settings.focusKeywords = global.focusKeywords;
                 if(typeof global.keywordDensityLimit !== 'undefined') this.settings.keywordDensityLimit = global.keywordDensityLimit;
+                if(typeof global.complianceText !== 'undefined') this.settings.complianceText = global.complianceText;
                 
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
@@ -2714,7 +2966,8 @@
                 commaPause: this.settings.commaPause,
                 periodPause: this.settings.periodPause,
                 focusKeywords: this.settings.focusKeywords,
-                keywordDensityLimit: this.settings.keywordDensityLimit
+                keywordDensityLimit: this.settings.keywordDensityLimit,
+                complianceText: this.settings.complianceText
             }));
         }
 
@@ -2975,7 +3228,7 @@
 
                 if(act === 'confirm-reset') {
                     this.setText(''); 
-                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2}; 
+                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
                     this.state.savedVersion=''; 
                     SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                     this.state.hiddenCards.clear(); 
@@ -3134,6 +3387,7 @@
             this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
             if (read.wordCount === 0) {
+                this.resetPacing();
                 this.bottomGrid.innerHTML = ''; this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active');
                 this.renderHiddenPanel();
                 if(this.legendContainer) this.legendContainer.innerHTML = '';
@@ -3175,6 +3429,7 @@
                     case 'cta': this.renderCtaCard(raw, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
                     case 'rhythm': this.renderRhythmCard(read.sentences, read.maxSentenceWords, active); break;
+                    case 'syllable_entropy': this.renderSyllableEntropyCard(SA_Logic.analyzeSyllableEntropy(read.sentences), active); break;
                     case 'chapter_calc': this.renderChapterCalculatorCard(raw, active); break;
                     case 'dialog': this.renderDialogCard(SA_Logic.analyzeDialog(raw), active); break;
                     case 'gender': this.renderGenderCard(SA_Logic.findGenderBias(raw), active); break;
@@ -3196,7 +3451,9 @@
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
                     case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
+                    case 'pacing': this.renderPacingCard(dur, raw, active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
+                    case 'compliance_check': this.renderComplianceCard(raw, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
             });
@@ -3615,9 +3872,110 @@
                 <div style="display:flex; flex-direction:column; gap:0.8rem;">
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
                     <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter">Teleprompter öffnen</button>
+                    <div class="ska-teleprompter-export">
+                        <button class="ska-btn ska-btn--secondary" data-action="teleprompter-export-txt">Export .txt</button>
+                        <button class="ska-btn ska-btn--secondary" data-action="teleprompter-export-json">Export .json</button>
+                    </div>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
             this.updateCard('teleprompter', h);
+        }
+
+        renderPacingCard(durationSec, raw, active) {
+            if (!active) return this.updateCard('pacing', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if (!durationSec || durationSec <= 0) {
+                this.resetPacing();
+                return this.updateCard('pacing', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für den Pacing-Takt.</p>');
+            }
+
+            const totalMs = durationSec * 1000;
+            if (!this.state.pacing.playing && Math.abs((this.state.pacing.duration || 0) - totalMs) > 500) {
+                this.state.pacing.duration = totalMs;
+                this.state.pacing.elapsed = 0;
+            }
+
+            const progress = this.state.pacing.duration > 0 ? (this.state.pacing.elapsed / this.state.pacing.duration) : 0;
+            const clamped = Math.max(0, Math.min(1, progress));
+            const paceLabel = this.settings.timeMode === 'sps'
+                ? `${SA_Logic.getSps(this.settings)} SPS`
+                : `${SA_Logic.getWpm(this.settings)} WPM`;
+            const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
+            const checkpoints = [0, 0.25, 0.5, 0.75, 1].map((step) => ({
+                pct: Math.round(step * 100),
+                time: SA_Utils.formatMin(durationSec * step)
+            }));
+
+            const previewHtml = SA_Utils.escapeHtml(raw || '').replace(/\n/g, '<br>');
+            const h = `
+                <div class="ska-pacing-head">
+                    <div>
+                        <div class="ska-pacing-title">Soll-Fortschritt (Genre-Takt)</div>
+                        <div class="ska-pacing-sub">Tempo: ${paceLabel} • Zielzeit ${SA_Utils.formatMin(durationSec)}</div>
+                    </div>
+                </div>
+                <div class="ska-pacing-meter">
+                    <div class="ska-pacing-bar">
+                        <div class="ska-pacing-fill" data-role="pacing-fill" style="width:${clamped * 100}%"></div>
+                        <div class="ska-pacing-marker" data-role="pacing-marker" style="left:${clamped * 100}%"></div>
+                    </div>
+                    <div class="ska-pacing-scale">
+                        ${checkpoints.map(item => `
+                            <div class="ska-pacing-tick" style="left:${item.pct}%">
+                                <span>${item.time}</span>
+                            </div>`).join('')}
+                    </div>
+                </div>
+                <div class="ska-pacing-meta">
+                    <span class="ska-info-badge" data-role="pacing-target">${Math.round(clamped * 100)}% Soll-Position</span>
+                    <span class="ska-info-badge" data-role="pacing-time">${SA_Utils.formatMin(durationSec * clamped)} / ${SA_Utils.formatMin(durationSec)}</span>
+                </div>
+                <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
+                <div class="ska-pacing-actions">
+                    <button class="ska-btn ska-btn--primary" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--secondary" data-action="pacing-reset">Reset</button>
+                </div>
+                ${this.renderTipSection('pacing', true)}`;
+
+            this.updateCard('pacing', h);
+            this.updatePacingUI(clamped);
+        }
+
+        renderSyllableEntropyCard(data, active) {
+            if (!active) return this.updateCard('syllable_entropy', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            if (!data) return this.updateCard('syllable_entropy', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für eine Analyse.</p>');
+
+            const entropyPct = Math.round((data.entropy || 0) * 100);
+            let color = SA_CONFIG.COLORS.success;
+            if (entropyPct > 65) color = SA_CONFIG.COLORS.warn;
+            if (entropyPct < 35) color = SA_CONFIG.COLORS.blue;
+
+            let h = `
+                <div style="margin-bottom:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.4rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Silben-Entropie</span>
+                        <span style="font-weight:700; color:${color};">${data.label}</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${entropyPct}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                    <div style="margin-top:0.4rem; font-size:0.75rem; color:#94a3b8;">${entropyPct}% Entropie</div>
+                </div>`;
+
+            if (data.issues && data.issues.length) {
+                h += `<div class="ska-section-title">Stolperstellen</div><div class="ska-problem-list">`;
+                data.issues.slice(0, 3).forEach((item) => {
+                    h += `<div class="ska-problem-item">${item.sentence}<div class="ska-problem-meta">⚠️ Entropie ${(item.entropy * 100).toFixed(0)}%</div></div>`;
+                });
+                if (data.issues.length > 3) {
+                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${data.issues.length - 3} weitere</div>`;
+                }
+                h += `</div>`;
+            } else {
+                h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Rhythmus-Brüche erkannt.</p>`;
+            }
+
+            h += this.renderTipSection('syllable_entropy', true);
+            this.updateCard('syllable_entropy', h);
         }
 
         renderRedundancyCard(issues, active) {
@@ -3642,6 +4000,35 @@
                 h += this.renderTipSection('redundancy', true);
             }
             this.updateCard('redundancy', h);
+        }
+
+        renderComplianceCard(raw, active) {
+            if (!active) return this.updateCard('compliance_check', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const phrases = this.parseComplianceList();
+            if (!phrases.length) {
+                return this.updateCard('compliance_check', '<p style="color:#94a3b8; font-size:0.9rem;">Keine Pflichtpassagen hinterlegt.</p>');
+            }
+            const result = SA_Logic.analyzeCompliance(raw, phrases);
+            const isClear = result.missing.length === 0;
+            const statusColor = isClear ? SA_CONFIG.COLORS.success : SA_CONFIG.COLORS.warn;
+            const statusText = isClear ? 'Grünes Licht' : `Fehlt noch: ${result.missing.length}`;
+            let h = `
+                <div class="ska-compliance-status" style="color:${statusColor};">
+                    <span>${statusText}</span>
+                    <span>${result.matched.length}/${result.total} gefunden</span>
+                </div>
+                <div class="ska-compliance-list">`;
+            result.results.forEach((item) => {
+                const itemClass = item.found ? 'is-ok' : 'is-missing';
+                const badge = item.found ? '✅' : '⚠️';
+                h += `<div class="ska-compliance-item ${itemClass}">
+                        <span class="ska-compliance-icon">${badge}</span>
+                        <span class="ska-compliance-text">"${SA_Utils.escapeHtml(item.phrase)}"</span>
+                      </div>`;
+            });
+            h += `</div>`;
+            h += this.renderTipSection('compliance_check', true);
+            this.updateCard('compliance_check', h);
         }
 
         renderBpmCard(data, active) {
@@ -3806,7 +4193,7 @@
             let targetStatusHtml = '';
 
             const traffic = SA_Logic.getTrafficLight(r);
-            const scorePct = r ? Math.min(100, Math.max(0, r.score)) : 0;
+            const scorePct = r ? Math.min(100, Math.max(0, traffic.score)) : 0;
 
             // AMPELSLIDER Tied to Flesch Score (Quality indicator)
             meterHtml = `
@@ -3868,7 +4255,7 @@
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
             let scoreHintHtml = '';
-            if (r && r.score < 60 && traffic.class !== 'neutral') {
+            if (r && traffic.score < 60 && traffic.class !== 'neutral') {
                 let hintText = 'Text vereinfachen.';
                 if (r.avgSentence > 15 && r.syllablesPerWord > 1.6) hintText = 'Sätze kürzen & einfachere Wörter nutzen.';
                 else if (r.avgSentence > 15) hintText = 'Sätze sind zu lang (Ø > 15 Wörter).';
