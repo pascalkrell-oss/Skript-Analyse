@@ -2703,8 +2703,10 @@
                 return true;
             }
             if (act === 'toggle-filter-view') {
-                this.state.showAllCards = !this.state.showAllCards;
-                this.renderFilterBar();
+                if (!this.settings.role) {
+                    this.state.showAllCards = !this.state.showAllCards;
+                    this.renderFilterBar();
+                }
                 return true;
             }
             if (act === 'toggle-filter-collapse') {
@@ -2717,8 +2719,11 @@
                 return true;
             }
             if (act === 'filter-select-all') {
+                const profile = this.settings.role;
+                const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
+                    if (allowed && !allowed.has(id)) return;
                     if (this.state.hiddenCards.has(id)) this.state.hiddenCards.delete(id);
                 });
                 this.saveUIState();
@@ -2728,8 +2733,11 @@
                 return true;
             }
             if (act === 'filter-deselect-all') {
+                const profile = this.settings.role;
+                const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
+                    if (allowed && !allowed.has(id)) return;
                     if (!this.state.hiddenCards.has(id)) this.state.hiddenCards.add(id);
                 });
                 if (this.bottomGrid) {
@@ -3055,6 +3063,9 @@
                         this.settings.lastGenre = e.target.value;
                         this.saveUIState();
                     }
+                    if (k === 'role') {
+                        this.state.showAllCards = false;
+                    }
                 }
                 this.analyze(this.getText());
             }));
@@ -3328,7 +3339,9 @@
 
         renderHiddenPanel() {
             this.hiddenPanel.innerHTML = '';
-            const sorted = SA_CONFIG.CARD_ORDER.filter(id => this.state.hiddenCards.has(id) && this.isCardAvailable(id));
+            const profile = this.settings.role;
+            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const sorted = SA_CONFIG.CARD_ORDER.filter(id => this.state.hiddenCards.has(id) && this.isCardAvailable(id) && (!allowed || allowed.has(id)));
             if(sorted.length) {
                 this.hiddenPanel.innerHTML = '<div class="ska-hidden-label">Ausgeblendet (Klicken zum Wiederherstellen):</div>';
                 sorted.forEach(id => {
@@ -3349,8 +3362,8 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
-            const showAll = this.state.showAllCards || !allowed;
-            const title = allowed ? 'Analyseboxen individuell auswählen' : 'Analyseboxen auswählen';
+            const showAll = !allowed && this.state.showAllCards;
+            const title = allowed ? 'Profil-Analyseboxen' : 'Analyseboxen auswählen';
             const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
             this.filterBar.classList.toggle('is-expanded', showAll);
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
@@ -3361,7 +3374,7 @@
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
-                        ${allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
+                        ${!allowed ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>` : ''}
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
