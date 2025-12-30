@@ -246,7 +246,7 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'easy_language', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'gender', 'breath', 'stumble', 'start_var', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
@@ -529,24 +529,10 @@
         },
         closeModal: (modal, onClosed) => {
             if (!modal) return;
-            if (modal.classList.contains('is-closing')) return;
-            modal.classList.add('is-closing');
             modal.classList.remove('is-open');
-            const content = modal.querySelector('.skriptanalyse-modal-content');
-            const finish = () => {
-                modal.classList.remove('is-closing');
-                modal.setAttribute('aria-hidden', 'true');
-                if (typeof onClosed === 'function') onClosed();
-            };
-            const onEnd = () => {
-                if (content) content.removeEventListener('transitionend', onEnd);
-                finish();
-            };
-            if (content) {
-                content.addEventListener('transitionend', onEnd, { once: true });
-            } else {
-                setTimeout(finish, 360);
-            }
+            modal.classList.remove('is-closing');
+            modal.setAttribute('aria-hidden', 'true');
+            if (typeof onClosed === 'function') onClosed();
         },
         
         getPhoneticSpelling: (word) => {
