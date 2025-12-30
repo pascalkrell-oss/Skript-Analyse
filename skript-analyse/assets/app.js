@@ -2703,8 +2703,10 @@
                 return true;
             }
             if (act === 'toggle-filter-view') {
-                this.state.showAllCards = !this.state.showAllCards;
-                this.renderFilterBar();
+                if (!this.settings.role) {
+                    this.state.showAllCards = !this.state.showAllCards;
+                    this.renderFilterBar();
+                }
                 return true;
             }
             if (act === 'toggle-filter-collapse') {
