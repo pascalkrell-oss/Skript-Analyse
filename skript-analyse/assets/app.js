@@ -523,6 +523,25 @@
             const a = document.createElement('a'); a.href = url; a.download = filename;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         },
+        openModal: (modal) => {
+            if (!modal) return;
+            modal.classList.remove('is-closing');
+            modal.setAttribute('aria-hidden', 'false');
+            requestAnimationFrame(() => {
+                modal.classList.add('is-open');
+            });
+        },
+        closeModal: (modal, onClosed) => {
+            if (!modal) return;
+            modal.classList.add('is-closing');
+            modal.classList.remove('is-open');
+            const finish = () => {
+                modal.classList.remove('is-closing');
+                modal.setAttribute('aria-hidden', 'true');
+                if (typeof onClosed === 'function') onClosed();
+            };
+            setTimeout(finish, 220);
+        },
         
         getPhoneticSpelling: (word) => {
             if (SA_CONFIG.PRONUNCIATION_DB[word]) return SA_CONFIG.PRONUNCIATION_DB[word];
@@ -1883,11 +1902,12 @@
                         btnElement.textContent = originalText; 
                         btnElement.disabled = false; 
                         // Close Modal
-                        const modal = document.getElementById('ska-pdf-modal');
-                        if(modal) {
-                            modal.classList.remove('is-open');
+                    const modal = document.getElementById('ska-pdf-modal');
+                    if(modal) {
+                        SA_Utils.closeModal(modal, () => {
                             document.body.classList.remove('ska-modal-open');
-                        }
+                        });
+                    }
                     }, 1500);
 
                 } catch(e) { 
@@ -3080,36 +3100,51 @@
                     const modalId = 'ska-' + act.replace('open-', '') + '-modal';
                     const m = document.getElementById(modalId);
                     if(m){ 
-                        m.classList.add('is-open'); 
-                        document.body.classList.add('ska-modal-open');
-                        
-                        // If it's settings modal, re-render to ensure latest state (target time etc)
-                        if(modalId === 'ska-settings-modal') {
+                        if (modalId === 'ska-settings-modal') {
                             this.renderSettingsModal();
                             const newM = document.getElementById('ska-settings-modal');
-                            if(newM) {
-                                requestAnimationFrame(() => {
-                                    newM.classList.add('is-open');
-                                });
+                            if (newM) {
+                                SA_Utils.openModal(newM);
+                                document.body.classList.add('ska-modal-open');
                             }
+                            e.preventDefault();
+                            return;
                         }
 
                         if (modalId === 'ska-benchmark-modal') {
                             this.renderBenchmarkModal();
                             const newM = document.getElementById('ska-benchmark-modal');
-                            if (newM) newM.classList.add('is-open');
+                            if (newM) {
+                                SA_Utils.openModal(newM);
+                                document.body.classList.add('ska-modal-open');
+                            }
+                            e.preventDefault();
+                            return;
                         }
 
                         if (modalId === 'ska-teleprompter-modal') {
                             this.renderTeleprompterModal();
                             const newM = document.getElementById('ska-teleprompter-modal');
                             if (newM) {
-                                newM.classList.add('is-open');
+                                SA_Utils.openModal(newM);
+                                document.body.classList.add('ska-modal-open');
                                 this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
                                 const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
                                 this.updateTeleprompterMeta(read);
                                 this.resetTeleprompter();
                             }
+                            e.preventDefault();
+                            return;
+                        }
+
+                        SA_Utils.openModal(m);
+                        document.body.classList.add('ska-modal-open');
+                        
+                        // If it's settings modal, re-render to ensure latest state (target time etc)
+                        if (modalId === 'ska-syllable-entropy-modal') {
+                            this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
+                            const newM = document.getElementById('ska-syllable-entropy-modal');
+                            if (newM) SA_Utils.openModal(newM);
                         }
 
                         if (modalId === 'ska-syllable-entropy-modal') {
@@ -3123,7 +3158,7 @@
                         this.renderSyllableEntropyModal(this.state.syllableEntropyIssues || []);
                         const newM = document.getElementById('ska-syllable-entropy-modal');
                         if (newM) {
-                            newM.classList.add('is-open');
+                            SA_Utils.openModal(newM);
                             document.body.classList.add('ska-modal-open');
                         }
                         e.preventDefault();
@@ -3220,14 +3255,15 @@
                 const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
                 
                 if(overlay) {
-                    modal.classList.remove('is-open');
-                    document.body.classList.remove('ska-modal-open');
-                    if (modal.id === 'ska-teleprompter-modal') this.resetTeleprompter();
-                    if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
-                        clearInterval(this.state.benchmark.timerId);
-                        this.state.benchmark.timerId = null;
-                        this.state.benchmark.running = false;
-                    }
+                    SA_Utils.closeModal(modal, () => {
+                        document.body.classList.remove('ska-modal-open');
+                        if (modal.id === 'ska-teleprompter-modal') this.resetTeleprompter();
+                        if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
+                            clearInterval(this.state.benchmark.timerId);
+                            this.state.benchmark.timerId = null;
+                            this.state.benchmark.running = false;
+                        }
+                    });
                     return;
                 }
 
@@ -3235,14 +3271,15 @@
                 const act = btn.dataset.action;
 
                 if(act.startsWith('close-')) { 
-                    modal.classList.remove('is-open'); 
-                    document.body.classList.remove('ska-modal-open');
-                    if (modal.id === 'ska-teleprompter-modal') this.resetTeleprompter();
-                    if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
-                        clearInterval(this.state.benchmark.timerId);
-                        this.state.benchmark.timerId = null;
-                        this.state.benchmark.running = false;
-                    }
+                    SA_Utils.closeModal(modal, () => {
+                        document.body.classList.remove('ska-modal-open');
+                        if (modal.id === 'ska-teleprompter-modal') this.resetTeleprompter();
+                        if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
+                            clearInterval(this.state.benchmark.timerId);
+                            this.state.benchmark.timerId = null;
+                            this.state.benchmark.running = false;
+                        }
+                    });
                     e.preventDefault(); 
                 }
 
@@ -3275,7 +3312,9 @@
                     this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
                     if(this.targetInput)this.targetInput.value='';
                     this.analyze('');
-                    modal.classList.remove('is-open'); document.body.classList.remove('ska-modal-open');
+                    SA_Utils.closeModal(modal, () => {
+                        document.body.classList.remove('ska-modal-open');
+                    });
                 }
             });
         }
@@ -4492,14 +4531,14 @@
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipPrefix}: ${genreContext.tipFocus}.</div>` : '';
             const h = `
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.8rem; margin-bottom:1rem;">
-                    <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; border-top:3px solid ${tempoCol}; text-align:center;">
-                        <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.2rem;">Tempo</div>
-                        <div style="font-size:0.8rem; font-weight:600; color:#334155;">${tempoText}</div>
+                <div class="ska-mini-grid">
+                    <div class="ska-mini-card" style="border-top:3px solid ${tempoCol};">
+                        <div class="ska-mini-card-label">Tempo</div>
+                        <div class="ska-mini-card-sub">${tempoText}</div>
                     </div>
-                    <div style="background:#f8fafc; padding:0.8rem; border-radius:8px; border-top:3px solid ${dynCol}; text-align:center;">
-                        <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.2rem;">Dynamik</div>
-                        <div style="font-size:0.8rem; font-weight:600; color:#334155;">${dynText}</div>
+                    <div class="ska-mini-card" style="border-top:3px solid ${dynCol};">
+                        <div class="ska-mini-card-label">Dynamik</div>
+                        <div class="ska-mini-card-sub">${dynText}</div>
                     </div>
                 </div>
 
@@ -4994,14 +5033,14 @@
                     </div>
                 </div>`;
 
-            h += `<div style="display:flex; gap:1rem; margin-bottom:0.8rem;">
-                    <div style="flex:1; background:#f8fafc; padding:0.6rem; border-radius:8px; text-align:center; border:1px solid #e2e8f0;">
-                        <div style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Dialog-Passagen</div>
-                        <div style="font-weight:700; color:#334155; font-size:1.1rem;">${d.count}</div>
+            h += `<div class="ska-mini-grid">
+                    <div class="ska-mini-card">
+                        <div class="ska-mini-card-label">Dialog-Passagen</div>
+                        <div class="ska-mini-card-value">${d.count}</div>
                     </div>
-                    <div style="flex:1; background:#f8fafc; padding:0.6rem; border-radius:8px; text-align:center; border:1px solid #e2e8f0;">
-                        <div style="font-size:0.7rem; color:#94a3b8; text-transform:uppercase; font-weight:700;">Erzähler-Anteil</div>
-                        <div style="font-weight:700; color:#334155; font-size:1.1rem;">${(100 - ratio).toFixed(0)}%</div>
+                    <div class="ska-mini-card">
+                        <div class="ska-mini-card-label">Erzähler-Anteil</div>
+                        <div class="ska-mini-card-value">${(100 - ratio).toFixed(0)}%</div>
                     </div>
                   </div>`;
             
