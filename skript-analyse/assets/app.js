@@ -3581,7 +3581,7 @@
                 return allowed.has(id);
             });
             const freeItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
-            const premiumItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => !this.isCardUnlocked(id)) : [];
+            const premiumItems = this.state.planMode !== 'premium' ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3611,12 +3611,6 @@
                     ${premiumItems.map(id => {
                         const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
-                    }).join('')}
-                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
-                    ${premiumItems.map(id => {
-                        const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
-                        const lockHint = `<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>${desc}</span><em>Jetzt upgraden</em></span>`;
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
                     ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
@@ -4430,8 +4424,7 @@
                     <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</div>
                 </div>
                 ${this.renderTipSection('bpm', true)}`;
-            const headerExtra = this.isCardUnlocked('bpm') ? '' : `<span class="ska-premium-bpm">${bpm} BPM</span>`;
-            this.updateCard('bpm', h, this.bottomGrid, '', headerExtra, true);
+            this.updateCard('bpm', h, this.bottomGrid, '', '', true);
         }
 
         renderEasyLanguageCard(data, active) {
@@ -5339,8 +5332,10 @@
         }
 
         renderUpgradePanel() {
-            if (!this.bottomGrid) return;
-            const existing = this.bottomGrid.querySelector('.ska-premium-upgrade-card');
+            if (!this.bottomGrid || !this.legendContainer) return;
+            const container = this.legendContainer.parentElement;
+            if (!container) return;
+            const existing = container.querySelector('.ska-premium-upgrade-card');
             if (this.state.planMode === 'premium') {
                 if (existing) existing.remove();
                 return;
@@ -5407,8 +5402,7 @@
                 const card = document.createElement('div');
                 card.className = 'ska-premium-upgrade-card';
                 card.innerHTML = html;
-                card.style.order = 9999;
-                this.bottomGrid.appendChild(card);
+                container.insertBefore(card, this.legendContainer);
             }
         }
 
