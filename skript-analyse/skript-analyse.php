@@ -44,9 +44,12 @@ function ska_shortcode() {
         ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
     ];
     
+    $pro_mode = apply_filters( 'ska_pro_mode', false );
+    $pro_mode = filter_var( $pro_mode, FILTER_VALIDATE_BOOLEAN );
+
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
         'markers' => $markers_config,
-        'pro' => (bool) apply_filters( 'ska_pro_mode', false ),
+        'pro' => $pro_mode,
         'isAdmin' => current_user_can( 'manage_options' ),
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
     ));
