@@ -903,8 +903,10 @@
             if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral', score: 0 };
             const score = SA_Logic.getReadabilityScore(read);
             if (score < 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red', score };
-            if (score < 60) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
-            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green', score };
+            if (score < 55) return { color: SA_CONFIG.COLORS.error, label: 'Schwer verständlich', class: 'red', score };
+            if (score < 70) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
+            if (score < 85) return { color: SA_CONFIG.COLORS.success, label: 'Gut', class: 'green', score };
+            return { color: SA_CONFIG.COLORS.success, label: 'Sehr gut', class: 'green', score };
         },
         analyzeCompliance: (text, phrases) => {
             const normalizedText = SA_Utils.normalizeWhitespace(text).toLowerCase();
@@ -4340,7 +4342,9 @@
                 targetStatusHtml = `<div style="color:${statusColor}; font-size:0.8rem; font-weight:600; margin-top:0.8rem; background:${statusBg}; padding:0.6rem; border-radius:8px; text-align:center; border:1px solid ${statusBorder};">${msg}</div>`;
             }
             
-            let sCol = (r && r.score > 60) ? SA_CONFIG.COLORS.success : SA_CONFIG.COLORS.warn;
+            let sCol = SA_CONFIG.COLORS.warn;
+            if (traffic.class === 'green') sCol = SA_CONFIG.COLORS.success;
+            if (traffic.class === 'red') sCol = SA_CONFIG.COLORS.error;
             let maxSCol = (r && r.maxSentenceWords > 30) ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.text;
             let maxSVal = r ? r.maxSentenceWords : 0;
 
@@ -4373,7 +4377,7 @@
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
             let scoreHintHtml = '';
-            if (r && traffic.score < 60 && traffic.class !== 'neutral') {
+            if (r && traffic.score < 70 && traffic.class !== 'neutral') {
                 let hintText = 'Text vereinfachen.';
                 if (r.avgSentence > 15 && r.syllablesPerWord > 1.6) hintText = 'Sätze kürzen & einfachere Wörter nutzen.';
                 else if (r.avgSentence > 15) hintText = 'Sätze sind zu lang (Ø > 15 Wörter).';
@@ -4467,8 +4471,9 @@
             const sentiment = SA_Logic.analyzeSentiment(raw);
             const audience = SA_Logic.estimateAudience(r.score);
 
-            const col = r.score > 60 ? SA_CONFIG.COLORS.success : (r.score > 40 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.error);
-            const txt = r.score > 60 ? 'Leicht verständlich' : (r.score > 40 ? 'Mittelschwer' : 'Komplex / Schwer');
+            const traffic = SA_Logic.getTrafficLight(r);
+            const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
+            const txt = traffic.label;
             
             // Temperature gradient calculation (mapped from -100..100 to 0..100%)
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
