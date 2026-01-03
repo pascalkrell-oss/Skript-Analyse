@@ -614,17 +614,22 @@
                         background: #ffffff !important;
                         border: 1px solid #e2e8f0 !important;
                         border-radius: 12px !important;
-                        padding: 1rem 1.25rem !important;
+                        padding: 1.1rem 1.3rem !important;
                         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
                         margin-top: auto !important; 
-                        padding-top: 20px !important;
                         position: relative;
                         transition: all 0.3s ease;
                     }
                     .ska-card-body {
                         display: flex;
                         flex-direction: column;
-                        gap: 20px; /* Space between content and the footer tip box */
+                    }
+                    .ska-card-body-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1.2rem;
+                        flex: 1;
+                        min-height: 100%;
                     }
                     .ska-tip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
                     .ska-tip-badge {
