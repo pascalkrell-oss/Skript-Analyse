@@ -17,6 +17,7 @@
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
         WORKER_TEXT_THRESHOLD: 12000,
+        FREE_TEXT_LIMIT: 20000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
@@ -1955,7 +1956,8 @@
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
-                readabilityCache: []
+                readabilityCache: [],
+                limitReached: false
             };
             
             this.analysisWorker = null;
@@ -2062,7 +2064,7 @@
                 targetVal = `${mm}:${ss < 10 ? '0'+ss : ss}`;
             }
 
-            const isPremium = this.state.planMode === 'premium';
+            const isPremium = this.isPremiumActive();
             const wpm = SA_Logic.getWpm(this.settings);
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
@@ -2579,9 +2581,10 @@
         updateTeleprompterMeta(read) {
             const meta = document.querySelector('[data-role-teleprompter-meta]');
             if (!meta || !read) return;
-            const isSps = this.settings.timeMode === 'sps';
-            const wpm = SA_Logic.getWpm(this.settings);
-            const sps = SA_Logic.getSps(this.settings);
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
             const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
             const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
             meta.textContent = `Tempo: ${rateLabel} • Dauer: ${SA_Utils.formatMin(seconds)}`;
@@ -2622,9 +2625,10 @@
             if (!modal || !read) return false;
             const body = modal.querySelector('.ska-teleprompter-body');
             if (!body) return false;
-            const isSps = this.settings.timeMode === 'sps';
-            const wpm = SA_Logic.getWpm(this.settings);
-            const sps = SA_Logic.getSps(this.settings);
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
             const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
             const duration = seconds * 1000;
             const distance = body.scrollHeight - body.clientHeight;
@@ -2760,7 +2764,7 @@
                 return true;
             }
             if (act === 'toggle-plan') {
-                if (!SA_CONFIG.IS_ADMIN) return true;
+                if (!SA_CONFIG.IS_ADMIN || !SA_CONFIG.PRO_MODE) return true;
                 const isPremium = btn.checked;
                 this.state.planMode = isPremium ? 'premium' : 'free';
                 this.saveUIState();
@@ -2780,19 +2784,16 @@
                 return true;
             }
             if (act === 'open-pdf') {
-                if (this.state.planMode !== 'premium') {
-                    this.showPremiumNotice('Der Profi-PDF-Report ist in der Premium-Version verfügbar.');
-                    return true;
-                }
                 const modal = document.getElementById('ska-pdf-modal');
                 if (modal) {
+                    this.syncPdfOptions();
                     SA_Utils.openModal(modal);
                     document.body.classList.add('ska-modal-open');
                 }
                 return true;
             }
             if (act === 'open-teleprompter') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2883,7 +2884,7 @@
                 return true;
             }
             if (act === 'benchmark-toggle') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Die WPM-Kalibrierung ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2916,7 +2917,7 @@
             }
 
             if (act === 'benchmark-reset') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Die WPM-Kalibrierung ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2936,7 +2937,7 @@
             }
 
             if (act === 'benchmark-apply') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Die WPM-Kalibrierung ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2961,7 +2962,7 @@
             }
 
             if (act === 'teleprompter-toggle') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2979,7 +2980,7 @@
             }
 
             if (act === 'teleprompter-reset') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -2990,7 +2991,7 @@
             }
 
             if (act === 'teleprompter-bigger' || act === 'teleprompter-smaller') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -3004,7 +3005,7 @@
             }
 
             if (act === 'teleprompter-export-txt' || act === 'teleprompter-export-json') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter-Export ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -3021,7 +3022,7 @@
             }
 
             if (act === 'pacing-toggle') {
-                if (this.state.planMode !== 'premium') {
+                if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Das Sprech-Pacing ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -3128,6 +3129,9 @@
                 const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
                 if (p === 'premium' || p === 'free') this.state.planMode = p;
             }
+            if (!SA_CONFIG.PRO_MODE) {
+                this.state.planMode = 'free';
+            }
             
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
             if(g) {
@@ -3151,6 +3155,10 @@
                     const r = m.querySelector(`input[name="ska-time-mode"][value="${this.settings.timeMode}"]`);
                     if(r) r.checked = true;
                 }
+            }
+            this.enforceFreeSettings();
+            if (!this.isPremiumActive()) {
+                this.saveUIState();
             }
         }
 
@@ -3179,29 +3187,50 @@
         updatePlanUI() {
             const label = document.querySelector('[data-role-plan-label]');
             if (label) {
-                label.textContent = this.state.planMode === 'premium' ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher';
+                label.textContent = this.isPremiumActive() ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher';
             }
             const toggle = document.querySelector('[data-action="toggle-plan"]');
             if (toggle && toggle instanceof HTMLInputElement) {
-                toggle.checked = this.state.planMode === 'premium';
+                toggle.checked = this.isPremiumActive();
+                toggle.disabled = !SA_CONFIG.PRO_MODE;
             }
-            document.body.classList.toggle('ska-plan-premium', this.state.planMode === 'premium');
-            document.querySelectorAll('[data-action="open-pdf"]').forEach(btn => {
-                btn.toggleAttribute('disabled', this.state.planMode !== 'premium');
-            });
-            document.querySelectorAll('[data-action="save-version"]').forEach(btn => {
-                btn.toggleAttribute('disabled', this.state.planMode !== 'premium');
-            });
-            if (this.state.planMode === 'free') {
-                this.settings.timeMode = 'wpm';
-                this.settings.manualWpm = 0;
-                this.settings.commaPause = 0.2;
-                this.settings.periodPause = 0.5;
-                this.settings.audienceTarget = '';
-                this.settings.focusKeywords = '';
-                this.settings.complianceText = '';
-            }
+            document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
+            this.enforceFreeSettings();
+            this.syncPdfOptions();
             this.renderSettingsModal();
+        }
+
+        enforceFreeSettings() {
+            if (this.isPremiumActive()) return;
+            this.state.planMode = 'free';
+            this.settings.timeMode = 'wpm';
+            this.settings.manualWpm = 0;
+            this.settings.commaPause = 0.2;
+            this.settings.periodPause = 0.5;
+            this.settings.audienceTarget = '';
+            this.settings.focusKeywords = '';
+            this.settings.complianceText = '';
+            this.settings.keywordDensityLimit = 2;
+            this.settings.bullshitBlacklist = '';
+        }
+
+        syncPdfOptions() {
+            const modal = document.getElementById('ska-pdf-modal');
+            if (!modal) return;
+            const isPremium = this.isPremiumActive();
+            const premiumOptionIds = [
+                'pdf-opt-details',
+                'pdf-opt-tips',
+                'pdf-opt-compare',
+                'pdf-opt-syllable-entropy',
+                'pdf-opt-compliance'
+            ];
+            premiumOptionIds.forEach((id) => {
+                const input = modal.querySelector(`#${id}`);
+                if (!input) return;
+                input.disabled = !isPremium;
+                if (!isPremium) input.checked = false;
+            });
         }
 
         showPremiumNotice(message = 'Diese Funktion ist in der Premium-Version verfügbar.') {
@@ -3429,7 +3458,7 @@
                     this.analyze(this.getText()); 
                 }
                 if(act === 'save-version') { 
-                    if (this.state.planMode !== 'premium') {
+                    if (!this.isPremiumActive()) {
                         this.showPremiumNotice('Die Funktion „Version merken“ ist in der Premium-Version verfügbar.');
                         return;
                     }
@@ -3445,7 +3474,7 @@
                 }
 
                 if(act === 'export-marker-json') {
-                    const markers = SA_Logic.generateMarkerData(this.getText(), this.settings);
+                    const markers = SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
                     SA_Utils.downloadJSON(markers, 'skript-marker-export.json');
                 }
             });
@@ -3489,21 +3518,19 @@
                 if (this.handleAction(act, btn)) return;
 
                 if(act === 'generate-pdf-final') {
-                    if (this.state.planMode !== 'premium') {
-                        this.showPremiumNotice('Der Profi-PDF-Report ist in der Premium-Version verfügbar.');
-                        return;
-                    }
+                    const isPremium = this.isPremiumActive();
                     const opts = { 
                         metrics: modal.querySelector('#pdf-opt-overview')?.checked, 
-                        details: modal.querySelector('#pdf-opt-details')?.checked, 
-                        tips: modal.querySelector('#pdf-opt-tips')?.checked, 
-                        compare: modal.querySelector('#pdf-opt-compare')?.checked, 
+                        details: isPremium && modal.querySelector('#pdf-opt-details')?.checked, 
+                        tips: isPremium && modal.querySelector('#pdf-opt-tips')?.checked, 
+                        compare: isPremium && modal.querySelector('#pdf-opt-compare')?.checked, 
                         script: modal.querySelector('#pdf-opt-script')?.checked,
-                        syllableEntropy: modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
-                        compliance: modal.querySelector('#pdf-opt-compliance')?.checked
+                        syllableEntropy: isPremium && modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
+                        compliance: isPremium && modal.querySelector('#pdf-opt-compliance')?.checked
                     };
                     const pdfData = { ...this.state.currentData, savedVersion: this.state.savedVersion };
-                    SA_PDF.generate(this.getText(), pdfData, this.settings, opts, btn);
+                    const pdfSettings = this.getEffectiveSettings();
+                    SA_PDF.generate(this.getText(), pdfData, pdfSettings, opts, btn);
                 }
 
                 if(act === 'confirm-reset') {
@@ -3585,9 +3612,10 @@
                 if (showAll) return true;
                 return allowed.has(id);
             });
-            const freeItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
-            const premiumItems = this.state.planMode !== 'premium' ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
-            const premiumLabel = this.state.planMode !== 'premium' && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
+            const isPremium = this.isPremiumActive();
+            const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
+            const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
+            const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3625,8 +3653,17 @@
 
         analyze(text) {
             const raw = text || '';
+            this.enforceFreeSettings();
             this.state.analysisToken += 1;
             const token = this.state.analysisToken;
+            if (!this.isPremiumActive() && raw.length > SA_CONFIG.FREE_TEXT_LIMIT) {
+                if (!this.state.limitReached) {
+                    this.showPremiumNotice('Free-Version: Bitte kürzere Texte analysieren oder Premium freischalten.');
+                }
+                this.state.limitReached = true;
+                return;
+            }
+            this.state.limitReached = false;
             if (this.analysisWorker && raw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
                 this.getReadabilityWithDiff(raw).then((read) => {
                     if (token !== this.state.analysisToken) return;
@@ -3639,14 +3676,15 @@
 
         performAnalysis(raw, read) {
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
-            const wpm = SA_Logic.getWpm(this.settings);
-            const sps = SA_Logic.getSps(this.settings);
+            const effectiveSettings = this.getEffectiveSettings();
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
             
-            const pause = SA_Utils.getPausenTime(raw, this.settings);
+            const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
             
             // TIME CALCULATION SWITCH
             let dur = 0;
-            if (this.settings.timeMode === 'sps') {
+            if (this.getEffectiveTimeMode() === 'sps') {
                 // Total Syllables / SPS = Seconds
                 const seconds = read.totalSyllables / sps;
                 dur = seconds + pause;
@@ -3689,7 +3727,7 @@
                 }
             }
 
-            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.settings.timeMode === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
+            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
             this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
             if (read.wordCount === 0) {
@@ -3710,7 +3748,7 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             let availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
-            if (this.state.planMode !== 'premium') {
+            if (!this.isPremiumActive()) {
                 const freeCards = SA_CONFIG.CARD_ORDER.filter((id) => SA_CONFIG.FREE_CARDS.includes(id));
                 const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
                 availableCards = [...freeCards, ...teaserCards.filter(id => !freeCards.includes(id))];
@@ -3727,7 +3765,7 @@
                     if (existing) existing.remove();
                 });
             }
-            if (this.state.planMode !== 'premium') {
+            if (!this.isPremiumActive()) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
                     if (this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview') return;
                     const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
@@ -3786,7 +3824,14 @@
             this.renderUpgradePanel();
             this.renderHiddenPanel();
             this.renderFilterBar();
-            if(this.state.savedVersion) this.renderComparison(dur, read.wordCount, read.score);
+            if (this.state.savedVersion && this.isPremiumActive()) {
+                this.renderComparison(dur, read.wordCount, read.score);
+            } else {
+                if (this.compareRow) {
+                    this.compareRow.innerHTML = '';
+                    this.compareRow.classList.remove('is-active');
+                }
+            }
             else { this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active'); }
             this.renderLegend();
             this.syncEditorHeight();
@@ -4170,10 +4215,11 @@
 
         renderTeleprompterCard(read, active) {
             if(!active) return this.updateCard('teleprompter', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            const wpm = SA_Logic.getWpm(this.settings);
+            const effectiveSettings = this.getEffectiveSettings();
+            const wpm = SA_Logic.getWpm(effectiveSettings);
             const secs = (read.speakingWordCount / wpm) * 60;
             const hint = read.wordCount > 0 ? `Scroll-Dauer: ${SA_Utils.formatMin(secs)} (${wpm} WPM)` : 'Zu wenig Text für den Teleprompter.';
-            const isPremium = this.state.planMode === 'premium';
+            const isPremium = this.isPremiumActive();
             const h = `
                 <div style="display:flex; flex-direction:column; gap:0.8rem;">
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
@@ -4202,9 +4248,10 @@
 
             const progress = this.state.pacing.duration > 0 ? (this.state.pacing.elapsed / this.state.pacing.duration) : 0;
             const clamped = Math.max(0, Math.min(1, progress));
-            const paceLabel = this.settings.timeMode === 'sps'
-                ? `${SA_Logic.getSps(this.settings)} SPS`
-                : `${SA_Logic.getWpm(this.settings)} WPM`;
+            const effectiveSettings = this.getEffectiveSettings();
+            const paceLabel = this.getEffectiveTimeMode() === 'sps'
+                ? `${SA_Logic.getSps(effectiveSettings)} SPS`
+                : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
             const checkpoints = [0, 0.25, 0.5, 0.75, 1].map((step) => ({
                 pct: Math.round(step * 100),
@@ -4571,11 +4618,12 @@
             let maxSCol = (r && r.maxSentenceWords > 30) ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.text;
             let maxSVal = r ? r.maxSentenceWords : 0;
 
-            const isSps = this.settings.timeMode === 'sps';
-            const rateLabel = isSps ? `${SA_Logic.getSps(this.settings)} SPS` : `${wpm} WPM`;
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const rateLabel = isSps ? `${SA_Logic.getSps(effectiveSettings)} SPS` : `${wpm} WPM`;
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
-            const cP = r ? SA_Utils.getPausenTime(this.getText(), this.settings) : 0;
+            const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
 
@@ -4746,7 +4794,7 @@
         renderCoachCard(sec, sc, raw, sentences, active) {
             if(!active) return this.updateCard('coach', this.renderDisabledState(), this.bottomGrid, '', '', true);
             
-            const wpm = SA_Logic.getWpm(this.settings);
+            const wpm = SA_Logic.getWpm(this.getEffectiveSettings());
             const variance = SA_Logic.calculateVariance(sentences);
             const tone = SA_Logic.analyzeTone(raw);
 
@@ -5227,17 +5275,45 @@
         }
 
         calculateDurationForText(text) {
-            const read = SA_Logic.analyzeReadability(text, this.settings);
-            const pause = SA_Utils.getPausenTime(text, this.settings);
-            const wpm = SA_Logic.getWpm(this.settings);
-            const sps = SA_Logic.getSps(this.settings);
-            if (this.settings.timeMode === 'sps') {
+            const effectiveSettings = this.getEffectiveSettings();
+            const read = SA_Logic.analyzeReadability(text, effectiveSettings);
+            const pause = SA_Utils.getPausenTime(text, effectiveSettings);
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
+            if (this.getEffectiveTimeMode() === 'sps') {
                 return (read.totalSyllables / sps) + pause;
             }
             return (read.speakingWordCount / wpm * 60) + pause;
         }
 
+        isPremiumActive() {
+            return SA_CONFIG.PRO_MODE && this.state.planMode === 'premium';
+        }
+
+        getEffectiveTimeMode() {
+            return this.isPremiumActive() && this.settings.timeMode === 'sps' ? 'sps' : 'wpm';
+        }
+
+        getEffectiveSettings() {
+            if (this.isPremiumActive()) return this.settings;
+            return {
+                ...this.settings,
+                timeMode: 'wpm',
+                manualWpm: 0,
+                commaPause: 0.2,
+                periodPause: 0.5,
+                audienceTarget: '',
+                focusKeywords: '',
+                complianceText: ''
+            };
+        }
+
+        isPremiumCard(id) {
+            return id !== 'overview' && !SA_CONFIG.FREE_CARDS.includes(id);
+        }
+
         isCardAvailable(id) {
+            if (!SA_CONFIG.PRO_MODE && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
@@ -5247,11 +5323,11 @@
         }
 
         isCardUnlocked(id) {
-            return this.state.planMode === 'premium' || SA_CONFIG.FREE_CARDS.includes(id);
+            return this.isPremiumActive() || SA_CONFIG.FREE_CARDS.includes(id);
         }
 
         isCardTeaser(id) {
-            return this.state.planMode !== 'premium' && SA_CONFIG.PREMIUM_TEASERS.includes(id);
+            return !this.isPremiumActive() && SA_CONFIG.PREMIUM_TEASERS.includes(id);
         }
 
         renderDialogCard(d, active) {
@@ -5291,7 +5367,7 @@
         }
 
         applyFreeLimit(container) {
-            if (this.state.planMode === 'premium' || !container) return;
+            if (this.isPremiumActive() || !container) return;
             const items = Array.from(container.querySelectorAll('.ska-problem-item'));
             if (items.length <= 5) return;
             items.slice(5).forEach(item => item.classList.add('is-hidden-premium'));
@@ -5308,7 +5384,7 @@
             const container = this.legendContainer.parentElement;
             if (!container) return;
             const existing = container.querySelector('.ska-premium-upgrade-card');
-            if (this.state.planMode === 'premium') {
+            if (this.isPremiumActive()) {
                 if (existing) existing.remove();
                 return;
             }
@@ -5380,12 +5456,13 @@
 
         renderComparison(sec, w, sc) {
             const oldRaw = this.state.savedVersion;
-            const oldRead = SA_Logic.analyzeReadability(oldRaw, this.settings);
-            const oldWpm = SA_Logic.getWpm(this.settings);
-            const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw, this.settings);
+            const effectiveSettings = this.getEffectiveSettings();
+            const oldRead = SA_Logic.analyzeReadability(oldRaw, effectiveSettings);
+            const oldWpm = SA_Logic.getWpm(effectiveSettings);
+            const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw, effectiveSettings);
             
-            const curRead = SA_Logic.analyzeReadability(this.getText(), this.settings);
-            const curWpm = SA_Logic.getWpm(this.settings);
+            const curRead = SA_Logic.analyzeReadability(this.getText(), effectiveSettings);
+            const curWpm = SA_Logic.getWpm(effectiveSettings);
             
             // Helper to get total weight for comparison
             const getFillerWeight = (fillers) => {
