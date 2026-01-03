@@ -2720,6 +2720,7 @@
                 this.state.filterCollapsed = !this.state.filterCollapsed;
                 if (this.filterBar) {
                     this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
+                    this.filterBar.classList.toggle('is-expanded', !this.state.filterCollapsed);
                     const btn = this.filterBar.querySelector('[data-action="toggle-filter-collapse"]');
                     if (btn) btn.textContent = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
                 }
@@ -3377,7 +3378,8 @@
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
             const showAll = profile ? this.state.showAllCards : true;
             const title = 'Analyseboxen auswählen';
-            this.filterBar.classList.toggle('is-expanded', showAll);
+            const isExpanded = !this.state.filterCollapsed;
+            this.filterBar.classList.toggle('is-expanded', isExpanded);
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
             const filteredItems = items.filter((id) => {
