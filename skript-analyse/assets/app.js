@@ -12,8 +12,10 @@
         UI_KEY_HIDDEN: 'skriptanalyse_hidden_cards',
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
+        UI_KEY_PLAN: 'skriptanalyse_plan_mode',
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
+        IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
         WORKER_TEXT_THRESHOLD: 12000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         
@@ -247,6 +249,7 @@
         },
 
         CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        PREMIUM_CARDS: ['syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'metaphor', 'audience', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'easy_language'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
@@ -1939,6 +1942,7 @@
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
+                planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
@@ -1954,6 +1958,7 @@
             this.overviewResizeObserver = null;
 
             this.loadUIState();
+            this.updatePlanUI();
             this.initMarkerDropdown();
             this.renderSettingsModal();
             this.renderBenchmarkModal();
@@ -2697,9 +2702,24 @@
                 this.applyFormatting(act);
                 return true;
             }
+            if (act === 'toggle-plan') {
+                if (!SA_CONFIG.IS_ADMIN) return true;
+                const isPremium = btn.checked;
+                this.state.planMode = isPremium ? 'premium' : 'free';
+                this.saveUIState();
+                this.updatePlanUI();
+                this.renderFilterBar();
+                this.renderHiddenPanel();
+                this.analyze(this.getText());
+                return true;
+            }
             if (act === 'toggle-card') {
                 const id = btn.dataset.card;
                 if (id) {
+                    if (!this.isCardUnlocked(id)) {
+                        btn.checked = false;
+                        return true;
+                    }
                     const profile = this.settings.role;
                     const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
                     if (allowed && !allowed.has(id)) {
@@ -2734,6 +2754,7 @@
                 const showAll = profile ? this.state.showAllCards : true;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
+                    if (!this.isCardUnlocked(id)) return;
                     if (allowed && !showAll && !allowed.has(id)) return;
                     if (this.state.hiddenCards.has(id)) this.state.hiddenCards.delete(id);
                     if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.add(id);
@@ -2750,6 +2771,7 @@
                 const showAll = profile ? this.state.showAllCards : true;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
+                    if (!this.isCardUnlocked(id)) return;
                     if (allowed && !showAll && !allowed.has(id)) return;
                     if (!this.state.hiddenCards.has(id)) this.state.hiddenCards.add(id);
                     if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.delete(id);
@@ -2976,6 +2998,10 @@
             if(h) this.state.hiddenCards = new Set(JSON.parse(h));
             const e = SA_Utils.storage.load(SA_CONFIG.UI_KEY_EXCLUDED);
             if(e) this.state.excludedCards = new Set(JSON.parse(e));
+            if (SA_CONFIG.IS_ADMIN) {
+                const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
+                if (p === 'premium' || p === 'free') this.state.planMode = p;
+            }
             
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
             if(g) {
@@ -3005,6 +3031,9 @@
         saveUIState() {
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_HIDDEN, JSON.stringify([...this.state.hiddenCards]));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
+            if (SA_CONFIG.IS_ADMIN) {
+                SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
+            }
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
                 lastGenre: this.settings.lastGenre,
@@ -3019,6 +3048,18 @@
                 keywordDensityLimit: this.settings.keywordDensityLimit,
                 complianceText: this.settings.complianceText
             }));
+        }
+
+        updatePlanUI() {
+            const label = document.querySelector('[data-role-plan-label]');
+            if (label) {
+                label.textContent = this.state.planMode === 'premium' ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher';
+            }
+            const toggle = document.querySelector('[data-action="toggle-plan"]');
+            if (toggle && toggle instanceof HTMLInputElement) {
+                toggle.checked = this.state.planMode === 'premium';
+            }
+            document.body.classList.toggle('ska-plan-premium', this.state.planMode === 'premium');
         }
 
         initMarkerDropdown() {
@@ -3354,7 +3395,7 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
-                if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id)) return false;
+                if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id) || !this.isCardUnlocked(id)) return false;
                 if (!allowed) return true;
                 return allowed.has(id) || this.state.selectedExtraCards.has(id);
             });
@@ -3405,11 +3446,13 @@
                         <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
                     </div>
                     ${filteredItems.map(id => {
+                        const locked = !this.isCardUnlocked(id);
                         let checked = !this.state.hiddenCards.has(id);
                         if (allowed && !allowed.has(id)) {
                             checked = checked && this.state.selectedExtraCards.has(id);
                         }
-                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
+                        if (locked) checked = false;
+                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}</label>`;
                     }).join('')}
                 </div>`;
             this.filterBar.innerHTML = html;
@@ -3501,14 +3544,19 @@
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
+            const availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && this.isCardUnlocked(id));
             SA_CONFIG.CARD_ORDER.forEach((id) => {
-                if (this.isCardAvailable(id)) return;
+                if (this.isCardAvailable(id) && this.isCardUnlocked(id)) return;
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
             if (allowed) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (!this.isCardUnlocked(id)) {
+                        const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                        if (existing) existing.remove();
+                        return;
+                    }
                     if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
                     const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                     if (existing) existing.remove();
@@ -5021,6 +5069,10 @@
                 return genreCards.includes(id);
             }
             return true;
+        }
+
+        isCardUnlocked(id) {
+            return this.state.planMode === 'premium' || !SA_CONFIG.PREMIUM_CARDS.includes(id);
         }
 
         renderDialogCard(d, active) {

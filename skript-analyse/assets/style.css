@@ -51,6 +51,14 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-bookmark-hint { margin-top: 0.5rem; font-size: 0.8rem; color: var(--ska-text-light); display: flex; align-items: center; gap: 0.4rem; }
 .ska-status-badge { background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; height: fit-content; margin-left: 0; }
 .ska-dot { width: 6px; height: 6px; background: currentColor; border-radius: 50%; }
+.ska-plan-premium .ska-status-badge { background: #dbeafe; color: #1d4ed8; }
+.ska-admin-plan-toggle { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--ska-text-muted); font-weight: 600; }
+.ska-switch { position: relative; display: inline-flex; align-items: center; width: 42px; height: 22px; }
+.ska-switch input { opacity: 0; width: 0; height: 0; }
+.ska-switch-slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 999px; transition: background 0.2s ease; }
+.ska-switch-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; background: #fff; border-radius: 50%; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2); transition: transform 0.2s ease; }
+.ska-switch input:checked + .ska-switch-slider { background: var(--ska-primary); }
+.ska-switch input:checked + .ska-switch-slider::before { transform: translateX(20px); }
 
 .ska-toolbar { background: var(--ska-surface); padding: 1rem; border-radius: var(--ska-radius-md); border: 1px solid var(--ska-border); display: flex; justify-content: flex-start; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; box-shadow: var(--ska-shadow); position: relative; z-index: 5; }
 .ska-toolbar-group { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; flex: 1; }
@@ -118,6 +126,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
+.ska-filter-pill.is-locked { opacity: 0.6; cursor: not-allowed; }
+.ska-filter-pill.is-locked em { font-style: normal; font-size: 0.65rem; color: #64748b; margin-left: 0.2rem; }
 .ska-filterbar-header { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 40px;
 
     padding: 0.45rem 0;
