@@ -47,6 +47,7 @@ function ska_shortcode() {
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
         'markers' => $markers_config,
         'pro' => (bool) apply_filters( 'ska_pro_mode', false ),
+        'isAdmin' => current_user_can( 'manage_options' ),
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
     ));
 
@@ -65,7 +66,17 @@ function ska_shortcode() {
                 </div>
             </div>
             <div class="ska-status-bar">
-                 <span class="ska-status-badge"><span class="ska-dot"></span>100% Kostenlos & Sicher</span>
+                 <span class="ska-status-badge"><span class="ska-dot"></span><span data-role-plan-label>100% Kostenlos & Sicher</span></span>
+                 <?php if ( current_user_can( 'manage_options' ) ) : ?>
+                    <div class="ska-admin-plan-toggle" data-role-admin-toggle>
+                        <span>Free</span>
+                        <label class="ska-switch">
+                            <input type="checkbox" data-action="toggle-plan">
+                            <span class="ska-switch-slider"></span>
+                        </label>
+                        <span>Premium</span>
+                    </div>
+                 <?php endif; ?>
             </div>
         </header>
 
@@ -130,10 +141,13 @@ function ska_shortcode() {
                             <div class="ska-tool-tooltip">Entfernt doppelte Leerzeichen, Zeilenumbrüche und Formatierungsfehler.</div>
                         </div>
 
-                        <button type="button" class="ska-tool-btn" data-action="save-version" title="Version merken">
-                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:3px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                            Version merken
-                        </button>
+                        <div class="ska-tool-wrapper">
+                            <button type="button" class="ska-tool-btn" data-action="save-version" title="Version merken">
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:3px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                                Version merken
+                            </button>
+                            <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Versionen speichern & vergleichen.</div>
+                        </div>
                         <div class="skriptanalyse-input-actions"></div> 
                     </div>
                 </div>
@@ -169,13 +183,16 @@ function ska_shortcode() {
 
         <div class="ska-footer">
             <div class="ska-footer-intro">
-                <p>Nutze die Skriptanalyse als Startpunkt für die Optimierung Deines Skripts für Buch, Hörbuch, Werbung & mehr. Oder aber - Du buchst mich und ich vertone Dein Skript genau so wie Du es haben möchtest.</p>
+                <p>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr - inklusive PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.</p>
             </div>
             <div class="ska-footer-actions">
-                <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                    Skript-Report als PDF herunterladen
-                </button>
+                <div class="ska-tool-wrapper">
+                    <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        Skript-Report als PDF herunterladen
+                    </button>
+                    <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Profi-PDF-Report mit Detailanalyse.</div>
+                </div>
                 <a href="/kontakt/" class="ska-btn ska-btn--secondary">
                     Sprachaufnahme anfragen
                 </a>
