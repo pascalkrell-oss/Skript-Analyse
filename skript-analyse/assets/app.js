@@ -2771,7 +2771,7 @@
                 return true;
             }
             if (act === 'toggle-plan') {
-                if (!SA_CONFIG.IS_ADMIN) return true;
+                if (!SA_CONFIG.IS_ADMIN || !SA_CONFIG.PRO_MODE) return true;
                 const isPremium = btn.checked;
                 this.state.planMode = isPremium ? 'premium' : 'free';
                 this.saveUIState();
@@ -5325,6 +5325,7 @@
         }
 
         isCardAvailable(id) {
+            if (!SA_CONFIG.PRO_MODE && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
