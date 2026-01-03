@@ -3619,35 +3619,6 @@
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
-                    ${premiumItems.length ? `
-                        <div class="ska-filterbar-upgrade">
-                            <div class="ska-filterbar-upgrade-header">
-                                <strong>Upgrade auf Premium</strong>
-                                <span>Mehr Analysen, Studio-Tools & volle Kontrolle</span>
-                            </div>
-                            <div class="ska-filterbar-upgrade-grid">
-                                <div class="ska-filterbar-upgrade-col">
-                                    <div class="ska-filterbar-upgrade-title">Free</div>
-                                    <ul>
-                                        <li>Schnell-Überblick & Basis-Lesbarkeit</li>
-                                        <li>Füllwörter, Denglisch</li>
-                                        <li>Auffällige Sätze, Stolpersteine</li>
-                                        <li>Marker-Export</li>
-                                    </ul>
-                                </div>
-                                <div class="ska-filterbar-upgrade-col is-premium">
-                                    <div class="ska-filterbar-upgrade-title">Premium</div>
-                                    <ul>
-                                        <li>Teleprompter, Pacing, BPM</li>
-                                        <li>Keyword-Fokus, Compliance-Check</li>
-                                        <li>Silben-Entropie & Redundanz</li>
-                                        <li>Zielgruppen- & Sprecher-Tools</li>
-                                        <li>Profi-PDF-Report</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
