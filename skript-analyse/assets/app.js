@@ -3202,6 +3202,7 @@
 
         enforceFreeSettings() {
             if (this.isPremiumActive()) return;
+            if (SA_CONFIG.IS_ADMIN) return;
             this.state.planMode = 'free';
             this.settings.timeMode = 'wpm';
             this.settings.manualWpm = 0;
