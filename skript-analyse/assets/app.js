@@ -532,6 +532,10 @@
                 modal.classList.add('is-open');
             });
         },
+        isPremiumFeatureEnabled: () => {
+            const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
+            return SA_CONFIG.PRO_MODE || (SA_CONFIG.IS_ADMIN && planMode === 'premium');
+        },
         closeModal: (modal, onClosed) => {
             if (!modal) return;
             modal.classList.remove('is-open');
@@ -668,7 +672,7 @@
         getHyphenator: () => {
             if (SA_Logic._hyphenatorChecked) return SA_Logic._hyphenator;
             SA_Logic._hyphenatorChecked = true;
-            if (!SA_CONFIG.PRO_MODE) return null;
+            if (!SA_Utils.isPremiumFeatureEnabled()) return null;
             const Hypher = window.Hypher;
             const patterns = window.hyphenationPatternsDe
                 || window.hyphenationPatterns
@@ -683,7 +687,7 @@
         getSentimentEngine: () => {
             if (SA_Logic._sentimentChecked) return SA_Logic._sentimentEngine;
             SA_Logic._sentimentChecked = true;
-            if (!SA_CONFIG.PRO_MODE) return null;
+            if (!SA_Utils.isPremiumFeatureEnabled()) return null;
             const Sentiment = window.Sentiment;
             if (Sentiment) SA_Logic._sentimentEngine = new Sentiment();
             return SA_Logic._sentimentEngine;
@@ -1959,6 +1963,9 @@
                 readabilityCache: [],
                 limitReached: false
             };
+            if (typeof window !== 'undefined') {
+                window.SKA_PLAN_MODE = this.state.planMode;
+            }
             
             this.analysisWorker = null;
             this.workerRequests = new Map();
@@ -3195,6 +3202,9 @@
                 toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
             }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
+            if (typeof window !== 'undefined') {
+                window.SKA_PLAN_MODE = this.state.planMode;
+            }
             this.enforceFreeSettings();
             this.syncPdfOptions();
             this.renderSettingsModal();
