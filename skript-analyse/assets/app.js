@@ -2764,6 +2764,10 @@
                 this.analyze(this.getText());
                 return true;
             }
+            if (act === 'premium-upgrade') {
+                this.showPremiumNotice('Premium freischalten, um alle Analysen und Studio-Tools zu nutzen.');
+                return true;
+            }
             if (act === 'open-pdf') {
                 if (this.state.planMode !== 'premium') {
                     this.showPremiumNotice('Der Profi-PDF-Report ist in der Premium-Version verfügbar.');
@@ -3593,8 +3597,15 @@
                             checked = checked && this.state.selectedExtraCards.has(id);
                         }
                         if (locked) checked = false;
-                        const lockHint = locked ? '<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>Mehr Analysen, tiefere Checks & Studio-Tools.</span><em>Jetzt upgraden</em></span>' : '';
+                        const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
+                        const lockHint = locked ? `<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>${desc}</span><em>Jetzt upgraden</em></span>` : '';
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}${lockHint}</label>`;
+                    }).join('')}
+                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
+                    ${premiumItems.map(id => {
+                        const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
+                        const lockHint = `<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>${desc}</span><em>Jetzt upgraden</em></span>`;
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
                     ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
                     ${premiumItems.map(id => {
@@ -3794,6 +3805,7 @@
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
             });
 
+            this.renderUpgradePanel();
             this.renderHiddenPanel();
             this.renderFilterBar();
             if(this.state.savedVersion) this.renderComparison(dur, read.wordCount, read.score);
@@ -4406,7 +4418,8 @@
                     <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</div>
                 </div>
                 ${this.renderTipSection('bpm', true)}`;
-            this.updateCard('bpm', h);
+            const headerExtra = this.isCardUnlocked('bpm') ? '' : `<span class="ska-premium-bpm">${bpm} BPM</span>`;
+            this.updateCard('bpm', h, this.bottomGrid, '', headerExtra, true);
         }
 
         renderEasyLanguageCard(data, active) {
@@ -5313,6 +5326,58 @@
             }
         }
 
+        renderUpgradePanel() {
+            if (!this.bottomGrid) return;
+            const existing = this.bottomGrid.querySelector('.ska-premium-upgrade-card');
+            if (this.state.planMode === 'premium') {
+                if (existing) existing.remove();
+                return;
+            }
+            const totalPremium = SA_CONFIG.CARD_ORDER.filter(id => !this.isCardUnlocked(id)).length;
+            const teaserCount = SA_CONFIG.PREMIUM_TEASERS.length;
+            const remaining = Math.max(0, totalPremium - teaserCount);
+            const moreText = remaining > 0 ? `+ ${remaining} weitere Analyseboxen und Funktionen` : 'Alle Premium-Features freischalten';
+            const html = `
+                <div class="ska-premium-upgrade-header">
+                    <strong>Upgrade auf Premium</strong>
+                    <span>Mehr Tiefe, Studio-Tools & volle Kontrolle für professionelle Skripte.</span>
+                </div>
+                <div class="ska-premium-upgrade-grid">
+                    <div class="ska-premium-upgrade-col">
+                        <div class="ska-premium-upgrade-title">Free</div>
+                        <ul>
+                            <li>Schnell-Überblick & Basis-Lesbarkeit</li>
+                            <li>Füllwörter, Denglisch</li>
+                            <li>Auffällige Sätze & Stolpersteine</li>
+                            <li>Marker-Export</li>
+                        </ul>
+                    </div>
+                    <div class="ska-premium-upgrade-col is-premium">
+                        <div class="ska-premium-upgrade-title">Premium</div>
+                        <ul>
+                            <li>Teleprompter, Pacing, BPM</li>
+                            <li>Keyword-Fokus, Compliance-Check</li>
+                            <li>Silben-Entropie & Redundanz</li>
+                            <li>Zielgruppen- & Sprecher-Tools</li>
+                            <li>Profi-PDF-Report</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="ska-premium-upgrade-footer">
+                    <span>${moreText}</span>
+                    <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Premium freischalten</button>
+                </div>`;
+            if (existing) {
+                existing.innerHTML = html;
+            } else {
+                const card = document.createElement('div');
+                card.className = 'ska-premium-upgrade-card';
+                card.innerHTML = html;
+                card.style.order = 9999;
+                this.bottomGrid.appendChild(card);
+            }
+        }
+
         renderComparison(sec, w, sc) {
             const oldRaw = this.state.savedVersion;
             const oldRead = SA_Logic.analyzeReadability(oldRaw, this.settings);
@@ -5470,15 +5535,15 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = html; 
+                b.innerHTML = `<div class="ska-card-body-content">${html}</div>`;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
                 card.appendChild(b);
                 if (isLocked) {
                     const lock = document.createElement('div');
-                    lock.className = 'ska-card-lock';
-                    lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade, um alle Ergebnisse zu sehen.</span>';
+                    lock.className = 'ska-premium-inline';
+                    lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                     card.appendChild(lock);
                     this.applyFreeLimit(b);
                 }
@@ -5488,7 +5553,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = html;
+                 body.innerHTML = `<div class="ska-card-body-content">${html}</div>`;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
@@ -5498,12 +5563,12 @@
                      const oldHeader = card.querySelector('.ska-card-header');
                      if(oldHeader) oldHeader.outerHTML = buildHeader();
                  }
-                 const lock = card.querySelector('.ska-card-lock');
+                 const lock = card.querySelector('.ska-premium-inline');
                  if (isLocked) {
                     if (!lock) {
                         const lockEl = document.createElement('div');
-                        lockEl.className = 'ska-card-lock';
-                        lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade, um alle Ergebnisse zu sehen.</span>';
+                        lockEl.className = 'ska-premium-inline';
+                        lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                         card.appendChild(lockEl);
                     }
                     this.applyFreeLimit(body);
