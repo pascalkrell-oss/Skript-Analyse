@@ -3607,7 +3607,6 @@
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
             const filteredItems = items.filter((id) => {
-                if (!this.isCardAvailable(id)) return false;
                 if (!allowed) return true;
                 if (showAll) return true;
                 return allowed.has(id);
