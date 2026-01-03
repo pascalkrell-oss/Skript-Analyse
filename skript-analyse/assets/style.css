@@ -41,7 +41,6 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .skriptanalyse-app *, .skriptanalyse-app *::before, .skriptanalyse-app *::after { box-sizing: border-box; }
 .skriptanalyse-app button { display: inline-flex; align-items: center; justify-content: center; line-height: 1.1; }
-.skriptanalyse-app button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* HEADER & TOOLBAR */
 .ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }

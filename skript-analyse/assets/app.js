@@ -249,7 +249,7 @@
         },
 
         CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
-        FREE_CARDS: ['overview', 'char', 'fillers', 'anglicism', 'stumble', 'breath', 'marker'],
+        PREMIUM_CARDS: ['syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'redundancy', 'metaphor', 'audience', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'easy_language'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
@@ -2763,38 +2763,10 @@
                 this.analyze(this.getText());
                 return true;
             }
-            if (act === 'open-pdf') {
-                if (this.state.planMode !== 'premium') {
-                    this.showPremiumNotice('Der Profi-PDF-Report ist in der Premium-Version verfügbar.');
-                    return true;
-                }
-                const modal = document.getElementById('ska-pdf-modal');
-                if (modal) {
-                    SA_Utils.openModal(modal);
-                    document.body.classList.add('ska-modal-open');
-                }
-                return true;
-            }
-            if (act === 'open-teleprompter') {
-                if (this.state.planMode !== 'premium') {
-                    this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
-                    return true;
-                }
-                const modal = document.getElementById('ska-teleprompter-modal');
-                if (modal) {
-                    SA_Utils.openModal(modal);
-                    document.body.classList.add('ska-modal-open');
-                    this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
-                    this.updateTeleprompterMeta(SA_Logic.analyzeReadability(this.getText(), this.settings));
-                    this.resetTeleprompter();
-                }
-                return true;
-            }
             if (act === 'toggle-card') {
                 const id = btn.dataset.card;
                 if (id) {
                     if (!this.isCardUnlocked(id)) {
-                        this.showPremiumNotice();
                         btn.checked = false;
                         return true;
                     }
@@ -3170,23 +3142,6 @@
                 toggle.checked = this.state.planMode === 'premium';
             }
             document.body.classList.toggle('ska-plan-premium', this.state.planMode === 'premium');
-            document.querySelectorAll('[data-action="open-pdf"]').forEach(btn => {
-                btn.toggleAttribute('disabled', this.state.planMode !== 'premium');
-            });
-            if (this.state.planMode === 'free') {
-                this.settings.timeMode = 'wpm';
-                this.settings.manualWpm = 0;
-                this.settings.commaPause = 0.2;
-                this.settings.periodPause = 0.5;
-                this.settings.audienceTarget = '';
-                this.settings.focusKeywords = '';
-                this.settings.complianceText = '';
-            }
-            this.renderSettingsModal();
-        }
-
-        showPremiumNotice(message = 'Diese Funktion ist in der Premium-Version verfügbar.') {
-            alert(message);
         }
 
         initMarkerDropdown() {
@@ -3675,14 +3630,19 @@
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
+            const availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && this.isCardUnlocked(id));
             SA_CONFIG.CARD_ORDER.forEach((id) => {
-                if (this.isCardAvailable(id)) return;
+                if (this.isCardAvailable(id) && this.isCardUnlocked(id)) return;
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
             if (allowed) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (!this.isCardUnlocked(id)) {
+                        const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                        if (existing) existing.remove();
+                        return;
+                    }
                     if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
                     const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                     if (existing) existing.remove();
@@ -4131,8 +4091,8 @@
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
                     <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter öffnen</button>
                     <div class="ska-teleprompter-export">
-                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-txt" ${isPremium ? '' : 'disabled'}>Export .txt</button>
-                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-json" ${isPremium ? '' : 'disabled'}>Export .json</button>
+                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-txt">Export .txt</button>
+                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-json">Export .json</button>
                     </div>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
@@ -5199,7 +5159,7 @@
         }
 
         isCardUnlocked(id) {
-            return this.state.planMode === 'premium' || SA_CONFIG.FREE_CARDS.includes(id);
+            return this.state.planMode === 'premium' || !SA_CONFIG.PREMIUM_CARDS.includes(id);
         }
 
         renderDialogCard(d, active) {
