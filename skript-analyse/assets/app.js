@@ -3727,7 +3727,7 @@
                 availableCards = [...freeCards, ...teaserCards.filter(id => !freeCards.includes(id))];
             }
             SA_CONFIG.CARD_ORDER.forEach((id) => {
-                if (this.isCardAvailable(id)) return;
+                if (this.isCardAvailable(id) && this.isCardUnlocked(id)) return;
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
