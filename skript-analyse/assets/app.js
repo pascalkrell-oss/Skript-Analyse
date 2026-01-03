@@ -3506,6 +3506,13 @@
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
+            if (allowed) {
+                SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
+                    const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                    if (existing) existing.remove();
+                });
+            }
             availableCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
                 if (allowed && !allowed.has(id) && !this.state.selectedExtraCards.has(id) && id !== 'overview') return;
