@@ -3174,6 +3174,9 @@
             document.querySelectorAll('[data-action="open-pdf"]').forEach(btn => {
                 btn.toggleAttribute('disabled', this.state.planMode !== 'premium');
             });
+            document.querySelectorAll('[data-action="save-version"]').forEach(btn => {
+                btn.toggleAttribute('disabled', this.state.planMode !== 'premium');
+            });
             if (this.state.planMode === 'free') {
                 this.settings.timeMode = 'wpm';
                 this.settings.manualWpm = 0;
@@ -3411,6 +3414,10 @@
                     this.analyze(this.getText()); 
                 }
                 if(act === 'save-version') { 
+                    if (this.state.planMode !== 'premium') {
+                        this.showPremiumNotice('Die Funktion „Version merken“ ist in der Premium-Version verfügbar.');
+                        return;
+                    }
                     this.state.savedVersion = this.getText(); 
                     SA_Utils.storage.save(SA_CONFIG.SAVED_VERSION_KEY, this.state.savedVersion);
                     const h=this.root.querySelector('[data-role-toast]'); if(h){ h.classList.add('is-visible'); setTimeout(()=>h.classList.remove('is-visible'),2500); }
@@ -3559,13 +3566,12 @@
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
             const filteredItems = items.filter((id) => {
                 if (!this.isCardAvailable(id)) return false;
-                if (this.state.planMode !== 'premium' && !this.isCardUnlocked(id) && !this.isCardTeaser(id)) return false;
                 if (!allowed) return true;
                 if (showAll) return true;
                 return allowed.has(id);
             });
             const freeItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
-            const teaserItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => !this.isCardUnlocked(id) && this.isCardTeaser(id)) : [];
+            const premiumItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => !this.isCardUnlocked(id)) : [];
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3590,11 +3596,40 @@
                         const lockHint = locked ? '<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>Mehr Analysen, tiefere Checks & Studio-Tools.</span><em>Jetzt upgraden</em></span>' : '';
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}${lockHint}</label>`;
                     }).join('')}
-                    ${teaserItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
-                    ${teaserItems.map(id => {
+                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
+                    ${premiumItems.map(id => {
                         const lockHint = '<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>Mehr Analysen, tiefere Checks & Studio-Tools.</span><em>Jetzt upgraden</em></span>';
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
+                    ${premiumItems.length ? `
+                        <div class="ska-filterbar-upgrade">
+                            <div class="ska-filterbar-upgrade-header">
+                                <strong>Upgrade auf Premium</strong>
+                                <span>Mehr Analysen, Studio-Tools & volle Kontrolle</span>
+                            </div>
+                            <div class="ska-filterbar-upgrade-grid">
+                                <div class="ska-filterbar-upgrade-col">
+                                    <div class="ska-filterbar-upgrade-title">Free</div>
+                                    <ul>
+                                        <li>Schnell-Überblick & Basis-Lesbarkeit</li>
+                                        <li>Füllwörter, Denglisch</li>
+                                        <li>Auffällige Sätze, Stolpersteine</li>
+                                        <li>Marker-Export</li>
+                                    </ul>
+                                </div>
+                                <div class="ska-filterbar-upgrade-col is-premium">
+                                    <div class="ska-filterbar-upgrade-title">Premium</div>
+                                    <ul>
+                                        <li>Teleprompter, Pacing, BPM</li>
+                                        <li>Keyword-Fokus, Compliance-Check</li>
+                                        <li>Silben-Entropie & Redundanz</li>
+                                        <li>Zielgruppen- & Sprecher-Tools</li>
+                                        <li>Profi-PDF-Report</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>`;
             this.filterBar.innerHTML = html;
         }

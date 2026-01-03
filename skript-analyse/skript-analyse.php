@@ -141,10 +141,13 @@ function ska_shortcode() {
                             <div class="ska-tool-tooltip">Entfernt doppelte Leerzeichen, Zeilenumbrüche und Formatierungsfehler.</div>
                         </div>
 
-                        <button type="button" class="ska-tool-btn" data-action="save-version" title="Version merken">
-                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:3px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                            Version merken
-                        </button>
+                        <div class="ska-tool-wrapper">
+                            <button type="button" class="ska-tool-btn" data-action="save-version" title="Version merken">
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:3px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
+                                Version merken
+                            </button>
+                            <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Versionen speichern & vergleichen.</div>
+                        </div>
                         <div class="skriptanalyse-input-actions"></div> 
                     </div>
                 </div>

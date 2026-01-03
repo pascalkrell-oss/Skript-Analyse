@@ -139,6 +139,15 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill.is-locked:hover .ska-premium-tooltip { display: inline-flex; }
 .ska-filter-pill.is-locked:hover .ska-premium-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #0f172a transparent transparent transparent; }
 .ska-filterbar-premium-label { width: 100%; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-top: 0.6rem; }
+.ska-filterbar-upgrade { width: 100%; background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.9rem; margin-top: 0.75rem; }
+.ska-filterbar-upgrade-header { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; color: #0f172a; }
+.ska-filterbar-upgrade-header span { font-size: 0.75rem; color: #64748b; }
+.ska-filterbar-upgrade-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 0.7rem; }
+.ska-filterbar-upgrade-col { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.7rem; font-size: 0.75rem; color: #475569; }
+.ska-filterbar-upgrade-col.is-premium { border-color: #bae6fd; background: #f0f9ff; }
+.ska-filterbar-upgrade-title { font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.65rem; color: #0f172a; margin-bottom: 0.4rem; }
+.ska-filterbar-upgrade-col ul { padding-left: 1rem; margin: 0; display: grid; gap: 0.3rem; }
+.ska-tool-tooltip--premium { max-width: 220px; }
 .ska-filterbar-header { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 40px;
 
     padding: 0.45rem 0;
