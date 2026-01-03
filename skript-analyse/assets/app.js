@@ -3332,14 +3332,11 @@
             if(!visible) {
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if(c) { 
-                    c.classList.add('is-hidden'); 
-                    setTimeout(() => { 
-                        this.state.hiddenCards.add(id); 
-                        this.saveUIState();
-                        c.remove(); 
-                        this.renderHiddenPanel(); 
-                        this.renderFilterBar();
-                    }, 500); 
+                    this.state.hiddenCards.add(id); 
+                    this.saveUIState();
+                    c.remove(); 
+                    this.renderHiddenPanel(); 
+                    this.renderFilterBar();
                 }
             } else {
                 this.state.hiddenCards.delete(id); 
@@ -3389,7 +3386,7 @@
                 if (showAll) return true;
                 return allowed.has(id);
             });
-            const viewToggle = profile ? `<button class="ska-filterbar-toggle" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
+            const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>

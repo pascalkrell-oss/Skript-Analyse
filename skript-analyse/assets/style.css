@@ -126,6 +126,7 @@ body.ska-modal-open { overflow: hidden !important; }
 
     line-height: 1;
 }
+.ska-filterbar-toggle-view { font-size: 13.6px; }
 .ska-filterbar-collapse {
     font-family: "Rubik", system-ui, -apple-system, sans-serif;
     font-size: 13.6px;
