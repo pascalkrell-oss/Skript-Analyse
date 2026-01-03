@@ -3607,6 +3607,40 @@
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>${desc}</span><em>Jetzt upgraden</em></span>`;
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
+                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
+                    ${premiumItems.map(id => {
+                        const lockHint = '<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>Mehr Analysen, tiefere Checks & Studio-Tools.</span><em>Jetzt upgraden</em></span>';
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
+                    }).join('')}
+                    ${premiumItems.length ? `
+                        <div class="ska-filterbar-upgrade">
+                            <div class="ska-filterbar-upgrade-header">
+                                <strong>Upgrade auf Premium</strong>
+                                <span>Mehr Analysen, Studio-Tools & volle Kontrolle</span>
+                            </div>
+                            <div class="ska-filterbar-upgrade-grid">
+                                <div class="ska-filterbar-upgrade-col">
+                                    <div class="ska-filterbar-upgrade-title">Free</div>
+                                    <ul>
+                                        <li>Schnell-Überblick & Basis-Lesbarkeit</li>
+                                        <li>Füllwörter, Denglisch</li>
+                                        <li>Auffällige Sätze, Stolpersteine</li>
+                                        <li>Marker-Export</li>
+                                    </ul>
+                                </div>
+                                <div class="ska-filterbar-upgrade-col is-premium">
+                                    <div class="ska-filterbar-upgrade-title">Premium</div>
+                                    <ul>
+                                        <li>Teleprompter, Pacing, BPM</li>
+                                        <li>Keyword-Fokus, Compliance-Check</li>
+                                        <li>Silben-Entropie & Redundanz</li>
+                                        <li>Zielgruppen- & Sprecher-Tools</li>
+                                        <li>Profi-PDF-Report</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
@@ -3704,7 +3738,7 @@
                 availableCards = [...freeCards, ...teaserCards.filter(id => !freeCards.includes(id))];
             }
             SA_CONFIG.CARD_ORDER.forEach((id) => {
-                if (this.isCardAvailable(id)) return;
+                if (this.isCardAvailable(id) && this.isCardUnlocked(id)) return;
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
