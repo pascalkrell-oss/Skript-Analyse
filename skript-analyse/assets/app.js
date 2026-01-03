@@ -3582,6 +3582,7 @@
             });
             const freeItems = this.state.planMode !== 'premium' ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = this.state.planMode !== 'premium' ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
+            const premiumLabel = this.state.planMode !== 'premium' && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3607,15 +3608,10 @@
                         const lockHint = locked ? `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>` : '';
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}${lockHint}</label>`;
                     }).join('')}
-                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
+                    ${premiumLabel}
                     ${premiumItems.map(id => {
                         const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
-                    }).join('')}
-                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
-                    ${premiumItems.map(id => {
-                        const lockHint = '<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>Mehr Analysen, tiefere Checks & Studio-Tools.</span><em>Jetzt upgraden</em></span>';
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
                     ${premiumItems.length ? `
@@ -5356,7 +5352,7 @@
             const html = `
                 <div class="ska-premium-upgrade-header">
                     <strong>Upgrade auf Premium</strong>
-                    <span>Mehr Tiefe, Studio-Tools & volle Kontrolle für professionelle Skripte.</span>
+                    <span>Professioneller Feinschliff, Studio-Tools & volle Kontrolle.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
