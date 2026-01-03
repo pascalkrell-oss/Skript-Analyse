@@ -3129,7 +3129,7 @@
                 const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
                 if (p === 'premium' || p === 'free') this.state.planMode = p;
             }
-            if (!SA_CONFIG.PRO_MODE) {
+            if (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN) {
                 this.state.planMode = 'free';
             }
             
@@ -3192,7 +3192,7 @@
             const toggle = document.querySelector('[data-action="toggle-plan"]');
             if (toggle && toggle instanceof HTMLInputElement) {
                 toggle.checked = this.isPremiumActive();
-                toggle.disabled = !SA_CONFIG.PRO_MODE;
+                toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
             }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
             this.enforceFreeSettings();
@@ -5286,6 +5286,9 @@
         }
 
         isPremiumActive() {
+            if (SA_CONFIG.IS_ADMIN) {
+                return this.state.planMode === 'premium';
+            }
             return SA_CONFIG.PRO_MODE && this.state.planMode === 'premium';
         }
 
