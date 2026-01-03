@@ -41,7 +41,6 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .skriptanalyse-app *, .skriptanalyse-app *::before, .skriptanalyse-app *::after { box-sizing: border-box; }
 .skriptanalyse-app button { display: inline-flex; align-items: center; justify-content: center; line-height: 1.1; }
-.skriptanalyse-app button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* HEADER & TOOLBAR */
 .ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
@@ -131,10 +130,6 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
 .ska-filter-pill.is-locked { opacity: 0.6; cursor: not-allowed; }
 .ska-filter-pill.is-locked em { font-style: normal; font-size: 0.65rem; color: #64748b; margin-left: 0.2rem; }
-.ska-filter-pill .ska-premium-tooltip { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: #0f172a; color: #f8fafc; padding: 0.45rem 0.7rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; white-space: nowrap; box-shadow: 0 12px 30px -18px rgba(15, 23, 42, 0.6); }
-.ska-filter-pill.is-locked { position: relative; }
-.ska-filter-pill.is-locked:hover .ska-premium-tooltip { display: inline-flex; }
-.ska-filter-pill.is-locked:hover .ska-premium-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 6px; border-style: solid; border-color: #0f172a transparent transparent transparent; }
 .ska-filterbar-header { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 40px;
 
     padding: 0.45rem 0;
