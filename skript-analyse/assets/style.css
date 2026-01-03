@@ -40,6 +40,7 @@ body.ska-modal-open { overflow: hidden !important; }
     line-height: 1.5;
 }
 .skriptanalyse-app *, .skriptanalyse-app *::before, .skriptanalyse-app *::after { box-sizing: border-box; }
+.skriptanalyse-app button { display: inline-flex; align-items: center; justify-content: center; line-height: 1.1; }
 
 /* HEADER & TOOLBAR */
 .ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
@@ -62,7 +63,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-toolbar-actions { display: flex; gap: 0.8rem; margin-left: 0; align-items: center; }
 
 /* BUTTONS */
-.ska-btn { border: none; padding: 0 1.2rem; border-radius: 999px; font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 42px; line-height: 1; white-space: nowrap; transform: none !important; }
+.ska-btn { border: none; padding: 0 1.2rem; border-radius: 999px; font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 42px; line-height: 1.1; white-space: nowrap; transform: none !important; }
+.ska-btn--compact { height: 34px; padding: 0 0.9rem; font-size: 0.8rem; }
 .ska-btn--primary { background: var(--ska-primary); color: white; }
 .ska-btn--primary:hover { background: var(--ska-primary-hover); transform: none; }
 .ska-btn--secondary { background: var(--ska-surface-alt); color: var(--ska-text-main); border: 1px solid var(--ska-border); }
@@ -136,7 +138,7 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 
 .ska-tool-wrapper { position: relative; display: inline-flex; align-items: center; }
-.ska-tool-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 32px; line-height: 1; }
+.ska-tool-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 32px; line-height: 1.1; }
 .ska-tool-btn svg { display: block; flex-shrink: 0; transform: translateY(0); margin-right: 4px; }
 .ska-tool-btn:hover { border-color: var(--ska-primary); color: var(--ska-primary); }
 
