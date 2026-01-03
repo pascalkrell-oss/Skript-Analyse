@@ -903,8 +903,10 @@
             if (!read || read.wordCount === 0) return { color: 'gray', label: 'Leer', class: 'neutral', score: 0 };
             const score = SA_Logic.getReadabilityScore(read);
             if (score < 40) return { color: SA_CONFIG.COLORS.error, label: 'Kritisch', class: 'red', score };
-            if (score < 60) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
-            return { color: SA_CONFIG.COLORS.success, label: 'Optimal', class: 'green', score };
+            if (score < 55) return { color: SA_CONFIG.COLORS.error, label: 'Schwer verständlich', class: 'red', score };
+            if (score < 70) return { color: SA_CONFIG.COLORS.warn, label: 'Optimierbar', class: 'yellow', score };
+            if (score < 85) return { color: SA_CONFIG.COLORS.success, label: 'Gut', class: 'green', score };
+            return { color: SA_CONFIG.COLORS.success, label: 'Sehr gut', class: 'green', score };
         },
         analyzeCompliance: (text, phrases) => {
             const normalizedText = SA_Utils.normalizeWhitespace(text).toLowerCase();
@@ -1935,6 +1937,7 @@
                 hiddenCards: new Set(), 
                 tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
+                selectedExtraCards: new Set(),
                 filterCollapsed: true,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
@@ -2697,13 +2700,19 @@
             if (act === 'toggle-card') {
                 const id = btn.dataset.card;
                 if (id) {
+                    const profile = this.settings.role;
+                    const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                    if (allowed && !allowed.has(id)) {
+                        if (btn.checked) this.state.selectedExtraCards.add(id);
+                        else this.state.selectedExtraCards.delete(id);
+                    }
                     this.toggleCard(id, !!btn.checked);
                     this.renderFilterBar();
                 }
                 return true;
             }
             if (act === 'toggle-filter-view') {
-                if (!this.settings.role) {
+                if (this.settings.role) {
                     this.state.showAllCards = !this.state.showAllCards;
                     this.renderFilterBar();
                 }
@@ -2713,6 +2722,7 @@
                 this.state.filterCollapsed = !this.state.filterCollapsed;
                 if (this.filterBar) {
                     this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
+                    this.filterBar.classList.toggle('is-expanded', !this.state.filterCollapsed);
                     const btn = this.filterBar.querySelector('[data-action="toggle-filter-collapse"]');
                     if (btn) btn.textContent = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
                 }
@@ -2721,10 +2731,12 @@
             if (act === 'filter-select-all') {
                 const profile = this.settings.role;
                 const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                const showAll = profile ? this.state.showAllCards : true;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
-                    if (allowed && !allowed.has(id)) return;
+                    if (allowed && !showAll && !allowed.has(id)) return;
                     if (this.state.hiddenCards.has(id)) this.state.hiddenCards.delete(id);
+                    if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.add(id);
                 });
                 this.saveUIState();
                 this.renderHiddenPanel();
@@ -2735,10 +2747,12 @@
             if (act === 'filter-deselect-all') {
                 const profile = this.settings.role;
                 const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                const showAll = profile ? this.state.showAllCards : true;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
-                    if (allowed && !allowed.has(id)) return;
+                    if (allowed && !showAll && !allowed.has(id)) return;
                     if (!this.state.hiddenCards.has(id)) this.state.hiddenCards.add(id);
+                    if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.delete(id);
                 });
                 if (this.bottomGrid) {
                     this.bottomGrid.querySelectorAll('.skriptanalyse-card').forEach(c => {
@@ -3065,6 +3079,7 @@
                     }
                     if (k === 'role') {
                         this.state.showAllCards = false;
+                        this.state.selectedExtraCards.clear();
                     }
                 }
                 this.analyze(this.getText());
@@ -3320,14 +3335,11 @@
             if(!visible) {
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if(c) { 
-                    c.classList.add('is-hidden'); 
-                    setTimeout(() => { 
-                        this.state.hiddenCards.add(id); 
-                        this.saveUIState();
-                        c.remove(); 
-                        this.renderHiddenPanel(); 
-                        this.renderFilterBar();
-                    }, 500); 
+                    this.state.hiddenCards.add(id); 
+                    this.saveUIState();
+                    c.remove(); 
+                    this.renderHiddenPanel(); 
+                    this.renderFilterBar();
                 }
             } else {
                 this.state.hiddenCards.delete(id); 
@@ -3341,7 +3353,11 @@
             this.hiddenPanel.innerHTML = '';
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const sorted = SA_CONFIG.CARD_ORDER.filter(id => this.state.hiddenCards.has(id) && this.isCardAvailable(id) && (!allowed || allowed.has(id)));
+            const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
+                if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id)) return false;
+                if (!allowed) return true;
+                return allowed.has(id) || this.state.selectedExtraCards.has(id);
+            });
             if(sorted.length) {
                 this.hiddenPanel.innerHTML = '<div class="ska-hidden-label">Ausgeblendet (Klicken zum Wiederherstellen):</div>';
                 sorted.forEach(id => {
@@ -3362,19 +3378,25 @@
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
-            const showAll = this.state.showAllCards;
+            const showAll = profile ? this.state.showAllCards : true;
             const title = 'Analyseboxen auswählen';
-            const toggleLabel = showAll ? 'Profilansicht' : 'Alle Boxen';
-            this.filterBar.classList.toggle('is-expanded', showAll);
+            const isExpanded = !this.state.filterCollapsed;
+            this.filterBar.classList.toggle('is-expanded', isExpanded);
             this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
-            const filteredItems = items.filter((id) => this.isCardAvailable(id));
+            const filteredItems = items.filter((id) => {
+                if (!this.isCardAvailable(id)) return false;
+                if (!allowed) return true;
+                if (showAll) return true;
+                return allowed.has(id);
+            });
+            const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
-                        <button class="ska-filterbar-toggle" data-action="toggle-filter-view">${toggleLabel}</button>
+                        ${viewToggle}
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
@@ -3383,8 +3405,10 @@
                         <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
                     </div>
                     ${filteredItems.map(id => {
-                        if (allowed && !showAll && !allowed.has(id) && id !== 'overview') return '';
-                        const checked = !this.state.hiddenCards.has(id);
+                        let checked = !this.state.hiddenCards.has(id);
+                        if (allowed && !allowed.has(id)) {
+                            checked = checked && this.state.selectedExtraCards.has(id);
+                        }
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                 </div>`;
@@ -3483,9 +3507,16 @@
                 const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
+            if (allowed) {
+                SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
+                    const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                    if (existing) existing.remove();
+                });
+            }
             availableCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
-                if (allowed && !allowed.has(id) && id !== 'overview') return;
+                if (allowed && !allowed.has(id) && !this.state.selectedExtraCards.has(id) && id !== 'overview') return;
                 const active = isActive(id);
 
                 switch(id) {
@@ -4311,7 +4342,9 @@
                 targetStatusHtml = `<div style="color:${statusColor}; font-size:0.8rem; font-weight:600; margin-top:0.8rem; background:${statusBg}; padding:0.6rem; border-radius:8px; text-align:center; border:1px solid ${statusBorder};">${msg}</div>`;
             }
             
-            let sCol = (r && r.score > 60) ? SA_CONFIG.COLORS.success : SA_CONFIG.COLORS.warn;
+            let sCol = SA_CONFIG.COLORS.warn;
+            if (traffic.class === 'green') sCol = SA_CONFIG.COLORS.success;
+            if (traffic.class === 'red') sCol = SA_CONFIG.COLORS.error;
             let maxSCol = (r && r.maxSentenceWords > 30) ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.text;
             let maxSVal = r ? r.maxSentenceWords : 0;
 
@@ -4344,7 +4377,7 @@
             const trafficBadgeHtml = `<div class="ska-traffic-badge ska-traffic-badge--${traffic.class}">${traffic.label}</div>`;
 
             let scoreHintHtml = '';
-            if (r && traffic.score < 60 && traffic.class !== 'neutral') {
+            if (r && traffic.score < 70 && traffic.class !== 'neutral') {
                 let hintText = 'Text vereinfachen.';
                 if (r.avgSentence > 15 && r.syllablesPerWord > 1.6) hintText = 'Sätze kürzen & einfachere Wörter nutzen.';
                 else if (r.avgSentence > 15) hintText = 'Sätze sind zu lang (Ø > 15 Wörter).';
@@ -4438,8 +4471,9 @@
             const sentiment = SA_Logic.analyzeSentiment(raw);
             const audience = SA_Logic.estimateAudience(r.score);
 
-            const col = r.score > 60 ? SA_CONFIG.COLORS.success : (r.score > 40 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.error);
-            const txt = r.score > 60 ? 'Leicht verständlich' : (r.score > 40 ? 'Mittelschwer' : 'Komplex / Schwer');
+            const traffic = SA_Logic.getTrafficLight(r);
+            const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
+            const txt = traffic.label;
             
             // Temperature gradient calculation (mapped from -100..100 to 0..100%)
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));

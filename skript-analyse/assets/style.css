@@ -97,7 +97,7 @@ body.ska-modal-open { overflow: hidden !important; }
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    padding: 0.85rem 1.1rem 0.75rem;
+    padding: 0.7rem 1.1rem;
     margin-top: 1.5rem;
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -126,6 +126,7 @@ body.ska-modal-open { overflow: hidden !important; }
 
     line-height: 1;
 }
+.ska-filterbar-toggle-view { font-size: 13.6px; }
 .ska-filterbar-collapse {
     font-family: "Rubik", system-ui, -apple-system, sans-serif;
     font-size: 13.6px;
@@ -853,8 +854,8 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 
 .ska-analysis-filterbar.is-collapsed {
-    padding-top: 0.6rem;
-    padding-bottom: 0.6rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 
@@ -874,8 +875,8 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .ska-filterbar-header {
     min-height: 40px;
-    padding-top: 0.45rem;
-    padding-bottom: 0.45rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
 }
 
 .ska-filterbar-actions {
