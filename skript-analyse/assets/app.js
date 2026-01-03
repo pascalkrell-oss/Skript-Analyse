@@ -614,17 +614,22 @@
                         background: #ffffff !important;
                         border: 1px solid #e2e8f0 !important;
                         border-radius: 12px !important;
-                        padding: 1rem 1.25rem !important;
+                        padding: 1.1rem 1.3rem !important;
                         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
                         margin-top: auto !important; 
-                        padding-top: 20px !important;
                         position: relative;
                         transition: all 0.3s ease;
                     }
                     .ska-card-body {
                         display: flex;
                         flex-direction: column;
-                        gap: 20px; /* Space between content and the footer tip box */
+                    }
+                    .ska-card-body-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1.2rem;
+                        flex: 1;
+                        min-height: 100%;
                     }
                     .ska-tip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
                     .ska-tip-badge {
@@ -3614,35 +3619,6 @@
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
-                    ${premiumItems.length ? `
-                        <div class="ska-filterbar-upgrade">
-                            <div class="ska-filterbar-upgrade-header">
-                                <strong>Upgrade auf Premium</strong>
-                                <span>Mehr Analysen, Studio-Tools & volle Kontrolle</span>
-                            </div>
-                            <div class="ska-filterbar-upgrade-grid">
-                                <div class="ska-filterbar-upgrade-col">
-                                    <div class="ska-filterbar-upgrade-title">Free</div>
-                                    <ul>
-                                        <li>Schnell-Überblick & Basis-Lesbarkeit</li>
-                                        <li>Füllwörter, Denglisch</li>
-                                        <li>Auffällige Sätze, Stolpersteine</li>
-                                        <li>Marker-Export</li>
-                                    </ul>
-                                </div>
-                                <div class="ska-filterbar-upgrade-col is-premium">
-                                    <div class="ska-filterbar-upgrade-title">Premium</div>
-                                    <ul>
-                                        <li>Teleprompter, Pacing, BPM</li>
-                                        <li>Keyword-Fokus, Compliance-Check</li>
-                                        <li>Silben-Entropie & Redundanz</li>
-                                        <li>Zielgruppen- & Sprecher-Tools</li>
-                                        <li>Profi-PDF-Report</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
