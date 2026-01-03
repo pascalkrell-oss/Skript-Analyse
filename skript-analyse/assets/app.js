@@ -3832,7 +3832,6 @@
                     this.compareRow.classList.remove('is-active');
                 }
             }
-            else { this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active'); }
             this.renderLegend();
             this.syncEditorHeight();
         }
