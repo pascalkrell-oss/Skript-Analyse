@@ -47,6 +47,7 @@ function ska_shortcode() {
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
         'markers' => $markers_config,
         'pro' => (bool) apply_filters( 'ska_pro_mode', false ),
+        'isAdmin' => current_user_can( 'manage_options' ),
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
     ));
 
@@ -65,7 +66,17 @@ function ska_shortcode() {
                 </div>
             </div>
             <div class="ska-status-bar">
-                 <span class="ska-status-badge"><span class="ska-dot"></span>100% Kostenlos & Sicher</span>
+                 <span class="ska-status-badge"><span class="ska-dot"></span><span data-role-plan-label>100% Kostenlos & Sicher</span></span>
+                 <?php if ( current_user_can( 'manage_options' ) ) : ?>
+                    <div class="ska-admin-plan-toggle" data-role-admin-toggle>
+                        <span>Free</span>
+                        <label class="ska-switch">
+                            <input type="checkbox" data-action="toggle-plan">
+                            <span class="ska-switch-slider"></span>
+                        </label>
+                        <span>Premium</span>
+                    </div>
+                 <?php endif; ?>
             </div>
         </header>
 
@@ -169,7 +180,7 @@ function ska_shortcode() {
 
         <div class="ska-footer">
             <div class="ska-footer-intro">
-                <p>Nutze die Skriptanalyse als Startpunkt für die Optimierung Deines Skripts für Buch, Hörbuch, Werbung & mehr. Oder aber - Du buchst mich und ich vertone Dein Skript genau so wie Du es haben möchtest.</p>
+                <p>Nutze die Skriptanalyse als Startpunkt für Buch, Hörbuch, Werbung & mehr – inklusive PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.</p>
             </div>
             <div class="ska-footer-actions">
                 <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
