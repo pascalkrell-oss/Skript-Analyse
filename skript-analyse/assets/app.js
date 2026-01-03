@@ -1944,6 +1944,7 @@
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
                 planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
+                showPremiumList: false,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
@@ -2766,6 +2767,11 @@
             }
             if (act === 'premium-upgrade') {
                 this.showPremiumNotice('Premium freischalten, um alle Analysen und Studio-Tools zu nutzen.');
+                return true;
+            }
+            if (act === 'toggle-premium-list') {
+                this.state.showPremiumList = !this.state.showPremiumList;
+                this.renderUpgradePanel();
                 return true;
             }
             if (act === 'open-pdf') {
@@ -3598,8 +3604,14 @@
                         }
                         if (locked) checked = false;
                         const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
-                        const lockHint = locked ? `<span class="ska-premium-tooltip"><strong>Premium freischalten</strong><span>${desc}</span><em>Jetzt upgraden</em></span>` : '';
+                        const lockHint = locked ? `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>` : '';
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}${lockHint}</label>`;
+                    }).join('')}
+                    ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
+                    ${premiumItems.map(id => {
+                        const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
+                        const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
                     }).join('')}
                     ${premiumItems.length ? `<div class="ska-filterbar-premium-label">Premium-Vorschau</div>` : ''}
                     ${premiumItems.map(id => {
@@ -5337,6 +5349,15 @@
             const teaserCount = SA_CONFIG.PREMIUM_TEASERS.length;
             const remaining = Math.max(0, totalPremium - teaserCount);
             const moreText = remaining > 0 ? `+ ${remaining} weitere Analyseboxen und Funktionen` : 'Alle Premium-Features freischalten';
+            const premiumCards = SA_CONFIG.CARD_ORDER.filter(id => !this.isCardUnlocked(id)).map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const premiumFeatures = [
+                'SPS-Zeitberechnung',
+                'Pausen-Automatik',
+                'WPM-Kalibrierung',
+                'Zielgruppen-Analyse',
+                'Keyword- & Compliance-Checks',
+                'Profi-PDF-Report'
+            ];
             const html = `
                 <div class="ska-premium-upgrade-header">
                     <strong>Upgrade auf Premium</strong>
@@ -5365,7 +5386,20 @@
                 </div>
                 <div class="ska-premium-upgrade-footer">
                     <span>${moreText}</span>
-                    <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Premium freischalten</button>
+                    <div class="ska-premium-upgrade-actions">
+                        <button class="ska-btn ska-btn--secondary" data-action="toggle-premium-list">${this.state.showPremiumList ? 'Liste einklappen' : 'Liste anzeigen'}</button>
+                        <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Premium freischalten</button>
+                    </div>
+                    <div class="ska-premium-upgrade-list ${this.state.showPremiumList ? 'is-expanded' : ''}">
+                        <div>
+                            <strong>Premium-Analyseboxen</strong>
+                            <ul>${premiumCards.map(item => `<li>${item}</li>`).join('')}</ul>
+                        </div>
+                        <div>
+                            <strong>Premium-Funktionen</strong>
+                            <ul>${premiumFeatures.map(item => `<li>${item}</li>`).join('')}</ul>
+                        </div>
+                    </div>
                 </div>`;
             if (existing) {
                 existing.innerHTML = html;

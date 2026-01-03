@@ -186,10 +186,13 @@ function ska_shortcode() {
                 <p>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr - inklusive PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.</p>
             </div>
             <div class="ska-footer-actions">
-                <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
-                    Skript-Report als PDF herunterladen
-                </button>
+                <div class="ska-tool-wrapper">
+                    <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        Skript-Report als PDF herunterladen
+                    </button>
+                    <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Profi-PDF-Report mit Detailanalyse.</div>
+                </div>
                 <a href="/kontakt/" class="ska-btn ska-btn--secondary">
                     Sprachaufnahme anfragen
                 </a>
