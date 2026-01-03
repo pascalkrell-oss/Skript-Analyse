@@ -180,7 +180,7 @@ function ska_shortcode() {
 
         <div class="ska-footer">
             <div class="ska-footer-intro">
-                <p>Nutze die Skriptanalyse als Startpunkt für Buch, Hörbuch, Werbung & mehr – inklusive PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.</p>
+                <p>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr - inklusive PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.</p>
             </div>
             <div class="ska-footer-actions">
                 <button type="button" class="ska-btn ska-btn--primary" data-action="open-pdf">
