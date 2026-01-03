@@ -250,7 +250,49 @@
         },
 
         CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
-        FREE_CARDS: ['overview', 'char', 'fillers', 'anglicism', 'stumble', 'breath', 'marker'],
+        PREMIUM_CARDS: [
+            'rhythm',
+            'syllable_entropy',
+            'plosive',
+            'redundancy',
+            'sentiment_intensity',
+            'compare',
+            'depth_check',
+            'naming_check',
+            'compliance_check',
+            'keyword_focus',
+            'audience',
+            'bullshit',
+            'metaphor',
+            'verb_balance',
+            'teleprompter',
+            'pacing',
+            'chapter_calc',
+            'role_dist',
+            'bpm'
+        ],
+        FREE_CARDS: [
+            'overview',
+            'char',
+            'stumble',
+            'breath',
+            'echo',
+            'passive',
+            'fillers',
+            'nominal',
+            'nominal_chain',
+            'anglicism',
+            'coach',
+            'marker',
+            'cta',
+            'adjective',
+            'dialog',
+            'gender',
+            'start_var',
+            'vocabulary',
+            'pronunciation',
+            'easy_language'
+        ],
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'pronunciation', 'bpm'],
 
         GENRE_CARDS: {
@@ -534,7 +576,7 @@
         },
         isPremiumFeatureEnabled: () => {
             const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            return SA_CONFIG.PRO_MODE || (SA_CONFIG.IS_ADMIN && planMode === 'premium');
+            return SA_CONFIG.PRO_MODE && planMode === 'premium';
         },
         closeModal: (modal, onClosed) => {
             if (!modal) return;
@@ -3136,7 +3178,7 @@
                 const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
                 if (p === 'premium' || p === 'free') this.state.planMode = p;
             }
-            if (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN) {
+            if (!SA_CONFIG.PRO_MODE) {
                 this.state.planMode = 'free';
             }
             
@@ -3212,7 +3254,6 @@
 
         enforceFreeSettings() {
             if (this.isPremiumActive()) return;
-            if (SA_CONFIG.IS_ADMIN) return;
             this.state.planMode = 'free';
             this.settings.timeMode = 'wpm';
             this.settings.manualWpm = 0;
@@ -5296,9 +5337,6 @@
         }
 
         isPremiumActive() {
-            if (SA_CONFIG.IS_ADMIN) {
-                return this.state.planMode === 'premium';
-            }
             return SA_CONFIG.PRO_MODE && this.state.planMode === 'premium';
         }
 
@@ -5321,7 +5359,7 @@
         }
 
         isPremiumCard(id) {
-            return id !== 'overview' && !SA_CONFIG.FREE_CARDS.includes(id);
+            return SA_CONFIG.PREMIUM_CARDS.includes(id);
         }
 
         isCardAvailable(id) {
@@ -5582,6 +5620,15 @@
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
+            const ensureLockedNote = (body) => {
+                if (!isLocked || !body) return;
+                const existing = body.querySelector('.ska-premium-lock-note');
+                if (existing) return;
+                const note = document.createElement('div');
+                note.className = 'ska-premium-lock-note';
+                note.textContent = 'Dieses Feature ist Teil der Premium-Version';
+                body.appendChild(note);
+            };
 
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#94a3b8"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
@@ -5634,6 +5681,7 @@
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                     card.appendChild(lock);
+                    ensureLockedNote(b);
                     this.applyFreeLimit(b);
                 }
                 
@@ -5660,6 +5708,7 @@
                         lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                         card.appendChild(lockEl);
                     }
+                    ensureLockedNote(body);
                     this.applyFreeLimit(body);
                  } else {
                     if (lock) lock.remove();

@@ -224,6 +224,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-inline span { font-size: 0.75rem; color: #64748b; }
 .ska-premium-badge { background: #e0f2fe; color: #0369a1; border-radius: 999px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; text-transform: uppercase; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
+.ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1040px; margin: 2.4rem auto 1.8rem; background: linear-gradient(135deg, #f8fafc, #eff6ff); color: #0f172a; border: 1px solid #dbeafe; border-radius: 24px; padding: 2rem; display: flex; flex-direction: column; gap: 1.4rem; box-shadow: 0 22px 44px -30px rgba(15, 23, 42, 0.35); text-align: center; }
 .ska-premium-upgrade-header strong { font-size: 1rem; display: block; }
