@@ -17,6 +17,7 @@
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
+        IS_LOGGED_IN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isLoggedIn),
         WORKER_TEXT_THRESHOLD: 12000,
         FREE_TEXT_LIMIT: 20000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
@@ -5186,15 +5187,16 @@
                     if(k.hardSegment) reasons.push(`Keine Pause / Atemdruck`);
                     return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
                 };
-                killers.slice(0, 3).forEach(k => { h += renderItem(k); });
+                if (isPremium) {
+                    killers.slice(0, 3).forEach(k => { h += renderItem(k); });
+                } else {
+                    killers.forEach(k => { h += renderItem(k); });
+                }
                 if(killers.length > 3 && isPremium) {
                     const hiddenCount = killers.length - 3;
                     h += `<div id="ska-breath-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     killers.slice(3).forEach(k => { h += renderItem(k); });
                     h += `</div><button class="ska-expand-link ska-more-toggle" data-action="toggle-breath-more" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
-                } else if (killers.length > 3) {
-                    const hiddenCount = killers.length - 3;
-                    h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-breath-more" data-total="${hiddenCount}" data-premium-hint="Mehr Atem-Details gibt es in Premium." aria-disabled="true">...und ${hiddenCount} weitere anzeigen</button>`;
                 }
                 h += `</div>`;
                 h += this.renderTipSection('breath', true);
@@ -5504,7 +5506,8 @@
         }
 
         isCardAvailable(id) {
-            if (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN && this.isPremiumCard(id)) return false;
+            const allowPremiumPreview = SA_CONFIG.IS_ADMIN || SA_CONFIG.PRO_MODE || !SA_CONFIG.IS_LOGGED_IN;
+            if (!allowPremiumPreview && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
@@ -5632,7 +5635,6 @@
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
                 'Pro-PDF-Report',
-                'PDF-Report mit Kennzahlen',
                 'Textvergleich (Versionen)',
                 'Premium-Analyseboxen',
                 'Cloud-Speicher (sofern verfügbar)'
@@ -5656,7 +5658,7 @@
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
-                <div class="ska-premium-upgrade-ribbon">Premium</div>
+                <div class="ska-premium-upgrade-ribbon">UPGRADE!</div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 6L6 18"></path>

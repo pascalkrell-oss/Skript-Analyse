@@ -51,6 +51,7 @@ function ska_shortcode() {
         'markers' => $markers_config,
         'pro' => $pro_mode,
         'isAdmin' => current_user_can( 'manage_options' ),
+        'isLoggedIn' => is_user_logged_in(),
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
     ));
 
