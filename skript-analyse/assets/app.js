@@ -1983,6 +1983,7 @@
                 filterCollapsed: true,
                 planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
                 showPremiumList: false,
+                showPremiumCards: false,
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
@@ -2815,6 +2816,11 @@
             }
             if (act === 'toggle-premium-list') {
                 this.state.showPremiumList = !this.state.showPremiumList;
+                this.renderUpgradePanel();
+                return true;
+            }
+            if (act === 'toggle-premium-cards') {
+                this.state.showPremiumCards = !this.state.showPremiumCards;
                 this.renderUpgradePanel();
                 return true;
             }
@@ -5467,6 +5473,9 @@
             const moreText = remaining > 0 ? `+ ${remaining} weitere Analyseboxen und Funktionen` : 'Alle Premium-Features freischalten';
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const showAllPremiumCards = this.state.showPremiumCards;
+            const premiumCardsPreview = showAllPremiumCards ? premiumCards : premiumCards.slice(0, 5);
+            const remainingPremiumCards = Math.max(0, premiumCards.length - premiumCardsPreview.length);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
@@ -5519,8 +5528,13 @@
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing">
-                                ${renderList(premiumCards)}
+                                ${renderList(premiumCardsPreview)}
                             </ul>
+                            ${remainingPremiumCards > 0 ? `
+                                <button class="ska-premium-upgrade-toggle" data-action="toggle-premium-cards">
+                                    ${showAllPremiumCards ? 'Weniger anzeigen' : `+ ${remainingPremiumCards} weitere Analyseboxen anzeigen`}
+                                </button>
+                            ` : ''}
                         </div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen</div>

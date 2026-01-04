@@ -242,6 +242,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; }
 .ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
 .ska-premium-upgrade-col.is-premium .ska-upgrade-check { background: #e0f2fe; color: #0284c7; }
+.ska-premium-upgrade-toggle { margin-top: 0.6rem; background: none; border: none; color: #0284c7; font-weight: 700; font-size: 0.8rem; cursor: pointer; padding: 0; }
+.ska-premium-upgrade-toggle:hover { text-decoration: underline; }
 .ska-premium-upgrade-footer { display: flex; flex-direction: column; gap: 0.95rem; align-items: center; font-size: 0.9rem; }
 .ska-premium-upgrade-footer span { color: #0ea5e9; font-weight: 700; }
 .ska-premium-upgrade-actions { display: inline-flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
@@ -783,6 +785,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-compact-option-inner { border: 2px solid #f1f5f9; border-radius: 12px; padding: 1rem; background: white; display: flex; align-items: flex-start; gap: 0.8rem; transition: all 0.2s ease; height: 100%; min-height: 70px; }
 .ska-compact-option:hover .ska-compact-option-inner { border-color: #cbd5e1; background: #fdfdfd; }
 .ska-compact-option input:checked + .ska-compact-option-inner { border-color: var(--ska-primary); background: #eff6ff; box-shadow: 0 4px 12px -3px rgba(26, 147, 238, 0.15); }
+.ska-compact-option--premium .ska-premium-pill { margin-left: 0.4rem; vertical-align: middle; }
+body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inner { opacity: 0.6; background: #f8fafc; border-color: #e2e8f0; }
 .ska-option-check { width: 22px; height: 22px; flex-shrink: 0; border: 2px solid #cbd5e1; border-radius: 50%; position: relative; transition: all 0.2s ease; margin-top: 2px; background: white; box-sizing: border-box; }
 .ska-compact-option input:checked + .ska-compact-option-inner .ska-option-check { background: var(--ska-primary); border-color: var(--ska-primary); }
 .ska-option-check::after { content: ''; position: absolute; top: 50%; left: 50%; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: translate(-50%, -60%) rotate(45deg); opacity: 0; transition: opacity 0.2s; box-sizing: content-box; }
