@@ -3717,8 +3717,12 @@
             const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
             const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
-            const premiumCta = !isPremium && premiumItems.length
-                ? '<div class="ska-filterbar-premium-cta"><a class="ska-btn ska-btn--ghost ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a></div>'
+            const premiumInfoBox = !isPremium && premiumItems.length
+                ? `<div class="ska-filterbar-upgrade-card">
+                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
+                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
+                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
+                   </div>`
                 : '';
             const premiumInfoBox = !isPremium && premiumItems.length
                 ? `<div class="ska-filterbar-upgrade-card">
@@ -3754,7 +3758,6 @@
                     ${premiumItems.map(id => {
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
-                    ${premiumCta}
                     ${premiumInfoBox}
                 </div>`;
             this.filterBar.innerHTML = html;
