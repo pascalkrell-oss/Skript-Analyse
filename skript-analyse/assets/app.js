@@ -3747,10 +3747,6 @@
                     ${premiumItems.map(id => {
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
-                    <div class="ska-filterbar-premium-note">
-                        <strong>Premium-Funktionen</strong>
-                        <span>Upgrade für volle Ergebnisse.</span>
-                    </div>
                 </div>` : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
