@@ -3699,6 +3699,9 @@
             const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
             const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
+            const premiumCta = !isPremium && premiumItems.length
+                ? '<div class="ska-filterbar-premium-cta"><button class="ska-btn ska-btn--ghost ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button></div>'
+                : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3722,13 +3725,14 @@
                         if (locked) checked = false;
                         const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
                         const lockHint = locked ? `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>` : '';
-                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${locked ? '<em>Premium</em>' : ''}${lockHint}</label>`;
+                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span>${lockHint}</label>`;
                     }).join('')}
                     ${premiumLabel}
+                    ${premiumCta}
                     ${premiumItems.map(id => {
                         const desc = SA_CONFIG.CARD_DESCRIPTIONS[id] || 'Zusätzliche Analyse & Profi-Insights.';
                         const lockHint = `<span class="ska-premium-tooltip"><strong>Premium</strong><span>${desc}</span><em>Upgrade</em></span>`;
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span><em>Premium</em>${lockHint}</label>`;
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span>${lockHint}</label>`;
                     }).join('')}
                 </div>`;
             this.filterBar.innerHTML = html;
@@ -5504,26 +5508,36 @@
             ];
             const premiumPlans = [
                 { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat', savings: '' },
-                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR', savings: 'Du sparst 9,00 EUR gegenüber monatlich.' },
-                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', savings: 'Du sparst 36,00 EUR gegenüber monatlich.', badge: 'Bester Deal' }
+                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR', savings: '9,00' },
+                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', savings: '36,00', badge: 'Bester Deal' }
             ];
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const renderList = (items) => items.map(item => `
+            const renderSavingsBadge = (plan) => `
+                <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
+                    ${plan.savings ? `Du sparst ${plan.savings} EUR` : ''}
+                </span>`;
+            const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
+            const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
+            const renderList = (items, options = {}) => items.map(item => `
                 <li>
                     <span class="ska-upgrade-check">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17l-5-5"></path>
                         </svg>
                     </span>
-                    <span>${item}</span>
+                    <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
-                        <span class="ska-premium-upgrade-icon">⚡️</span>
+                        <span class="ska-premium-upgrade-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 2L3 14h7l-1 8 12-14h-7l1-6z"></path>
+                            </svg>
+                        </span>
                         <strong>Upgrade auf Premium</strong>
                     </div>
-                    <span>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr – inklusive PDF-Export mit deinen Kennzahlen und der Option, direkt einen Sprecher anzufragen.</span>
+                    <span>Free liefert die wichtigsten Basis-Analysen. Premium schaltet alle Boxen, Pro-PDF-Report und Vergleichsfunktionen frei.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
@@ -5533,7 +5547,7 @@
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing">
-                                ${renderList(freeCards)}
+                                ${renderList(freeCards, { stripIcons: true })}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section">
@@ -5544,10 +5558,12 @@
                         </div>
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
-                        <div class="ska-premium-upgrade-title">Premium</div>
-                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
-                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
-                        ${selectedPlan.savings ? `<div class="ska-premium-upgrade-savings">${selectedPlan.savings}</div>` : ''}
+                        <div class="ska-premium-upgrade-header-row">
+                            <div class="ska-premium-upgrade-title">Premium</div>
+                            <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
+                        </div>
+                        <div class="ska-premium-upgrade-price">Abo ab ${selectedPlan.price}</div>
+                        <div class="ska-premium-upgrade-price-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
                             ${premiumPlans.map(plan => `
                                 <button class="ska-premium-plan-btn ${plan.id === selectedPlan.id ? 'is-active' : ''}" data-action="premium-price-plan" data-plan="${plan.id}">
@@ -5556,10 +5572,11 @@
                                 </button>
                             `).join('')}
                         </div>
+                        <div class="ska-premium-upgrade-payment-hint">Zahlweise wählen</div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumCards)}
+                                ${renderList(premiumCards, { stripIcons: true })}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section">
