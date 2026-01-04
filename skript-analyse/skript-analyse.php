@@ -194,7 +194,6 @@ function ska_shortcode() {
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:8px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                         Skript-Report als PDF herunterladen
                     </button>
-                    <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Profi-PDF-Report mit Detailanalyse.</div>
                 </div>
                 <a href="/kontakt/" class="ska-btn ska-btn--secondary">
                     Sprachaufnahme anfragen
@@ -315,56 +314,56 @@ function ska_shortcode() {
                             </div>
                         </label>
 
-                        <label class="ska-compact-option">
+                        <label class="ska-compact-option ska-compact-option--premium">
                             <input type="checkbox" id="pdf-opt-details" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
-                                    <strong>Detail-Analyse</strong>
+                                    <strong>Detail-Analyse <span class="ska-premium-pill">Premium</span></strong>
                                     <span>Stil, Struktur, Fokus, Checks</span>
                                 </div>
                             </div>
                         </label>
 
-                        <label class="ska-compact-option">
+                        <label class="ska-compact-option ska-compact-option--premium">
                             <input type="checkbox" id="pdf-opt-syllable-entropy" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
-                                    <strong>Silben-Entropie</strong>
+                                    <strong>Silben-Entropie <span class="ska-premium-pill">Premium</span></strong>
                                     <span>Rhythmus-Analyse im Detailteil</span>
                                 </div>
                             </div>
                         </label>
 
-                        <label class="ska-compact-option">
+                        <label class="ska-compact-option ska-compact-option--premium">
                             <input type="checkbox" id="pdf-opt-compliance" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
-                                    <strong>Pflichttext-Check</strong>
+                                    <strong>Pflichttext-Check <span class="ska-premium-pill">Premium</span></strong>
                                     <span>Legal-Status im Detailteil</span>
                                 </div>
                             </div>
                         </label>
 
-                        <label class="ska-compact-option">
+                        <label class="ska-compact-option ska-compact-option--premium">
                             <input type="checkbox" id="pdf-opt-tips" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
-                                    <strong>Tipps & Hinweise</strong>
+                                    <strong>Tipps & Hinweise <span class="ska-premium-pill">Premium</span></strong>
                                     <span>konkrete Optimierungstipps</span>
                                 </div>
                             </div>
                         </label>
 
-                        <label class="ska-compact-option">
+                        <label class="ska-compact-option ska-compact-option--premium">
                             <input type="checkbox" id="pdf-opt-compare" checked>
                             <div class="ska-compact-option-inner">
                                 <div class="ska-option-check"></div>
                                 <div class="ska-option-text">
-                                    <strong>Versions-Vergleich</strong>
+                                    <strong>Versions-Vergleich <span class="ska-premium-pill">Premium</span></strong>
                                     <span>Änderungen zur Vorversion</span>
                                 </div>
                             </div>
