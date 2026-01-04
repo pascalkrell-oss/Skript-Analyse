@@ -2821,6 +2821,11 @@
                 }
                 return true;
             }
+            if (act === 'toggle-premium-cards') {
+                this.state.showPremiumCards = !this.state.showPremiumCards;
+                this.renderUpgradePanel();
+                return true;
+            }
             if (act === 'open-pdf') {
                 const modal = document.getElementById('ska-pdf-modal');
                 if (modal) {
