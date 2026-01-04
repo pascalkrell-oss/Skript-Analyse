@@ -406,6 +406,7 @@
                 cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
             });
             return cleaned
+                .replace(/\s*\|[^|]*\|\s*/g, ' ')
                 .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
                 .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
                 .replace(/\s*\[[^\]]+\]\s*/g, ' ')
@@ -1987,7 +1988,7 @@
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
                 planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
-                premiumPricePlan: 'yearly',
+                premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
@@ -3678,8 +3679,29 @@
         }
 
         renderLegend() {
-            if(this.legendContainer) {
-                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid"><div class="ska-legend-def"><strong>Auffällige Sätze:</strong> Zeigt Sätze > 25 Wörter oder viele Kommas.</div><div class="ska-legend-def"><strong>Wort-Echos:</strong> Markiert Wiederholungen auf engem Raum.</div><div class="ska-legend-def"><strong>Dynamik-Check:</strong> Findet Passiv-Formulierungen.</div><div class="ska-legend-def"><strong>Bürokratie:</strong> Markiert Nominalstil (Ung/Heit/Keit).</div><div class="ska-legend-def"><strong>Denglisch:</strong> Findet unnötige Anglizismen.</div><div class="ska-legend-def"><strong>Buzzword-Check:</strong> Markiert Phrasen aus der Blacklist.</div><div class="ska-legend-def"><strong>Verb-Fokus:</strong> Warnt bei nominalem Stil.</div><div class="ska-legend-def"><strong>Teleprompter:</strong> Scrollt im Tempo der Analyse.</div><div class="ska-legend-def"><strong>Profilansicht:</strong> Zeigt nur die Boxen des ausgewählten Profils.</div><div class="ska-legend-def"><strong>Alle Boxen:</strong> Ermöglicht zusätzliche Boxen im Profil.</div><div class="ska-legend-def"><strong>Ausklappen/Einklappen:</strong> Blendet die Auswahl kompakt ein oder aus.</div><div class="ska-legend-def"><strong>Export:</strong> Teleprompter als .txt/.json exportieren für Cutter & Sprecher.</div><div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div><div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div><div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div></div></div></div>`;
+            if (this.legendContainer) {
+                const isPremium = this.isPremiumActive();
+                const legendItems = [
+                    { title: 'Auffällige Sätze', text: 'Zeigt Sätze > 25 Wörter oder viele Kommas.' },
+                    { title: 'Wort-Echos', text: 'Markiert Wiederholungen auf engem Raum.' },
+                    { title: 'Dynamik-Check', text: 'Findet Passiv-Formulierungen.' },
+                    { title: 'Bürokratie', text: 'Markiert Nominalstil (Ung/Heit/Keit).' },
+                    { title: 'Denglisch', text: 'Findet unnötige Anglizismen.' },
+                    { title: 'Buzzword-Check', text: 'Markiert Phrasen aus der Blacklist.', premium: true },
+                    { title: 'Verb-Fokus', text: 'Warnt bei nominalem Stil.', premium: true },
+                    { title: 'Teleprompter', text: 'Scrollt im Tempo der Analyse.', premium: true },
+                    { title: 'Profilansicht', text: 'Zeigt nur die Boxen des ausgewählten Profils.' },
+                    { title: 'Alle Boxen', text: 'Ermöglicht zusätzliche Boxen im Profil.' },
+                    { title: 'Ausklappen/Einklappen', text: 'Blendet die Auswahl kompakt ein oder aus.' },
+                    { title: 'Export', text: 'Teleprompter als .txt/.json exportieren für Cutter & Sprecher.', premium: true }
+                ];
+                const filteredItems = legendItems.filter(item => isPremium || !item.premium);
+                const legendHtml = filteredItems.map(item => `<div class="ska-legend-def"><strong>${item.title}:</strong> ${item.text}</div>`).join('');
+                const footerHtml = `
+                    <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div>
+                    <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
+                    <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
+                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
             }
         }
 
@@ -4836,6 +4858,14 @@
             
             const sentiment = SA_Logic.analyzeSentiment(raw);
             const audience = SA_Logic.estimateAudience(r.score);
+            const sentenceLengths = (r.sentences || [])
+                .map((s) => s.trim().split(/\s+/).filter(Boolean).length)
+                .filter((len) => len > 0);
+            const minSentence = sentenceLengths.length ? Math.min(...sentenceLengths) : 0;
+            const maxSentence = sentenceLengths.length ? Math.max(...sentenceLengths) : 0;
+            const variance = SA_Logic.calculateVariance(r.sentences || []);
+            const uniqueWords = new Set((r.words || []).map((word) => word.toLowerCase())).size;
+            const lexicalShare = r.wordCount ? (uniqueWords / r.wordCount) * 100 : 0;
 
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
@@ -4880,6 +4910,26 @@
                             <span>Kühl / Sachlich</span>
                             <span>Warm / Emotional</span>
                         </div>
+                    </div>
+                </div>
+                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Tiefe</div>
+                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0.6rem;">
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Satzlänge Ø</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${r.avgSentence.toFixed(1)} Wörter</div>
+                        </div>
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Spannweite</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${minSentence}–${maxSentence} Wörter</div>
+                        </div>
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Wortvielfalt</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${lexicalShare.toFixed(0)}%</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.6rem; font-size:0.8rem; color:#475569;">
+                        Rhythmus-Varianz: <strong style="color:${variance < 2.5 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">${variance.toFixed(2)}</strong> (höher = abwechslungsreicher).
                     </div>
                 </div>`;
             
@@ -5480,9 +5530,9 @@
 
         getPremiumPlans() {
             return [
-                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat', savings: '' },
-                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR', savings: '9,00' },
-                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', savings: '36,00', badge: 'Bester Deal' }
+                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
+                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
+                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
             ];
         }
 
@@ -5492,13 +5542,18 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
+            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
             const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
             }
+            const priceLabelEl = card.querySelector('.ska-premium-upgrade-price-label');
+            if (priceLabelEl) {
+                priceLabelEl.textContent = priceLabel;
+            }
             const noteEl = card.querySelector('[data-role="premium-note"]');
             if (noteEl) {
-                const savings = selectedPlan.savings ? `Du sparst ${selectedPlan.savings} EUR` : '';
+                const savings = selectedPlan.savings ? `Du sparst ${selectedPlan.savings}` : '';
                 noteEl.innerHTML = `${selectedPlan.note} <span class="ska-premium-upgrade-savings${selectedPlan.savings ? '' : ' is-hidden'}">${savings}</span>`;
             }
             const planButtons = card.querySelectorAll('[data-role="premium-plan"]');
@@ -5537,9 +5592,10 @@
             ];
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
+            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
-                    ${plan.savings ? `Du sparst ${plan.savings} EUR` : ''}
+                    ${plan.savings ? `Du sparst ${plan.savings}` : ''}
                 </span>`;
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
@@ -5588,7 +5644,7 @@
                             <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
                         </div>
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
-                            <span class="ska-premium-upgrade-price-label">Abo ab</span>
+                            <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
@@ -5751,12 +5807,7 @@
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
 
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
-            const lockedPlaceholder = `
-                <div class="ska-premium-locked-placeholder">
-                    <strong>Premium-Analyse</strong>
-                    <span>Ergebnisse sind in der Free-Version ausgeblendet.</span>
-                </div>`;
-            const resolvedHtml = isLocked ? lockedPlaceholder : html;
+            const resolvedHtml = html;
 
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
