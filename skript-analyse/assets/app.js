@@ -5602,7 +5602,7 @@
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
                             <div class="ska-premium-upgrade-subtitle">Funktionen</div>
-                            <ul class="ska-premium-upgrade-listing">
+                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
                                 ${renderList(premiumFunctions)}
                             </ul>
                         </div>
@@ -5617,9 +5617,6 @@
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
-                </div>
-                <div class="ska-premium-upgrade-footer">
-                    <span>Alle Premium-Features freischalten & direkt produktiver arbeiten.</span>
                 </div>`;
             if (existing) {
                 existing.id = 'ska-premium-upgrade';
@@ -5754,6 +5751,12 @@
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
 
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
+            const lockedPlaceholder = `
+                <div class="ska-premium-locked-placeholder">
+                    <strong>Premium-Analyse</strong>
+                    <span>Ergebnisse sind in der Free-Version ausgeblendet.</span>
+                </div>`;
+            const resolvedHtml = isLocked ? lockedPlaceholder : html;
 
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
@@ -5790,7 +5793,7 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = `<div class="ska-card-body-content">${html}</div>`;
+                b.innerHTML = `<div class="ska-card-body-content">${resolvedHtml}</div>`;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
@@ -5800,7 +5803,6 @@
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                     card.appendChild(lock);
-                    this.applyFreeLimit(b);
                 }
                 
                 parent.appendChild(card);
@@ -5808,7 +5810,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = `<div class="ska-card-body-content">${html}</div>`;
+                 body.innerHTML = `<div class="ska-card-body-content">${resolvedHtml}</div>`;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
@@ -5826,7 +5828,6 @@
                         lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                         card.appendChild(lockEl);
                     }
-                    this.applyFreeLimit(body);
                  } else {
                     if (lock) lock.remove();
                     body.querySelectorAll('.ska-problem-item.is-hidden-premium').forEach(item => item.classList.remove('is-hidden-premium'));
