@@ -225,7 +225,7 @@
             dialog: 'Zeigt das Verhältnis zwischen Erzähler-Text und wörtlicher Rede (Dialog).',
             gender: 'Findet generische Maskuline und schlägt neutrale Alternativen vor.',
             start_var: 'Findet monotone Satzanfänge (z.B. "Dann... Dann...").',
-            role_dist: 'Erkennt Rollen anhand von Großbuchstaben (z.B. "TOM:") und berechnet deren Anteil.',
+            role_dist: 'Erkennt Rollen anhand von Großbuchstaben (z.B. "CHARACKTERNAME:") und berechnet deren Anteil.',
             vocabulary: 'Berechnet die Type-Token-Ratio (TTR) um den Wortreichtum zu bestimmen.',
             pronunciation: 'Zeigt Wörter mit besonderer Aussprache.',
             keyword_focus: 'Analysiert dominante Substantive und prüft die Fokus-Schärfe.',
@@ -246,7 +246,7 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -278,15 +278,15 @@
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
+            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
             imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
             erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
             hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
             elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'adjective', 'echo', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
-            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var', 'pacing', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
+            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
         },
         
         FILLER_DB: {
@@ -4558,8 +4558,10 @@
                         <span style="font-weight:700; color:${color};">${paceLabel}</span>
                     </div>
                     <div style="font-size:2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue};">${bpm} BPM</div>
-                    <div style="font-size:0.85rem; color:#64748b;">Range: ${min}–${max} BPM</div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</div>
+                    <div class="ska-bpm-meta-row">
+                        <span>Range: ${min}–${max} BPM</span>
+                        <span>Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</span>
+                    </div>
                     <div class="ska-bpm-genre-badge">Genre-Hinweis: ${genreHint}</div>
                 </div>
                 ${this.renderTipSection('bpm', true)}`;
@@ -4656,7 +4658,7 @@
             
             const roles = Object.keys(data.roles);
             let h = '';
-            const infoBox = this.renderFooterInfo('So funktioniert die Rollen-Erkennung', 'Zeilen mit SPRECHERNAME: in Großbuchstaben werden als Rollen erkannt und vom restlichen Text getrennt gezählt.');
+            const infoBox = this.renderFooterInfo('So funktioniert die Rollen-Erkennung', 'Zeilen mit CHARACKTERNAME: in Großbuchstaben werden als Rollen erkannt und vom restlichen Text getrennt gezählt.');
             
             if(roles.length === 0 || (roles.length === 1 && roles[0] === 'Erzähler/Unbekannt')) {
                 h = `<p style="color:#64748b; font-size:0.9rem;">Keine spezifischen Rollen (Großbuchstaben am Zeilenanfang) erkannt.</p>`;
@@ -4677,9 +4679,11 @@
                           </div>`;
                 });
                 h += `</div>`;
-                h += this.renderTipSection('role_dist', true);
+                h += `<div class="ska-card-footer">${this.renderTipSection('role_dist', true)}${infoBox}</div>`;
+                this.updateCard('role_dist', h);
+                return;
             }
-            h += infoBox;
+            h += `<div class="ska-card-footer">${infoBox}</div>`;
             this.updateCard('role_dist', h);
         }
 
@@ -5529,7 +5533,7 @@
                     </div>
                   </div>`;
             
-            h += `<div class="ska-card-footer">${influenceTitle}${this.renderTipSection('dialog', true)}${infoBox}</div>`;
+            h += `<div class="ska-card-footer">${influenceTitle}${infoBox}${this.renderTipSection('dialog', true)}</div>`;
             this.updateCard('dialog', h);
         }
 
@@ -5871,7 +5875,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -5895,7 +5899,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
