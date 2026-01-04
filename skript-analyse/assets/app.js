@@ -68,7 +68,6 @@
             rhet_questions: 'Fragen gezielt für Aufmerksamkeit einsetzen.',
             depth_check: 'Schachtelsätze kürzen, damit es klar bleibt.',
             sentiment_intensity: 'Emotionen dosiert einsetzen.',
-            naming_check: 'Namen konsistent halten, damit keine Irritation entsteht.',
             compliance_check: 'Pflichttexte exakt hinterlegen und im Skript prüfen.'
         },
         
@@ -152,7 +151,7 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
@@ -202,7 +201,6 @@
             rhet_questions: '❓ Rhetorische Fragen',
             depth_check: '🧵 Satz-Verschachtelung',
             sentiment_intensity: '🌡️ Stimmungs-Intensität',
-            naming_check: '🧩 Naming-Check',
             compliance_check: '✅ Pflichttext-Check'
         },
 
@@ -227,7 +225,7 @@
             dialog: 'Zeigt das Verhältnis zwischen Erzähler-Text und wörtlicher Rede (Dialog).',
             gender: 'Findet generische Maskuline und schlägt neutrale Alternativen vor.',
             start_var: 'Findet monotone Satzanfänge (z.B. "Dann... Dann...").',
-            role_dist: 'Erkennt Rollen anhand von Großbuchstaben (z.B. "TOM:") und berechnet deren Anteil.',
+            role_dist: 'Erkennt Rollen anhand von Großbuchstaben (z.B. "CHARACKTERNAME:") und berechnet deren Anteil.',
             vocabulary: 'Berechnet die Type-Token-Ratio (TTR) um den Wortreichtum zu bestimmen.',
             pronunciation: 'Zeigt Wörter mit besonderer Aussprache.',
             keyword_focus: 'Analysiert dominante Substantive und prüft die Fokus-Schärfe.',
@@ -245,11 +243,10 @@
             rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.',
             depth_check: 'Markiert Sätze mit zu vielen Nebensatz-Ebenen.',
             sentiment_intensity: 'Zeigt den emotionalen Vibe-Verlauf im Skript.',
-            naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.',
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -265,7 +262,6 @@
             'compliance_check',
             'keyword_focus',
             'audience',
-            'naming_check',
             'bullshit',
             'metaphor',
             'compare'
@@ -282,15 +278,15 @@
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
+            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
             imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
             erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
             hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
             elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'adjective', 'echo', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
-            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'start_var', 'pacing', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
+            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
         },
         
         FILLER_DB: {
@@ -372,7 +368,6 @@
             rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion.", "Rhetorische Fragen sparsam einsetzen – sonst wirkt es unsicher.", "Beantworte die Frage unmittelbar, damit kein Leerlauf entsteht."],
             depth_check: ["Mehr als zwei Nebensatz-Ebenen überfordern beim Sprechen.", "Teile lange Schachtelsätze auf.", "Ein Gedanke pro Satz erhöht die Klarheit.", "Prüfe: Liefert der Satz neue Information oder nur Wiederholung?", "Details nur dort, wo sie die Aussage wirklich stützen."],
             sentiment_intensity: ["Emotionaler Wechsel hält die Aufmerksamkeit hoch.", "Achte auf harte Brüche im Vibe.", "Nutze positive Peaks als Highlights.", "Emotionalität dosieren: neutral erklären, dann gezielt färben.", "Vermeide extreme Superlative ohne Beleg – wirkt unglaubwürdig."],
-            naming_check: ["Unklare Namensvarianten wirken unprofessionell.", "Prüfe Eigennamen auf Tippfehler.", "Konsistenz schafft Vertrauen.", "Begriffe einheitlich verwenden: nicht 'Produkt' und später 'Tool' mischen.", "Schreibe Abkürzungen beim ersten Auftreten aus."],
             compliance_check: ["Pflichttexte genau wie vorgegeben einfügen.", "Jede Passage separat prüfen (eine pro Zeile).", "Kleine Abweichungen führen zu Rot – Wortlaut exakt halten.", "Vermeide zusätzliche Satzzeichen im Pflichttext.", "Prüfe die Passagen vor dem finalen Export."]
         },
 
@@ -400,7 +395,8 @@
         cleanTextForCounting: (text) => {
             const markerTokens = (SA_CONFIG.MARKERS || [])
                 .map((marker) => String(marker.val || '').trim())
-                .filter(Boolean);
+                .filter(Boolean)
+                .sort((a, b) => b.length - a.length);
             let cleaned = text;
             markerTokens.forEach((marker) => {
                 cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
@@ -1872,7 +1868,7 @@
                                 let issue = [];
                                 if(b.words > 25) issue.push(`${b.words} Wörter`);
                                 if(b.commas >= 4) issue.push(`${b.commas} Kommas`);
-                                if(b.hardSegment) issue.push('Keine Pause / Atemnot');
+                                if(b.hardSegment) issue.push('Keine Pause / Atemdruck');
                                 const line = `• "${b.text.substring(0, 70)}..." (${issue.join(', ')})`;
                                 checkPage(6);
                                 doc.text(line, margin + 5, y);
@@ -1983,7 +1979,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
@@ -3922,7 +3918,6 @@
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
-                    case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
                     case 'pacing': this.renderPacingCard(dur, raw, active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'compliance_check': this.renderComplianceCard(raw, active); break;
@@ -4236,23 +4231,25 @@
             });
             h += `</div>`;
             h += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
-                    <span>${questions.length} Fragen</span>
+                    <span>${questions.length} Fragen • ${rhetorical.length} rhetorisch</span>
                     <span>${label}</span>
                   </div>`;
-            const listItems = rhetorical.length ? rhetorical : questions;
+            const listItems = questions;
             if (listItems.length) {
                 const initial = listItems.slice(0, 3);
                 const remaining = listItems.slice(3);
                 h += `<div class="ska-problem-list">`;
                 initial.forEach(item => {
-                    h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                    const badge = item.isRhetorical ? '<span class="ska-question-badge">Rhetorisch</span>' : '';
+                    h += `<div class="ska-problem-item">${item.sentence}${badge}</div>`;
                 });
                 h += `</div>`;
                 if (remaining.length && isPremium) {
                     h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     h += `<div class="ska-problem-list">`;
                     remaining.forEach(item => {
-                        h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                        const badge = item.isRhetorical ? '<span class="ska-question-badge">Rhetorisch</span>' : '';
+                        h += `<div class="ska-problem-item">${item.sentence}${badge}</div>`;
                     });
                     h += `</div></div>`;
                     h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
@@ -4289,10 +4286,15 @@
 
             const start = data[0]?.score || 0;
             const end = data[data.length - 1]?.score || 0;
+            const avgScore = data.reduce((acc, item) => acc + (item.score || 0), 0) / (data.length || 1);
             const trend = end - start;
             let trendLabel = 'Stabil';
             if (trend > 0.3) trendLabel = 'Steigende Energie';
             if (trend < -0.3) trendLabel = 'Abkühlend';
+            let avgLabel = 'Neutral';
+            let avgColor = SA_CONFIG.COLORS.muted;
+            if (avgScore > 0.25) { avgLabel = 'Eher positiv'; avgColor = SA_CONFIG.COLORS.success; }
+            if (avgScore < -0.25) { avgLabel = 'Eher kritisch'; avgColor = SA_CONFIG.COLORS.warn; }
 
             let h = `<div class="ska-intensity-map">`;
             data.slice(0, 12).forEach(item => {
@@ -4308,23 +4310,25 @@
                     <span>${trendLabel}</span>
                     <span>Ende ${end.toFixed(2)}</span>
                   </div>`;
+            h += `
+                <div class="ska-intensity-summary">
+                    <div class="ska-intensity-summary-item">
+                        <span>Durchschnitt</span>
+                        <strong style="color:${avgColor};">${avgLabel} (${avgScore.toFixed(2)})</strong>
+                    </div>
+                    <div class="ska-intensity-summary-item">
+                        <span>Skala</span>
+                        <strong>-1 (kritisch) bis +1 (positiv)</strong>
+                    </div>
+                </div>
+                <div class="ska-intensity-legend">
+                    <span class="ska-intensity-chip is-positive">Positiv</span>
+                    <span class="ska-intensity-chip is-neutral">Neutral</span>
+                    <span class="ska-intensity-chip is-negative">Kritisch</span>
+                    <span class="ska-intensity-note">Tipp: Schwankungen zeigen Stimmungswechsel in den Sätzen.</span>
+                </div>`;
             h += this.renderTipSection('sentiment_intensity', true);
             this.updateCard('sentiment_intensity', h);
-        }
-
-        renderNamingCheckCard(data, active) {
-            if(!active) return this.updateCard('naming_check', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            if(!data || data.length === 0) {
-                return this.updateCard('naming_check', `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✅ Keine Namens-Inkonsistenzen gefunden.</div>`);
-            }
-            let h = `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Ähnliche Namen: <strong>${data.length}</strong></div>`;
-            h += `<div class="ska-problem-list">`;
-            data.slice(0, 3).forEach(item => {
-                h += `<div class="ska-problem-item">${item.first} ↔ ${item.second}<div class="ska-problem-meta">⚠️ Distanz ${item.distance}</div></div>`;
-            });
-            h += `</div>`;
-            h += this.renderTipSection('naming_check', true);
-            this.updateCard('naming_check', h);
         }
 
         renderTeleprompterCard(read, active) {
@@ -4398,8 +4402,8 @@
                 </div>
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
-                    <button class="ska-btn ska-btn--secondary" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
-                    <button class="ska-btn ska-btn--ghost" data-action="pacing-reset">Reset</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-reset">Reset</button>
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
 
@@ -4435,16 +4439,8 @@
                 data.issues.slice(0, 3).forEach((item) => {
                     h += `<div class="ska-problem-item">${item.sentence}<div class="ska-problem-meta">⚠️ Entropie ${(item.entropy * 100).toFixed(0)}%</div></div>`;
                 });
-                if (totalIssues > 3) {
-                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${totalIssues - 3} weitere</div>`;
-                }
                 h += `</div>`;
-                if (totalIssues > 8) {
-                    const isPremium = this.isPremiumActive();
-                    const lockHint = isPremium ? '' : 'data-premium-hint="Mehr Details gibt es in Premium." aria-disabled="true"';
-                    const lockClass = isPremium ? '' : ' is-locked';
-                    h += `<button class="ska-expand-link ska-more-toggle${lockClass}" data-action="open-syllable-entropy" ${lockHint}>Alle ${totalIssues} anzeigen</button>`;
-                }
+                h += `<button class="ska-expand-link ska-more-toggle" data-action="open-syllable-entropy">Alle ${totalIssues} anzeigen</button>`;
             } else {
                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Rhythmus-Brüche erkannt.</p>`;
             }
@@ -4548,6 +4544,12 @@
             let color = SA_CONFIG.COLORS.blue;
             if (bpm < 80) { paceLabel = 'Ruhig'; color = SA_CONFIG.COLORS.success; }
             if (bpm > 110) { paceLabel = 'Dynamisch'; color = SA_CONFIG.COLORS.warn; }
+            let genreHint = 'Cinematic / Chill';
+            if (bpm < 70) genreHint = 'Ambient / Lo-Fi';
+            else if (bpm < 90) genreHint = 'Ballade / Downtempo';
+            else if (bpm < 110) genreHint = 'Pop / Indie';
+            else if (bpm < 130) genreHint = 'Dance / Elektro';
+            else genreHint = 'EDM / Rock';
 
             const h = `
                 <div style="margin-bottom:1rem;">
@@ -4556,8 +4558,11 @@
                         <span style="font-weight:700; color:${color};">${paceLabel}</span>
                     </div>
                     <div style="font-size:2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue};">${bpm} BPM</div>
-                    <div style="font-size:0.85rem; color:#64748b;">Range: ${min}–${max} BPM</div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</div>
+                    <div class="ska-bpm-meta-row">
+                        <span>Range: ${min}–${max} BPM</span>
+                        <span>Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</span>
+                    </div>
+                    <div class="ska-bpm-genre-badge">Genre-Hinweis: ${genreHint}</div>
                 </div>
                 ${this.renderTipSection('bpm', true)}`;
             this.updateCard('bpm', h, this.bottomGrid, '', '', true);
@@ -4653,6 +4658,7 @@
             
             const roles = Object.keys(data.roles);
             let h = '';
+            const infoBox = this.renderFooterInfo('So funktioniert die Rollen-Erkennung', 'Zeilen mit CHARACKTERNAME: in Großbuchstaben werden als Rollen erkannt und vom restlichen Text getrennt gezählt.');
             
             if(roles.length === 0 || (roles.length === 1 && roles[0] === 'Erzähler/Unbekannt')) {
                 h = `<p style="color:#64748b; font-size:0.9rem;">Keine spezifischen Rollen (Großbuchstaben am Zeilenanfang) erkannt.</p>`;
@@ -4673,8 +4679,11 @@
                           </div>`;
                 });
                 h += `</div>`;
-                h += this.renderTipSection('role_dist', true);
+                h += `<div class="ska-card-footer">${this.renderTipSection('role_dist', true)}${infoBox}</div>`;
+                this.updateCard('role_dist', h);
+                return;
             }
+            h += `<div class="ska-card-footer">${infoBox}</div>`;
             this.updateCard('role_dist', h);
         }
 
@@ -4827,6 +4836,14 @@
                 : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
+        }
+
+        renderFooterInfo(title, text) {
+            return `
+                <div class="ska-card-info">
+                    <div class="ska-card-info-title">${title}</div>
+                    <p class="ska-card-info-text">${text}</p>
+                </div>`;
         }
 
         renderGenderCard(issues, active) {
@@ -5144,7 +5161,7 @@
                     let reasons = [];
                     if(k.words > 25) reasons.push(`${k.words} Wörter`);
                     if(k.commas >= 4) reasons.push(`${k.commas} Kommas`);
-                    if(k.hardSegment) reasons.push(`Keine Pause / Atemnot`);
+                    if(k.hardSegment) reasons.push(`Keine Pause / Atemdruck`);
                     return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
                 };
                 killers.slice(0, 3).forEach(k => { h += renderItem(k); });
@@ -5269,6 +5286,7 @@
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
+            h += this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.');
             this.updateCard('marker', h);
         }
 
@@ -5349,13 +5367,14 @@
         renderChapterCalculatorCard(raw, active) {
             if(!active) return this.updateCard('chapter_calc', this.renderDisabledState(), this.bottomGrid, '', '', true);
             const isHoerbuch = this.settings.usecase === 'hoerbuch' || this.settings.usecase === 'auto';
+            const infoBox = this.renderFooterInfo('So funktioniert der Kapitel-Kalkulator', 'Kapitelüberschriften wie „Kapitel 1“ oder „Chapter I“ werden erkannt und pro Abschnitt in Minuten geschätzt.');
             if (!isHoerbuch) {
-                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>');
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p><div class="ska-card-footer">${infoBox}</div>`);
             }
 
             const chapters = this.extractChapters(raw);
             if (!chapters.length) {
-                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p>');
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p><div class="ska-card-footer">${infoBox}</div>`);
             }
 
             let total = 0;
@@ -5377,7 +5396,8 @@
                     <span>Gefundene Kapitel: <strong>${chapters.length}</strong></span>
                     <span>Gesamtzeit: <strong>${SA_Utils.formatMin(total)}</strong></span>
                 </div>
-                <div class="ska-chapter-list">${rows}</div>`;
+                <div class="ska-chapter-list">${rows}</div>
+                <div class="ska-card-footer">${infoBox}</div>`;
             this.updateCard('chapter_calc', html);
         }
 
@@ -5484,6 +5504,8 @@
 
             const ratio = d.ratio; 
             const col = SA_CONFIG.COLORS.blue;
+            const influenceTitle = `<div class="ska-card-footer-title">So kannst Du diese Funktion beeinflussen</div>`;
+            const infoBox = this.renderFooterInfo('Kurz erklärt', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
             
             let label = "Ausgewogen";
             if(ratio > 70) label = "Sehr viel Dialog";
@@ -5511,7 +5533,7 @@
                     </div>
                   </div>`;
             
-            h += this.renderTipSection('dialog', true);
+            h += `<div class="ska-card-footer">${influenceTitle}${infoBox}${this.renderTipSection('dialog', true)}</div>`;
             this.updateCard('dialog', h);
         }
 
@@ -5609,6 +5631,7 @@
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
+                <div class="ska-premium-upgrade-ribbon">Jetzt Upgraden!</div>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
                         <span class="ska-premium-upgrade-icon" aria-hidden="true">
@@ -5852,7 +5875,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -5876,7 +5899,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
