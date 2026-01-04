@@ -265,7 +265,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-hover-badge strong { display: block; font-size: 0.75rem; color: #0f172a; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .ska-premium-upgrade-hover-badge ul { margin: 0; padding-left: 1rem; display: grid; gap: 0.3rem; font-size: 0.78rem; }
 .ska-premium-upgrade-hover:hover .ska-premium-upgrade-hover-badge { display: block; }
-.ska-premium-upgrade-cta { position: relative; margin-top: 2.2rem; display: flex; justify-content: center; }
+.ska-premium-upgrade-cta { position: relative; margin-top: 2.2rem; display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
 .ska-premium-upgrade-cta .ska-btn { transform: translateY(50%); box-shadow: 0 12px 24px -18px rgba(2, 132, 199, 0.5); }
 .ska-premium-upgrade-footer { display: flex; flex-direction: column; gap: 0.95rem; align-items: center; font-size: 0.9rem; margin-top: 1.8rem; }
 .ska-premium-upgrade-footer span { color: #0284c7; font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
