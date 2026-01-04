@@ -5523,7 +5523,7 @@
                         <span class="ska-premium-upgrade-icon">⚡️</span>
                         <strong>Upgrade auf Premium</strong>
                     </div>
-                    <span>Professioneller Feinschliff, Studio-Tools & volle Kontrolle.</span>
+                    <span>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr – inklusive PDF-Export mit deinen Kennzahlen und der Option, direkt einen Sprecher anzufragen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
