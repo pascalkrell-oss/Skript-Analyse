@@ -68,7 +68,6 @@
             rhet_questions: 'Fragen gezielt für Aufmerksamkeit einsetzen.',
             depth_check: 'Schachtelsätze kürzen, damit es klar bleibt.',
             sentiment_intensity: 'Emotionen dosiert einsetzen.',
-            naming_check: 'Namen konsistent halten, damit keine Irritation entsteht.',
             compliance_check: 'Pflichttexte exakt hinterlegen und im Skript prüfen.'
         },
         
@@ -152,7 +151,7 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'naming_check', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
@@ -202,7 +201,6 @@
             rhet_questions: '❓ Rhetorische Fragen',
             depth_check: '🧵 Satz-Verschachtelung',
             sentiment_intensity: '🌡️ Stimmungs-Intensität',
-            naming_check: '🧩 Naming-Check',
             compliance_check: '✅ Pflichttext-Check'
         },
 
@@ -245,11 +243,10 @@
             rhet_questions: 'Zeigt die Verteilung rhetorischer Fragen im Text.',
             depth_check: 'Markiert Sätze mit zu vielen Nebensatz-Ebenen.',
             sentiment_intensity: 'Zeigt den emotionalen Vibe-Verlauf im Skript.',
-            naming_check: 'Findet ähnliche Eigennamen mit Tippfehlern.',
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'naming_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'pacing', 'compliance_check', 'start_var', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -265,7 +262,6 @@
             'compliance_check',
             'keyword_focus',
             'audience',
-            'naming_check',
             'bullshit',
             'metaphor',
             'compare'
@@ -372,7 +368,6 @@
             rhet_questions: ["Fragen binden das Publikum ein.", "Zu viele Fragen wirken verhörend.", "Setze Fragen gezielt für Interaktion.", "Rhetorische Fragen sparsam einsetzen – sonst wirkt es unsicher.", "Beantworte die Frage unmittelbar, damit kein Leerlauf entsteht."],
             depth_check: ["Mehr als zwei Nebensatz-Ebenen überfordern beim Sprechen.", "Teile lange Schachtelsätze auf.", "Ein Gedanke pro Satz erhöht die Klarheit.", "Prüfe: Liefert der Satz neue Information oder nur Wiederholung?", "Details nur dort, wo sie die Aussage wirklich stützen."],
             sentiment_intensity: ["Emotionaler Wechsel hält die Aufmerksamkeit hoch.", "Achte auf harte Brüche im Vibe.", "Nutze positive Peaks als Highlights.", "Emotionalität dosieren: neutral erklären, dann gezielt färben.", "Vermeide extreme Superlative ohne Beleg – wirkt unglaubwürdig."],
-            naming_check: ["Unklare Namensvarianten wirken unprofessionell.", "Prüfe Eigennamen auf Tippfehler.", "Konsistenz schafft Vertrauen.", "Begriffe einheitlich verwenden: nicht 'Produkt' und später 'Tool' mischen.", "Schreibe Abkürzungen beim ersten Auftreten aus."],
             compliance_check: ["Pflichttexte genau wie vorgegeben einfügen.", "Jede Passage separat prüfen (eine pro Zeile).", "Kleine Abweichungen führen zu Rot – Wortlaut exakt halten.", "Vermeide zusätzliche Satzzeichen im Pflichttext.", "Prüfe die Passagen vor dem finalen Export."]
         },
 
@@ -1873,7 +1868,7 @@
                                 let issue = [];
                                 if(b.words > 25) issue.push(`${b.words} Wörter`);
                                 if(b.commas >= 4) issue.push(`${b.commas} Kommas`);
-                                if(b.hardSegment) issue.push('Keine Pause / Atemnot');
+                                if(b.hardSegment) issue.push('Keine Pause / Atemdruck');
                                 const line = `• "${b.text.substring(0, 70)}..." (${issue.join(', ')})`;
                                 checkPage(6);
                                 doc.text(line, margin + 5, y);
@@ -1984,7 +1979,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, naming_check: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
@@ -3923,7 +3918,6 @@
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
-                    case 'naming_check': this.renderNamingCheckCard(SA_Logic.analyzeNamingInconsistency(read.sentences), active); break;
                     case 'pacing': this.renderPacingCard(dur, raw, active); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'compliance_check': this.renderComplianceCard(raw, active); break;
@@ -4337,21 +4331,6 @@
             this.updateCard('sentiment_intensity', h);
         }
 
-        renderNamingCheckCard(data, active) {
-            if(!active) return this.updateCard('naming_check', this.renderDisabledState(), this.bottomGrid, '', '', true);
-            if(!data || data.length === 0) {
-                return this.updateCard('naming_check', `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✅ Keine Namens-Inkonsistenzen gefunden.</div>`);
-            }
-            let h = `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Ähnliche Namen: <strong>${data.length}</strong></div>`;
-            h += `<div class="ska-problem-list">`;
-            data.slice(0, 3).forEach(item => {
-                h += `<div class="ska-problem-item">${item.first} ↔ ${item.second}<div class="ska-problem-meta">⚠️ Distanz ${item.distance}</div></div>`;
-            });
-            h += `</div>`;
-            h += this.renderTipSection('naming_check', true);
-            this.updateCard('naming_check', h);
-        }
-
         renderTeleprompterCard(read, active) {
             if(!active) return this.updateCard('teleprompter', this.renderDisabledState(), this.bottomGrid, '', '', true);
             const effectiveSettings = this.getEffectiveSettings();
@@ -4460,16 +4439,8 @@
                 data.issues.slice(0, 3).forEach((item) => {
                     h += `<div class="ska-problem-item">${item.sentence}<div class="ska-problem-meta">⚠️ Entropie ${(item.entropy * 100).toFixed(0)}%</div></div>`;
                 });
-                if (totalIssues > 3) {
-                    h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${totalIssues - 3} weitere</div>`;
-                }
                 h += `</div>`;
-                if (totalIssues > 8) {
-                    const isPremium = this.isPremiumActive();
-                    const lockHint = isPremium ? '' : 'data-premium-hint="Mehr Details gibt es in Premium." aria-disabled="true"';
-                    const lockClass = isPremium ? '' : ' is-locked';
-                    h += `<button class="ska-expand-link ska-more-toggle${lockClass}" data-action="open-syllable-entropy" ${lockHint}>Alle ${totalIssues} anzeigen</button>`;
-                }
+                h += `<button class="ska-expand-link ska-more-toggle" data-action="open-syllable-entropy">Alle ${totalIssues} anzeigen</button>`;
             } else {
                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Rhythmus-Brüche erkannt.</p>`;
             }
@@ -5186,7 +5157,7 @@
                     let reasons = [];
                     if(k.words > 25) reasons.push(`${k.words} Wörter`);
                     if(k.commas >= 4) reasons.push(`${k.commas} Kommas`);
-                    if(k.hardSegment) reasons.push(`Keine Pause / Atemnot`);
+                    if(k.hardSegment) reasons.push(`Keine Pause / Atemdruck`);
                     return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
                 };
                 killers.slice(0, 3).forEach(k => { h += renderItem(k); });
@@ -5394,12 +5365,12 @@
             const isHoerbuch = this.settings.usecase === 'hoerbuch' || this.settings.usecase === 'auto';
             const infoBox = this.renderFooterInfo('So funktioniert der Kapitel-Kalkulator', 'Kapitelüberschriften wie „Kapitel 1“ oder „Chapter I“ werden erkannt und pro Abschnitt in Minuten geschätzt.');
             if (!isHoerbuch) {
-                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>${infoBox}`);
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p><div class="ska-card-footer">${infoBox}</div>`);
             }
 
             const chapters = this.extractChapters(raw);
             if (!chapters.length) {
-                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p>${infoBox}`);
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p><div class="ska-card-footer">${infoBox}</div>`);
             }
 
             let total = 0;
@@ -5422,7 +5393,7 @@
                     <span>Gesamtzeit: <strong>${SA_Utils.formatMin(total)}</strong></span>
                 </div>
                 <div class="ska-chapter-list">${rows}</div>
-                ${infoBox}`;
+                <div class="ska-card-footer">${infoBox}</div>`;
             this.updateCard('chapter_calc', html);
         }
 
@@ -5529,7 +5500,8 @@
 
             const ratio = d.ratio; 
             const col = SA_CONFIG.COLORS.blue;
-            const infoBox = this.renderFooterInfo('So kannst Du diese Funktion beeinflussen', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
+            const influenceTitle = `<div class="ska-card-footer-title">So kannst Du diese Funktion beeinflussen</div>`;
+            const infoBox = this.renderFooterInfo('Kurz erklärt', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
             
             let label = "Ausgewogen";
             if(ratio > 70) label = "Sehr viel Dialog";
@@ -5557,8 +5529,7 @@
                     </div>
                   </div>`;
             
-            h += this.renderTipSection('dialog', true);
-            h += infoBox;
+            h += `<div class="ska-card-footer">${influenceTitle}${this.renderTipSection('dialog', true)}${infoBox}</div>`;
             this.updateCard('dialog', h);
         }
 
