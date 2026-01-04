@@ -2832,6 +2832,11 @@
                 return true;
             }
             if (act === 'close-premium-upgrade') {
+                if (!this.isPremiumActive()) {
+                    this.state.premiumUpgradeDismissed = false;
+                    this.renderUpgradePanel();
+                    return true;
+                }
                 this.state.premiumUpgradeDismissed = true;
                 this.saveUIState();
                 this.renderUpgradePanel();
@@ -3187,9 +3192,13 @@
                 this.state.planMode = 'free';
             }
 
-            const upgradeDismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED);
-            if (upgradeDismissed) {
-                this.state.premiumUpgradeDismissed = upgradeDismissed === 'true';
+            if (this.isPremiumActive()) {
+                const upgradeDismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED);
+                if (upgradeDismissed) {
+                    this.state.premiumUpgradeDismissed = upgradeDismissed === 'true';
+                }
+            } else {
+                this.state.premiumUpgradeDismissed = false;
             }
             
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
@@ -3227,7 +3236,8 @@
             if (SA_CONFIG.IS_ADMIN) {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
             }
-            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(this.state.premiumUpgradeDismissed));
+            const upgradeDismissed = this.isPremiumActive() ? this.state.premiumUpgradeDismissed : false;
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
                 lastGenre: this.settings.lastGenre,
@@ -5506,8 +5516,6 @@
         }
 
         isCardAvailable(id) {
-            const allowPremiumPreview = SA_CONFIG.IS_ADMIN || SA_CONFIG.PRO_MODE || !SA_CONFIG.IS_LOGGED_IN;
-            if (!allowPremiumPreview && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
