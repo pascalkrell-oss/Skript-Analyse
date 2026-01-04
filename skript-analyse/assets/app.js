@@ -2811,10 +2811,6 @@
                 this.analyze(this.getText());
                 return true;
             }
-            if (act === 'premium-upgrade') {
-                this.showPremiumNotice('Premium freischalten, um alle Analysen und Studio-Tools zu nutzen.');
-                return true;
-            }
             if (act === 'premium-price-plan') {
                 const plan = btn.dataset.plan;
                 if (plan) {
@@ -3724,6 +3720,13 @@
             const premiumCta = !isPremium && premiumItems.length
                 ? '<div class="ska-filterbar-premium-cta"><a class="ska-btn ska-btn--ghost ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a></div>'
                 : '';
+            const premiumInfoBox = !isPremium && premiumItems.length
+                ? `<div class="ska-filterbar-upgrade-card">
+                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
+                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
+                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
+                   </div>`
+                : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3752,6 +3755,7 @@
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                     ${premiumCta}
+                    ${premiumInfoBox}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
@@ -5504,7 +5508,6 @@
 
             const ratio = d.ratio; 
             const col = SA_CONFIG.COLORS.blue;
-            const influenceTitle = `<div class="ska-card-footer-title">So kannst Du diese Funktion beeinflussen</div>`;
             const infoBox = this.renderFooterInfo('Kurz erklärt', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
             
             let label = "Ausgewogen";
@@ -5533,7 +5536,7 @@
                     </div>
                   </div>`;
             
-            h += `<div class="ska-card-footer">${influenceTitle}${infoBox}${this.renderTipSection('dialog', true)}</div>`;
+            h += `<div class="ska-card-footer">${infoBox}${this.renderTipSection('dialog', true)}</div>`;
             this.updateCard('dialog', h);
         }
 
@@ -5692,7 +5695,7 @@
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Jetzt Premium freischalten</button>
+                            <a class="ska-btn ska-btn--primary" href="#ska-premium-upgrade">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
@@ -5875,7 +5878,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -5899,7 +5902,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade" data-action="premium-upgrade">Premium freischalten</a>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
