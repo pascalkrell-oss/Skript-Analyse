@@ -5680,9 +5680,9 @@
                                 <path d="M13 2L3 14h7l-1 8 12-14h-7l1-6z"></path>
                             </svg>
                         </span>
-                        <strong>Nutze das volle Potential</strong>
+                        <strong>Erhalte Premium Zugriff</strong>
                     </div>
-                    <span>Mehr Analysen, Reports & Vergleich: Premium lohnt sich besonders für Creator, Teams und Agenturen, die tiefer optimieren wollen.</span>
+                    <span>Mehr Analysen, Reports & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col is-free">
