@@ -2832,11 +2832,6 @@
                 return true;
             }
             if (act === 'close-premium-upgrade') {
-                if (!this.isPremiumActive()) {
-                    this.state.premiumUpgradeDismissed = false;
-                    this.renderUpgradePanel();
-                    return true;
-                }
                 this.state.premiumUpgradeDismissed = true;
                 this.saveUIState();
                 this.renderUpgradePanel();
@@ -3236,7 +3231,7 @@
             if (SA_CONFIG.IS_ADMIN) {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
             }
-            const upgradeDismissed = this.isPremiumActive() ? this.state.premiumUpgradeDismissed : false;
+            const upgradeDismissed = this.isPremiumActive() ? false : this.state.premiumUpgradeDismissed;
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
@@ -3263,6 +3258,20 @@
             if (toggle && toggle instanceof HTMLInputElement) {
                 toggle.checked = this.isPremiumActive();
                 toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
+            }
+            const saveBtn = document.querySelector('[data-action="save-version"]');
+            if (saveBtn && saveBtn instanceof HTMLButtonElement) {
+                const isPremium = this.isPremiumActive();
+                saveBtn.disabled = !isPremium;
+                saveBtn.classList.toggle('is-disabled', !isPremium);
+                saveBtn.setAttribute('aria-disabled', String(!isPremium));
+                saveBtn.title = isPremium ? 'Version merken' : 'Nur mit Premium verfügbar.';
+                const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
+                if (tooltip) {
+                    tooltip.textContent = isPremium
+                        ? 'Premium: Versionen speichern & vergleichen.'
+                        : 'Nur mit Premium verfügbar.';
+                }
             }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
             if (typeof window !== 'undefined') {
@@ -5630,7 +5639,10 @@
                 return;
             }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id));
+            const premiumCards = lockedCardIds
+                .map(id => SA_CONFIG.CARD_TITLES[id])
+                .filter(Boolean);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
