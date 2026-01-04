@@ -1982,8 +1982,7 @@
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
                 planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
-                showPremiumList: false,
-                showPremiumCards: false,
+                premiumPricePlan: 'yearly',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
@@ -2814,9 +2813,12 @@
                 this.showPremiumNotice('Premium freischalten, um alle Analysen und Studio-Tools zu nutzen.');
                 return true;
             }
-            if (act === 'toggle-premium-list') {
-                this.state.showPremiumList = !this.state.showPremiumList;
-                this.renderUpgradePanel();
+            if (act === 'premium-price-plan') {
+                const plan = btn.dataset.plan;
+                if (plan) {
+                    this.state.premiumPricePlan = plan;
+                    this.renderUpgradePanel();
+                }
                 return true;
             }
             if (act === 'toggle-premium-cards') {
@@ -5467,14 +5469,9 @@
                 if (existing) existing.remove();
                 return;
             }
-            const totalPremium = SA_CONFIG.CARD_ORDER.filter(id => !this.isCardUnlocked(id)).length;
-            const teaserCount = SA_CONFIG.PREMIUM_TEASERS.length;
-            const remaining = Math.max(0, totalPremium - teaserCount);
-            const moreText = remaining > 0 ? `+ ${remaining} weitere Analyseboxen und Funktionen` : 'Alle Premium-Features freischalten';
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const showAllPremiumCards = this.state.showPremiumCards;
-            const premiumCardsPreview = showAllPremiumCards ? premiumCards : premiumCards.slice(0, 5);
+            const premiumCardsPreview = premiumCards.slice(0, 5);
             const remainingPremiumCards = Math.max(0, premiumCards.length - premiumCardsPreview.length);
             const freeFunctions = [
                 'WPM-Modus',
@@ -5489,6 +5486,12 @@
                 'Pro-PDF-Report',
                 'Cloud-Speicher (sofern verfügbar)'
             ];
+            const premiumPlans = [
+                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat' },
+                { id: 'semi', label: 'Halbjährlich', price: '18,50 EUR', note: 'pro Monat · 111,00 EUR' },
+                { id: 'yearly', label: 'Jährlich', price: '17,00 EUR', note: 'pro Monat · 204,00 EUR', badge: 'Bester Deal' }
+            ];
+            const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const renderList = (items) => items.map(item => `
                 <li>
                     <span class="ska-upgrade-check">
@@ -5509,6 +5512,8 @@
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
                         <div class="ska-premium-upgrade-title">Free</div>
+                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
+                        <div class="ska-premium-upgrade-price-note">für immer</div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing">
@@ -5524,16 +5529,29 @@
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-title">Premium</div>
-                        <div class="ska-premium-upgrade-price">20,00 EUR</div>
+                        <div class="ska-premium-upgrade-switch">
+                            ${premiumPlans.map(plan => `
+                                <button class="ska-premium-plan-btn ${plan.id === selectedPlan.id ? 'is-active' : ''}" data-action="premium-price-plan" data-plan="${plan.id}">
+                                    <span>${plan.label}</span>
+                                    ${plan.badge ? `<em>${plan.badge}</em>` : ''}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
+                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing">
                                 ${renderList(premiumCardsPreview)}
                             </ul>
                             ${remainingPremiumCards > 0 ? `
-                                <button class="ska-premium-upgrade-toggle" data-action="toggle-premium-cards">
-                                    ${showAllPremiumCards ? 'Weniger anzeigen' : `+ ${remainingPremiumCards} weitere Analyseboxen anzeigen`}
-                                </button>
+                                <div class="ska-premium-upgrade-hover">
+                                    <span class="ska-premium-upgrade-hover-label">+ ${remainingPremiumCards} weitere Analyseboxen</span>
+                                    <div class="ska-premium-upgrade-hover-badge">
+                                        <strong>Weitere Premium-Boxen</strong>
+                                        <ul>${premiumCards.slice(5).map(item => `<li>${item}</li>`).join('')}</ul>
+                                    </div>
+                                </div>
                             ` : ''}
                         </div>
                         <div class="ska-premium-upgrade-section">
@@ -5542,24 +5560,13 @@
                                 ${renderList(premiumFunctions)}
                             </ul>
                         </div>
+                        <div class="ska-premium-upgrade-cta">
+                            <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Jetzt Premium freischalten</button>
+                        </div>
                     </div>
                 </div>
                 <div class="ska-premium-upgrade-footer">
-                    <span>${moreText}</span>
-                    <div class="ska-premium-upgrade-actions">
-                        <button class="ska-btn ska-btn--secondary" data-action="toggle-premium-list">${this.state.showPremiumList ? 'Liste einklappen' : 'Liste anzeigen'}</button>
-                        <button class="ska-btn ska-btn--primary" data-action="premium-upgrade">Premium freischalten</button>
-                    </div>
-                    <div class="ska-premium-upgrade-list ${this.state.showPremiumList ? 'is-expanded' : ''}">
-                        <div>
-                            <strong>Premium-Analyseboxen</strong>
-                            <ul>${premiumCards.map(item => `<li>${item}</li>`).join('')}</ul>
-                        </div>
-                        <div>
-                            <strong>Premium-Funktionen</strong>
-                            <ul>${premiumFunctions.map(item => `<li>${item}</li>`).join('')}</ul>
-                        </div>
-                    </div>
+                    <span>Alle Premium-Features freischalten & direkt produktiver arbeiten.</span>
                 </div>`;
             if (existing) {
                 existing.innerHTML = html;
