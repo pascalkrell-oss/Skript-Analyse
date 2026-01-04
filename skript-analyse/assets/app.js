@@ -576,7 +576,7 @@
         },
         isPremiumFeatureEnabled: () => {
             const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            return SA_CONFIG.PRO_MODE && planMode === 'premium';
+            return (SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN) && planMode === 'premium';
         },
         closeModal: (modal, onClosed) => {
             if (!modal) return;
@@ -2813,7 +2813,7 @@
                 return true;
             }
             if (act === 'toggle-plan') {
-                if (!SA_CONFIG.IS_ADMIN || !SA_CONFIG.PRO_MODE) return true;
+                if (!SA_CONFIG.IS_ADMIN) return true;
                 const isPremium = btn.checked;
                 this.state.planMode = isPremium ? 'premium' : 'free';
                 this.saveUIState();
@@ -5337,7 +5337,7 @@
         }
 
         isPremiumActive() {
-            return SA_CONFIG.PRO_MODE && this.state.planMode === 'premium';
+            return (SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN) && this.state.planMode === 'premium';
         }
 
         getEffectiveTimeMode() {
@@ -5363,7 +5363,7 @@
         }
 
         isCardAvailable(id) {
-            if (!SA_CONFIG.PRO_MODE && this.isPremiumCard(id)) return false;
+            if (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
