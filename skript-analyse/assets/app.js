@@ -3741,7 +3741,16 @@
             const premiumLabel = !isPremium && premiumItems.length ? `
                 <div class="ska-filterbar-premium-label">
                     <span>Premium-Vorschau</span>
-                    <a class="ska-filterbar-premium-action" href="#ska-premium-upgrade">Jetzt freischalten</a>
+                </div>` : '';
+            const premiumPreview = !isPremium && premiumItems.length ? `
+                <div class="ska-filterbar-premium-preview">
+                    ${premiumItems.map(id => {
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
+                    }).join('')}
+                    <div class="ska-filterbar-premium-overlay">
+                        <strong>Premium-Funktionen</strong>
+                        <span>Upgrade für volle Ergebnisse.</span>
+                    </div>
                 </div>` : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
@@ -3767,9 +3776,7 @@
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                     ${premiumLabel}
-                    ${premiumItems.map(id => {
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
-                    }).join('')}
+                    ${premiumPreview}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
@@ -5738,20 +5745,25 @@
         }
 
         renderPremiumTeaserNote() {
-            if (!this.bottomGrid) return;
-            const existing = this.bottomGrid.querySelector('.ska-premium-teaser-note');
+            if (!this.legendContainer) return;
+            const container = this.legendContainer.parentElement;
+            if (!container) return;
+            const existing = container.querySelector('.ska-premium-teaser-note');
             if (existing) existing.remove();
             if (this.isPremiumActive()) return;
             const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
             const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id));
             const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
             if (!remainingCount) return;
-            const lockedCards = Array.from(this.bottomGrid.querySelectorAll('.skriptanalyse-card.is-locked'));
-            if (!lockedCards.length) return;
             const note = document.createElement('div');
             note.className = 'ska-premium-teaser-note';
             note.textContent = `+ ${remainingCount} weitere Analyseboxen`;
-            lockedCards[lockedCards.length - 1].insertAdjacentElement('afterend', note);
+            const upgradeCard = container.querySelector('.ska-premium-upgrade-card');
+            if (upgradeCard) {
+                container.insertBefore(note, upgradeCard);
+            } else {
+                container.insertBefore(note, this.legendContainer);
+            }
         }
 
         renderComparison(sec, w, sc) {
