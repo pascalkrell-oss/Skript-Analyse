@@ -5497,6 +5497,9 @@
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
                 'Pro-PDF-Report',
+                'PDF-Report mit Kennzahlen',
+                'Textvergleich (Versionen)',
+                'Premium-Analyseboxen',
                 'Cloud-Speicher (sofern verfügbar)'
             ];
             const premiumPlans = [
@@ -5542,6 +5545,9 @@
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-title">Premium</div>
+                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
+                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
+                        ${selectedPlan.savings ? `<div class="ska-premium-upgrade-savings">${selectedPlan.savings}</div>` : ''}
                         <div class="ska-premium-upgrade-switch">
                             ${premiumPlans.map(plan => `
                                 <button class="ska-premium-plan-btn ${plan.id === selectedPlan.id ? 'is-active' : ''}" data-action="premium-price-plan" data-plan="${plan.id}">
@@ -5550,9 +5556,6 @@
                                 </button>
                             `).join('')}
                         </div>
-                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
-                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
-                        ${selectedPlan.savings ? `<div class="ska-premium-upgrade-savings">${selectedPlan.savings}</div>` : ''}
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
