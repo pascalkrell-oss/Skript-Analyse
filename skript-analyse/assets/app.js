@@ -13,6 +13,7 @@
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
         UI_KEY_PLAN: 'skriptanalyse_plan_mode',
+        UI_KEY_UPGRADE_DISMISSED: 'skriptanalyse_upgrade_dismissed',
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
@@ -1991,7 +1992,8 @@
                 syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: [],
-                limitReached: false
+                limitReached: false,
+                premiumUpgradeDismissed: false
             };
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
@@ -2828,6 +2830,12 @@
                 this.renderUpgradePanel();
                 return true;
             }
+            if (act === 'close-premium-upgrade') {
+                this.state.premiumUpgradeDismissed = true;
+                this.saveUIState();
+                this.renderUpgradePanel();
+                return true;
+            }
             if (act === 'open-pdf') {
                 const modal = document.getElementById('ska-pdf-modal');
                 if (modal) {
@@ -3177,6 +3185,11 @@
             if (!SA_CONFIG.PRO_MODE) {
                 this.state.planMode = 'free';
             }
+
+            const upgradeDismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED);
+            if (upgradeDismissed) {
+                this.state.premiumUpgradeDismissed = upgradeDismissed === 'true';
+            }
             
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
             if(g) {
@@ -3213,6 +3226,7 @@
             if (SA_CONFIG.IS_ADMIN) {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
             }
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(this.state.premiumUpgradeDismissed));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
                 lastGenre: this.settings.lastGenre,
@@ -3373,9 +3387,16 @@
             
             this.root.addEventListener('click', (e) => {
                 const btn = e.target.closest('[data-action]');
+                const upgradeLink = e.target.closest('[href="#ska-premium-upgrade"]');
                 const hideBtn = e.target.closest('.ska-hide-btn');
                 const restoreChip = e.target.closest('.ska-restore-chip');
                 const whitelistBtn = e.target.closest('.ska-whitelist-toggle');
+
+                if (upgradeLink && this.state.premiumUpgradeDismissed) {
+                    this.state.premiumUpgradeDismissed = false;
+                    this.saveUIState();
+                    this.renderUpgradePanel();
+                }
 
                 if(hideBtn) { this.toggleCard(hideBtn.closest('.skriptanalyse-card').dataset.cardId, false); return; }
                 if(restoreChip) { this.toggleCard(restoreChip.dataset.restoreId, true); return; }
@@ -3622,6 +3643,7 @@
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
                     this.state.readabilityCache = [];
+                    this.state.premiumUpgradeDismissed = false;
                     this.saveUIState();
                     this.renderHiddenPanel();
                     this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
@@ -3716,16 +3738,11 @@
             const isPremium = this.isPremiumActive();
             const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
-            const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
-            let premiumInfoBox = '';
-            if (!isPremium && premiumItems.length) {
-                premiumInfoBox = `
-                    <div class="ska-filterbar-upgrade-card">
-                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
-                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
-                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
-                    </div>`;
-            }
+            const premiumLabel = !isPremium && premiumItems.length ? `
+                <div class="ska-filterbar-premium-label">
+                    <span>Premium-Vorschau</span>
+                    <a class="ska-filterbar-premium-action" href="#ska-premium-upgrade">Jetzt freischalten</a>
+                </div>` : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3753,7 +3770,6 @@
                     ${premiumItems.map(id => {
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
-                    ${premiumInfoBox}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
@@ -3930,6 +3946,7 @@
             this.renderUpgradePanel();
             this.renderHiddenPanel();
             this.renderFilterBar();
+            this.renderPremiumTeaserNote();
             if (this.state.savedVersion && this.isPremiumActive()) {
                 this.renderComparison(dur, read.wordCount, read.score);
             } else {
@@ -5594,6 +5611,10 @@
                 if (existing) existing.remove();
                 return;
             }
+            if (this.state.premiumUpgradeDismissed) {
+                if (existing) existing.remove();
+                return;
+            }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const freeFunctions = [
@@ -5633,6 +5654,12 @@
                 </li>`).join('');
             const html = `
                 <div class="ska-premium-upgrade-ribbon">Jetzt Upgraden!</div>
+                <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
                         <span class="ska-premium-upgrade-icon" aria-hidden="true">
@@ -5708,6 +5735,23 @@
                 card.innerHTML = html;
                 container.insertBefore(card, this.legendContainer);
             }
+        }
+
+        renderPremiumTeaserNote() {
+            if (!this.bottomGrid) return;
+            const existing = this.bottomGrid.querySelector('.ska-premium-teaser-note');
+            if (existing) existing.remove();
+            if (this.isPremiumActive()) return;
+            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
+            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id));
+            const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
+            if (!remainingCount) return;
+            const lockedCards = Array.from(this.bottomGrid.querySelectorAll('.skriptanalyse-card.is-locked'));
+            if (!lockedCards.length) return;
+            const note = document.createElement('div');
+            note.className = 'ska-premium-teaser-note';
+            note.textContent = `+ ${remainingCount} weitere Analyseboxen`;
+            lockedCards[lockedCards.length - 1].insertAdjacentElement('afterend', note);
         }
 
         renderComparison(sec, w, sc) {
