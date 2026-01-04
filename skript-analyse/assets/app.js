@@ -5625,8 +5625,8 @@
                 return;
             }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumCards = SA_CONFIG.PREMIUM_CARDS
-                .filter(id => this.isCardAvailable(id) && !SA_CONFIG.FREE_CARDS.includes(id))
+            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id));
+            const premiumCards = lockedCardIds
                 .map(id => SA_CONFIG.CARD_TITLES[id])
                 .filter(Boolean);
             const freeFunctions = [
