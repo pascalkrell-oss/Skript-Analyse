@@ -3717,20 +3717,15 @@
             const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
             const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
-            const premiumInfoBox = !isPremium && premiumItems.length
-                ? `<div class="ska-filterbar-upgrade-card">
+            let premiumInfoBox = '';
+            if (!isPremium && premiumItems.length) {
+                premiumInfoBox = `
+                    <div class="ska-filterbar-upgrade-card">
                         <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
                         <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
                         <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
-                   </div>`
-                : '';
-            const premiumInfoBox = !isPremium && premiumItems.length
-                ? `<div class="ska-filterbar-upgrade-card">
-                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
-                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
-                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
-                   </div>`
-                : '';
+                    </div>`;
+            }
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
