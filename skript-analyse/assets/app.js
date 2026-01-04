@@ -255,45 +255,31 @@
             'syllable_entropy',
             'plosive',
             'redundancy',
-            'sentiment_intensity',
-            'compare',
             'depth_check',
-            'naming_check',
-            'compliance_check',
-            'keyword_focus',
-            'audience',
-            'bullshit',
-            'metaphor',
-            'verb_balance',
+            'sentiment_intensity',
             'teleprompter',
             'pacing',
             'chapter_calc',
             'role_dist',
-            'bpm'
+            'bpm',
+            'compliance_check',
+            'keyword_focus',
+            'audience',
+            'naming_check',
+            'bullshit',
+            'metaphor',
+            'compare'
         ],
         FREE_CARDS: [
             'overview',
             'char',
-            'stumble',
-            'breath',
-            'echo',
-            'passive',
             'fillers',
-            'nominal',
-            'nominal_chain',
             'anglicism',
-            'coach',
-            'marker',
-            'cta',
-            'adjective',
-            'dialog',
-            'gender',
-            'start_var',
-            'vocabulary',
-            'pronunciation',
-            'easy_language'
+            'breath',
+            'stumble',
+            'marker'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'pronunciation', 'bpm'],
+        PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
@@ -2179,14 +2165,14 @@
                         <div class="ska-settings-field">
                             <label class="ska-settings-label">Zeit-Berechnung</label>
                             <div class="ska-settings-option-group">
-                                <label class="ska-settings-option">
+                        <label class="ska-settings-option">
                                     <input type="radio" name="ska-time-mode" value="wpm" ${this.settings.timeMode === 'wpm' ? 'checked' : ''}>
                                     <div>
                                         <span class="ska-settings-option-title">WPM (Standard)</span>
                                         <span class="ska-settings-option-subtext is-muted">Wörter pro Minute</span>
                                     </div>
                                 </label>
-                                <label class="ska-settings-option">
+                                <label class="ska-settings-option ${isPremium ? '' : 'is-locked'}">
                                     <input type="radio" name="ska-time-mode" value="sps" ${this.settings.timeMode === 'sps' ? 'checked' : ''} ${isPremium ? '' : 'disabled'}>
                                     <div>
                                         <span class="ska-settings-option-title">SPS (Präzise)</span>
@@ -2197,7 +2183,7 @@
                             </div>
                             <p class="ska-settings-help">SPS eignet sich für präzise Synchron-Strecken mit langen Wörtern.</p>
                         </div>
-                        <div class="ska-settings-field">
+                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
                             <label class="ska-settings-label">Pausen-Automatik ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
                             <div class="ska-settings-grid-two">
                                 <div>
@@ -2229,7 +2215,7 @@
                             <h4>Inhalt & Zielgruppe</h4>
                             <p>Verfeinere Lesbarkeit und Keyword-Fokus.</p>
                         </div>
-                        <div class="ska-settings-field">
+                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
                             <label class="ska-settings-label">Zielgruppe (Komplexität) ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
                             <select id="ska-set-audience" class="ska-settings-select" ${isPremium ? '' : 'disabled'}>
                                 <option value="">Keine Auswahl</option>
@@ -2239,7 +2225,7 @@
                             </select>
                             <p class="ska-settings-help">Warnung bei zu langen Sätzen oder geringer Lesbarkeit für die Zielgruppe.</p>
                         </div>
-                        <div class="ska-settings-field">
+                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
                             <label class="ska-settings-label">Keyword-Dichte (SEO vs. Voice) ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
                             <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff" ${isPremium ? '' : 'disabled'}>${this.settings.focusKeywords || ''}</textarea>
                             <div class="ska-settings-inline">
@@ -2248,7 +2234,7 @@
                             </div>
                             <p class="ska-settings-help">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
                         </div>
-                        <div class="ska-settings-field">
+                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
                             <label class="ska-settings-label">Buzzword-Blacklist ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
                             <textarea id="ska-set-bullshit" class="ska-settings-textarea ska-settings-textarea--lg" placeholder="z.B. synergetisch, agil, lösungsorientiert" ${isPremium ? '' : 'disabled'}>${this.settings.bullshitBlacklist || ''}</textarea>
                             <p class="ska-settings-help">Kommagetrennt oder zeilenweise – wird rot markiert.</p>
@@ -2260,7 +2246,7 @@
                             <h4>Rechtliche Pflichttexte</h4>
                             <p>Hinterlege Pflichtpassagen (eine Passage pro Zeile).</p>
                         </div>
-                        <div class="ska-settings-field">
+                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
                             <label class="ska-settings-label">Pflichtpassagen (exakter Wortlaut) ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
                             <textarea id="ska-set-compliance" class="ska-settings-textarea ska-settings-textarea--lg" placeholder="z.B. Dies ist keine Anlageberatung." ${isPremium ? '' : 'disabled'}>${this.settings.complianceText || ''}</textarea>
                             <p class="ska-settings-help">Der Check gibt nur grünes Licht, wenn jede Passage exakt im Skript vorkommt.</p>
@@ -3277,12 +3263,29 @@
                 'pdf-opt-syllable-entropy',
                 'pdf-opt-compliance'
             ];
+            const allOptionIds = [
+                'pdf-opt-overview',
+                'pdf-opt-details',
+                'pdf-opt-syllable-entropy',
+                'pdf-opt-compliance',
+                'pdf-opt-tips',
+                'pdf-opt-compare',
+                'pdf-opt-script'
+            ];
             premiumOptionIds.forEach((id) => {
                 const input = modal.querySelector(`#${id}`);
                 if (!input) return;
                 input.disabled = !isPremium;
-                if (!isPremium) input.checked = false;
+                if (!isPremium) {
+                    input.checked = false;
+                }
             });
+            if (isPremium) {
+                allOptionIds.forEach((id) => {
+                    const input = modal.querySelector(`#${id}`);
+                    if (input) input.checked = true;
+                });
+            }
         }
 
         showPremiumNotice(message = 'Diese Funktion ist in der Premium-Version verfügbar.') {
@@ -3383,6 +3386,11 @@
                 const act = btn.dataset.action;
 
                 if(act.startsWith('open-')) { 
+                    if (act === 'open-syllable-entropy' && !this.isPremiumActive()) {
+                        this.showPremiumNotice('Mehr Details sind in der Premium-Version verfügbar.');
+                        e.preventDefault();
+                        return;
+                    }
                     const modalId = 'ska-' + act.replace('open-', '') + '-modal';
                     const m = document.getElementById(modalId);
                     if(m){ 
@@ -3473,6 +3481,11 @@
                 }
 
             if(act === 'toggle-breath-more') {
+                 if (!this.isPremiumActive()) {
+                     this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
+                     e.preventDefault();
+                     return;
+                 }
                  const hiddenBox = this.root.querySelector('#ska-breath-hidden');
                  if(hiddenBox) {
                      const isHidden = !hiddenBox.classList.contains('is-expanded');
@@ -3484,6 +3497,11 @@
             }
 
             if(act === 'toggle-rhet-questions') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
+                    e.preventDefault();
+                    return;
+                }
                 const hiddenBox = this.root.querySelector('#ska-rhet-questions-hidden');
                 if(hiddenBox) {
                     const isHidden = !hiddenBox.classList.contains('is-expanded');
@@ -3495,6 +3513,11 @@
             }
 
             if(act === 'toggle-plosive') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
+                    e.preventDefault();
+                    return;
+                }
                 const hiddenBox = this.root.querySelector('#ska-plosive-hidden');
                 if(hiddenBox) {
                     const isHidden = !hiddenBox.classList.contains('is-expanded');
@@ -5442,39 +5465,69 @@
             const teaserCount = SA_CONFIG.PREMIUM_TEASERS.length;
             const remaining = Math.max(0, totalPremium - teaserCount);
             const moreText = remaining > 0 ? `+ ${remaining} weitere Analyseboxen und Funktionen` : 'Alle Premium-Features freischalten';
-            const premiumCards = SA_CONFIG.CARD_ORDER.filter(id => !this.isCardUnlocked(id)).map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumFeatures = [
-                'SPS-Zeitberechnung',
+            const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const freeFunctions = [
+                'WPM-Modus',
+                'Genre-Presets',
+                'Autosave (lokal)',
+                'PDF-Export (Basis)'
+            ];
+            const premiumFunctions = [
+                'SPS-Modus',
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
-                'Zielgruppen-Analyse',
-                'Keyword- & Compliance-Checks',
-                'Profi-PDF-Report'
+                'Pro-PDF-Report',
+                'Cloud-Speicher (sofern verfügbar)'
             ];
+            const renderList = (items) => items.map(item => `
+                <li>
+                    <span class="ska-upgrade-check">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                    </span>
+                    <span>${item}</span>
+                </li>`).join('');
             const html = `
                 <div class="ska-premium-upgrade-header">
-                    <strong>Upgrade auf Premium</strong>
+                    <div class="ska-premium-upgrade-titleline">
+                        <span class="ska-premium-upgrade-icon">⚡️</span>
+                        <strong>Upgrade auf Premium</strong>
+                    </div>
                     <span>Professioneller Feinschliff, Studio-Tools & volle Kontrolle.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
                         <div class="ska-premium-upgrade-title">Free</div>
-                        <ul>
-                            <li>Schnell-Überblick & Basis-Lesbarkeit</li>
-                            <li>Füllwörter, Denglisch</li>
-                            <li>Auffällige Sätze & Stolpersteine</li>
-                            <li>Marker-Export</li>
-                        </ul>
+                        <div class="ska-premium-upgrade-section">
+                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
+                            <ul class="ska-premium-upgrade-listing">
+                                ${renderList(freeCards)}
+                            </ul>
+                        </div>
+                        <div class="ska-premium-upgrade-section">
+                            <div class="ska-premium-upgrade-subtitle">Funktionen</div>
+                            <ul class="ska-premium-upgrade-listing">
+                                ${renderList(freeFunctions)}
+                            </ul>
+                        </div>
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-title">Premium</div>
-                        <ul>
-                            <li>Teleprompter, Pacing, BPM</li>
-                            <li>Keyword-Fokus, Compliance-Check</li>
-                            <li>Silben-Entropie & Redundanz</li>
-                            <li>Zielgruppen- & Sprecher-Tools</li>
-                            <li>Profi-PDF-Report</li>
-                        </ul>
+                        <div class="ska-premium-upgrade-price">20,00 EUR</div>
+                        <div class="ska-premium-upgrade-section">
+                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
+                            <ul class="ska-premium-upgrade-listing">
+                                ${renderList(premiumCards)}
+                            </ul>
+                        </div>
+                        <div class="ska-premium-upgrade-section">
+                            <div class="ska-premium-upgrade-subtitle">Funktionen</div>
+                            <ul class="ska-premium-upgrade-listing">
+                                ${renderList(premiumFunctions)}
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div class="ska-premium-upgrade-footer">
@@ -5490,7 +5543,7 @@
                         </div>
                         <div>
                             <strong>Premium-Funktionen</strong>
-                            <ul>${premiumFeatures.map(item => `<li>${item}</li>`).join('')}</ul>
+                            <ul>${premiumFunctions.map(item => `<li>${item}</li>`).join('')}</ul>
                         </div>
                     </div>
                 </div>`;
@@ -5620,16 +5673,6 @@
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
-            const ensureLockedNote = (body) => {
-                if (!isLocked || !body) return;
-                const existing = body.querySelector('.ska-premium-lock-note');
-                if (existing) return;
-                const note = document.createElement('div');
-                note.className = 'ska-premium-lock-note';
-                note.textContent = 'Dieses Feature ist Teil der Premium-Version';
-                body.appendChild(note);
-            };
-
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#94a3b8"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -5681,7 +5724,6 @@
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                     card.appendChild(lock);
-                    ensureLockedNote(b);
                     this.applyFreeLimit(b);
                 }
                 
@@ -5708,7 +5750,6 @@
                         lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                         card.appendChild(lockEl);
                     }
-                    ensureLockedNote(body);
                     this.applyFreeLimit(body);
                  } else {
                     if (lock) lock.remove();
