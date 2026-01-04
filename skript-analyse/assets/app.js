@@ -406,6 +406,7 @@
                 cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
             });
             return cleaned
+                .replace(/\s*\|[^|]*\|\s*/g, ' ')
                 .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
                 .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
                 .replace(/\s*\[[^\]]+\]\s*/g, ' ')
@@ -4857,6 +4858,14 @@
             
             const sentiment = SA_Logic.analyzeSentiment(raw);
             const audience = SA_Logic.estimateAudience(r.score);
+            const sentenceLengths = (r.sentences || [])
+                .map((s) => s.trim().split(/\s+/).filter(Boolean).length)
+                .filter((len) => len > 0);
+            const minSentence = sentenceLengths.length ? Math.min(...sentenceLengths) : 0;
+            const maxSentence = sentenceLengths.length ? Math.max(...sentenceLengths) : 0;
+            const variance = SA_Logic.calculateVariance(r.sentences || []);
+            const uniqueWords = new Set((r.words || []).map((word) => word.toLowerCase())).size;
+            const lexicalShare = r.wordCount ? (uniqueWords / r.wordCount) * 100 : 0;
 
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
@@ -4901,6 +4910,26 @@
                             <span>Kühl / Sachlich</span>
                             <span>Warm / Emotional</span>
                         </div>
+                    </div>
+                </div>
+                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Tiefe</div>
+                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0.6rem;">
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Satzlänge Ø</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${r.avgSentence.toFixed(1)} Wörter</div>
+                        </div>
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Spannweite</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${minSentence}–${maxSentence} Wörter</div>
+                        </div>
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
+                            <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Wortvielfalt</div>
+                            <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${lexicalShare.toFixed(0)}%</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:0.6rem; font-size:0.8rem; color:#475569;">
+                        Rhythmus-Varianz: <strong style="color:${variance < 2.5 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">${variance.toFixed(2)}</strong> (höher = abwechslungsreicher).
                     </div>
                 </div>`;
             
