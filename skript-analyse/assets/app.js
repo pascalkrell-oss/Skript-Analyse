@@ -5061,7 +5061,7 @@
                         <div style="font-size:0.8rem; color:#166534;">Keine Passiv-Bremser gefunden.</div>
                        </div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
                 matches.slice(0, 5).forEach(m => {
                     h+=`<div class="skriptanalyse-badge skriptanalyse-badge--passive" style="display:block; width:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m}</div>`;
                 });
@@ -5096,7 +5096,7 @@
             if(!words.length) {
                  h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Adjektive gefunden.</p>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.slice(0, 20).forEach(w => {
                     h+=`<span class="skriptanalyse-badge" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8;">${w}</span>`;
                 });
@@ -5143,7 +5143,7 @@
             if(!words.length) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Kein auffälliger Nominalstil.</p>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--nominal">${w}</span>`;
                 });
@@ -5160,7 +5160,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🇩🇪 Rein deutsch!</div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--anglicism">${w}</span>`;
                 });
@@ -5209,7 +5209,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Abwechslungsreich!</div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo">${w}</span>`;
                 });
@@ -5228,28 +5228,28 @@
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
                 if(s.phonetic.length) { 
-                    h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.phonetic.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.camel.length) { 
-                    h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.camel.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--camel">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.long.length) { 
-                    h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.long.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--long">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.alliter.length) {
-                    h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
                     });
@@ -5286,7 +5286,7 @@
             }
 
             if(globalCount > 0) {
-                h += `<div class="ska-section-title">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap;">`; 
+                h += `<div class="ska-section-title">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin-bottom:10px;">`; 
                 ctaData.all.forEach(x => h += `<span class="skriptanalyse-badge skriptanalyse-badge--cta">${x}</span>`);
                 h += `</div>`;
             }
@@ -5656,7 +5656,7 @@
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
-                <div class="ska-premium-upgrade-ribbon">Jetzt Upgraden!</div>
+                <div class="ska-premium-upgrade-ribbon">Premium</div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 6L6 18"></path>
