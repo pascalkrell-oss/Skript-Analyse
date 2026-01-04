@@ -141,26 +141,26 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-filter-pill.is-locked:hover .ska-premium-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 7px; border-style: solid; border-color: rgba(15, 23, 42, 0.98) transparent transparent transparent; }
 .ska-filterbar-premium-label { width: 100%; display: flex; align-items: center; gap: 0.6rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-top: 0.6rem; }
 .ska-filterbar-premium-label span { display: inline-flex; align-items: center; gap: 0.35rem; }
-.ska-filterbar-premium-preview { width: 100%; display: flex; flex-wrap: wrap; gap: 0.5rem; position: relative; margin-top: 0.35rem; }
-.ska-filterbar-premium-overlay {
-    position: absolute;
-    inset: 0;
+.ska-filterbar-premium-preview { width: 100%; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+.ska-filterbar-premium-note {
     display: inline-flex;
     flex-direction: column;
     gap: 0.3rem;
     align-items: center;
     justify-content: center;
-    background: rgba(15, 20, 26, 0.9);
+    background: rgba(15, 20, 26, 0.95);
     border: 1px solid rgba(56, 189, 248, 0.55);
     border-radius: 16px;
     color: #f8fafc;
     text-align: center;
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     box-shadow: 0 16px 32px -22px rgba(15, 23, 42, 0.6);
-    pointer-events: none;
+    margin: 0.35rem auto 0;
+    min-width: 220px;
+    max-width: 320px;
 }
-.ska-filterbar-premium-overlay strong { font-size: 0.85rem; }
-.ska-filterbar-premium-overlay span { font-size: 0.72rem; color: #cbd5f5; }
+.ska-filterbar-premium-note strong { font-size: 0.85rem; }
+.ska-filterbar-premium-note span { font-size: 0.72rem; color: #cbd5f5; }
 .ska-filterbar-upgrade { width: 100%; background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.9rem; margin-top: 0.75rem; }
 .ska-filterbar-upgrade-header { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.85rem; color: #0f172a; }
 .ska-filterbar-upgrade-header span { font-size: 0.75rem; color: #64748b; }
@@ -251,19 +251,19 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #dbeafe; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
-    top: 18px;
-    left: -46px;
-    width: 180px;
+    top: 16px;
+    left: -58px;
+    width: 220px;
     background: linear-gradient(135deg, #1a93ee, #0066b3);
     color: #f8fafc;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 0.4rem 0;
+    padding: 0.55rem 0;
     text-align: center;
-    transform: rotate(-38deg);
-    box-shadow: 0 18px 32px -20px rgba(15, 23, 42, 0.6);
+    transform: rotate(-45deg);
+    box-shadow: 0 20px 34px -20px rgba(15, 23, 42, 0.6);
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
     z-index: 3;
 }
@@ -271,17 +271,16 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-ribbon::after {
     content: "";
     position: absolute;
-    inset: 0;
+    bottom: -12px;
+    border-top: 12px solid rgba(5, 55, 92, 0.55);
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
 }
 .ska-premium-upgrade-ribbon::before {
-    background: linear-gradient(120deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
-    opacity: 0.6;
+    left: 0;
 }
 .ska-premium-upgrade-ribbon::after {
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-    border-bottom: 3px solid rgba(5, 55, 92, 0.4);
-    box-shadow: inset 0 -4px 6px rgba(5, 55, 92, 0.35);
-    opacity: 0.85;
+    right: 0;
 }
 .ska-premium-upgrade-close {
     position: absolute;

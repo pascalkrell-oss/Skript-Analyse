@@ -3747,7 +3747,7 @@
                     ${premiumItems.map(id => {
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
-                    <div class="ska-filterbar-premium-overlay">
+                    <div class="ska-filterbar-premium-note">
                         <strong>Premium-Funktionen</strong>
                         <span>Upgrade für volle Ergebnisse.</span>
                     </div>
