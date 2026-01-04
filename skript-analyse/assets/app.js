@@ -400,7 +400,8 @@
         cleanTextForCounting: (text) => {
             const markerTokens = (SA_CONFIG.MARKERS || [])
                 .map((marker) => String(marker.val || '').trim())
-                .filter(Boolean);
+                .filter(Boolean)
+                .sort((a, b) => b.length - a.length);
             let cleaned = text;
             markerTokens.forEach((marker) => {
                 cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
@@ -4236,23 +4237,25 @@
             });
             h += `</div>`;
             h += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
-                    <span>${questions.length} Fragen</span>
+                    <span>${questions.length} Fragen • ${rhetorical.length} rhetorisch</span>
                     <span>${label}</span>
                   </div>`;
-            const listItems = rhetorical.length ? rhetorical : questions;
+            const listItems = questions;
             if (listItems.length) {
                 const initial = listItems.slice(0, 3);
                 const remaining = listItems.slice(3);
                 h += `<div class="ska-problem-list">`;
                 initial.forEach(item => {
-                    h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                    const badge = item.isRhetorical ? '<span class="ska-question-badge">Rhetorisch</span>' : '';
+                    h += `<div class="ska-problem-item">${item.sentence}${badge}</div>`;
                 });
                 h += `</div>`;
                 if (remaining.length && isPremium) {
                     h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     h += `<div class="ska-problem-list">`;
                     remaining.forEach(item => {
-                        h += `<div class="ska-problem-item">${item.sentence}</div>`;
+                        const badge = item.isRhetorical ? '<span class="ska-question-badge">Rhetorisch</span>' : '';
+                        h += `<div class="ska-problem-item">${item.sentence}${badge}</div>`;
                     });
                     h += `</div></div>`;
                     h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
@@ -4289,10 +4292,15 @@
 
             const start = data[0]?.score || 0;
             const end = data[data.length - 1]?.score || 0;
+            const avgScore = data.reduce((acc, item) => acc + (item.score || 0), 0) / (data.length || 1);
             const trend = end - start;
             let trendLabel = 'Stabil';
             if (trend > 0.3) trendLabel = 'Steigende Energie';
             if (trend < -0.3) trendLabel = 'Abkühlend';
+            let avgLabel = 'Neutral';
+            let avgColor = SA_CONFIG.COLORS.muted;
+            if (avgScore > 0.25) { avgLabel = 'Eher positiv'; avgColor = SA_CONFIG.COLORS.success; }
+            if (avgScore < -0.25) { avgLabel = 'Eher kritisch'; avgColor = SA_CONFIG.COLORS.warn; }
 
             let h = `<div class="ska-intensity-map">`;
             data.slice(0, 12).forEach(item => {
@@ -4308,6 +4316,23 @@
                     <span>${trendLabel}</span>
                     <span>Ende ${end.toFixed(2)}</span>
                   </div>`;
+            h += `
+                <div class="ska-intensity-summary">
+                    <div class="ska-intensity-summary-item">
+                        <span>Durchschnitt</span>
+                        <strong style="color:${avgColor};">${avgLabel} (${avgScore.toFixed(2)})</strong>
+                    </div>
+                    <div class="ska-intensity-summary-item">
+                        <span>Skala</span>
+                        <strong>-1 (kritisch) bis +1 (positiv)</strong>
+                    </div>
+                </div>
+                <div class="ska-intensity-legend">
+                    <span class="ska-intensity-chip is-positive">Positiv</span>
+                    <span class="ska-intensity-chip is-neutral">Neutral</span>
+                    <span class="ska-intensity-chip is-negative">Kritisch</span>
+                    <span class="ska-intensity-note">Tipp: Schwankungen zeigen Stimmungswechsel in den Sätzen.</span>
+                </div>`;
             h += this.renderTipSection('sentiment_intensity', true);
             this.updateCard('sentiment_intensity', h);
         }
@@ -4398,8 +4423,8 @@
                 </div>
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
-                    <button class="ska-btn ska-btn--secondary" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
-                    <button class="ska-btn ska-btn--ghost" data-action="pacing-reset">Reset</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-reset">Reset</button>
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
 
@@ -4548,6 +4573,12 @@
             let color = SA_CONFIG.COLORS.blue;
             if (bpm < 80) { paceLabel = 'Ruhig'; color = SA_CONFIG.COLORS.success; }
             if (bpm > 110) { paceLabel = 'Dynamisch'; color = SA_CONFIG.COLORS.warn; }
+            let genreHint = 'Cinematic / Chill';
+            if (bpm < 70) genreHint = 'Ambient / Lo-Fi';
+            else if (bpm < 90) genreHint = 'Ballade / Downtempo';
+            else if (bpm < 110) genreHint = 'Pop / Indie';
+            else if (bpm < 130) genreHint = 'Dance / Elektro';
+            else genreHint = 'EDM / Rock';
 
             const h = `
                 <div style="margin-bottom:1rem;">
@@ -4558,6 +4589,7 @@
                     <div style="font-size:2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue};">${bpm} BPM</div>
                     <div style="font-size:0.85rem; color:#64748b;">Range: ${min}–${max} BPM</div>
                     <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Ø ${data.syllablesPerSecond.toFixed(2)} Silben/Sekunde</div>
+                    <div class="ska-bpm-genre-badge">Genre-Hinweis: ${genreHint}</div>
                 </div>
                 ${this.renderTipSection('bpm', true)}`;
             this.updateCard('bpm', h, this.bottomGrid, '', '', true);
@@ -4653,6 +4685,7 @@
             
             const roles = Object.keys(data.roles);
             let h = '';
+            const infoBox = this.renderFooterInfo('So funktioniert die Rollen-Erkennung', 'Zeilen mit SPRECHERNAME: in Großbuchstaben werden als Rollen erkannt und vom restlichen Text getrennt gezählt.');
             
             if(roles.length === 0 || (roles.length === 1 && roles[0] === 'Erzähler/Unbekannt')) {
                 h = `<p style="color:#64748b; font-size:0.9rem;">Keine spezifischen Rollen (Großbuchstaben am Zeilenanfang) erkannt.</p>`;
@@ -4675,6 +4708,7 @@
                 h += `</div>`;
                 h += this.renderTipSection('role_dist', true);
             }
+            h += infoBox;
             this.updateCard('role_dist', h);
         }
 
@@ -4827,6 +4861,14 @@
                 : '';
 
             return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
+        }
+
+        renderFooterInfo(title, text) {
+            return `
+                <div class="ska-card-info">
+                    <div class="ska-card-info-title">${title}</div>
+                    <p class="ska-card-info-text">${text}</p>
+                </div>`;
         }
 
         renderGenderCard(issues, active) {
@@ -5269,6 +5311,7 @@
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
+            h += this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.');
             this.updateCard('marker', h);
         }
 
@@ -5349,13 +5392,14 @@
         renderChapterCalculatorCard(raw, active) {
             if(!active) return this.updateCard('chapter_calc', this.renderDisabledState(), this.bottomGrid, '', '', true);
             const isHoerbuch = this.settings.usecase === 'hoerbuch' || this.settings.usecase === 'auto';
+            const infoBox = this.renderFooterInfo('So funktioniert der Kapitel-Kalkulator', 'Kapitelüberschriften wie „Kapitel 1“ oder „Chapter I“ werden erkannt und pro Abschnitt in Minuten geschätzt.');
             if (!isHoerbuch) {
-                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>');
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Nur relevant für Hörbuch-Texte. Wähle im Genre „Hörbuch“, um Kapitel zu berechnen.</p>${infoBox}`);
             }
 
             const chapters = this.extractChapters(raw);
             if (!chapters.length) {
-                return this.updateCard('chapter_calc', '<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p>');
+                return this.updateCard('chapter_calc', `<p style="color:#94a3b8; font-size:0.9rem;">Keine Kapitelüberschriften gefunden. Nutze z. B. „Kapitel 1“ oder „Kapitel I“ als eigene Zeile.</p>${infoBox}`);
             }
 
             let total = 0;
@@ -5377,7 +5421,8 @@
                     <span>Gefundene Kapitel: <strong>${chapters.length}</strong></span>
                     <span>Gesamtzeit: <strong>${SA_Utils.formatMin(total)}</strong></span>
                 </div>
-                <div class="ska-chapter-list">${rows}</div>`;
+                <div class="ska-chapter-list">${rows}</div>
+                ${infoBox}`;
             this.updateCard('chapter_calc', html);
         }
 
@@ -5484,6 +5529,7 @@
 
             const ratio = d.ratio; 
             const col = SA_CONFIG.COLORS.blue;
+            const infoBox = this.renderFooterInfo('So kannst Du diese Funktion beeinflussen', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
             
             let label = "Ausgewogen";
             if(ratio > 70) label = "Sehr viel Dialog";
@@ -5512,6 +5558,7 @@
                   </div>`;
             
             h += this.renderTipSection('dialog', true);
+            h += infoBox;
             this.updateCard('dialog', h);
         }
 
@@ -5609,6 +5656,7 @@
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
+                <div class="ska-premium-upgrade-ribbon">Jetzt Upgraden!</div>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
                         <span class="ska-premium-upgrade-icon" aria-hidden="true">
