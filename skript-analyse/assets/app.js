@@ -5485,8 +5485,6 @@
             }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumCardsPreview = premiumCards.slice(0, 5);
-            const remainingPremiumCards = Math.max(0, premiumCards.length - premiumCardsPreview.length);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
@@ -5502,9 +5500,9 @@
                 'Cloud-Speicher (sofern verfügbar)'
             ];
             const premiumPlans = [
-                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat' },
-                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR' },
-                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', badge: 'Bester Deal' }
+                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat', savings: '' },
+                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR', savings: 'Du sparst 9,00 EUR gegenüber monatlich.' },
+                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', savings: 'Du sparst 36,00 EUR gegenüber monatlich.', badge: 'Bester Deal' }
             ];
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const renderList = (items) => items.map(item => `
@@ -5522,7 +5520,7 @@
                         <span class="ska-premium-upgrade-icon">⚡️</span>
                         <strong>Upgrade auf Premium</strong>
                     </div>
-                    <span>Professioneller Feinschliff, Studio-Tools & volle Kontrolle.</span>
+                    <span>Nutze die Skriptanalyse als Startpunkt für Buch, Imagefilm, Erklärvideo, Hörbuch, Werbung & mehr – inklusive PDF-Export mit deinen Kennzahlen und der Option, direkt einen Sprecher anzufragen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col">
@@ -5554,20 +5552,12 @@
                         </div>
                         <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
                         <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
+                        ${selectedPlan.savings ? `<div class="ska-premium-upgrade-savings">${selectedPlan.savings}</div>` : ''}
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList(premiumCardsPreview)}
+                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
+                                ${renderList(premiumCards)}
                             </ul>
-                            ${remainingPremiumCards > 0 ? `
-                                <div class="ska-premium-upgrade-hover">
-                                    <span class="ska-premium-upgrade-hover-label">+ ${remainingPremiumCards} weitere Analyseboxen</span>
-                                    <div class="ska-premium-upgrade-hover-badge">
-                                        <strong>Weitere Premium-Boxen</strong>
-                                        <ul>${premiumCards.slice(5).map(item => `<li>${item}</li>`).join('')}</ul>
-                                    </div>
-                                </div>
-                            ` : ''}
                         </div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen</div>
