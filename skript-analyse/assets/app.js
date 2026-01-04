@@ -5513,9 +5513,14 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
+            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
             const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
+            }
+            const priceLabelEl = card.querySelector('.ska-premium-upgrade-price-label');
+            if (priceLabelEl) {
+                priceLabelEl.textContent = priceLabel;
             }
             const noteEl = card.querySelector('[data-role="premium-note"]');
             if (noteEl) {
@@ -5558,6 +5563,7 @@
             ];
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
+            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -5609,7 +5615,7 @@
                             <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
                         </div>
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
-                            <span class="ska-premium-upgrade-price-label">Abo ab</span>
+                            <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
