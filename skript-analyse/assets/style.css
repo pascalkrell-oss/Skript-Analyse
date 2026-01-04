@@ -227,7 +227,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
-.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); color: #0f172a; border: 1px solid #dbeafe; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; }
+.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #dbeafe; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; }
 .ska-premium-upgrade-header strong { font-family: "Rubik", system-ui, -apple-system, sans-serif; font-size: 28px; font-weight: 700; line-height: 37.5px; display: block; color: rgb(15, 23, 42); }
 .ska-premium-upgrade-header span { font-size: 0.95rem; color: #475569; margin-top: 0.4rem; display: block; }
 .ska-premium-upgrade-titleline { display: inline-flex; align-items: center; gap: 0.85rem; justify-content: center; }
@@ -236,13 +236,13 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-col { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 2rem; font-size: 0.9rem; color: #475569; text-align: left; position: relative; margin-bottom: 0.6rem; }
 .ska-premium-upgrade-col.is-premium { background: #f0f9ff; border-color: #bae6fd; box-shadow: 0 18px 30px -22px rgba(14, 116, 144, 0.35); transform: scale(1.02); padding-bottom: 1.6rem; }
 .ska-premium-upgrade-col.is-free { margin-top: 0.75rem; }
-.ska-premium-upgrade-title { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; font-size: 25px; margin-bottom: 0.8rem; color: #0f172a; }
+.ska-premium-upgrade-title { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; font-size: 23px; margin-bottom: 0.8rem; color: #0f172a; }
 .ska-premium-upgrade-header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
 .ska-premium-upgrade-header-row .ska-premium-upgrade-title { margin-bottom: 0; }
 .ska-premium-upgrade-badge { background: #0f172a; color: #f8fafc; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; justify-content: center; text-align: center; animation: ska-fade-in 0.25s ease both; white-space: nowrap; min-width: 130px; line-height: 1; }
-.ska-premium-upgrade-price { font-size: 28px; font-weight: 800; color: #0284c7; margin: 0.2rem 0 0.6rem; animation: ska-fade-in 0.25s ease both; display: flex; align-items: baseline; gap: 0.45rem; }
-.ska-premium-upgrade-price-label { font-size: 0.9rem; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; }
-.ska-premium-upgrade-price-value { font-size: 28px; font-weight: 800; color: #0284c7; }
+.ska-premium-upgrade-price { font-size: 30px; font-weight: 800; color: #0284c7; margin: 0.2rem 0 0.6rem; animation: ska-fade-in 0.25s ease both; display: flex; align-items: baseline; gap: 0.45rem; }
+.ska-premium-upgrade-price-label { font-size: 17px; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; }
+.ska-premium-upgrade-price-value { font-size: 30px; font-weight: 800; color: #0284c7; }
 .ska-premium-upgrade-price--free { color: #0f172a; }
 .ska-premium-upgrade-price-note { font-size: 0.95rem; color: #475569; margin-top: -0.2rem; margin-bottom: 0.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 1.6rem; line-height: 1.4; animation: ska-fade-in 0.25s ease both; }
 .ska-premium-upgrade-savings { font-size: 0.78rem; color: #0f172a; font-weight: 700; background: #dcfce7; border: 1px solid #bbf7d0; padding: 0.2rem 0.5rem; border-radius: 999px; display: inline-flex; white-space: nowrap; animation: ska-fade-in 0.25s ease both; transition: opacity 0.25s ease, transform 0.25s ease; line-height: 1; }
