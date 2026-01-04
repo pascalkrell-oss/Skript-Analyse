@@ -13,6 +13,7 @@
         UI_KEY_EXCLUDED: 'skriptanalyse_excluded_cards',
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
         UI_KEY_PLAN: 'skriptanalyse_plan_mode',
+        UI_KEY_UPGRADE_DISMISSED: 'skriptanalyse_upgrade_dismissed',
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
@@ -1991,7 +1992,8 @@
                 syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: [],
-                limitReached: false
+                limitReached: false,
+                premiumUpgradeDismissed: false
             };
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
@@ -2828,6 +2830,12 @@
                 this.renderUpgradePanel();
                 return true;
             }
+            if (act === 'close-premium-upgrade') {
+                this.state.premiumUpgradeDismissed = true;
+                this.saveUIState();
+                this.renderUpgradePanel();
+                return true;
+            }
             if (act === 'open-pdf') {
                 const modal = document.getElementById('ska-pdf-modal');
                 if (modal) {
@@ -3177,6 +3185,11 @@
             if (!SA_CONFIG.PRO_MODE) {
                 this.state.planMode = 'free';
             }
+
+            const upgradeDismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED);
+            if (upgradeDismissed) {
+                this.state.premiumUpgradeDismissed = upgradeDismissed === 'true';
+            }
             
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
             if(g) {
@@ -3213,6 +3226,7 @@
             if (SA_CONFIG.IS_ADMIN) {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
             }
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(this.state.premiumUpgradeDismissed));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
                 lastGenre: this.settings.lastGenre,
@@ -3373,9 +3387,16 @@
             
             this.root.addEventListener('click', (e) => {
                 const btn = e.target.closest('[data-action]');
+                const upgradeLink = e.target.closest('[href="#ska-premium-upgrade"]');
                 const hideBtn = e.target.closest('.ska-hide-btn');
                 const restoreChip = e.target.closest('.ska-restore-chip');
                 const whitelistBtn = e.target.closest('.ska-whitelist-toggle');
+
+                if (upgradeLink && this.state.premiumUpgradeDismissed) {
+                    this.state.premiumUpgradeDismissed = false;
+                    this.saveUIState();
+                    this.renderUpgradePanel();
+                }
 
                 if(hideBtn) { this.toggleCard(hideBtn.closest('.skriptanalyse-card').dataset.cardId, false); return; }
                 if(restoreChip) { this.toggleCard(restoreChip.dataset.restoreId, true); return; }
@@ -3622,6 +3643,7 @@
                     this.state.hiddenCards.clear(); 
                     this.state.excludedCards.clear();
                     this.state.readabilityCache = [];
+                    this.state.premiumUpgradeDismissed = false;
                     this.saveUIState();
                     this.renderHiddenPanel();
                     this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
@@ -3716,16 +3738,16 @@
             const isPremium = this.isPremiumActive();
             const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
-            const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
-            let premiumInfoBox = '';
-            if (!isPremium && premiumItems.length) {
-                premiumInfoBox = `
-                    <div class="ska-filterbar-upgrade-card">
-                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
-                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
-                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
-                    </div>`;
-            }
+            const premiumLabel = !isPremium && premiumItems.length ? `
+                <div class="ska-filterbar-premium-label">
+                    <span>Premium-Vorschau</span>
+                </div>` : '';
+            const premiumPreview = !isPremium && premiumItems.length ? `
+                <div class="ska-filterbar-premium-preview">
+                    ${premiumItems.map(id => {
+                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
+                    }).join('')}
+                </div>` : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
@@ -3750,10 +3772,7 @@
                         return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                     ${premiumLabel}
-                    ${premiumItems.map(id => {
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
-                    }).join('')}
-                    ${premiumInfoBox}
+                    ${premiumPreview}
                 </div>`;
             this.filterBar.innerHTML = html;
         }
@@ -3930,6 +3949,7 @@
             this.renderUpgradePanel();
             this.renderHiddenPanel();
             this.renderFilterBar();
+            this.renderPremiumTeaserNote();
             if (this.state.savedVersion && this.isPremiumActive()) {
                 this.renderComparison(dur, read.wordCount, read.score);
             } else {
@@ -5041,7 +5061,7 @@
                         <div style="font-size:0.8rem; color:#166534;">Keine Passiv-Bremser gefunden.</div>
                        </div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Phrasen</div><div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
                 matches.slice(0, 5).forEach(m => {
                     h+=`<div class="skriptanalyse-badge skriptanalyse-badge--passive" style="display:block; width:auto; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m}</div>`;
                 });
@@ -5076,7 +5096,7 @@
             if(!words.length) {
                  h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Adjektive gefunden.</p>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.slice(0, 20).forEach(w => {
                     h+=`<span class="skriptanalyse-badge" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8;">${w}</span>`;
                 });
@@ -5123,7 +5143,7 @@
             if(!words.length) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Kein auffälliger Nominalstil.</p>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--nominal">${w}</span>`;
                 });
@@ -5140,7 +5160,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🇩🇪 Rein deutsch!</div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Begriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--anglicism">${w}</span>`;
                 });
@@ -5189,7 +5209,7 @@
             if(!words.length) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">✨ Abwechslungsreich!</div>`;
             } else {
-                h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem;">`;
+                h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
                     h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo">${w}</span>`;
                 });
@@ -5208,28 +5228,28 @@
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
                 if(s.phonetic.length) { 
-                    h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.phonetic.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.camel.length) { 
-                    h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.camel.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--camel">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.long.length) { 
-                    h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.long.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--long">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
                 if(s.alliter.length) {
-                    h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:0.8rem;">`; 
+                    h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
                     });
@@ -5266,7 +5286,7 @@
             }
 
             if(globalCount > 0) {
-                h += `<div class="ska-section-title">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap;">`; 
+                h += `<div class="ska-section-title">Gefundene Signale (Gesamt)</div><div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin-bottom:10px;">`; 
                 ctaData.all.forEach(x => h += `<span class="skriptanalyse-badge skriptanalyse-badge--cta">${x}</span>`);
                 h += `</div>`;
             }
@@ -5594,6 +5614,10 @@
                 if (existing) existing.remove();
                 return;
             }
+            if (this.state.premiumUpgradeDismissed) {
+                if (existing) existing.remove();
+                return;
+            }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const freeFunctions = [
@@ -5632,7 +5656,13 @@
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const html = `
-                <div class="ska-premium-upgrade-ribbon">Jetzt Upgraden!</div>
+                <div class="ska-premium-upgrade-ribbon">Premium</div>
+                <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18"></path>
+                        <path d="M6 6l12 12"></path>
+                    </svg>
+                </button>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
                         <span class="ska-premium-upgrade-icon" aria-hidden="true">
@@ -5707,6 +5737,28 @@
                 card.id = 'ska-premium-upgrade';
                 card.innerHTML = html;
                 container.insertBefore(card, this.legendContainer);
+            }
+        }
+
+        renderPremiumTeaserNote() {
+            if (!this.legendContainer) return;
+            const container = this.legendContainer.parentElement;
+            if (!container) return;
+            const existing = container.querySelector('.ska-premium-teaser-note');
+            if (existing) existing.remove();
+            if (this.isPremiumActive()) return;
+            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
+            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id));
+            const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
+            if (!remainingCount) return;
+            const note = document.createElement('div');
+            note.className = 'ska-premium-teaser-note';
+            note.textContent = `+ ${remainingCount} weitere Analyseboxen`;
+            const upgradeCard = container.querySelector('.ska-premium-upgrade-card');
+            if (upgradeCard) {
+                container.insertBefore(note, upgradeCard);
+            } else {
+                container.insertBefore(note, this.legendContainer);
             }
         }
 
