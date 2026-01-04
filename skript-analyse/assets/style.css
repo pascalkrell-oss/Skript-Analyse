@@ -343,6 +343,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; }
+.ska-premium-upgrade-listing li span { font-weight: 420; }
 .ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
 .ska-premium-upgrade-col.is-premium .ska-upgrade-check { background: #e0f2fe; color: #0284c7; }
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
