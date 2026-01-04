@@ -3259,6 +3259,20 @@
                 toggle.checked = this.isPremiumActive();
                 toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
             }
+            const saveBtn = document.querySelector('[data-action="save-version"]');
+            if (saveBtn && saveBtn instanceof HTMLButtonElement) {
+                const isPremium = this.isPremiumActive();
+                saveBtn.disabled = !isPremium;
+                saveBtn.classList.toggle('is-disabled', !isPremium);
+                saveBtn.setAttribute('aria-disabled', String(!isPremium));
+                saveBtn.title = isPremium ? 'Version merken' : 'Nur mit Premium verfügbar.';
+                const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
+                if (tooltip) {
+                    tooltip.textContent = isPremium
+                        ? 'Premium: Versionen speichern & vergleichen.'
+                        : 'Nur mit Premium verfügbar.';
+                }
+            }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
