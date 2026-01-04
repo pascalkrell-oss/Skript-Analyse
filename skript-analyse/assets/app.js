@@ -980,15 +980,20 @@
                 sentences.forEach((sentence) => {
                     collectPattern(sentence);
                     const local = SA_Logic.calculateSyllableEntropy(sentence);
-                    if (local.stumble && sentence.split(/\s+/).length > 6) {
-                        sentenceResults.push({ sentence, entropy: local.entropy });
+                    const wordCount = sentence.trim().split(/\s+/).filter(Boolean).length;
+                    if (local.stumble && wordCount >= 8) {
+                        sentenceResults.push({ sentence, entropy: local.entropy, wordCount });
                     }
                 });
             }
 
             const entropy = SA_Logic.calculateEntropyFromPattern(syllablePattern);
-            const label = entropy > 0.65 ? 'Unruhig / Stolpernd' : (entropy > 0.4 ? 'Ausgewogen' : 'Monoton');
-            return { entropy, label, issues: sentenceResults };
+            const label = entropy > 0.72 ? 'Unruhig / Stolpernd' : (entropy > 0.48 ? 'Ausgewogen' : 'Monoton');
+            const issues = sentenceResults
+                .sort((a, b) => b.entropy - a.entropy)
+                .slice(0, 12)
+                .map(({ sentence, entropy: issueEntropy }) => ({ sentence, entropy: issueEntropy }));
+            return { entropy, label, issues };
         },
         calculateSyllableEntropy: (text) => {
             const pattern = [];
@@ -999,7 +1004,7 @@
                 for (let i = 1; i < syllables; i += 1) pattern.push(0);
             });
             const entropy = SA_Logic.calculateEntropyFromPattern(pattern);
-            return { entropy, stumble: entropy > 0.72 };
+            return { entropy, stumble: entropy > 0.78 };
         },
         calculateEntropyFromPattern: (pattern) => {
             if (!pattern.length) return 0;
@@ -3395,7 +3400,6 @@
 
                 if(act.startsWith('open-')) { 
                     if (act === 'open-syllable-entropy' && !this.isPremiumActive()) {
-                        this.showPremiumNotice('Mehr Details sind in der Premium-Version verfügbar.');
                         e.preventDefault();
                         return;
                     }
@@ -3490,7 +3494,6 @@
 
             if(act === 'toggle-breath-more') {
                  if (!this.isPremiumActive()) {
-                     this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
                      e.preventDefault();
                      return;
                  }
@@ -3506,7 +3509,6 @@
 
             if(act === 'toggle-rhet-questions') {
                 if (!this.isPremiumActive()) {
-                    this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
                     e.preventDefault();
                     return;
                 }
@@ -3522,7 +3524,6 @@
 
             if(act === 'toggle-plosive') {
                 if (!this.isPremiumActive()) {
-                    this.showPremiumNotice('Mehr Ergebnisse sind in der Premium-Version verfügbar.');
                     e.preventDefault();
                     return;
                 }
@@ -4073,6 +4074,7 @@
         renderPlosiveCard(clusters, active) {
             if(!active) return this.updateCard('plosive', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
+            const isPremium = this.isPremiumActive();
 
             if(!clusters || clusters.length === 0) {
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
@@ -4088,7 +4090,7 @@
                           </div>`;
                 });
                 h += `</div>`;
-                if (remaining.length) {
+                if (remaining.length && isPremium) {
                     h += `<div id="ska-plosive-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     h += `<div class="ska-problem-list">`;
                     remaining.forEach(cluster => {
@@ -4099,6 +4101,8 @@
                     });
                     h += `</div></div>`;
                     h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                } else if (remaining.length) {
+                    h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-plosive" data-total="${remaining.length}" data-premium-hint="Mehr Plosiv-Details gibt es in Premium." aria-disabled="true">...und ${remaining.length} weitere anzeigen</button>`;
                 }
                 h += this.renderTipSection('plosive', true);
             }
@@ -4189,6 +4193,7 @@
             if(!active) return this.updateCard('rhet_questions', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!data || data.length === 0) return this.updateCard('rhet_questions', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für Fragen-Analyse.</p>');
 
+            const isPremium = this.isPremiumActive();
             const total = data.length;
             const questions = data.filter(item => item.isQuestion);
             const rhetorical = data.filter(item => item.isRhetorical);
@@ -4217,7 +4222,7 @@
                     h += `<div class="ska-problem-item">${item.sentence}</div>`;
                 });
                 h += `</div>`;
-                if (remaining.length) {
+                if (remaining.length && isPremium) {
                     h += `<div id="ska-rhet-questions-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     h += `<div class="ska-problem-list">`;
                     remaining.forEach(item => {
@@ -4225,6 +4230,8 @@
                     });
                     h += `</div></div>`;
                     h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-rhet-questions" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                } else if (remaining.length) {
+                    h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-rhet-questions" data-total="${remaining.length}" data-premium-hint="Mehr Fragen-Auswertung gibt es in Premium." aria-disabled="true">...und ${remaining.length} weitere anzeigen</button>`;
                 }
             }
             h += this.renderTipSection('rhet_questions', true);
@@ -4365,8 +4372,8 @@
                 </div>
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
-                    <button class="ska-btn ska-btn--primary" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
-                    <button class="ska-btn ska-btn--secondary" data-action="pacing-reset">Reset</button>
+                    <button class="ska-btn ska-btn--secondary" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--ghost" data-action="pacing-reset">Reset</button>
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
 
@@ -4402,12 +4409,15 @@
                 data.issues.slice(0, 3).forEach((item) => {
                     h += `<div class="ska-problem-item">${item.sentence}<div class="ska-problem-meta">⚠️ Entropie ${(item.entropy * 100).toFixed(0)}%</div></div>`;
                 });
-                if (totalIssues > 3 && totalIssues <= 20) {
+                if (totalIssues > 3) {
                     h += `<div style="font-size:0.75rem; color:#94a3b8; text-align:center; margin-top:0.4rem;">...und ${totalIssues - 3} weitere</div>`;
                 }
                 h += `</div>`;
-                if (totalIssues > 20) {
-                    h += `<button class="ska-expand-link ska-more-toggle" data-action="open-syllable-entropy">Alle ${totalIssues} anzeigen</button>`;
+                if (totalIssues > 8) {
+                    const isPremium = this.isPremiumActive();
+                    const lockHint = isPremium ? '' : 'data-premium-hint="Mehr Details gibt es in Premium." aria-disabled="true"';
+                    const lockClass = isPremium ? '' : ' is-locked';
+                    h += `<button class="ska-expand-link ska-more-toggle${lockClass}" data-action="open-syllable-entropy" ${lockHint}>Alle ${totalIssues} anzeigen</button>`;
                 }
             } else {
                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Rhythmus-Brüche erkannt.</p>`;
@@ -5071,6 +5081,7 @@
             if(!active) return this.updateCard('breath', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
             let h = '';
+            const isPremium = this.isPremiumActive();
             if(!killers || killers.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🫁 Alles flüssig!</div>`;
             } else {
@@ -5083,11 +5094,14 @@
                     return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
                 };
                 killers.slice(0, 3).forEach(k => { h += renderItem(k); });
-                if(killers.length > 3) {
+                if(killers.length > 3 && isPremium) {
                     const hiddenCount = killers.length - 3;
                     h += `<div id="ska-breath-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
                     killers.slice(3).forEach(k => { h += renderItem(k); });
                     h += `</div><button class="ska-expand-link ska-more-toggle" data-action="toggle-breath-more" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
+                } else if (killers.length > 3) {
+                    const hiddenCount = killers.length - 3;
+                    h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-breath-more" data-total="${hiddenCount}" data-premium-hint="Mehr Atem-Details gibt es in Premium." aria-disabled="true">...und ${hiddenCount} weitere anzeigen</button>`;
                 }
                 h += `</div>`;
                 h += this.renderTipSection('breath', true);
@@ -5471,8 +5485,6 @@
             }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
             const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumCardsPreview = premiumCards.slice(0, 5);
-            const remainingPremiumCards = Math.max(0, premiumCards.length - premiumCardsPreview.length);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
@@ -5480,16 +5492,20 @@
                 'PDF-Export (Basis)'
             ];
             const premiumFunctions = [
+                'Alles aus Free',
                 'SPS-Modus',
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
                 'Pro-PDF-Report',
+                'PDF-Report mit Kennzahlen',
+                'Textvergleich (Versionen)',
+                'Premium-Analyseboxen',
                 'Cloud-Speicher (sofern verfügbar)'
             ];
             const premiumPlans = [
-                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat' },
-                { id: 'semi', label: 'Halbjährlich', price: '18,50 EUR', note: 'pro Monat · 111,00 EUR' },
-                { id: 'yearly', label: 'Jährlich', price: '17,00 EUR', note: 'pro Monat · 204,00 EUR', badge: 'Bester Deal' }
+                { id: 'monthly', label: 'Monatlich', price: '20,00 EUR', note: 'pro Monat', savings: '' },
+                { id: 'semi', label: 'Halbjährlich', price: '111,00 EUR', note: 'pro Monat · 18,50 EUR', savings: 'Du sparst 9,00 EUR gegenüber monatlich.' },
+                { id: 'yearly', label: 'Jährlich', price: '204,00 EUR', note: 'pro Monat · 17,00 EUR', savings: 'Du sparst 36,00 EUR gegenüber monatlich.', badge: 'Bester Deal' }
             ];
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const renderList = (items) => items.map(item => `
@@ -5529,6 +5545,9 @@
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-title">Premium</div>
+                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
+                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
+                        ${selectedPlan.savings ? `<div class="ska-premium-upgrade-savings">${selectedPlan.savings}</div>` : ''}
                         <div class="ska-premium-upgrade-switch">
                             ${premiumPlans.map(plan => `
                                 <button class="ska-premium-plan-btn ${plan.id === selectedPlan.id ? 'is-active' : ''}" data-action="premium-price-plan" data-plan="${plan.id}">
@@ -5537,22 +5556,11 @@
                                 </button>
                             `).join('')}
                         </div>
-                        <div class="ska-premium-upgrade-price">${selectedPlan.price}</div>
-                        <div class="ska-premium-upgrade-price-note">${selectedPlan.note}</div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList(premiumCardsPreview)}
+                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
+                                ${renderList(premiumCards)}
                             </ul>
-                            ${remainingPremiumCards > 0 ? `
-                                <div class="ska-premium-upgrade-hover">
-                                    <span class="ska-premium-upgrade-hover-label">+ ${remainingPremiumCards} weitere Analyseboxen</span>
-                                    <div class="ska-premium-upgrade-hover-badge">
-                                        <strong>Weitere Premium-Boxen</strong>
-                                        <ul>${premiumCards.slice(5).map(item => `<li>${item}</li>`).join('')}</ul>
-                                    </div>
-                                </div>
-                            ` : ''}
                         </div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen</div>
