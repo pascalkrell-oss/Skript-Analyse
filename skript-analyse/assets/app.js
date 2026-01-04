@@ -255,45 +255,31 @@
             'syllable_entropy',
             'plosive',
             'redundancy',
-            'sentiment_intensity',
-            'compare',
             'depth_check',
-            'naming_check',
-            'compliance_check',
-            'keyword_focus',
-            'audience',
-            'bullshit',
-            'metaphor',
-            'verb_balance',
+            'sentiment_intensity',
             'teleprompter',
             'pacing',
             'chapter_calc',
             'role_dist',
-            'bpm'
+            'bpm',
+            'compliance_check',
+            'keyword_focus',
+            'audience',
+            'naming_check',
+            'bullshit',
+            'metaphor',
+            'compare'
         ],
         FREE_CARDS: [
             'overview',
             'char',
-            'stumble',
-            'breath',
-            'echo',
-            'passive',
             'fillers',
-            'nominal',
-            'nominal_chain',
             'anglicism',
-            'coach',
-            'marker',
-            'cta',
-            'adjective',
-            'dialog',
-            'gender',
-            'start_var',
-            'vocabulary',
-            'pronunciation',
-            'easy_language'
+            'breath',
+            'stumble',
+            'marker'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'pronunciation', 'bpm'],
+        PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'start_var', 'echo', 'passive', 'fillers', 'anglicism', 'pacing', 'compliance_check', 'dialog', 'teleprompter'],
@@ -5447,9 +5433,8 @@
                 'SPS-Zeitberechnung',
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
-                'Zielgruppen-Analyse',
-                'Keyword- & Compliance-Checks',
-                'Profi-PDF-Report'
+                'Pro-PDF-Report',
+                'Cloud-Speicher (sofern verfügbar)'
             ];
             const html = `
                 <div class="ska-premium-upgrade-header">
@@ -5460,20 +5445,21 @@
                     <div class="ska-premium-upgrade-col">
                         <div class="ska-premium-upgrade-title">Free</div>
                         <ul>
-                            <li>Schnell-Überblick & Basis-Lesbarkeit</li>
-                            <li>Füllwörter, Denglisch</li>
+                            <li>Schnell-Überblick & WPM-Zeit</li>
+                            <li>Füllwörter & Denglisch</li>
                             <li>Auffällige Sätze & Stolpersteine</li>
-                            <li>Marker-Export</li>
+                            <li>Struktur- & Marker-Export</li>
                         </ul>
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-title">Premium</div>
+                        <div class="ska-premium-upgrade-price">20,00 EUR</div>
                         <ul>
                             <li>Teleprompter, Pacing, BPM</li>
-                            <li>Keyword-Fokus, Compliance-Check</li>
+                            <li>Keyword-Fokus & Compliance</li>
                             <li>Silben-Entropie & Redundanz</li>
-                            <li>Zielgruppen- & Sprecher-Tools</li>
-                            <li>Profi-PDF-Report</li>
+                            <li>Zielgruppen-, Rollen- & Naming-Checks</li>
+                            <li>Pro-PDF-Report</li>
                         </ul>
                     </div>
                 </div>
@@ -5620,16 +5606,6 @@
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
-            const ensureLockedNote = (body) => {
-                if (!isLocked || !body) return;
-                const existing = body.querySelector('.ska-premium-lock-note');
-                if (existing) return;
-                const note = document.createElement('div');
-                note.className = 'ska-premium-lock-note';
-                note.textContent = 'Dieses Feature ist Teil der Premium-Version';
-                body.appendChild(note);
-            };
-
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#94a3b8"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -5681,7 +5657,6 @@
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                     card.appendChild(lock);
-                    ensureLockedNote(b);
                     this.applyFreeLimit(b);
                 }
                 
@@ -5708,7 +5683,6 @@
                         lockEl.innerHTML = '<strong>Premium-Analyse</strong><span>Upgrade für volle Ergebnisse.</span><button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button>';
                         card.appendChild(lockEl);
                     }
-                    ensureLockedNote(body);
                     this.applyFreeLimit(body);
                  } else {
                     if (lock) lock.remove();
