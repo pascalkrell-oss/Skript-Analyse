@@ -3704,7 +3704,7 @@
             const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
             const premiumLabel = !isPremium && premiumItems.length ? '<div class="ska-filterbar-premium-label">Premium-Vorschau</div>' : '';
             const premiumCta = !isPremium && premiumItems.length
-                ? '<div class="ska-filterbar-premium-cta"><button class="ska-btn ska-btn--ghost ska-btn--compact" data-action="premium-upgrade">Premium freischalten</button></div>'
+                ? '<div class="ska-filterbar-premium-cta"><a class="ska-btn ska-btn--ghost ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a></div>'
                 : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
@@ -5492,9 +5492,9 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceEl = card.querySelector('[data-role="premium-price"]');
-            if (priceEl) {
-                priceEl.textContent = `Abo ab ${selectedPlan.price}`;
+            const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
+            if (priceValueEl) {
+                priceValueEl.textContent = selectedPlan.price;
             }
             const noteEl = card.querySelector('[data-role="premium-note"]');
             if (noteEl) {
@@ -5562,11 +5562,11 @@
                         </span>
                         <strong>Nutze das volle Potential</strong>
                     </div>
-                    <span>Upgrade auf Premium: Free liefert die wichtigsten Basis-Analysen. Premium schaltet alle Boxen, Pro-PDF-Report und Vergleichsfunktionen frei.</span>
+                    <span>Mehr Analysen, Reports & Vergleich: Premium lohnt sich besonders für Creator, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
-                    <div class="ska-premium-upgrade-col">
-                        <div class="ska-premium-upgrade-title">Free</div>
+                    <div class="ska-premium-upgrade-col is-free">
+                        <div class="ska-premium-upgrade-title">Basis</div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
                         <div class="ska-premium-upgrade-price-note">für immer</div>
                         <div class="ska-premium-upgrade-section">
@@ -5587,7 +5587,10 @@
                             <div class="ska-premium-upgrade-title">Premium</div>
                             <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
                         </div>
-                        <div class="ska-premium-upgrade-price" data-role="premium-price">Abo ab ${selectedPlan.price}</div>
+                        <div class="ska-premium-upgrade-price" data-role="premium-price">
+                            <span class="ska-premium-upgrade-price-label">Abo ab</span>
+                            <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
+                        </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
                             ${premiumPlans.map(plan => `
@@ -5597,13 +5600,13 @@
                                 </button>
                             `).join('')}
                         </div>
-                        <div class="ska-premium-upgrade-section">
+                        <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
                             <div class="ska-premium-upgrade-subtitle">Funktionen</div>
                             <ul class="ska-premium-upgrade-listing">
                                 ${renderList(premiumFunctions)}
                             </ul>
                         </div>
-                        <div class="ska-premium-upgrade-section">
+                        <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
                                 ${renderList(premiumCards, { stripIcons: true })}
@@ -5619,10 +5622,12 @@
                     <span>Alle Premium-Features freischalten & direkt produktiver arbeiten.</span>
                 </div>`;
             if (existing) {
+                existing.id = 'ska-premium-upgrade';
                 existing.innerHTML = html;
             } else {
                 const card = document.createElement('div');
                 card.className = 'ska-premium-upgrade-card';
+                card.id = 'ska-premium-upgrade';
                 card.innerHTML = html;
                 container.insertBefore(card, this.legendContainer);
             }
