@@ -2832,11 +2832,6 @@
                 return true;
             }
             if (act === 'close-premium-upgrade') {
-                if (!this.isPremiumActive()) {
-                    this.state.premiumUpgradeDismissed = false;
-                    this.renderUpgradePanel();
-                    return true;
-                }
                 this.state.premiumUpgradeDismissed = true;
                 this.saveUIState();
                 this.renderUpgradePanel();
@@ -3236,7 +3231,7 @@
             if (SA_CONFIG.IS_ADMIN) {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
             }
-            const upgradeDismissed = this.isPremiumActive() ? this.state.premiumUpgradeDismissed : false;
+            const upgradeDismissed = this.isPremiumActive() ? false : this.state.premiumUpgradeDismissed;
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
                 timeMode: this.settings.timeMode, 
@@ -5630,7 +5625,10 @@
                 return;
             }
             const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const premiumCards = SA_CONFIG.PREMIUM_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
+            const premiumCards = SA_CONFIG.PREMIUM_CARDS
+                .filter(id => this.isCardAvailable(id) && !SA_CONFIG.FREE_CARDS.includes(id))
+                .map(id => SA_CONFIG.CARD_TITLES[id])
+                .filter(Boolean);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
