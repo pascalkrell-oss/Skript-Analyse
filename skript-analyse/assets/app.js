@@ -3724,6 +3724,13 @@
                         <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
                    </div>`
                 : '';
+            const premiumInfoBox = !isPremium && premiumItems.length
+                ? `<div class="ska-filterbar-upgrade-card">
+                        <div class="ska-filterbar-upgrade-title">Premium freischalten</div>
+                        <p>Mehr Analyseboxen, Profi-Tipps und Export-Tools für tiefere Optimierung.</p>
+                        <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Upgrade ansehen</a>
+                   </div>`
+                : '';
             const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
             const html = `
                 <div class="ska-filterbar-header">
