@@ -15,11 +15,17 @@ function ska_register_assets() {
     if ( is_admin() ) return;
 
     $jspdf_url = SKA_URL . 'assets/jspdf.umd.min.js';
+    $pos_url = SKA_URL . 'assets/pos-tagger.js';
     $js_deps = array();
 
     if ( file_exists( plugin_dir_path( __FILE__ ) . 'assets/jspdf.umd.min.js' ) ) {
         wp_register_script( 'jspdf', $jspdf_url, array(), '2.5.1', true );
         $js_deps[] = 'jspdf';
+    }
+
+    if ( file_exists( plugin_dir_path( __FILE__ ) . 'assets/pos-tagger.js' ) ) {
+        wp_register_script( 'skript-analyse-pos', $pos_url, array(), SKA_VER, true );
+        $js_deps[] = 'skript-analyse-pos';
     }
 
     wp_register_style( 'skript-analyse-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
