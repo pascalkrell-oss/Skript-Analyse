@@ -243,7 +243,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
-.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%); color: #0f172a; border: 1px solid #dbeafe; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
+.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
     top: 52px;
@@ -630,22 +630,21 @@ body.ska-modal-open { overflow: hidden !important; }
 .skriptanalyse-analysis-bottom { position: relative; z-index: 50; } 
 .ska-tools-panel {
     margin-top: 1.5rem;
-    background: linear-gradient(135deg, #f4f9ff 0%, #ffffff 60%);
-    border: 1px solid #dbeafe;
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
     padding: 0;
-    box-shadow: 0 14px 32px -24px rgba(15, 23, 42, 0.4);
+    box-shadow: 0 22px 44px -34px rgba(15, 23, 42, 0.35);
+    overflow: hidden;
 }
 .ska-tools-panel.is-hidden { display: none; }
 .ska-tools-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid #e2e8f0;
-    background: linear-gradient(135deg, #e4f1ff 0%, #f8fafc 72%);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
+    padding: 1.15rem 1.6rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent;
 }
 .ska-tools-title { display: flex; flex-direction: column; gap: 0.2rem; }
 .ska-tools-header h3 {
@@ -664,12 +663,43 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-tools-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.1rem;
-    padding: 1.25rem;
+    gap: 1.2rem;
+    padding: 1.6rem;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 .ska-tools-grid .skriptanalyse-card {
     border: 1px solid #e2e8f0;
-    box-shadow: 0 8px 20px -18px rgba(15, 23, 42, 0.4);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 12px 26px -22px rgba(15, 23, 42, 0.35);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.ska-tools-grid .skriptanalyse-card:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5f5;
+    box-shadow: 0 18px 32px -22px rgba(15, 23, 42, 0.4);
+}
+.ska-tool-expand-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 12px 22px -16px rgba(30, 64, 175, 0.65);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.ska-tool-expand-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 26px -16px rgba(30, 64, 175, 0.7);
+}
+.ska-tool-expand-btn:focus-visible {
+    outline: 2px solid #bae6fd;
+    outline-offset: 2px;
 }
 .skriptanalyse-analysis-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ska-grid-gap); align-items: stretch; margin-top: 1.5rem; position: relative; z-index: 10; }
 .ska-hide-btn, .ska-whitelist-toggle { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all 0.2s ease; border-radius: 4px; padding: 0; }
@@ -945,7 +975,7 @@ body.ska-modal-open { overflow: hidden !important; }
 
 /* LEGEND (DESIGN RESTORED) */
 .ska-legend-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--ska-radius-md); padding: 0; font-size: 0.85rem; color: var(--ska-text-muted); display: flex; flex-direction: column; box-shadow: var(--ska-shadow); margin-top: var(--ska-grid-gap); margin-bottom: 2rem; }
-.ska-legend-box .ska-card-header { background-color: transparent; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+.ska-legend-box .ska-card-header { background: transparent; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; margin-bottom: 1rem; }
 .ska-legend-body { padding: 1.25rem; padding-top: 0; display: flex; flex-direction: column; gap: 1.2rem; }
 .ska-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem 1.5rem; }
 .ska-legend-def { line-height: 1.5; }
@@ -987,6 +1017,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .skriptanalyse-modal.is-closing .skriptanalyse-modal-content { opacity: 0; transform: translateY(12px) scale(0.95); }
 .ska-modal-header { padding: 1.5rem 2rem 0.5rem 2rem; flex-shrink: 0; display: block; text-align: left; background: white; border-bottom: none; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
+.ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
+.ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
 .ska-close-icon { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--ska-text-light); z-index: 20; padding: 0.5rem; transition: color 0.2s; width: auto; height: auto; }
 .ska-close-icon:hover { color: var(--ska-text-main); }
 .skriptanalyse-modal-body { padding: 1rem 2rem 2rem 2rem; overflow-y: auto; scrollbar-width: thin; }
