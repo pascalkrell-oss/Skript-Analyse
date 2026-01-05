@@ -393,7 +393,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .skriptanalyse-card.ska-animate-enter { animation: ska-card-enter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @keyframes ska-card-enter { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .ska-card-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; background-color: var(--ska-header-bg); border-top-left-radius: var(--ska-radius-md); border-top-right-radius: var(--ska-radius-md); }
-.ska-card-header h3 { margin: 0; font-size: 0.85rem; color: var(--ska-text-light); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.ska-card-header h3 { margin: 0; font-size: 0.85rem; color: #475569; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
 .ska-card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; }
 .ska-card-body-content {
     display: flex;

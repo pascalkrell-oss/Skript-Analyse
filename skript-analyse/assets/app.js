@@ -3887,10 +3887,6 @@
                 this.renderNominalChainModal(this.state.nominalChains || []);
                 return true;
             }
-            if (act === 'show-nominal-chains') {
-                this.renderNominalChainModal(this.state.nominalChains || []);
-                return true;
-            }
             if (act === 'toggle-card') {
                 const id = btn.dataset.card;
                 if (id) {
@@ -4314,19 +4310,19 @@
                 toggle.checked = this.isPremiumActive();
                 toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
             }
-            const saveBtn = document.querySelector('[data-action="save-version"]');
-            if (saveBtn && saveBtn instanceof HTMLButtonElement) {
-                const isPremium = this.isPremiumActive();
-                saveBtn.disabled = !isPremium;
-                saveBtn.classList.toggle('is-disabled', !isPremium);
-                saveBtn.setAttribute('aria-disabled', String(!isPremium));
-                const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
-                if (tooltip) {
-                    tooltip.textContent = isPremium
-                        ? 'Premium: Versionen speichern & vergleichen.'
-                        : 'Nur mit Premium verfügbar.';
+                const saveBtn = document.querySelector('[data-action="save-version"]');
+                if (saveBtn && saveBtn instanceof HTMLButtonElement) {
+                    const isPremium = this.isPremiumActive();
+                    saveBtn.disabled = !isPremium;
+                    saveBtn.classList.toggle('is-disabled', !isPremium);
+                    saveBtn.setAttribute('aria-disabled', String(!isPremium));
+                    const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
+                    if (tooltip) {
+                        tooltip.textContent = isPremium
+                            ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
+                            : 'Premium: Versionen speichern & vergleichen.';
+                    }
                 }
-            }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
@@ -5432,6 +5428,7 @@
             const focusLimit = data.focusLimit || 0;
             const focusOverLimit = data.focusOverLimit;
             const focusTotalCount = data.focusTotalCount || 0;
+            const focusScore = Number.isFinite(data.focusScore) ? data.focusScore : 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
@@ -5439,6 +5436,7 @@
                 return this.updateCard('keyword_focus', h);
             }
 
+            h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.6rem;">Die Top-Substantive zeigen, worauf dein Skript tatsächlich fokussiert. Nutze sie, um Begriffe gezielt zu verstärken oder zu variieren.</div>`;
             if (focusKeywords.length) {
                 const statusLabel = focusLimit > 0
                     ? (focusOverLimit ? 'Keyword-Stuffing möglich' : 'Im grünen Bereich')
@@ -5481,7 +5479,7 @@
                 }
             }
 
-            h += `<div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
+            h += `<div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong> · Fokus-Score: <strong>${(focusScore * 100).toFixed(1)}%</strong></div>`;
             h += `<div class="ska-section-title">Häufigkeit (Substantive)</div>`;
             h += `<div class="ska-filler-list">`;
             const maxVal = top[0].count || 1;
@@ -6602,6 +6600,19 @@
             let flowCol = SA_CONFIG.COLORS.success;
             if (avgSentence >= 20) { flowText = 'Sätze eher lang'; flowCol = SA_CONFIG.COLORS.warn; }
             else if (avgSentence <= 10) { flowText = 'Kurz & knackig'; flowCol = SA_CONFIG.COLORS.blue; }
+            const tempoDirective = effectiveRate
+                ? (isSps
+                    ? (effectiveRate > 4.2 ? 'Tempo drosseln, verständlicher artikulieren.' : (effectiveRate < 3.3 ? 'Tempo leicht anziehen, Energie steigern.' : 'Tempo halten, klare Betonung.'))
+                    : (effectiveRate > 165 ? 'Tempo drosseln, Pausen setzen.' : (effectiveRate < 125 ? 'Tempo leicht anziehen, mehr Drive.' : 'Tempo halten, klare Betonung.')))
+                : 'Tempo auf Zielwert kalibrieren.';
+            const rhythmDirective = variance < 2.5
+                ? 'Rhythmus auflockern: kurze Sätze zwischen lange setzen.'
+                : 'Rhythmus wirkt lebendig – beibehalten.';
+            const breathDirective = stretch
+                ? `Atempunkte früher setzen (Ziel < ${stretchThreshold} Silben).`
+                : 'Atempausen wirken sauber gesetzt.';
+            const emphasisDirective = focusText => focusText ? `Schlüsselwort betonen: „${focusText}“ als Fokus setzen.` : 'Kernaussage pro Satz markieren und hervorheben.';
+            const primaryKeyword = read?.words?.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
@@ -6633,6 +6644,15 @@
                         <div style="font-size:0.7rem; text-transform:uppercase; color:#1e40af; font-weight:700;">Sprech-Haltung</div>
                         <div style="font-weight:600; color:#1e3a8a; font-size:0.95rem;">${tone.label}</div>
                     </div>
+                </div>
+                <div style="margin-top:0.8rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-bottom:0.4rem;">Konkrete Regieanweisung</div>
+                    <ul style="margin:0; padding-left:1.1rem; color:#334155; font-size:0.88rem; line-height:1.6;">
+                        <li>${tempoDirective}</li>
+                        <li>${rhythmDirective}</li>
+                        <li>${breathDirective}</li>
+                        <li>${emphasisDirective(primaryKeyword)}</li>
+                    </ul>
                 </div>
                 <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
