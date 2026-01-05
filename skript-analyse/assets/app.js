@@ -39,7 +39,7 @@
         },
         GENRE_CARD_TIPS: {
             fillers: 'Füllwörter konsequent streichen, damit die Aussage fokussiert bleibt.',
-            passive: 'Aktiv formulieren, damit der Text Energie behält.',
+            passive: 'Passiv nur gezielt einsetzen, sonst wirkt der Text distanziert.',
             nominal: 'Nominalstil reduzieren und Verben nach vorn holen.',
             nominal_chain: 'Nominalketten auflösen, damit der Satz luftiger wirkt.',
             anglicism: 'Fremdwörter nur dort nutzen, wo sie wirklich nötig sind.',
@@ -48,6 +48,7 @@
             stumble: 'Sprecherfreundliche Wörter bevorzugen und Zungenbrecher glätten.',
             cta: 'Handlungsaufforderung klar und direkt platzieren.',
             adjective: 'Adjektive sparsam setzen und starke Bilder wählen.',
+            adverb: 'Adverbien gezielt einsetzen, damit der Satz klar bleibt.',
             rhythm: 'Satzlängen variieren, damit der Rhythmus trägt.',
             syllable_entropy: 'Unruhige Silbenfolgen glätten, damit der Flow sauber bleibt.',
             dialog: 'Dialoganteile passend zur Szene dosieren.',
@@ -153,10 +154,10 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -180,6 +181,7 @@
             cta: '📣 Call to Action', 
             compare: '⚖️ Versions-Vergleich', 
             adjective: '🌸 Adjektiv-Dichte',
+            adverb: '🌀 Adverbien-Check',
             rhythm: '🌊 Satz-Rhythmus',
             syllable_entropy: '🎼 Silben-Entropie',
             dialog: '💬 Dialog-Balance',
@@ -212,7 +214,7 @@
             stumble: 'Findet Zungenbrecher (Phonetik), S-Laut-Häufungen und lange Wortungetüme.',
             breath: 'Findet Sätze, die den natürlichen Atemfluss unterbrechen könnten.', 
             echo: 'Findet unschöne Wortwiederholungen auf engem Raum.',
-            passive: 'Prüft das Verhältnis von aktiver zu passiver Sprache.',
+            passive: 'Prüft Passiv-Konstruktionen (Hilfsverb + Partizip II) und ignoriert Zustandsformen wie "Es wird dunkel".',
             fillers: 'Findet Wörter, die man oft streichen kann.',
             nominal: 'Markiert einzelne Wörter im "Papierdeutsch" (-ung, -heit).',
             nominal_chain: 'Findet ganze Passagen mit hoher Dichte an "Behördensprache".',
@@ -222,6 +224,7 @@
             cta: 'Prüft, ob am Ende eine klare Handlungsaufforderung steht (Conversion-Fokus).',
             compare: 'Vergleich mit der gespeicherten Version.',
             adjective: 'Prüft, ob der Text durch zu viele Adjektive (Endungen wie -ig, -lich) überladen wirkt.',
+            adverb: 'Prüft Adverbien (z.B. -weise/-erweise) als eigenständigen Stil-Indikator.',
             rhythm: 'Visualisiert die Abfolge von kurzen und langen Sätzen (Short-Short-Long Prinzip).',
             syllable_entropy: 'Analysiert betonte/unbetonte Silbenfolgen für Rhythmus-Stolperstellen.',
             dialog: 'Zeigt das Verhältnis zwischen Erzähler-Text und wörtlicher Rede (Dialog).',
@@ -248,7 +251,7 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -281,14 +284,14 @@
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
+            werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
             imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
             erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
             hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
             elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'adverb', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
             buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
         },
         
@@ -343,13 +346,14 @@
             nominal: ["Wörter auf -ung, -heit, -keit ersticken den Sprachfluss.", "Nominalstil klingt nach Behörde. Ein Skript sollte so klingen, wie Menschen wirklich reden.", "Suche nach dem 'versteckten Verb' in Substantiven wie 'die Bearbeitung' -> 'wir bearbeiten'.", "Textdichte durch Nominalstil ermüdet das Ohr deines Hörers sehr schnell.", "Verben sind die Motoren deiner Sprache – sie bringen Bewegung und Leben in das Skript."],
             nominal_chain: ["Behördensprache ist der Feind von Audio.", "Löse diese Cluster auf, indem du sie in zwei einfachere Sätze mit Verben verwandelst.", "Ketten von Substantiven (-ung, -heit, -ät) machen den Text atemlos und hölzern.", "Baue mehr Verben ein: Sie ziehen den Satz nach vorn und klingen natürlicher.", "Vermeide Genitiv-Ketten – lieber mit Präpositionen auflösen."],
             role_dist: ["Nutze die Rollenerkennung für Zeit-Kalkulation.", "Zu viele kurze Einwürfe können den Fluss stören, zu lange Monologe ermüden.", "Achte auf ein ausgewogenes Verhältnis, wenn es ein Dialog sein soll.", "Wechsle zwischen Erzähler und Dialog, um Monotonie zu vermeiden.", "Achte auf klare Sprecherwechsel, damit der Hörer sofort folgt."],
-            passive: ["Aktivsprache erzeugt Bilder im Kopf.", "Passiv versteckt den Handelnden ('Es wurde entschieden' vs 'Wir entschieden').", "Der Passiv-Killer sucht nach 'werden' + 'gemacht/getan' (Partizip II).", "Vermeide 'wurde/werden', wenn du Dynamik und Verantwortung transportieren willst.", "Aktive Sätze sind meist kürzer, prägnanter und überzeugender."],
+            passive: ["Aktivsprache erzeugt Bilder im Kopf.", "Passiv versteckt den Handelnden ('Es wurde entschieden' vs 'Wir entschieden').", "Passiv wird nur bei Hilfsverb + Partizip II markiert (nicht: 'Es wird dunkel').", "Vermeide 'wurde/werden', wenn du Dynamik und Verantwortung transportieren willst.", "Aktive Sätze sind meist kürzer, prägnanter und überzeugender."],
             anglicism: ["Bleib verständlich.", "Prüfe kritisch: Gibt es ein einfacheres deutsches Wort, das jeder sofort versteht?", "Anglizismen können modern wirken, aber auch eine Barriere zwischen dir und dem Hörer bauen.", "Nutze englische Begriffe nur dort, wo sie als etablierter Fachbegriff unverzichtbar sind.", "In Audio-Medien zählen vertraute Wörter mehr, da der Hörer nicht zurückblättern kann."],
             echo: ["Variiere deine Wortwahl für mehr Lebendigkeit.", "Suche nach Synonymen, um den Text für den Sprecher lebendig zu halten.", "Echos innerhalb von zwei Sätzen fallen im Audio sofort als 'Sprechfehler' auf.", "Wortwiederholungen ermüden das Gehör. Nutze ein Thesaurus-Tool für Abwechslung.", "Ein reicher Wortschatz wirkt kompetenter und hält die Aufmerksamkeit des Hörers hoch."],
             breath: ["Ein Gedanke pro Satz. Das gibt Raum zum Atmen.", "Viele Kommas sind oft ein Zeichen für Schachtelsätze. Trenne sie mit einem Punkt.", "Lange Sätze zwingen den Sprecher zu hohem Tempo – das stresst den Hörer.", "Prüfe: Kannst du den Satz laut lesen, ohne am Ende außer Atem zu sein?", "Kurze Sätze erhöhen die Textverständlichkeit bei komplexen Themen drastisch."],
             stumble: ["Einfache Phonetik hilft der Emotion.", "Vermeide Bandwurmwörter – sie sind schwer zu betonen und fehleranfällig.", "Lies kritische Stellen dreimal schnell hintereinander laut. Klappt es? Dann ist es okay.", "CamelCase Wörter wie 'SoftwareLösung' sind visuelle Marker, aber akustische Hürden.", "Achte auf 'Zisch-Gewitter' (S, Z, Sch), die am Mikrofon oft unangenehm knallen."],
             cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
             adjective: ["Streiche Adjektive, die im Substantiv stecken.", "Show, don't tell: Statt 'es war ein gefährlicher Hund', beschreibe das Knurren.", "Zu viele Adjektive wirken oft 'blumig' und schwächen starke Substantive und Verben.", "Nutze Adjektive sparsam, um echte Highlights zu setzen.", "Wörter auf -lich oder -ig klingen in Häufung oft nach Werbesprache."],
+            adverb: ["Adverbien auf -weise sind schnell Füllmaterial. Prüfe, ob sie wirklich nötig sind.", "Adverbien sollen Bedeutung schärfen, nicht den Satz verwässern.", "Statt 'glücklicherweise' lieber den Effekt beschreiben.", "Ein starkes Verb ersetzt oft zwei Adverbien.", "Adverbien gezielt als Rhythmus- oder Tonalitäts-Tool nutzen."],
             rhythm: ["Short-Short-Long ist ein klassischer Rhythmus.", "Monotonie tötet die Aufmerksamkeit. Vermeide viele gleich lange Sätze hintereinander.", "Nutze kurze Sätze für Fakten und Tempo. Nutze längere für Erklärungen.", "Ein guter Text tanzt: Variiere zwischen kurzen und mittellangen Sätzen.", "Die visuelle Welle zeigt dir sofort, wo dein Text ins Stocken gerät."],
             syllable_entropy: ["Betonte und unbetonte Silben sollten rhythmisch balanciert sein.", "Viele Silben-Klumpen erzeugen Stolpern im Vortrag.", "Kürze Bandwurmwörter, wenn der Rhythmus hart bricht.", "Nutze Silbenwechsel als Taktgefühl für Claims.", "Glätte harte Übergänge durch Umstellen oder Kürzen."],
             dialog: ["Achte auf klare Sprecherwechsel.", "Werbespots wirken durch Dialoge ('Szenen') oft authentischer als reine Ansagen.", "Zu viel Dialog ohne Erzähler kann den Hörer orientierungslos machen.", "Hörbücher brauchen lebendige Figuren. Zu wenig Dialog wirkt oft trocken.", "Dialoge lockern lange Erklär-Passagen auf und erhöhen die Aufmerksamkeit."],
@@ -1083,6 +1087,13 @@
         },
 
         findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findAdverbs: (text) => {
+            const regex = /\b([a-zA-ZäöüÄÖÜß]{4,}(?:erweise|weise))\b/gi;
+            const matches = text.match(regex) || [];
+            const blacklist = new Set(['weise']);
+            const cleaned = matches.filter(word => !blacklist.has(word.toLowerCase()));
+            return [...new Set(cleaned)];
+        },
         findAnglicisms: (text) => { if(!SA_CONFIG.ANGLICISMS.length) return []; const regex = new RegExp(`\\b(${SA_CONFIG.ANGLICISMS.join('|')})\\b`, 'gi'); const matches = text.match(regex) || []; return [...new Set(matches.map(w => w.toLowerCase()))]; },
         findGenderBias: (text) => {
             const l = text.toLowerCase();
@@ -1182,14 +1193,26 @@
         findPassive: (text) => { 
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const matches = new Set();
-            const auxRegex = /\b(wurde|wurden|wird|werden|worden|geworden)\b/i;
+            const auxForms = new Set(['wurde', 'wurden', 'wird', 'werden', 'worden', 'geworden']);
             const partRegex = /\b(ge[a-zäöüß]{2,}(?:t|en)|[a-zäöüß]{3,}iert)\b/i;
+            const skipTokens = new Set(['nicht', 'nie', 'kaum', 'schon', 'auch', 'nur', 'noch', 'gerade', 'eben', 'wohl', 'sehr', 'mehr', 'weniger', 'ganz', 'eher', 'immer', 'oft', 'wieder', 'erst', 'dann', 'jetzt', 'hier', 'dort', 'sofort', 'schnell', 'langsam', 'gerne', 'gern', 'heute', 'morgen']);
+            const stateAdjectives = new Set(['dunkel', 'hell', 'kalt', 'warm', 'klar', 'laut', 'leise', 'ruhig', 'still', 'besser', 'schlimmer', 'schwer', 'leicht', 'müde', 'satt', 'froh']);
+            const modifierSuffix = /(lich|ig|weise|erweise|sam|bar)$/i;
+
             sentences.forEach(s => {
-                if(auxRegex.test(s) && partRegex.test(s)) {
-                    const auxMatch = s.match(auxRegex);
-                    const partMatch = s.match(partRegex);
-                    if(auxMatch && partMatch) matches.add(`${auxMatch[0]} ... ${partMatch[0]}`);
-                    else matches.add(auxMatch ? auxMatch[0] : 'Passiv-Konstruktion');
+                const tokens = s.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+                const lower = tokens.map(t => t.toLowerCase());
+                for (let i = 0; i < lower.length; i += 1) {
+                    if (!auxForms.has(lower[i])) continue;
+                    let found = null;
+                    for (let j = i + 1; j < Math.min(lower.length, i + 7); j += 1) {
+                        const token = lower[j];
+                        if (skipTokens.has(token) || modifierSuffix.test(token)) continue;
+                        if (stateAdjectives.has(token) && !found) break;
+                        if (partRegex.test(token)) { found = tokens[j]; break; }
+                        break;
+                    }
+                    if (found) matches.add(`${tokens[i]} ... ${found}`);
                 }
             });
             return [...matches];
@@ -1696,6 +1719,7 @@
                     const passive = SA_Logic.findPassive(read.cleanedText);
                     const nominal = SA_Logic.findNominalStyle(read.cleanedText);
                     const adjectives = SA_Logic.findAdjectives(read.cleanedText);
+                    const adverbs = SA_Logic.findAdverbs(read.cleanedText);
                     const anglicisms = SA_Logic.findAnglicisms(read.cleanedText);
                     const echoes = SA_Logic.findWordEchoes(read.cleanedText);
                     const breath = SA_Logic.findBreathKillers(read.sentences);
@@ -1844,6 +1868,7 @@
                         }
                         if(startIssues.length) addRow("Satzanfänge (Wdh):", startIssues);
                         if(adjectives.length) addRow("Adjektive (blumig):", adjectives);
+                        if(adverbs.length) addRow("Adverbien (-weise):", adverbs);
                         if(anglicisms.length) addRow("Anglizismen:", anglicisms);
                         if(echoes.length) addRow("Wort-Wiederholungen:", echoes);
                         const stumbleArr = [...stumbles.phonetic, ...stumbles.camel, ...stumbles.long, ...stumbles.alliter];
@@ -1905,6 +1930,7 @@
                         if(redundancy.length > 0) printTip("Redundanz-Check: Entferne doppelte Aussagen in direkt aufeinanderfolgenden Sätzen.");
                         if(easyLanguage.genitives.length > 0) printTip("Leichte Sprache: Genitiv vermeiden, um verständlicher zu bleiben.");
                         if(adjectives.length > 5) printTip("Text wirkt 'blumig'. Prüfe, ob du alle Adjektive wirklich brauchst.");
+                        if(adverbs.length > 4) printTip("Viele Adverbien (-weise) gefunden. Prüfe, ob sie wirklich nötig sind.");
                         if(pronunc.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
                         if(echoes.length > 3) printTip("Achte auf Wortwiederholungen auf engem Raum (Wort-Echos).");
                         if(y == 25) { 
@@ -1982,7 +2008,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, adverb: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
@@ -3938,6 +3964,7 @@
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
                     case 'cta': this.renderCtaCard(raw, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
+                    case 'adverb': this.renderAdverbCard(SA_Logic.findAdverbs(read.cleanedText), read.wordCount, active); break;
                     case 'rhythm': this.renderRhythmCard(read.sentences, read.maxSentenceWords, active); break;
                     case 'syllable_entropy': this.renderSyllableEntropyCard(SA_Logic.analyzeSyllableEntropy(read.sentences), active); break;
                     case 'chapter_calc': this.renderChapterCalculatorCard(raw, active); break;
@@ -5125,6 +5152,40 @@
                 h += this.renderTipSection('adjective', true);
             }
             this.updateCard('adjective', h);
+        }
+
+        renderAdverbCard(words, totalWords, active) {
+            if(!active) return this.updateCard('adverb', this.renderDisabledState(), this.bottomGrid, '', '', true);
+
+            const ratio = totalWords > 0 ? (words.length / totalWords) * 100 : 0;
+            let status = 'Ausgewogen';
+            let color = SA_CONFIG.COLORS.success;
+            if(ratio > 8) { status = 'Sehr adverb-lastig'; color = SA_CONFIG.COLORS.error; }
+            else if(ratio > 4) { status = 'Viele Adverbien'; color = SA_CONFIG.COLORS.warn; }
+
+            let h = `
+                <div style="margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Dichte-Check</span>
+                        <span style="font-weight:700; color:${color};">${status} (${ratio.toFixed(1)}%)</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${Math.min(100, ratio * 8)}%; height:100%; background:linear-gradient(90deg, #ecfeff, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                </div>`;
+
+            if(!words.length) {
+                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Adverbien gefunden.</p>`;
+            } else {
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
+                words.slice(0, 20).forEach(w => {
+                    h+=`<span class="skriptanalyse-badge" style="background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc;">${w}</span>`;
+                });
+                h += `</div>`;
+                if(words.length > 20) h += `<span style="font-size:0.8rem; color:#94a3b8; align-self:center;">...und ${words.length - 20} weitere</span>`;
+                h += this.renderTipSection('adverb', true);
+            }
+            this.updateCard('adverb', h);
         }
 
         renderFillerCard(fillers, active) {
