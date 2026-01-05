@@ -207,6 +207,7 @@
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
+        TOOL_CARDS: ['teleprompter', 'pacing', 'marker'],
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
             news: { label: 'Abendnachrichten', minScore: 55, maxSentence: 20 },
@@ -2067,12 +2068,24 @@
         },
         analyzeTone: (text) => {
             const l = text.toLowerCase();
-            let emoCount = 0; SA_CONFIG.SENTIMENT.emotional.forEach(w => { if(l.includes(w)) emoCount++; });
-            const qs = (text.match(/\?/g)||[]).length; const exc = (text.match(/!/g)||[]).length;
-            if (exc > 3 || emoCount > 3) return { label: 'Emotional & Dringend', icon: '🔥' };
-            if (qs > 3) return { label: 'Dialogisch / Fragend', icon: '🤝' };
-            if (text.length > 500 && exc === 0) return { label: 'Sachlich & Ruhig', icon: '🧊' };
-            return { label: 'Ausgewogen', icon: '⚖️' };
+            const qs = (text.match(/\?/g) || []).length;
+            const exc = (text.match(/!/g) || []).length;
+            const emoWords = SA_CONFIG.SENTIMENT.emotional.filter((w) => w !== '!' && l.includes(w)).length;
+            const hasQuestions = qs > 0;
+            const hasExclamations = exc > 0;
+            const cues = [];
+            if (qs) cues.push(`${qs} Frage${qs !== 1 ? 'n' : ''}`);
+            if (exc) cues.push(`${exc} Ausrufezeichen`);
+            if (emoWords) cues.push(`${emoWords} Emotionsmarker`);
+            const cueText = cues.length ? ` (${cues.join(', ')})` : '';
+
+            if (exc >= 3 || emoWords >= 3) return { label: `Energisch & emotional${cueText}`, icon: '🔥' };
+            if (qs >= 3) return { label: `Fragend & dialogisch${cueText}`, icon: '🤝' };
+            if (text.length > 500 && !hasExclamations && !hasQuestions) return { label: 'Sachlich & ruhig (lange Passagen ohne Ausrufe/Fragen)', icon: '🧊' };
+            if (hasQuestions && !hasExclamations) return { label: `Fragend & einladend${cueText}`, icon: '🤝' };
+            if (hasExclamations && !hasQuestions) return { label: `Pointiert & lebendig${cueText}`, icon: '⚡' };
+            if (hasExclamations || hasQuestions || emoWords) return { label: `Lebendig & variabel${cueText}`, icon: '🎙️' };
+            return { label: 'Neutral & sachlich (kaum Ausrufe/Fragen)', icon: '⚖️' };
         },
         estimateAudience: (score) => {
             // Flesch Interpretation for German
@@ -2797,6 +2810,8 @@
             this.textarea = q('.skriptanalyse-textarea');
             this.topPanel = q('.skriptanalyse-analysis-top'); 
             this.bottomGrid = q('.skriptanalyse-analysis-bottom-grid');
+            this.toolsPanel = q('.ska-tools-panel');
+            this.toolsGrid = q('.ska-tools-grid');
             this.compareRow = q('.skriptanalyse-compare-row');
             this.hiddenPanel = q('.skriptanalyse-hidden-panel'); 
             this.legendContainer = q('.skriptanalyse-legend-container'); 
@@ -5020,7 +5035,9 @@
             this.hiddenPanel.innerHTML = '';
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
+                if (toolCards.includes(id)) return false;
                 if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id) || !this.isCardUnlocked(id)) return false;
                 if (!allowed) return true;
                 return allowed.has(id) || this.state.selectedExtraCards.has(id);
@@ -5065,7 +5082,8 @@
             if (!this.filterBar) return;
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id]);
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
+            const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
             const showAll = profile ? this.state.showAllCards : true;
             const title = 'Analyseboxen auswählen';
             const isExpanded = !this.state.filterCollapsed;
@@ -5192,10 +5210,17 @@
                     this.filterBar.classList.add('is-hidden');
                     this.filterBar.innerHTML = '';
                 }
+                if (this.toolsPanel) {
+                    this.toolsPanel.classList.add('is-hidden');
+                    if (this.toolsGrid) this.toolsGrid.innerHTML = '';
+                }
             } else {
                 this.root.querySelector('.ska-grid').classList.remove('is-empty');
                 if (this.filterBar) {
                     this.filterBar.classList.remove('is-hidden');
+                }
+                if (this.toolsPanel) {
+                    this.toolsPanel.classList.remove('is-hidden');
                 }
             }
 
@@ -5214,7 +5239,10 @@
 
             if (read.wordCount === 0) {
                 this.resetPacing();
-                this.bottomGrid.innerHTML = ''; this.compareRow.innerHTML = ''; this.compareRow.classList.remove('is-active');
+                this.bottomGrid.innerHTML = '';
+                if (this.toolsGrid) this.toolsGrid.innerHTML = '';
+                this.compareRow.innerHTML = '';
+                this.compareRow.classList.remove('is-active');
                 this.renderHiddenPanel();
                 if(this.legendContainer) this.legendContainer.innerHTML = '';
                 if (this.filterBar) {
@@ -5227,6 +5255,9 @@
 
             const isActive = (id) => !this.state.excludedCards.has(id);
             const useWorker = Boolean(this.analysisWorker);
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
+            const isToolCard = (id) => toolCards.includes(id);
+            const getCardContainer = (id) => (isToolCard(id) ? this.toolsGrid : this.bottomGrid);
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
@@ -5238,24 +5269,33 @@
             }
             SA_CONFIG.CARD_ORDER.forEach((id) => {
                 if (this.isCardAvailable(id) && this.isCardUnlocked(id)) return;
-                const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                const container = getCardContainer(id);
+                if (!container) return;
+                const existing = container.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
             if (allowed) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (isToolCard(id)) return;
                     if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
-                    const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                    const container = getCardContainer(id);
+                    if (!container) return;
+                    const existing = container.querySelector(`[data-card-id="${id}"]`);
                     if (existing) existing.remove();
                 });
             }
             if (!this.isPremiumActive()) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
                     if (this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview') return;
-                    const existing = this.bottomGrid.querySelector(`[data-card-id="${id}"]`);
+                    const container = getCardContainer(id);
+                    if (!container) return;
+                    const existing = container.querySelector(`[data-card-id="${id}"]`);
                     if (existing) existing.remove();
                 });
             }
-            availableCards.forEach((id, idx) => {
+            const analysisCards = availableCards.filter((id) => !isToolCard(id));
+            const toolsToRender = availableCards.filter((id) => isToolCard(id));
+            analysisCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
                 if (allowed && !allowed.has(id) && !this.state.selectedExtraCards.has(id) && id !== 'overview') return;
                 if (!this.isCardUnlocked(id) && !this.isCardTeaser(id)) return;
@@ -5342,6 +5382,18 @@
                     case 'compliance_check': this.renderComplianceCard(raw, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
+            });
+
+            toolsToRender.forEach((id, idx) => {
+                if (!this.isCardUnlocked(id) && !this.isCardTeaser(id)) return;
+                const active = isActive(id);
+                switch(id) {
+                    case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
+                    case 'teleprompter': this.renderTeleprompterCard(read, active); break;
+                    case 'marker': this.renderMarkerCard(read.sentences, active); break;
+                }
+                const c = this.toolsGrid?.querySelector(`[data-card-id="${id}"]`);
+                if (c) c.style.order = idx;
             });
 
             this.renderUpgradePanel();
@@ -5742,7 +5794,8 @@
         }
 
         renderTeleprompterCard(read, active) {
-            if(!active) return this.updateCard('teleprompter', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const targetGrid = this.toolsGrid || this.bottomGrid;
+            if(!active) return this.updateCard('teleprompter', this.renderDisabledState(), targetGrid, '', '', true);
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const secs = (read.speakingWordCount / wpm) * 60;
@@ -5758,14 +5811,15 @@
                     </div>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
-            this.updateCard('teleprompter', h);
+            this.updateCard('teleprompter', h, targetGrid, '', '', true);
         }
 
         renderPacingCard(durationSec, raw, active, sectionStats) {
-            if (!active) return this.updateCard('pacing', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const targetGrid = this.toolsGrid || this.bottomGrid;
+            if (!active) return this.updateCard('pacing', this.renderDisabledState(), targetGrid, '', '', true);
             if (!durationSec || durationSec <= 0) {
                 this.resetPacing();
-                return this.updateCard('pacing', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für den Pacing-Takt.</p>');
+                return this.updateCard('pacing', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für den Pacing-Takt.</p>', targetGrid);
             }
 
             const totalMs = durationSec * 1000;
@@ -5830,7 +5884,7 @@
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
 
-            this.updateCard('pacing', h);
+            this.updateCard('pacing', h, targetGrid);
             this.updatePacingUI(clamped);
         }
 
@@ -6324,7 +6378,7 @@
             ] : [];
 
             const lixSummary = r ? SA_Logic.getLixSummary(r.lix) : { label: '–', color: SA_CONFIG.COLORS.muted };
-            const lixHintHtml = `<span class="ska-info-badge"><span class="ska-tool-tooltip">LIX = Satzlänge + Anteil langer Wörter (≥7 Buchstaben). Beispiel: „Kurz und klar.“ (LIX ~ 25) vs. „In Anbetracht der Komplexität…“ (LIX > 50).</span>INFO</span>`;
+            const lixHintHtml = `<span class="ska-info-badge"><span class="ska-tool-tooltip">LIX = Satzlänge + Anteil langer Wörter (≥7 Buchstaben). Richtwert: &lt; 30 leicht, 30–50 mittel, &gt; 50 schwer.</span>INFO</span>`;
 
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
@@ -6637,14 +6691,6 @@
                         <div class="ska-mini-card-sub">${flowText}${avgSentence ? ` (${avgSentence.toFixed(1)} Wörter Ø)` : ''}</div>
                     </div>
                 </div>
-
-                <div style="background:#eff6ff; padding:1rem; border-radius:8px; border-left:4px solid ${SA_CONFIG.COLORS.blue}; display:flex; align-items:center; gap:1rem;">
-                    <div style="font-size:1.8rem;">${tone.icon}</div>
-                    <div>
-                        <div style="font-size:0.7rem; text-transform:uppercase; color:#1e40af; font-weight:700;">Sprech-Haltung</div>
-                        <div style="font-weight:600; color:#1e3a8a; font-size:0.95rem;">${tone.label}</div>
-                    </div>
-                </div>
                 <div style="margin-top:0.8rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-bottom:0.4rem;">Konkrete Regieanweisung</div>
                     <ul style="margin:0; padding-left:1.1rem; color:#334155; font-size:0.88rem; line-height:1.6;">
@@ -6653,6 +6699,13 @@
                         <li>${breathDirective}</li>
                         <li>${emphasisDirective(primaryKeyword)}</li>
                     </ul>
+                </div>
+                <div style="margin-top:0.8rem; background:#eff6ff; padding:1rem; border-radius:8px; border-left:4px solid ${SA_CONFIG.COLORS.blue}; display:flex; align-items:center; gap:1rem;">
+                    <div style="font-size:1.8rem;">${tone.icon}</div>
+                    <div>
+                        <div style="font-size:0.7rem; text-transform:uppercase; color:#1e40af; font-weight:700;">Sprech-Haltung</div>
+                        <div style="font-weight:600; color:#1e3a8a; font-size:0.95rem;">${tone.label}</div>
+                    </div>
                 </div>
                 <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
@@ -6987,7 +7040,8 @@
         }
 
         renderMarkerCard(s, active) {
-            if(!active) return this.updateCard('marker', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const targetGrid = this.toolsGrid || this.bottomGrid;
+            if(!active) return this.updateCard('marker', this.renderDisabledState(), targetGrid, '', '', true);
             
             let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <p style="font-size:0.85rem; color:#64748b; margin:0;">Struktur-Vorschlag:</p>
@@ -7004,7 +7058,7 @@
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
             h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
-            this.updateCard('marker', h);
+            this.updateCard('marker', h, targetGrid);
         }
 
         renderRhythmCard(sentences, maxW, active) {

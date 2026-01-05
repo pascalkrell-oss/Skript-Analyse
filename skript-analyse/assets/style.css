@@ -6,7 +6,7 @@
     --ska-bg-app: #f8fafc;
     --ska-surface: #ffffff;
     --ska-surface-alt: #f1f5f9;
-    --ska-header-bg: #f8fafc;
+    --ska-header-bg: #e2e8f0;
     --ska-border: #e2e8f0;
     --ska-text-main: #0f172a;
     --ska-text-muted: #64748b;
@@ -426,6 +426,8 @@ body.ska-modal-open { overflow: hidden !important; }
     margin-bottom: 10px;
     width: max-content;
     max-width: 260px;
+    white-space: normal;
+    word-break: break-word;
     background: linear-gradient(140deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
     color: #f8fafc;
     text-align: center;
@@ -621,6 +623,39 @@ body.ska-modal-open { overflow: hidden !important; }
 
 /* BOTTOM GRID */
 .skriptanalyse-analysis-bottom { position: relative; z-index: 50; } 
+.ska-tools-panel {
+    margin-top: 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--ska-border);
+    border-radius: var(--ska-radius-md);
+    padding: 0;
+    box-shadow: var(--ska-shadow);
+}
+.ska-tools-panel.is-hidden { display: none; }
+.ska-tools-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: var(--ska-header-bg);
+    border-top-left-radius: var(--ska-radius-md);
+    border-top-right-radius: var(--ska-radius-md);
+}
+.ska-tools-header h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #475569;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+.ska-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ska-grid-gap);
+    padding: 1.5rem;
+}
 .skriptanalyse-analysis-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ska-grid-gap); align-items: stretch; margin-top: 1.5rem; position: relative; z-index: 10; }
 .ska-hide-btn, .ska-whitelist-toggle { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all 0.2s ease; border-radius: 4px; padding: 0; }
 .ska-hide-btn:hover, .ska-whitelist-toggle:hover { background: #eff6ff; opacity: 1; }
@@ -1116,6 +1151,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 @media (max-width: 900px) {
     .ska-grid { grid-template-columns: 1fr; }
     .ska-toolbar { flex-direction: column; align-items: stretch; }
+    .ska-tools-grid { grid-template-columns: 1fr; }
     .skriptanalyse-analysis-bottom-grid { grid-template-columns: 1fr; }
     .skriptanalyse-compare-grid { grid-template-columns: 1fr; }
     .ska-footer { flex-direction: column; align-items: stretch; gap: 1.5rem; }
