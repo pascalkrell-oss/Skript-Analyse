@@ -644,7 +644,7 @@ body.ska-modal-open { overflow: hidden !important; }
     justify-content: space-between;
     padding: 1.15rem 1.6rem;
     border-bottom: 1px solid #f1f5f9;
-    background: transparent;
+    background: linear-gradient(135deg, #e4f1ff 0%, #f8fafc 72%);
 }
 .ska-tools-title { display: flex; flex-direction: column; gap: 0.2rem; }
 .ska-tools-header h3 {
@@ -654,7 +654,11 @@ body.ska-modal-open { overflow: hidden !important; }
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
 }
+.ska-tools-title-icon { font-size: 1rem; }
 .ska-tools-header p {
     margin: 0;
     font-size: 0.78rem;
@@ -690,10 +694,9 @@ body.ska-modal-open { overflow: hidden !important; }
     text-align: left;
     cursor: pointer;
     box-shadow: 0 14px 30px -26px rgba(15, 23, 42, 0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 .ska-tool-tile:hover {
-    transform: translateY(-2px);
     border-color: #bfdbfe;
     box-shadow: 0 20px 36px -28px rgba(30, 64, 175, 0.4);
 }
@@ -710,7 +713,11 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-tool-tile strong {
     font-size: 1rem;
     color: #0f172a;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
 }
+.ska-tool-tile-icon { font-size: 1.05rem; }
 .ska-tool-tile p {
     margin: 0;
     color: #64748b;
@@ -721,13 +728,13 @@ body.ska-modal-open { overflow: hidden !important; }
     align-self: flex-start;
     padding: 0.35rem 0.9rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, #1d4ed8 0%, #38bdf8 100%);
+    background: var(--ska-primary);
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    box-shadow: 0 10px 22px -16px rgba(30, 64, 175, 0.7);
+    box-shadow: 0 10px 22px -16px rgba(30, 64, 175, 0.6);
 }
 .ska-tool-tile.is-locked {
     border-style: dashed;
@@ -1061,6 +1068,22 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
+.ska-premium-upgrade-tax { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+.ska-teleprompter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.ska-teleprompter-btn:hover { border-color: #cbd5e1; background: #f1f5f9; color: #1e293b; }
+.ska-teleprompter-footer-actions { display: inline-flex; gap: 0.5rem; flex-wrap: wrap; }
 .ska-close-icon { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--ska-text-light); z-index: 20; padding: 0.5rem; transition: color 0.2s; width: auto; height: auto; }
 .ska-close-icon:hover { color: var(--ska-text-main); }
 .skriptanalyse-modal-body { padding: 1rem 2rem 2rem 2rem; overflow-y: auto; scrollbar-width: thin; }

@@ -3436,15 +3436,15 @@
                     <div class="ska-teleprompter-header">
                         <strong>Teleprompter</strong>
                         <div class="ska-teleprompter-controls">
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-smaller">A-</button>
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-bigger">A+</button>
+                            <button class="ska-teleprompter-btn" data-action="teleprompter-smaller">A-</button>
+                            <button class="ska-teleprompter-btn" data-action="teleprompter-bigger">A+</button>
                             <label class="ska-teleprompter-toggle">
                                 <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
                                 <span>Spiegeln</span>
                             </label>
-                            <button class="ska-btn ska-btn--primary" data-action="teleprompter-toggle">Start</button>
-                            <button class="ska-btn ska-btn--secondary" data-action="teleprompter-reset">Reset</button>
-                            <button class="ska-btn ska-btn--ghost" data-action="close-teleprompter">Schließen</button>
+                            <button class="ska-teleprompter-btn" data-action="teleprompter-toggle">Start</button>
+                            <button class="ska-teleprompter-btn" data-action="teleprompter-reset">Reset</button>
+                            <button class="ska-teleprompter-btn" data-action="close-teleprompter">Schließen</button>
                         </div>
                     </div>
                     <div class="ska-teleprompter-body">
@@ -3452,6 +3452,10 @@
                     </div>
                     <div class="ska-teleprompter-footer">
                         <span data-role-teleprompter-meta>Berechne Geschwindigkeit...</span>
+                        <div class="ska-teleprompter-footer-actions">
+                            <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-txt">Export .txt</button>
+                            <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-json">Export .json</button>
+                        </div>
                     </div>
                 </div>`;
             document.body.appendChild(m);
@@ -5142,14 +5146,22 @@
                 this.toolsGrid.innerHTML = '';
                 return;
             }
+            const toolIcons = {
+                teleprompter: '🪄',
+                pacing: '⏱️',
+                marker: '📍'
+            };
             this.toolsGrid.innerHTML = toolIds.map((id) => {
                 const title = SA_CONFIG.CARD_TITLES[id] || id;
                 const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
                 const locked = !this.isCardUnlocked(id);
+                const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
+                const action = id === 'teleprompter' ? 'open-teleprompter' : 'open-tool-modal';
+                const toolAttr = action === 'open-tool-modal' ? `data-tool-id="${id}"` : '';
                 return `
-                    <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="open-tool-modal" data-tool-id="${id}">
+                    <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
                         <div class="ska-tool-tile-header">
-                            <strong>${title}</strong>
+                            <strong>${icon}${title}</strong>
                             ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
                         </div>
                         <p>${description}</p>
@@ -5888,10 +5900,6 @@
                 <div style="display:flex; flex-direction:column; gap:0.8rem;">
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
                     <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter öffnen</button>
-                    <div class="ska-teleprompter-export">
-                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-txt" ${isPremium ? '' : 'disabled'}>Export .txt</button>
-                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="teleprompter-export-json" ${isPremium ? '' : 'disabled'}>Export .json</button>
-                    </div>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
             this.updateCard('teleprompter', h, targetGrid, '', '', true);
@@ -7534,7 +7542,7 @@
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing">
-                                ${renderList([...new Set(freeFunctions)])}
+                                ${renderList([...new Set(freeFunctions)], { stripIcons: true })}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section">
@@ -7552,6 +7560,7 @@
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
+                            <span class="ska-premium-upgrade-tax">inkl. 19% MwSt.</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
@@ -7565,7 +7574,7 @@
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
                             <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList([...new Set(premiumFunctions)])}
+                                ${renderList([...new Set(premiumFunctions)], { stripIcons: true })}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
