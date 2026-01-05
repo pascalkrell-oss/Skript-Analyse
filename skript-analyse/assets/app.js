@@ -2576,7 +2576,7 @@
                 planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
+                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
@@ -3262,26 +3262,42 @@
             meta.textContent = `Tempo: ${rateLabel} • Dauer: ${SA_Utils.formatMin(seconds)}`;
         }
 
+        getSpeechRecognitionCtor() {
+            if (typeof window === 'undefined') return null;
+            return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        }
+
+        normalizeSpeechToken(token) {
+            return token
+                .toLowerCase()
+                .replace(/['’‘]/g, "'")
+                .replace(/[^a-z0-9äöüß'-]+/gi, '')
+                .trim();
+        }
+
         buildTeleprompterContent(text) {
             const container = document.querySelector('[data-role-teleprompter-text]');
             if (!container) return [];
             const tokens = text.trim().split(/(\s+)/);
             let wordIndex = 0;
+            const wordTokens = [];
             const fragments = tokens.map(token => {
                 if (!token.trim()) {
                     return token;
                 }
+                const normalized = this.normalizeSpeechToken(token);
+                wordTokens.push(normalized);
                 const span = `<span class="ska-teleprompter-word" data-word-index="${wordIndex++}">${token}</span>`;
                 return span;
             });
             container.innerHTML = fragments.join('');
+            this.state.teleprompter.wordTokens = wordTokens;
             return Array.from(container.querySelectorAll('.ska-teleprompter-word'));
         }
 
-        updateTeleprompterHighlight(progress) {
+        applyTeleprompterActiveWord(index) {
             const words = this.state.teleprompter.words || [];
-            if (!words.length) return;
-            const index = Math.min(words.length - 1, Math.floor(progress * words.length));
+            if (!words.length || index < 0 || index >= words.length) return;
             if (this.state.teleprompter.activeIndex !== index) {
                 if (this.state.teleprompter.activeIndex >= 0 && words[this.state.teleprompter.activeIndex]) {
                     words[this.state.teleprompter.activeIndex].classList.remove('is-active');
@@ -3289,6 +3305,116 @@
                 }
                 words[index].classList.add('is-active');
                 this.state.teleprompter.activeIndex = index;
+            }
+        }
+
+        updateTeleprompterHighlight(progress) {
+            const words = this.state.teleprompter.words || [];
+            if (!words.length) return;
+            if (this.state.teleprompter.speechActive && this.state.teleprompter.activeIndex >= 0) return;
+            const index = Math.min(words.length - 1, Math.floor(progress * words.length));
+            this.applyTeleprompterActiveWord(index);
+        }
+
+        startTeleprompterSpeechRecognition() {
+            const ctor = this.getSpeechRecognitionCtor();
+            if (!ctor) {
+                if (!this.state.teleprompter.speechWarningShown) {
+                    this.state.teleprompter.speechWarningShown = true;
+                    alert('Live-Spracherkennung wird von deinem Browser nicht unterstützt. Bitte nutze Chrome oder Edge.');
+                }
+                return false;
+            }
+            if (!this.state.teleprompter.wordTokens || !this.state.teleprompter.wordTokens.length) return false;
+            if (this.state.teleprompter.speechActive) return true;
+
+            const recognition = this.state.teleprompter.speechRecognition || new ctor();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'de-DE';
+
+            this.state.teleprompter.speechTranscript = '';
+            this.state.teleprompter.speechWordCount = 0;
+            this.state.teleprompter.speechIndex = Math.max(0, this.state.teleprompter.activeIndex);
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                    const res = event.results[i];
+                    if (res.isFinal) {
+                        this.state.teleprompter.speechTranscript += `${res[0].transcript} `;
+                    } else {
+                        interim += res[0].transcript;
+                    }
+                }
+
+                const combined = `${this.state.teleprompter.speechTranscript} ${interim}`.trim();
+                if (!combined) return;
+                const spokenWords = combined
+                    .split(/\s+/)
+                    .map(word => this.normalizeSpeechToken(word))
+                    .filter(Boolean);
+                if (spokenWords.length <= this.state.teleprompter.speechWordCount) return;
+
+                const newWords = spokenWords.slice(this.state.teleprompter.speechWordCount);
+                this.state.teleprompter.speechWordCount = spokenWords.length;
+
+                const tokens = this.state.teleprompter.wordTokens || [];
+                let currentIndex = this.state.teleprompter.speechIndex || 0;
+                newWords.forEach((word) => {
+                    if (!word) return;
+                    let matchIndex = -1;
+                    for (let i = currentIndex; i < tokens.length; i += 1) {
+                        if (tokens[i] === word) {
+                            matchIndex = i;
+                            break;
+                        }
+                    }
+                    if (matchIndex >= 0) {
+                        currentIndex = matchIndex + 1;
+                        this.applyTeleprompterActiveWord(matchIndex);
+                    }
+                });
+                this.state.teleprompter.speechIndex = currentIndex;
+            };
+
+            recognition.onerror = () => {
+                if (!this.state.teleprompter.speechWarningShown) {
+                    this.state.teleprompter.speechWarningShown = true;
+                    alert('Live-Spracherkennung konnte nicht gestartet werden. Bitte Mikrofon-Freigabe prüfen oder einen unterstützten Browser nutzen.');
+                }
+                this.stopTeleprompterSpeechRecognition();
+            };
+
+            recognition.onend = () => {
+                if (this.state.teleprompter.speechActive && this.state.teleprompter.playing) {
+                    try {
+                        recognition.start();
+                    } catch (err) {
+                        this.stopTeleprompterSpeechRecognition();
+                    }
+                }
+            };
+
+            this.state.teleprompter.speechRecognition = recognition;
+            this.state.teleprompter.speechActive = true;
+            try {
+                recognition.start();
+            } catch (err) {
+                this.state.teleprompter.speechActive = false;
+                return false;
+            }
+            return true;
+        }
+
+        stopTeleprompterSpeechRecognition() {
+            this.state.teleprompter.speechActive = false;
+            const recognition = this.state.teleprompter.speechRecognition;
+            if (!recognition) return;
+            try {
+                recognition.stop();
+            } catch (err) {
+                // no-op
             }
         }
 
@@ -3314,6 +3440,7 @@
             this.state.teleprompter.start = performance.now();
             this.state.teleprompter.startScroll = body.scrollTop;
             this.state.teleprompter.activeIndex = -1;
+            this.startTeleprompterSpeechRecognition();
 
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
@@ -3325,6 +3452,9 @@
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.teleprompter.playing = false;
+                    this.stopTeleprompterSpeechRecognition();
+                    const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                    if (startBtn) startBtn.textContent = 'Start';
                 }
             };
             this.state.teleprompter.rafId = requestAnimationFrame(step);
@@ -3335,6 +3465,7 @@
             this.state.teleprompter.playing = false;
             if (this.state.teleprompter.rafId) cancelAnimationFrame(this.state.teleprompter.rafId);
             this.state.teleprompter.rafId = null;
+            this.stopTeleprompterSpeechRecognition();
         }
 
         resetTeleprompter() {
@@ -3348,6 +3479,9 @@
                 });
             }
             this.state.teleprompter.activeIndex = -1;
+            this.state.teleprompter.speechIndex = 0;
+            this.state.teleprompter.speechTranscript = '';
+            this.state.teleprompter.speechWordCount = 0;
             this.pauseTeleprompter();
         }
 
