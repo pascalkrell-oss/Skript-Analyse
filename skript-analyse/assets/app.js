@@ -1050,15 +1050,36 @@
             }); 
             return f; 
         },
-        findNominalStyle: (text) => {
+        getPosTagger: () => {
+            return window.SkaPosTagger || null;
+        },
+        getPosTags: (text) => {
+            const tagger = SA_Logic.getPosTagger();
+            if (!tagger || typeof tagger.tag !== 'function') return null;
+            return tagger.tag(text || '');
+        },
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findNominalStyleRegex: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
             const matches = text.match(regex) || [];
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
             const filtered = matches.filter(word => !whitelist.has(word.toLowerCase()));
             return [...new Set(filtered)];
         },
+        findNominalStyle: (text) => {
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalStyleRegex(text);
+            const nouns = pos.terms
+                .filter(term => term.tags && term.tags.Noun)
+                .map(term => term.text)
+                .filter(word => !whitelist.has(word.toLowerCase()));
+            if (!nouns.length) return SA_Logic.findNominalStyleRegex(text);
+            return [...new Set(nouns)];
+        },
         
-        findNominalChains: (text) => {
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findNominalChainsRegex: (text) => {
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const chains = [];
             const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
@@ -1081,8 +1102,49 @@
             });
             return chains;
         },
+        findNominalChains: (text) => {
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalChainsRegex(text);
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const chains = [];
+            const termsBySentence = new Map();
 
-        findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+            pos.terms.forEach(term => {
+                if (!termsBySentence.has(term.sentenceIndex)) {
+                    termsBySentence.set(term.sentenceIndex, []);
+                }
+                termsBySentence.get(term.sentenceIndex).push(term);
+            });
+
+            termsBySentence.forEach(terms => {
+                const words = terms.map(term => term.text);
+                let count = 0;
+                terms.forEach(term => {
+                    const cleaned = term.text.toLowerCase().replace(/[^a-zäöüß]/g, '');
+                    if (!cleaned || whitelist.has(cleaned)) return;
+                    if (term.tags && term.tags.Noun) count++;
+                });
+                if ((words.length < 15 && count >= 2) || (words.length >= 15 && count >= 3)) {
+                    if (count / words.length > 0.15) {
+                        chains.push(words.join(' '));
+                    }
+                }
+            });
+            if (!chains.length) return SA_Logic.findNominalChainsRegex(text);
+            return chains;
+        },
+
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findAdjectivesRegex: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findAdjectives: (text) => {
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findAdjectivesRegex(text);
+            const adjectives = pos.terms
+                .filter(term => term.tags && term.tags.Adjective)
+                .map(term => term.text);
+            if (!adjectives.length) return SA_Logic.findAdjectivesRegex(text);
+            return [...new Set(adjectives)];
+        },
         findAnglicisms: (text) => { if(!SA_CONFIG.ANGLICISMS.length) return []; const regex = new RegExp(`\\b(${SA_CONFIG.ANGLICISMS.join('|')})\\b`, 'gi'); const matches = text.match(regex) || []; return [...new Set(matches.map(w => w.toLowerCase()))]; },
         findGenderBias: (text) => {
             const l = text.toLowerCase();
@@ -1179,7 +1241,8 @@
             });
             return { total, matches: results };
         },
-        findPassive: (text) => { 
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findPassiveRegex: (text) => { 
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const matches = new Set();
             const auxRegex = /\b(wurde|wurden|wird|werden|worden|geworden)\b/i;
@@ -1192,6 +1255,36 @@
                     else matches.add(auxMatch ? auxMatch[0] : 'Passiv-Konstruktion');
                 }
             });
+            return [...matches];
+        },
+        findPassive: (text) => { 
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findPassiveRegex(text);
+            const matches = new Set();
+            const termsBySentence = new Map();
+
+            pos.terms.forEach(term => {
+                if (!termsBySentence.has(term.sentenceIndex)) {
+                    termsBySentence.set(term.sentenceIndex, []);
+                }
+                termsBySentence.get(term.sentenceIndex).push(term);
+            });
+
+            termsBySentence.forEach(terms => {
+                const auxIndices = [];
+                const participles = [];
+                terms.forEach((term, idx) => {
+                    if (term.tags && term.tags.Auxiliary) auxIndices.push(idx);
+                    if (term.tags && term.tags.Participle) participles.push({ idx, term });
+                });
+                auxIndices.forEach(auxIdx => {
+                    const candidate = participles.find(p => Math.abs(p.idx - auxIdx) <= 4);
+                    if (candidate) {
+                        matches.add(`${terms[auxIdx].text} ... ${candidate.term.text}`);
+                    }
+                });
+            });
+            if (!matches.size) return SA_Logic.findPassiveRegex(text);
             return [...matches];
         },
         findStumbles: (text) => { 
