@@ -337,6 +337,41 @@
             'sehr', 'mehr', 'weniger', 'viel', 'viele', 'wenig', 'etwas', 'nichts', 'alles', 'jeder', 'jede', 'jedes', 'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes',
             'kein', 'keine', 'keiner', 'keines', 'keinem', 'keinen', 'bitte', 'danke', 'okay', 'ok', 'ja', 'nein'
         ],
+
+        KEYWORD_REFERENCE_TOTAL: 1000000,
+        KEYWORD_REFERENCE_FREQ_FALLBACK: 2,
+        KEYWORD_REFERENCE_FREQ: {
+            zeit: 4800,
+            jahr: 3200,
+            mensch: 2600,
+            menschen: 2400,
+            arbeit: 1800,
+            unternehmen: 1700,
+            kunden: 1400,
+            kunde: 1300,
+            produktion: 900,
+            produkt: 850,
+            service: 820,
+            markt: 760,
+            daten: 720,
+            projekt: 700,
+            angebot: 680,
+            idee: 650,
+            qualität: 620,
+            lösung: 600,
+            system: 590,
+            team: 560,
+            marke: 520,
+            sicherheit: 480,
+            energie: 460,
+            technik: 440,
+            zukunft: 420,
+            erfolg: 400,
+            preis: 380,
+            video: 200,
+            software: 180,
+            compliance: 90
+        },
         
         TIPS: {
             fillers: ["Hoch-Gewichtete Wörter sind 'Semantisches Rauschen'.", "Wörter like 'eigentlich' suggerieren Unsicherheit. Sei konkret!", "Nutze Füllwörter nur bewusst für einen sehr lockeren Umgangston.", "Je kürzer der Spot (Werbung), desto tödlicher ist jedes 'vielleicht'.", "Prüfe bei jedem Füllwort: Ändert sich der Sinn, wenn es fehlt? Wenn nein: Weg damit."],
@@ -854,8 +889,106 @@
             const ttr = (unique.size / normalized.length) * 100;
             return { ttr: ttr, unique: unique.size, total: normalized.length };
         },
+        normalizeKeyword: (word) => {
+            if (!word) return '';
+            return word
+                .toLowerCase()
+                .replace(/[äÄ]/g, 'ae')
+                .replace(/[öÖ]/g, 'oe')
+                .replace(/[üÜ]/g, 'ue')
+                .replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9]/g, '');
+        },
+        stemKeyword: (word) => {
+            const clean = SA_Logic.normalizeKeyword(word);
+            if (clean.length <= 4) return clean;
+            const suffixes = ['chen', 'lein', 'ungen', 'ungen', 'ungen', 'ung', 'heit', 'keit', 'tion', 'sion', 'ment', 'schaft', 'lich', 'isch', 'ismus', 'isten', 'ist', 'ieren', 'ierung', 'ungen', 'ern', 'er', 'en', 'es', 'e', 's', 'n'];
+            for (const suffix of suffixes) {
+                if (clean.length - suffix.length <= 3) continue;
+                if (clean.endsWith(suffix)) {
+                    return clean.slice(0, -suffix.length);
+                }
+            }
+            return clean;
+        },
+        buildKeywordNgrams: (word, size = 3) => {
+            const clean = SA_Logic.normalizeKeyword(word);
+            if (clean.length <= size) return new Set([clean]);
+            const grams = new Set();
+            for (let i = 0; i <= clean.length - size; i += 1) {
+                grams.add(clean.slice(i, i + size));
+            }
+            return grams;
+        },
+        keywordSimilarity: (a, b) => {
+            if (!a || !b) return 0;
+            if (a.stem && b.stem && a.stem === b.stem) return 1;
+            const gramsA = a.ngrams || new Set();
+            const gramsB = b.ngrams || new Set();
+            const union = new Set([...gramsA, ...gramsB]);
+            if (!union.size) return 0;
+            let intersect = 0;
+            gramsA.forEach((g) => {
+                if (gramsB.has(g)) intersect += 1;
+            });
+            const jaccard = intersect / union.size;
+            const prefixLength = (() => {
+                const aNorm = a.normalized || '';
+                const bNorm = b.normalized || '';
+                let i = 0;
+                while (i < aNorm.length && i < bNorm.length && aNorm[i] === bNorm[i]) i += 1;
+                return i;
+            })();
+            const prefixBoost = prefixLength >= 4 ? 0.2 : 0;
+            return Math.min(1, jaccard + prefixBoost);
+        },
+        getKeywordIdf: (word) => {
+            const normalized = SA_Logic.normalizeKeyword(word);
+            const freq = SA_CONFIG.KEYWORD_REFERENCE_FREQ[normalized] || SA_CONFIG.KEYWORD_REFERENCE_FREQ_FALLBACK;
+            const total = SA_CONFIG.KEYWORD_REFERENCE_TOTAL;
+            return Math.log((total + 1) / (freq + 1)) + 1;
+        },
+        clusterKeywords: (entries, limit = 18) => {
+            const selected = (entries || []).slice(0, limit);
+            const clusters = [];
+            selected.forEach((entry) => {
+                const normalized = SA_Logic.normalizeKeyword(entry.word);
+                const stem = SA_Logic.stemKeyword(normalized);
+                const ngrams = SA_Logic.buildKeywordNgrams(normalized);
+                const candidate = { normalized, stem, ngrams };
+                let bestCluster = null;
+                let bestScore = 0;
+                clusters.forEach((cluster) => {
+                    const score = SA_Logic.keywordSimilarity(candidate, cluster.representative);
+                    if (score > 0.42 && score > bestScore) {
+                        bestScore = score;
+                        bestCluster = cluster;
+                    }
+                });
+                if (!bestCluster) {
+                    clusters.push({
+                        representative: candidate,
+                        terms: [{ word: entry.word, count: entry.count, tfidf: entry.tfidf }],
+                        totalTfidf: entry.tfidf || 0
+                    });
+                } else {
+                    bestCluster.terms.push({ word: entry.word, count: entry.count, tfidf: entry.tfidf });
+                    bestCluster.totalTfidf += entry.tfidf || 0;
+                }
+            });
+            return clusters
+                .map((cluster) => {
+                    const sortedTerms = cluster.terms.sort((a, b) => b.tfidf - a.tfidf || b.count - a.count || a.word.localeCompare(b.word));
+                    return {
+                        label: sortedTerms[0]?.word || '',
+                        terms: sortedTerms,
+                        totalTfidf: cluster.totalTfidf
+                    };
+                })
+                .sort((a, b) => b.totalTfidf - a.totalTfidf);
+        },
         analyzeKeywordClusters: (text, settings = {}) => {
-            if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
+            if(!text || !text.trim()) return { top: [], tfIdfTop: [], clusters: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0, tfIdfTotal: 0 };
             const stopwords = new Set(SA_CONFIG.STOPWORDS);
             const counts = new Map();
             let total = 0;
@@ -919,9 +1052,21 @@
                 if (b.count !== a.count) return b.count - a.count;
                 return a.word.localeCompare(b.word);
             });
+            const enriched = top.map((entry) => {
+                const tf = total > 0 ? entry.count / total : 0;
+                const idf = SA_Logic.getKeywordIdf(entry.word);
+                return { ...entry, tf, idf, tfidf: tf * idf };
+            });
+            const tfIdfTop = [...enriched].sort((a, b) => {
+                if (b.tfidf !== a.tfidf) return b.tfidf - a.tfidf;
+                if (b.count !== a.count) return b.count - a.count;
+                return a.word.localeCompare(b.word);
+            });
+            const tfIdfTotal = enriched.reduce((sum, entry) => sum + (entry.tfidf || 0), 0);
             const topCount = top.length > 0 ? top[0].count : 0;
             const focusScore = total > 0 ? topCount / total : 0;
-            return { top, total, focusScore, focusKeywords, focusCounts, focusTotalCount, focusDensity, focusLimit, focusOverLimit, totalWords: totalWords.length };
+            const clusters = SA_Logic.clusterKeywords(tfIdfTop, 20);
+            return { top, tfIdfTop, clusters, total, focusScore, focusKeywords, focusCounts, focusTotalCount, focusDensity, focusLimit, focusOverLimit, totalWords: totalWords.length, tfIdfTotal };
         },
         getWpm: (s) => {
             if (s.manualWpm && s.manualWpm > 0) return s.manualWpm;
@@ -4041,12 +4186,15 @@
 
             const total = data.total || 0;
             const top = data.top || [];
+            const tfIdfTop = data.tfIdfTop || [];
+            const clusters = data.clusters || [];
             const focusKeywords = data.focusKeywords || [];
             const focusCounts = data.focusCounts || [];
             const focusDensity = data.focusDensity || 0;
             const focusLimit = data.focusLimit || 0;
             const focusOverLimit = data.focusOverLimit;
             const focusTotalCount = data.focusTotalCount || 0;
+            const tfIdfTotal = data.tfIdfTotal || 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
@@ -4096,27 +4244,79 @@
                 }
             }
 
-            const dominant = top[0];
-            const ratio = total > 0 ? (dominant.count / total) * 100 : 0;
+            const dominant = tfIdfTop[0] || top[0];
+            const tfIdfRatio = tfIdfTotal > 0 ? (dominant.tfidf / tfIdfTotal) * 100 : 0;
             let label = 'Fokus verteilt';
             let color = SA_CONFIG.COLORS.warn;
-            if (ratio >= 24) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
-            else if (ratio >= 14) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
+            if (tfIdfRatio >= 22) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
+            else if (tfIdfRatio >= 12) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
 
             h += `
                 <div style="margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
-                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Fokus-Score</span>
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">TF-IDF Fokus-Score</span>
                         <span style="font-weight:700; color:${color};">${label}</span>
                     </div>
                     <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                        <div style="width:${Math.min(100, ratio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
+                        <div style="width:${Math.min(100, tfIdfRatio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
                     </div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${ratio.toFixed(1)}% aller Substantive)</div>
+                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${tfIdfRatio.toFixed(1)}% TF-IDF-Anteil)</div>
                 </div>
-                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>
-                <div class="ska-filler-list">`;
+                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
 
+            const tfIdfMax = tfIdfTop[0]?.tfidf || 1;
+            h += `<div class="ska-section-title">TF-IDF Highlights</div>`;
+            h += `<div class="ska-filler-list">`;
+            tfIdfTop.slice(0, 6).forEach(item => {
+                const pct = (item.tfidf / tfIdfMax) * 100;
+                h += `<div class="ska-filler-item">
+                        <span class="ska-filler-word" style="font-weight:600;">${item.word}</span>
+                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
+                        <span class="ska-filler-count">${item.count}x</span>
+                      </div>`;
+            });
+            h += `</div>`;
+
+            const palette = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0f766e', '#1d4ed8', '#9333ea'];
+            const clusterColors = new Map();
+            clusters.forEach((cluster, idx) => {
+                clusterColors.set(cluster.label, palette[idx % palette.length]);
+            });
+
+            if (tfIdfTop.length) {
+                h += `<div class="ska-section-title">Semantische Cluster & Wordcloud</div>`;
+                h += `<div style="display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.7rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; min-height:88px;">`;
+                const minSize = 12;
+                const maxSize = 26;
+                tfIdfTop.slice(0, 18).forEach(item => {
+                    const size = minSize + ((item.tfidf || 0) / tfIdfMax) * (maxSize - minSize);
+                    const cluster = clusters.find(group => group.terms.some(term => term.word === item.word));
+                    const color = cluster ? clusterColors.get(cluster.label) : '#334155';
+                    h += `<span style="font-size:${size.toFixed(0)}px; font-weight:600; color:${color};">#${item.word}</span>`;
+                });
+                h += `</div>`;
+            }
+
+            if (clusters.length) {
+                h += `<div style="margin-top:0.8rem;">`;
+                clusters.slice(0, 6).forEach(cluster => {
+                    const color = clusterColors.get(cluster.label) || '#334155';
+                    h += `<div style="margin-bottom:0.6rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:700; color:${color};">
+                                <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:${color};"></span>
+                                ${cluster.label}
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.35rem;">`;
+                    cluster.terms.slice(0, 6).forEach(term => {
+                        h += `<span class="skriptanalyse-badge" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155;">${term.word} (${term.count}x)</span>`;
+                    });
+                    h += `</div></div>`;
+                });
+                h += `</div>`;
+            }
+
+            h += `<div class="ska-section-title">Häufigkeit (Substantive)</div>`;
+            h += `<div class="ska-filler-list">`;
             const maxVal = top[0].count || 1;
             top.slice(0, 6).forEach(item => {
                 const pct = (item.count / maxVal) * 100;
