@@ -2262,6 +2262,7 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
+                clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: [],
@@ -3079,6 +3080,71 @@
             this.pausePacing();
             this.state.pacing.elapsed = 0;
             this.updatePacingUI(0);
+            this.stopClickTrack();
+        }
+
+        ensureClickTrackContext() {
+            if (this.state.clickTrack.context) return this.state.clickTrack.context;
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            this.state.clickTrack.context = new AudioCtx();
+            return this.state.clickTrack.context;
+        }
+
+        playClickTrackTick() {
+            const ctx = this.ensureClickTrackContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.09);
+        }
+
+        startClickTrack(bpm) {
+            if (!bpm || bpm <= 0) return false;
+            const ctx = this.ensureClickTrackContext();
+            if (!ctx) return false;
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+            this.stopClickTrack();
+            this.state.clickTrack.playing = true;
+            this.state.clickTrack.bpm = bpm;
+            this.playClickTrackTick();
+            const intervalMs = Math.max(200, Math.round(60000 / bpm));
+            this.state.clickTrack.timerId = setInterval(() => {
+                if (!this.state.clickTrack.playing) return;
+                this.playClickTrackTick();
+            }, intervalMs);
+            this.updateClickTrackButton();
+            return true;
+        }
+
+        stopClickTrack() {
+            if (this.state.clickTrack.timerId) clearInterval(this.state.clickTrack.timerId);
+            this.state.clickTrack.timerId = null;
+            this.state.clickTrack.playing = false;
+            this.updateClickTrackButton();
+        }
+
+        updateClickTrackButton() {
+            const btn = this.bottomGrid?.querySelector('[data-action="pacing-clicktrack"]');
+            if (!btn) return;
+            const bpm = parseFloat(btn.dataset.bpm || '0');
+            if (this.state.clickTrack.playing) {
+                btn.textContent = 'Click-Track stoppen';
+            } else if (bpm > 0) {
+                btn.textContent = `Click-Track ${bpm} BPM`;
+            } else {
+                btn.textContent = 'Click-Track (BPM fehlt)';
+            }
         }
 
         parseBullshitList() {
@@ -3106,6 +3172,9 @@
                 if (!SA_CONFIG.IS_ADMIN) return true;
                 const isPremium = btn.checked;
                 this.state.planMode = isPremium ? 'premium' : 'free';
+                if (!isPremium) {
+                    this.stopClickTrack();
+                }
                 this.saveUIState();
                 this.updatePlanUI();
                 this.renderFilterBar();
@@ -3387,6 +3456,24 @@
                     const durationSec = parseFloat(btn.dataset.duration || '0');
                     const started = this.startPacing(durationSec);
                     if (btnLabel) btnLabel.textContent = started ? 'Pause' : 'Start';
+                }
+                return true;
+            }
+
+            if (act === 'pacing-clicktrack') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Der Click-Track ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                const bpm = parseFloat(btn.dataset.bpm || '0');
+                if (!bpm || bpm <= 0) {
+                    this.showPremiumNotice('Kein BPM-Wert verfügbar. Ergänze mehr Text für eine Analyse.');
+                    return true;
+                }
+                if (this.state.clickTrack.playing) {
+                    this.stopClickTrack();
+                } else {
+                    this.startClickTrack(bpm);
                 }
                 return true;
             }
@@ -4175,8 +4262,17 @@
                 }
             }
 
-            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: timeMode === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
-            this.renderOverview(dur, read.wordCount, charC, wpm, pause, read, sectionStats);
+            const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, this.settings);
+            const previousBpm = this.state.clickTrack?.bpm || 0;
+            this.state.clickTrack.bpm = bpmSuggestion.bpm;
+            if (!this.isPremiumActive() && this.state.clickTrack.playing) {
+                this.stopClickTrack();
+            } else if (this.state.clickTrack.playing && bpmSuggestion.bpm > 0 && bpmSuggestion.bpm !== previousBpm) {
+                this.startClickTrack(bpmSuggestion.bpm);
+            }
+
+            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
+            this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
             if (read.wordCount === 0) {
                 this.resetPacing();
@@ -4753,6 +4849,11 @@
                 ? `${SA_Logic.getSps(effectiveSettings)} SPS`
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
+            const bpmValue = this.state.clickTrack?.bpm || 0;
+            const clickTrackLabel = this.state.clickTrack?.playing
+                ? 'Click-Track stoppen'
+                : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)');
+            const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0;
             const checkpoints = [0, 0.25, 0.5, 0.75, 1].map((step) => ({
                 pct: Math.round(step * 100),
                 time: SA_Utils.formatMin(durationSec * step)
@@ -4791,6 +4892,7 @@
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-clicktrack" data-bpm="${bpmValue}" ${clickTrackDisabled ? 'disabled' : ''}>${clickTrackLabel}</button>
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-reset">Reset</button>
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
