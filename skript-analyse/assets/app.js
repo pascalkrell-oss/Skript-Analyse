@@ -756,6 +756,66 @@
             const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
+        splitIntoSections: (text) => {
+            const sections = (text || '')
+                .split(/\n\s*\n/)
+                .map(part => part.trim())
+                .filter(Boolean);
+            if (!sections.length && text && text.trim()) return [text.trim()];
+            return sections;
+        },
+        analyzePacingSections: (text, settings = {}, timeMode = 'wpm') => {
+            const sections = SA_Logic.splitIntoSections(text);
+            if (!sections.length) return [];
+            const wpm = SA_Logic.getWpm(settings);
+            const sps = SA_Logic.getSps(settings);
+            return sections
+                .map((section, index) => {
+                    const read = SA_Logic.analyzeReadability(section, settings);
+                    if (!read.wordCount) return null;
+                    const pause = SA_Utils.getPausenTime(section, settings);
+                    let duration = 0;
+                    let rate = 0;
+                    if (timeMode === 'sps') {
+                        duration = (read.totalSyllables / sps) + pause;
+                        rate = duration > 0 ? read.totalSyllables / duration : 0;
+                    } else {
+                        duration = (read.speakingWordCount / wpm * 60) + pause;
+                        rate = duration > 0 ? read.speakingWordCount / (duration / 60) : 0;
+                    }
+                    return {
+                        index: index + 1,
+                        text: section,
+                        wordCount: read.wordCount,
+                        syllables: read.totalSyllables,
+                        pause,
+                        duration,
+                        rate
+                    };
+                })
+                .filter(Boolean);
+        },
+        analyzeSyllableStretches: (text) => {
+            const source = text || '';
+            if (!source.trim()) return { stretches: [], avgSyllables: 0, maxSyllables: 0, threshold: 0 };
+            const normalized = source.replace(/\|([0-9.]+S?)\|/g, '|');
+            const parts = normalized.split(/[.!?;:\n|]+/g).map(part => part.trim()).filter(Boolean);
+            const stretches = parts.map(segment => {
+                const words = segment.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+                const syllables = words.reduce((sum, word) => sum + Math.max(1, SA_Logic.countSyllables(word)), 0);
+                return { segment, syllables, words: words.length };
+            }).filter(item => item.words > 0);
+            if (!stretches.length) return { stretches: [], avgSyllables: 0, maxSyllables: 0, threshold: 0 };
+            const totalSyllables = stretches.reduce((sum, item) => sum + item.syllables, 0);
+            const avgSyllables = totalSyllables / stretches.length;
+            const maxSyllables = Math.max(...stretches.map(item => item.syllables));
+            const threshold = Math.max(18, Math.round(avgSyllables * 1.6));
+            const flagged = stretches
+                .filter(item => item.syllables >= threshold)
+                .sort((a, b) => b.syllables - a.syllables)
+                .slice(0, 5);
+            return { stretches: flagged, avgSyllables, maxSyllables, threshold };
+        },
         analyzeReadability: (text, settings = {}) => {
             let clean = SA_Utils.cleanTextForCounting(text).trim();
             if (settings.numberMode === 'word') {
@@ -3827,10 +3887,13 @@
             const sps = SA_Logic.getSps(effectiveSettings);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
+            const timeMode = this.getEffectiveTimeMode();
+            const sectionStats = SA_Logic.analyzePacingSections(raw, effectiveSettings, timeMode);
+            const syllableStretches = SA_Logic.analyzeSyllableStretches(raw);
             
             // TIME CALCULATION SWITCH
             let dur = 0;
-            if (this.getEffectiveTimeMode() === 'sps') {
+            if (timeMode === 'sps') {
                 // Total Syllables / SPS = Seconds
                 const seconds = read.totalSyllables / sps;
                 dur = seconds + pause;
@@ -3873,8 +3936,8 @@
                 }
             }
 
-            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
-            this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
+            this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: timeMode === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
+            this.renderOverview(dur, read.wordCount, charC, wpm, pause, read, sectionStats);
 
             if (read.wordCount === 0) {
                 this.resetPacing();
@@ -3926,7 +3989,7 @@
 
                 switch(id) {
                     case 'char': this.renderCharCard(read, raw, active); break;
-                    case 'coach': this.renderCoachCard(dur, read.score, raw, read.sentences, active); break;
+                    case 'coach': this.renderCoachCard(dur, read, raw, read.sentences, active, sectionStats, syllableStretches); break;
                     case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(raw), active); break;
                     case 'fillers': this.renderFillerCard(SA_Logic.findFillers(read.cleanedText), active); break;
                     case 'nominal': this.renderNominalCard(SA_Logic.findNominalStyle(read.cleanedText), active); break;
@@ -3959,7 +4022,7 @@
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
-                    case 'pacing': this.renderPacingCard(dur, raw, active); break;
+                    case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'compliance_check': this.renderComplianceCard(raw, active); break;
                 }
@@ -4393,7 +4456,7 @@
             this.updateCard('teleprompter', h);
         }
 
-        renderPacingCard(durationSec, raw, active) {
+        renderPacingCard(durationSec, raw, active, sectionStats) {
             if (!active) return this.updateCard('pacing', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if (!durationSec || durationSec <= 0) {
                 this.resetPacing();
@@ -4409,7 +4472,8 @@
             const progress = this.state.pacing.duration > 0 ? (this.state.pacing.elapsed / this.state.pacing.duration) : 0;
             const clamped = Math.max(0, Math.min(1, progress));
             const effectiveSettings = this.getEffectiveSettings();
-            const paceLabel = this.getEffectiveTimeMode() === 'sps'
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const paceLabel = isSps
                 ? `${SA_Logic.getSps(effectiveSettings)} SPS`
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
@@ -4417,6 +4481,11 @@
                 pct: Math.round(step * 100),
                 time: SA_Utils.formatMin(durationSec * step)
             }));
+            const sectionPacingHtml = this.renderSectionPacing(sectionStats, isSps ? 'sps' : 'wpm', {
+                title: 'Abschnitts-Pacing',
+                compact: true,
+                maxItems: 4
+            });
 
             const previewHtml = SA_Utils.escapeHtml(raw || '').replace(/\n/g, '<br>');
             const h = `
@@ -4442,6 +4511,7 @@
                     <span class="ska-info-badge" data-role="pacing-target">${Math.round(clamped * 100)}% Soll-Position</span>
                     <span class="ska-info-badge" data-role="pacing-time">${SA_Utils.formatMin(durationSec * clamped)} / ${SA_Utils.formatMin(durationSec)}</span>
                 </div>
+                ${sectionPacingHtml}
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
@@ -4746,7 +4816,43 @@
             this.updateCard('nominal_chain', h);
         }
 
-        renderOverview(sec, words, chars, wpm, pause, r) {
+        renderSectionPacing(sectionStats, mode, options = {}) {
+            const sections = (sectionStats || []).filter(item => item.duration > 0 && item.wordCount > 0);
+            if (sections.length <= 1) return '';
+            const maxItems = options.maxItems || sections.length;
+            const unit = mode === 'sps' ? 'SPS' : 'WPM';
+            const rates = sections.map(item => item.rate);
+            const minRate = Math.min(...rates);
+            const maxRate = Math.max(...rates);
+            const span = Math.max(0.01, maxRate - minRate);
+            const totalDuration = sections.reduce((sum, item) => sum + item.duration, 0);
+            const diffLabel = mode === 'sps' ? (maxRate - minRate).toFixed(2) : Math.round(maxRate - minRate);
+            const title = options.title || 'Abschnitts-Tempo';
+            const layoutStyle = options.compact ? 'margin-top:0.6rem;' : 'margin-top:1rem;';
+
+            let html = `<div class="ska-overview-genre-box" style="${layoutStyle}">
+                <h4>${title} <span style="font-size:0.75rem; font-weight:600; color:#94a3b8;">(Δ ${diffLabel} ${unit})</span></h4>
+                <div class="ska-filler-list">`;
+            sections.slice(0, maxItems).forEach((item) => {
+                const rateLabel = mode === 'sps' ? item.rate.toFixed(2) : Math.round(item.rate);
+                const pct = span > 0 ? ((item.rate - minRate) / span) * 100 : 100;
+                const width = Math.max(12, Math.min(100, pct));
+                const durationLabel = SA_Utils.formatMin(item.duration);
+                const shareLabel = totalDuration > 0 ? ` • ${(item.duration / totalDuration * 100).toFixed(0)}%` : '';
+                html += `
+                    <div class="ska-filler-item">
+                        <span class="ska-filler-word" style="font-weight:600;">Abschnitt ${item.index}</span>
+                        <div class="ska-filler-bar-bg">
+                            <div class="ska-filler-bar-fill" style="width:${width}%; background:linear-gradient(90deg, #dbeafe, ${SA_CONFIG.COLORS.blue});"></div>
+                        </div>
+                        <span class="ska-filler-count">${rateLabel} ${unit} · ${durationLabel}${shareLabel}</span>
+                    </div>`;
+            });
+            html += `</div></div>`;
+            return html;
+        }
+
+        renderOverview(sec, words, chars, wpm, pause, r, sectionStats) {
             let meterHtml = '';
             let targetStatusHtml = '';
 
@@ -4828,6 +4934,7 @@
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
             const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
+            const sectionPacingHtml = this.renderSectionPacing(sectionStats, isSps ? 'sps' : 'wpm', { title: 'Abschnitts-Tempo' });
             const html = `<div style="display:flex; flex-direction:column; gap:1.5rem; height:100%;">
                 <div>
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
@@ -4845,6 +4952,7 @@
                     <div class="ska-stat-item"><span>Längster Satz</span><strong style="color:${maxSCol}">${maxSVal} W</strong></div>
                     <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${r ? r.score.toFixed(0) : 0}</strong></div>
                 </div>
+                ${sectionPacingHtml}
                 ${genreList}</div>`;
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
@@ -4995,12 +5103,18 @@
             this.updateCard('char', h);
         }
 
-        renderCoachCard(sec, sc, raw, sentences, active) {
+        renderCoachCard(sec, read, raw, sentences, active, sectionStats, syllableStretches) {
             if(!active) return this.updateCard('coach', this.renderDisabledState(), this.bottomGrid, '', '', true);
             
-            const wpm = SA_Logic.getWpm(this.getEffectiveSettings());
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
             const variance = SA_Logic.calculateVariance(sentences);
             const tone = SA_Logic.analyzeTone(raw);
+            const effectiveRate = isSps
+                ? (sec > 0 ? (read.totalSyllables / sec) : 0)
+                : (sec > 0 ? (read.speakingWordCount / (sec / 60)) : 0);
 
             // 1. Dynamics
             let dynText = "Lebendig & Abwechslungsreich";
@@ -5010,21 +5124,55 @@
             // 2. Tempo
             let tempoText = "Optimales Tempo";
             let tempoCol = SA_CONFIG.COLORS.success;
-            if(wpm > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
-            else if(wpm < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+            if (isSps) {
+                if (effectiveRate > 4.2) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
+                else if (effectiveRate < 3.3) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+                else tempoText = `Ausgewogen (${effectiveRate.toFixed(2)} SPS)`;
+            } else {
+                if(effectiveRate > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
+                else if(effectiveRate < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+                else tempoText = `Ausgewogen (${Math.round(effectiveRate)} WPM)`;
+            }
+
+            const sections = (sectionStats || []).filter(item => item.duration > 0);
+            let sectionTip = 'Abschnitts-Tempo wirkt stabil.';
+            if (sections.length > 1) {
+                const rates = sections.map(item => item.rate);
+                const minRate = Math.min(...rates);
+                const maxRate = Math.max(...rates);
+                const diff = maxRate - minRate;
+                const diffLabel = isSps ? diff.toFixed(2) : Math.round(diff);
+                const unit = isSps ? 'SPS' : 'WPM';
+                if (diff > (isSps ? 0.5 : 15)) {
+                    sectionTip = `Tempo schwankt spürbar (Δ ${diffLabel} ${unit}). Übergänge glätten.`;
+                } else {
+                    sectionTip = `Abschnitts-Tempo gleichmäßig (Δ ${diffLabel} ${unit}).`;
+                }
+            }
+
+            const stretch = syllableStretches && syllableStretches.stretches ? syllableStretches.stretches[0] : null;
+            const stretchThreshold = syllableStretches ? syllableStretches.threshold : 0;
+            const stretchLabel = stretch
+                ? `Langer Atembogen: ${stretch.syllables} Silben ohne Pause (Ziel < ${stretchThreshold}).`
+                : 'Atembögen wirken natürlich gesetzt.';
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipPrefix}: ${genreContext.tipFocus}.</div>` : '';
+            const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
             const h = `
                 <div class="ska-mini-grid">
                     <div class="ska-mini-card" style="border-top:3px solid ${tempoCol};">
                         <div class="ska-mini-card-label">Tempo</div>
-                        <div class="ska-mini-card-sub">${tempoText}</div>
+                        <div class="ska-mini-card-sub">${tempoText} • Ziel ${rateLabel}</div>
                     </div>
                     <div class="ska-mini-card" style="border-top:3px solid ${dynCol};">
                         <div class="ska-mini-card-label">Dynamik</div>
                         <div class="ska-mini-card-sub">${dynText}</div>
+                    </div>
+                    <div class="ska-mini-card" style="border-top:3px solid ${stretch ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">
+                        <div class="ska-mini-card-label">Atembogen</div>
+                        <div class="ska-mini-card-sub">${stretch ? `${stretch.syllables} Silben` : 'Im grünen Bereich'}</div>
                     </div>
                 </div>
 
@@ -5038,8 +5186,8 @@
                 <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
                     <ul style="margin:0; padding-left:1.1rem; color:#475569; font-size:0.85rem; line-height:1.5;">
-                        <li>Betonung planen: markiere Schlüsselsätze für klare Peaks.</li>
-                        <li>Atmung führen: nach Sinnabschnitten bewusst Pausen setzen.</li>
+                        <li>${sectionTip}</li>
+                        <li>${stretchLabel}</li>
                         <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
                         <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
                     </ul>
