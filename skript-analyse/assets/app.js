@@ -478,7 +478,7 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
         escapeCsvValue: (value) => {
-            const str = String(value ?? '');
+            const str = String(value == null ? '' : value);
             if (/[",\n\r]/.test(str)) {
                 return `"${str.replace(/"/g, '""')}"`;
             }
@@ -610,8 +610,8 @@
                 return acc + (val ? parseFloat(val[1]) : 0);
             }, 0);
             total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
-            const commaPause = parseFloat(settings.commaPause ?? 0);
-            const periodPause = parseFloat(settings.periodPause ?? 0);
+            const commaPause = parseFloat(settings.commaPause != null ? settings.commaPause : 0);
+            const periodPause = parseFloat(settings.periodPause != null ? settings.periodPause : 0);
             if (commaPause > 0) {
                 total += (cleaned.match(/,/g) || []).length * commaPause;
             }
@@ -1316,7 +1316,7 @@
                 .map((cluster) => {
                     const sortedTerms = cluster.terms.sort((a, b) => b.tfidf - a.tfidf || b.count - a.count || a.word.localeCompare(b.word));
                     return {
-                        label: sortedTerms[0]?.word || '',
+                        label: (sortedTerms[0] ? sortedTerms[0].word : '') || '',
                         terms: sortedTerms,
                         totalTfidf: cluster.totalTfidf
                     };
@@ -2034,10 +2034,10 @@
         formatMarkerCsv: (markers = []) => {
             const header = ['Marker', 'Timecode', 'Seconds', 'Label'];
             const rows = markers.map((marker) => ([
-                marker.id ?? '',
-                marker.time ?? '',
-                (marker.seconds ?? '').toString(),
-                marker.label ?? ''
+                marker.id != null ? marker.id : '',
+                marker.time != null ? marker.time : '',
+                (marker.seconds != null ? marker.seconds : '').toString(),
+                marker.label != null ? marker.label : ''
             ]));
             const allRows = [header, ...rows];
             return allRows
@@ -2497,8 +2497,10 @@
                         }
                         if (depthCheck.length) addRow("Satz-Verschachtelung:", `${depthCheck.filter(d => d.isDeep).length} kritisch`);
                         if (sentimentIntensity.length) {
-                            const start = sentimentIntensity[0]?.score ?? 0;
-                            const end = sentimentIntensity[sentimentIntensity.length - 1]?.score ?? 0;
+                            const start = sentimentIntensity[0] ? sentimentIntensity[0].score : 0;
+                            const end = sentimentIntensity[sentimentIntensity.length - 1]
+                                ? sentimentIntensity[sentimentIntensity.length - 1].score
+                                : 0;
                             addRow("Stimmungs-Intensität:", `Start ${start.toFixed(2)} → Ende ${end.toFixed(2)}`);
                         }
                         if (namingCheck.length) addRow("Naming-Check:", namingCheck.slice(0, 3).map(n => `${n.first}/${n.second}`));
@@ -2720,6 +2722,183 @@
                 }
             }, 100);
         },
+        generateHelp: function(modalEl, btnElement) {
+            if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF-Bibliothek nicht geladen.'); return; }
+            if (!modalEl) return;
+            const originalText = btnElement.textContent;
+            btnElement.textContent = 'Erstelle...';
+            btnElement.disabled = true;
+
+            setTimeout(() => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const margin = 18;
+                    const contentWidth = pageWidth - (margin * 2);
+                    let y = 22;
+
+                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const getText = (root, selector) => {
+                        if (!root) return '';
+                        const el = selector ? root.querySelector(selector) : root;
+                        return el ? el.textContent : '';
+                    };
+                    const checkPage = (heightIfNeeded) => {
+                        if (y + heightIfNeeded >= 280) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                    };
+                    const addTitle = (text) => {
+                        doc.setFontSize(18);
+                        doc.setTextColor(26, 147, 238);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(text, margin, y);
+                        y += 8;
+                        doc.setFontSize(9);
+                        doc.setTextColor(100);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(`Stand: ${new Date().toLocaleDateString()}`, margin, y);
+                        y += 12;
+                        doc.setTextColor(0);
+                    };
+                    const addSectionTitle = (text) => {
+                        checkPage(14);
+                        doc.setFontSize(12);
+                        doc.setTextColor(26, 147, 238);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(text, margin, y);
+                        doc.setDrawColor(226, 232, 240);
+                        doc.line(margin, y + 2, margin + contentWidth, y + 2);
+                        y += 10;
+                        doc.setFont(undefined, 'normal');
+                        doc.setTextColor(0);
+                    };
+                    const addParagraph = (text) => {
+                        const t = normalize(text);
+                        if (!t) return;
+                        doc.setFontSize(10);
+                        const split = doc.splitTextToSize(t, contentWidth);
+                        checkPage(split.length * 5 + 4);
+                        doc.text(split, margin, y);
+                        y += split.length * 5 + 4;
+                    };
+                    const addBulletList = (items) => {
+                        if (!items.length) return;
+                        doc.setFontSize(10);
+                        items.forEach((item) => {
+                            const line = normalize(item);
+                            if (!line) return;
+                            const split = doc.splitTextToSize(`• ${line}`, contentWidth);
+                            checkPage(split.length * 5 + 2);
+                            doc.text(split, margin, y);
+                            y += split.length * 5 + 2;
+                        });
+                        y += 2;
+                    };
+                    const addCard = (title, body) => {
+                        const titleText = normalize(title);
+                        const bodyText = normalize(body);
+                        if (!titleText && !bodyText) return;
+                        doc.setFontSize(10);
+                        const bodySplit = bodyText ? doc.splitTextToSize(bodyText, contentWidth - 6) : [];
+                        const cardHeight = Math.max(12, (bodySplit.length * 5) + 12);
+                        checkPage(cardHeight + 4);
+                        doc.setFillColor(248, 250, 252);
+                        doc.rect(margin, y, contentWidth, cardHeight, 'F');
+                        doc.setTextColor(26, 147, 238);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(titleText, margin + 3, y + 6);
+                        doc.setFont(undefined, 'normal');
+                        doc.setTextColor(60);
+                        if (bodySplit.length) {
+                            doc.text(bodySplit, margin + 3, y + 12);
+                        }
+                        doc.setTextColor(0);
+                        y += cardHeight + 6;
+                    };
+
+                    const modalTitle = normalize(getText(modalEl, '.ska-modal-header h3')) || 'Anleitung';
+                    addTitle(modalTitle);
+
+                    const hero = modalEl.querySelector('.ska-help-hero');
+                    if (hero) {
+                        addSectionTitle('Überblick');
+                        addParagraph(getText(hero, 'h4'));
+                        addParagraph(getText(hero, 'p'));
+                        const heroList = hero.querySelectorAll('ol li');
+                        addBulletList([...heroList].map(li => li.textContent));
+                    }
+
+                    const tocLinks = modalEl.querySelectorAll('.ska-help-toc-grid a');
+                    if (tocLinks.length) {
+                        addSectionTitle('Inhaltsverzeichnis');
+                        addBulletList([...tocLinks].map(link => link.textContent));
+                    }
+
+                    const sections = modalEl.querySelectorAll('.ska-help-section');
+                    sections.forEach((section) => {
+                        const heading = normalize(getText(section, 'header h4'));
+                        if (heading) addSectionTitle(heading);
+                        addParagraph(getText(section, 'header p'));
+
+                        const tabs = section.querySelectorAll('.ska-help-tabs');
+                        tabs.forEach((tabsEl) => {
+                            const panels = tabsEl.querySelectorAll('.ska-help-tab-panel');
+                            panels.forEach((panel) => {
+                                const tabId = panel.getAttribute('data-tab');
+                                const label = getText(tabsEl, `label[for="${tabId}"]`);
+                                if (label) addParagraph(label);
+                                const list = panel.querySelectorAll('li');
+                                addBulletList([...list].map(li => li.textContent));
+                            });
+                        });
+
+                        const cards = [...section.querySelectorAll('.ska-help-card')].filter(card => !card.closest('.ska-help-tabs'));
+                        cards.forEach((card) => addCard(getText(card, 'h4'), getText(card, 'p')));
+
+                        const lists = [...section.querySelectorAll('.ska-help-list')].filter(list => !list.closest('.ska-help-tabs'));
+                        lists.forEach((list) => addBulletList([...list.querySelectorAll('li')].map(li => li.textContent)));
+
+                        section.querySelectorAll('.ska-help-columns > div').forEach((col) => {
+                            const title = getText(col, 'h5');
+                            if (title) addParagraph(title);
+                            const colList = col.querySelectorAll('li');
+                            if (colList.length) {
+                                addBulletList([...colList].map(li => li.textContent));
+                            } else {
+                                addParagraph(getText(col, 'p'));
+                            }
+                        });
+
+                        section.querySelectorAll('.ska-help-box').forEach((box) => {
+                            addParagraph(box.textContent);
+                        });
+
+                        section.querySelectorAll('.ska-help-table tbody tr').forEach((row) => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length >= 2) {
+                                addBulletList([`${cells[0].textContent} – ${cells[1].textContent}`]);
+                            }
+                        });
+                    });
+
+                    doc.save('Skript-Analyse-Anleitung.pdf');
+
+                    btnElement.textContent = 'Fertig ✔';
+                    setTimeout(() => {
+                        btnElement.textContent = originalText;
+                        btnElement.disabled = false;
+                    }, 1400);
+                } catch (err) {
+                    console.error(err);
+                    alert('PDF konnte nicht erstellt werden.');
+                    btnElement.textContent = originalText;
+                    btnElement.disabled = false;
+                }
+            }, 150);
+        }
     };
 
     class SkriptAnalyseWidget {
@@ -2976,11 +3155,11 @@
                             <div class="ska-settings-grid-two">
                                 <div>
                                     <span class="ska-settings-helper-label">Komma-Pause (Sekunden)</span>
-                                    <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause ?? 0.2}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
+                                    <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause != null ? this.settings.commaPause : 0.2}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
                                 </div>
                                 <div>
                                     <span class="ska-settings-helper-label">Punkt-Pause (Sekunden)</span>
-                                    <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause ?? 0.5}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
+                                    <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause != null ? this.settings.periodPause : 0.5}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
                                 </div>
                             </div>
                             <p class="ska-settings-help">Mikro-Pausen werden zur Gesamtzeit addiert – ideal für Voice-Optimierung.</p>
@@ -3018,7 +3197,7 @@
                             <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff" ${isPremium ? '' : 'disabled'}>${this.settings.focusKeywords || ''}</textarea>
                             <div class="ska-settings-inline">
                                 <span class="ska-settings-helper-label">Dichte-Limit (%)</span>
-                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit ?? 2}" class="ska-settings-input ska-settings-input--compact" ${isPremium ? '' : 'disabled'}>
+                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit != null ? this.settings.keywordDensityLimit : 2}" class="ska-settings-input ska-settings-input--compact" ${isPremium ? '' : 'disabled'}>
                             </div>
                             <p class="ska-settings-help">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
                         </div>
@@ -3465,11 +3644,11 @@
         openToolModal(toolId) {
             if (!toolId) return;
             if (!this.isCardUnlocked(toolId)) return;
-            const card = this.toolsModalStore?.querySelector(`[data-card-id="${toolId}"]`);
+            const card = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${toolId}"]`) : null;
             if (!card) return;
             const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
             const description = SA_CONFIG.CARD_DESCRIPTIONS[toolId];
-            const bodyHtml = card.querySelector('.ska-card-body')?.innerHTML || '';
+            const bodyHtml = card && card.querySelector('.ska-card-body') ? card.querySelector('.ska-card-body').innerHTML : '';
             let modal = document.getElementById('ska-tool-card-modal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -3652,7 +3831,6 @@
                     }
                 }
             };
-
             this.state.teleprompter.speechRecognition = recognition;
             this.state.teleprompter.speechActive = true;
             try {
@@ -3743,7 +3921,7 @@
         }
 
         updatePacingUI(progress = null) {
-            const card = this.bottomGrid?.querySelector('[data-card-id="pacing"]');
+            const card = this.bottomGrid ? this.bottomGrid.querySelector('[data-card-id="pacing"]') : null;
             if (!card) return;
             const fill = card.querySelector('[data-role="pacing-fill"]');
             const marker = card.querySelector('[data-role="pacing-marker"]');
@@ -3858,7 +4036,7 @@
         }
 
         updateClickTrackButton() {
-            const btn = this.bottomGrid?.querySelector('[data-action="pacing-clicktrack"]');
+            const btn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-clicktrack"]') : null;
             if (!btn) return;
             const bpm = parseFloat(btn.dataset.bpm || '0');
             if (this.state.clickTrack.playing) {
@@ -3938,6 +4116,13 @@
                     this.syncPdfOptions();
                     SA_Utils.openModal(modal);
                     document.body.classList.add('ska-modal-open');
+                }
+                return true;
+            }
+            if (act === 'download-help-pdf') {
+                const modal = document.getElementById('ska-help-modal');
+                if (modal) {
+                    SA_PDF.generateHelp(modal, btn);
                 }
                 return true;
             }
@@ -4212,7 +4397,7 @@
 
             if (act === 'pacing-reset') {
                 this.resetPacing();
-                const startBtn = this.bottomGrid?.querySelector('[data-action="pacing-toggle"]');
+                const startBtn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-toggle"]') : null;
                 if (startBtn) startBtn.textContent = 'Start';
                 return true;
             }
@@ -4390,7 +4575,8 @@
                     saveBtn.disabled = !isPremium;
                     saveBtn.classList.toggle('is-disabled', !isPremium);
                     saveBtn.setAttribute('aria-disabled', String(!isPremium));
-                    const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
+                    const wrapper = saveBtn.closest('.ska-tool-wrapper');
+                    const tooltip = wrapper ? wrapper.querySelector('.ska-tool-tooltip--premium') : null;
                     if (tooltip) {
                         tooltip.textContent = isPremium
                             ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
@@ -4479,7 +4665,8 @@
                 </div>
             `;
 
-            const scriptOption = grid.querySelector('#pdf-opt-script')?.closest('label');
+            const scriptInput = grid.querySelector('#pdf-opt-script');
+            const scriptOption = scriptInput ? scriptInput.closest('label') : null;
             if (scriptOption) {
                 grid.insertBefore(label, scriptOption);
             } else {
@@ -4825,14 +5012,14 @@
                 if(act === 'generate-pdf-final') {
                     const isPremium = this.isPremiumActive();
                     const opts = { 
-                        metrics: modal.querySelector('#pdf-opt-overview')?.checked, 
-                        details: isPremium && modal.querySelector('#pdf-opt-details')?.checked, 
-                        tips: isPremium && modal.querySelector('#pdf-opt-tips')?.checked, 
-                        compare: isPremium && modal.querySelector('#pdf-opt-compare')?.checked, 
-                        script: modal.querySelector('#pdf-opt-script')?.checked,
-                        notesColumn: isPremium && modal.querySelector('#pdf-opt-notes')?.checked,
-                        syllableEntropy: isPremium && modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
-                        compliance: isPremium && modal.querySelector('#pdf-opt-compliance')?.checked
+                        metrics: modal.querySelector('#pdf-opt-overview') ? modal.querySelector('#pdf-opt-overview').checked : false, 
+                        details: isPremium && (modal.querySelector('#pdf-opt-details') ? modal.querySelector('#pdf-opt-details').checked : false), 
+                        tips: isPremium && (modal.querySelector('#pdf-opt-tips') ? modal.querySelector('#pdf-opt-tips').checked : false), 
+                        compare: isPremium && (modal.querySelector('#pdf-opt-compare') ? modal.querySelector('#pdf-opt-compare').checked : false), 
+                        script: modal.querySelector('#pdf-opt-script') ? modal.querySelector('#pdf-opt-script').checked : false,
+                        notesColumn: isPremium && (modal.querySelector('#pdf-opt-notes') ? modal.querySelector('#pdf-opt-notes').checked : false),
+                        syllableEntropy: isPremium && (modal.querySelector('#pdf-opt-syllable-entropy') ? modal.querySelector('#pdf-opt-syllable-entropy').checked : false),
+                        compliance: isPremium && (modal.querySelector('#pdf-opt-compliance') ? modal.querySelector('#pdf-opt-compliance').checked : false)
                     };
                     const pdfData = { ...this.state.currentData, savedVersion: this.state.savedVersion };
                     const pdfSettings = this.getEffectiveSettings();
@@ -5265,7 +5452,7 @@
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const sps = SA_Logic.getSps(effectiveSettings);
-            const analysisText = analysisRaw ?? SA_Utils.cleanTextForCounting(raw);
+            const analysisText = analysisRaw != null ? analysisRaw : SA_Utils.cleanTextForCounting(raw);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
             const timeMode = this.getEffectiveTimeMode();
@@ -5326,7 +5513,7 @@
             }
 
             const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, this.settings);
-            const previousBpm = this.state.clickTrack?.bpm || 0;
+            const previousBpm = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
             this.state.clickTrack.bpm = bpmSuggestion.bpm;
             if (!this.isPremiumActive() && this.state.clickTrack.playing) {
                 this.stopClickTrack();
@@ -5493,7 +5680,7 @@
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
                 }
-                const c = this.toolsModalStore?.querySelector(`[data-card-id="${id}"]`);
+                const c = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${id}"]`) : null;
                 if (c) c.style.order = idx;
             });
             this.renderToolsButtons(toolsToRender);
@@ -5533,7 +5720,7 @@
         }
 
         observeOverviewHeight() {
-            const overviewCard = this.topPanel?.querySelector('.skriptanalyse-card--overview');
+            const overviewCard = this.topPanel ? this.topPanel.querySelector('.skriptanalyse-card--overview') : null;
             if (!overviewCard || typeof ResizeObserver === 'undefined') return;
             if (!this.overviewResizeObserver) {
                 this.overviewResizeObserver = new ResizeObserver(() => this.syncEditorHeight());
@@ -5545,7 +5732,7 @@
         renderPronunciationCard(data, active) {
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
-            const issues = data?.words || [];
+            const issues = data && data.words ? data.words : [];
             if((!issues || issues.length === 0)) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
@@ -5657,7 +5844,7 @@
             if(!active) return this.updateCard('plosive', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
             const isPremium = this.isPremiumActive();
-            const clusters = data?.plosives || [];
+            const clusters = data && data.plosives ? data.plosives : [];
 
             if((!clusters || clusters.length === 0)) {
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
@@ -5848,8 +6035,8 @@
             if(!active) return this.updateCard('sentiment_intensity', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!data || data.length === 0) return this.updateCard('sentiment_intensity', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für einen Vibe-Check.</p>');
 
-            const start = data[0]?.score || 0;
-            const end = data[data.length - 1]?.score || 0;
+            const start = data[0] ? data[0].score : 0;
+            const end = data[data.length - 1] ? data[data.length - 1].score : 0;
             const avgScore = data.reduce((acc, item) => acc + (item.score || 0), 0) / (data.length || 1);
             const trend = end - start;
             let trendLabel = 'Stabil';
@@ -5934,8 +6121,8 @@
                 ? `${SA_Logic.getSps(effectiveSettings)} SPS`
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
-            const bpmValue = this.state.clickTrack?.bpm || 0;
-            const clickTrackLabel = this.state.clickTrack?.playing
+            const bpmValue = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
+            const clickTrackLabel = this.state.clickTrack && this.state.clickTrack.playing
                 ? 'Click-Track stoppen'
                 : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)');
             const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0;
@@ -6764,7 +6951,7 @@
                 ? `Atempunkte früher setzen (Ziel < ${stretchThreshold} Silben).`
                 : 'Atempausen wirken sauber gesetzt.';
             const emphasisDirective = focusText => focusText ? `Schlüsselwort betonen: „${focusText}“ als Fokus setzen.` : 'Kernaussage pro Satz markieren und hervorheben.';
-            const primaryKeyword = read?.words?.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
+            const primaryKeyword = read && read.words && read.words.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
@@ -7430,7 +7617,7 @@
 
         updatePremiumPlanUI() {
             if (!this.legendContainer) return;
-            const card = this.legendContainer.parentElement?.querySelector('.ska-premium-upgrade-card');
+            const card = this.legendContainer.parentElement ? this.legendContainer.parentElement.querySelector('.ska-premium-upgrade-card') : null;
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
