@@ -5434,15 +5434,12 @@
 
             const total = data.total || 0;
             const top = data.top || [];
-            const tfIdfTop = data.tfIdfTop || [];
-            const clusters = data.clusters || [];
             const focusKeywords = data.focusKeywords || [];
             const focusCounts = data.focusCounts || [];
             const focusDensity = data.focusDensity || 0;
             const focusLimit = data.focusLimit || 0;
             const focusOverLimit = data.focusOverLimit;
             const focusTotalCount = data.focusTotalCount || 0;
-            const tfIdfTotal = data.tfIdfTotal || 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
@@ -5492,77 +5489,7 @@
                 }
             }
 
-            const dominant = tfIdfTop[0] || top[0];
-            const tfIdfRatio = tfIdfTotal > 0 ? (dominant.tfidf / tfIdfTotal) * 100 : 0;
-            let label = 'Fokus verteilt';
-            let color = SA_CONFIG.COLORS.warn;
-            if (tfIdfRatio >= 22) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
-            else if (tfIdfRatio >= 12) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
-
-            h += `
-                <div style="margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
-                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">TF-IDF Fokus-Score</span>
-                        <span style="font-weight:700; color:${color};">${label}</span>
-                    </div>
-                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                        <div style="width:${Math.min(100, tfIdfRatio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
-                    </div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${tfIdfRatio.toFixed(1)}% TF-IDF-Anteil)</div>
-                </div>
-                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
-
-            const tfIdfMax = tfIdfTop[0]?.tfidf || 1;
-            h += `<div class="ska-section-title">TF-IDF Highlights</div>`;
-            h += `<div class="ska-filler-list">`;
-            tfIdfTop.slice(0, 6).forEach(item => {
-                const pct = (item.tfidf / tfIdfMax) * 100;
-                h += `<div class="ska-filler-item">
-                        <span class="ska-filler-word" style="font-weight:600;">${item.word}</span>
-                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
-                        <span class="ska-filler-count">${item.count}x</span>
-                      </div>`;
-            });
-            h += `</div>`;
-
-            const palette = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0f766e', '#1d4ed8', '#9333ea'];
-            const clusterColors = new Map();
-            clusters.forEach((cluster, idx) => {
-                clusterColors.set(cluster.label, palette[idx % palette.length]);
-            });
-
-            if (tfIdfTop.length) {
-                h += `<div class="ska-section-title">Semantische Cluster & Wordcloud</div>`;
-                h += `<div style="display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.7rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; min-height:88px;">`;
-                const minSize = 12;
-                const maxSize = 26;
-                tfIdfTop.slice(0, 18).forEach(item => {
-                    const size = minSize + ((item.tfidf || 0) / tfIdfMax) * (maxSize - minSize);
-                    const cluster = clusters.find(group => group.terms.some(term => term.word === item.word));
-                    const color = cluster ? clusterColors.get(cluster.label) : '#334155';
-                    h += `<span style="font-size:${size.toFixed(0)}px; font-weight:600; color:${color};">#${item.word}</span>`;
-                });
-                h += `</div>`;
-            }
-
-            if (clusters.length) {
-                h += `<div style="margin-top:0.8rem;">`;
-                clusters.slice(0, 6).forEach(cluster => {
-                    const color = clusterColors.get(cluster.label) || '#334155';
-                    h += `<div style="margin-bottom:0.6rem;">
-                            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:700; color:${color};">
-                                <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:${color};"></span>
-                                ${cluster.label}
-                            </div>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.35rem;">`;
-                    cluster.terms.slice(0, 6).forEach(term => {
-                        h += `<span class="skriptanalyse-badge" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155;">${term.word} (${term.count}x)</span>`;
-                    });
-                    h += `</div></div>`;
-                });
-                h += `</div>`;
-            }
-
+            h += `<div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
             h += `<div class="ska-section-title">Häufigkeit (Substantive)</div>`;
             h += `<div class="ska-filler-list">`;
             const maxVal = top[0].count || 1;
@@ -6363,7 +6290,7 @@
             const benchmarkMetric = isSps ? 'sps' : 'wpm';
             const benchmarkValue = isSps ? SA_Logic.getSps(effectiveSettings) : wpm;
             const benchmarkLabel = isSps ? 'Benchmark (SPS)' : 'Benchmark (WPM)';
-            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel);
+            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel, { showPercentile: false });
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
@@ -6686,6 +6613,11 @@
             const stretchLabel = stretch
                 ? `Langer Atembogen: ${stretch.syllables} Silben ohne Pause (Ziel < ${stretchThreshold}).`
                 : 'Atembögen wirken natürlich gesetzt.';
+            const avgSentence = read && Number.isFinite(read.avgSentence) ? read.avgSentence : 0;
+            let flowText = 'Guter Satzfluss';
+            let flowCol = SA_CONFIG.COLORS.success;
+            if (avgSentence >= 20) { flowText = 'Sätze eher lang'; flowCol = SA_CONFIG.COLORS.warn; }
+            else if (avgSentence <= 10) { flowText = 'Kurz & knackig'; flowCol = SA_CONFIG.COLORS.blue; }
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
@@ -6704,6 +6636,10 @@
                     <div class="ska-mini-card" style="border-top:3px solid ${stretch ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">
                         <div class="ska-mini-card-label">Atembogen</div>
                         <div class="ska-mini-card-sub">${stretch ? `${stretch.syllables} Silben` : 'Im grünen Bereich'}</div>
+                    </div>
+                    <div class="ska-mini-card" style="border-top:3px solid ${flowCol};">
+                        <div class="ska-mini-card-label">Satzfluss</div>
+                        <div class="ska-mini-card-sub">${flowText}${avgSentence ? ` (${avgSentence.toFixed(1)} Wörter Ø)` : ''}</div>
                     </div>
                 </div>
 
@@ -7084,7 +7020,7 @@
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
-            h += this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.');
+            h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
             this.updateCard('marker', h);
         }
 
