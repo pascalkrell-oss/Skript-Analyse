@@ -2820,6 +2820,7 @@
             this.bottomGrid = q('.skriptanalyse-analysis-bottom-grid');
             this.toolsPanel = q('.ska-tools-panel');
             this.toolsGrid = q('.ska-tools-grid');
+            this.toolsModalStore = q('.ska-tools-modal-store');
             this.compareRow = q('.skriptanalyse-compare-row');
             this.hiddenPanel = q('.skriptanalyse-hidden-panel'); 
             this.legendContainer = q('.skriptanalyse-legend-container'); 
@@ -2848,6 +2849,12 @@
                 }
             });
             this.pdfModal = document.getElementById('ska-pdf-modal');
+
+            if (!this.toolsModalStore && this.toolsPanel) {
+                this.toolsModalStore = document.createElement('div');
+                this.toolsModalStore.className = 'ska-tools-modal-store';
+                this.toolsPanel.appendChild(this.toolsModalStore);
+            }
         }
         
         injectGlobalStyles() { SA_Utils.injectGlobalStyles(); }
@@ -3453,7 +3460,11 @@
 
         openToolModal(toolId) {
             if (!toolId) return;
-            const card = this.toolsGrid?.querySelector(`[data-card-id="${toolId}"]`);
+            if (!this.isCardUnlocked(toolId)) {
+                this.showPremiumNotice();
+                return;
+            }
+            const card = this.toolsModalStore?.querySelector(`[data-card-id="${toolId}"]`);
             if (!card) return;
             const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
             const description = SA_CONFIG.CARD_DESCRIPTIONS[toolId];
@@ -5125,6 +5136,29 @@
             }
         }
 
+        renderToolsButtons(toolIds = []) {
+            if (!this.toolsGrid) return;
+            if (!toolIds.length) {
+                this.toolsGrid.innerHTML = '';
+                return;
+            }
+            this.toolsGrid.innerHTML = toolIds.map((id) => {
+                const title = SA_CONFIG.CARD_TITLES[id] || id;
+                const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
+                const locked = !this.isCardUnlocked(id);
+                return `
+                    <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="open-tool-modal" data-tool-id="${id}">
+                        <div class="ska-tool-tile-header">
+                            <strong>${title}</strong>
+                            ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
+                        </div>
+                        <p>${description}</p>
+                        <span class="ska-tool-tile-cta">Werkzeug öffnen</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
         renderFilterBar() {
             if (!this.filterBar) return;
             const profile = this.settings.role;
@@ -5260,6 +5294,7 @@
                 if (this.toolsPanel) {
                     this.toolsPanel.classList.add('is-hidden');
                     if (this.toolsGrid) this.toolsGrid.innerHTML = '';
+                    if (this.toolsModalStore) this.toolsModalStore.innerHTML = '';
                 }
             } else {
                 this.root.querySelector('.ska-grid').classList.remove('is-empty');
@@ -5288,6 +5323,7 @@
                 this.resetPacing();
                 this.bottomGrid.innerHTML = '';
                 if (this.toolsGrid) this.toolsGrid.innerHTML = '';
+                if (this.toolsModalStore) this.toolsModalStore.innerHTML = '';
                 this.compareRow.innerHTML = '';
                 this.compareRow.classList.remove('is-active');
                 this.renderHiddenPanel();
@@ -5304,7 +5340,7 @@
             const useWorker = Boolean(this.analysisWorker);
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const isToolCard = (id) => toolCards.includes(id);
-            const getCardContainer = (id) => (isToolCard(id) ? this.toolsGrid : this.bottomGrid);
+            const getCardContainer = (id) => (isToolCard(id) ? this.toolsModalStore : this.bottomGrid);
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
@@ -5432,16 +5468,16 @@
             });
 
             toolsToRender.forEach((id, idx) => {
-                if (!this.isCardUnlocked(id) && !this.isCardTeaser(id)) return;
                 const active = isActive(id);
                 switch(id) {
                     case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
                 }
-                const c = this.toolsGrid?.querySelector(`[data-card-id="${id}"]`);
+                const c = this.toolsModalStore?.querySelector(`[data-card-id="${id}"]`);
                 if (c) c.style.order = idx;
             });
+            this.renderToolsButtons(toolsToRender);
 
             this.renderUpgradePanel();
             this.renderHiddenPanel();
@@ -5841,7 +5877,7 @@
         }
 
         renderTeleprompterCard(read, active) {
-            const targetGrid = this.toolsGrid || this.bottomGrid;
+            const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
             if(!active) return this.updateCard('teleprompter', this.renderDisabledState(), targetGrid, '', '', true);
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
@@ -5862,7 +5898,7 @@
         }
 
         renderPacingCard(durationSec, raw, active, sectionStats) {
-            const targetGrid = this.toolsGrid || this.bottomGrid;
+            const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
             if (!active) return this.updateCard('pacing', this.renderDisabledState(), targetGrid, '', '', true);
             if (!durationSec || durationSec <= 0) {
                 this.resetPacing();
@@ -7087,7 +7123,7 @@
         }
 
         renderMarkerCard(s, active) {
-            const targetGrid = this.toolsGrid || this.bottomGrid;
+            const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
             if(!active) return this.updateCard('marker', this.renderDisabledState(), targetGrid, '', '', true);
             
             let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
@@ -7416,8 +7452,20 @@
                 if (existing) existing.remove();
                 return;
             }
-            const freeCards = SA_CONFIG.FREE_CARDS.map(id => SA_CONFIG.CARD_TITLES[id]).filter(Boolean);
-            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id));
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
+            const freeToolTitles = toolCards
+                .filter(id => SA_CONFIG.FREE_CARDS.includes(id))
+                .map(id => SA_CONFIG.CARD_TITLES[id])
+                .filter(Boolean);
+            const premiumToolTitles = toolCards
+                .filter(id => !SA_CONFIG.FREE_CARDS.includes(id))
+                .map(id => SA_CONFIG.CARD_TITLES[id])
+                .filter(Boolean);
+            const freeCards = SA_CONFIG.FREE_CARDS
+                .filter(id => !toolCards.includes(id))
+                .map(id => SA_CONFIG.CARD_TITLES[id])
+                .filter(Boolean);
+            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id) && !toolCards.includes(id));
             const premiumCards = lockedCardIds
                 .map(id => SA_CONFIG.CARD_TITLES[id])
                 .filter(Boolean);
@@ -7430,7 +7478,7 @@
                 'Füllwort-Analyse (Basis)',
                 'Autosave (lokal)',
                 'PDF-Export (Basis)'
-            ];
+            ].concat(freeToolTitles);
             const premiumFunctions = [
                 'Alles aus der Basis-Version',
                 'SPS-Modus',
@@ -7440,7 +7488,7 @@
                 'Textvergleich (Versionen)',
                 'Premium-Analyseboxen',
                 'Cloud-Speicher (sofern verfügbar)'
-            ];
+            ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
@@ -7476,7 +7524,7 @@
                         </span>
                         <strong>Erhalte Premium Zugriff</strong>
                     </div>
-                    <span>Mehr Analysen, Reports & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
+                    <span>Mehr Analysen, Reports, praktische Werkzeuge & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col is-free">
@@ -7484,9 +7532,9 @@
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
                         <div class="ska-premium-upgrade-price-note">für immer</div>
                         <div class="ska-premium-upgrade-section">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen</div>
+                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing">
-                                ${renderList(freeFunctions)}
+                                ${renderList([...new Set(freeFunctions)])}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section">
@@ -7515,9 +7563,9 @@
                             `).join('')}
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen</div>
+                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumFunctions)}
+                                ${renderList([...new Set(premiumFunctions)])}
                             </ul>
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
@@ -7750,7 +7798,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & alle Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -7774,7 +7822,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & alle Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
