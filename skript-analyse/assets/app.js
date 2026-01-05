@@ -3829,7 +3829,19 @@
                     } catch (err) {
                         this.stopTeleprompterSpeechRecognition();
                     }
+                }
+            };
+            this.state.teleprompter.speechRecognition = recognition;
+            this.state.teleprompter.speechActive = true;
+            try {
+                recognition.start();
+            } catch (err) {
+                this.state.teleprompter.speechActive = false;
+                return false;
+            }
+            return true;
         },
+
         generateHelp: function(modalEl, btnElement) {
             if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF-Bibliothek nicht geladen.'); return; }
             if (!modalEl) return;
@@ -4000,16 +4012,7 @@
                     btnElement.textContent = originalText;
                     btnElement.disabled = false;
                 }
-            };
-            this.state.teleprompter.speechRecognition = recognition;
-            this.state.teleprompter.speechActive = true;
-            try {
-                recognition.start();
-            } catch (err) {
-                this.state.teleprompter.speechActive = false;
-                return false;
-            }
-            return true;
+            });
         }
 
         stopTeleprompterSpeechRecognition() {
