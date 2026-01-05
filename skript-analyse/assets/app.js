@@ -1548,10 +1548,11 @@
         },
         findNominalStyle: (text) => {
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
             const pos = SA_Logic.getPosTags(text);
             if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalStyleRegex(text);
             const nouns = pos.terms
-                .filter(term => term.tags && term.tags.Noun)
+                .filter(term => term.tags && term.tags.Noun && nominalRegex.test(term.normal))
                 .map(term => term.text)
                 .filter(word => !whitelist.has(word.toLowerCase()));
             if (!nouns.length) return SA_Logic.findNominalStyleRegex(text);
@@ -1586,6 +1587,7 @@
             const pos = SA_Logic.getPosTags(text);
             if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalChainsRegex(text);
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
             const chains = [];
             const termsBySentence = new Map();
 
@@ -1603,7 +1605,7 @@
                 const words = trimmed.split(/\s+/);
                 const wordCount = words.length;
                 const terms = termsBySentence.get(index) || [];
-                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && !whitelist.has(term.normal)).length;
+                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && nominalRegex.test(term.normal) && !whitelist.has(term.normal)).length;
 
                 if ((wordCount < 15 && nominalCount >= 2) || (wordCount >= 15 && nominalCount >= 3)) {
                     if (nominalCount / wordCount > 0.15) {
@@ -1723,6 +1725,41 @@
                 return a.phrase.localeCompare(b.phrase);
             });
             return { total, matches: results };
+        },
+        findPassive: (text) => {
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findPassiveRegex(text);
+            const matches = new Set();
+            const auxForms = new Set(['wurde', 'wurden', 'wird', 'werden', 'worden', 'geworden']);
+            const skipTokens = new Set(['nicht', 'nie', 'kaum', 'schon', 'auch', 'nur', 'noch', 'gerade', 'eben', 'wohl', 'sehr', 'mehr', 'weniger', 'ganz', 'eher', 'immer', 'oft', 'wieder', 'erst', 'dann', 'jetzt', 'hier', 'dort', 'sofort', 'schnell', 'langsam', 'gerne', 'gern', 'heute', 'morgen']);
+            const stateAdjectives = new Set(['dunkel', 'hell', 'kalt', 'warm', 'klar', 'laut', 'leise', 'ruhig', 'still', 'besser', 'schlimmer', 'schwer', 'leicht', 'müde', 'satt', 'froh']);
+            const modifierSuffix = /(lich|ig|weise|erweise|sam|bar)$/i;
+            const termsBySentence = new Map();
+
+            pos.terms.forEach(term => {
+                if (!termsBySentence.has(term.sentenceIndex)) {
+                    termsBySentence.set(term.sentenceIndex, []);
+                }
+                termsBySentence.get(term.sentenceIndex).push(term);
+            });
+
+            termsBySentence.forEach(terms => {
+                for (let i = 0; i < terms.length; i += 1) {
+                    if (!auxForms.has(terms[i].normal)) continue;
+                    let found = null;
+                    for (let j = i + 1; j < Math.min(terms.length, i + 7); j += 1) {
+                        const token = terms[j].normal;
+                        if (skipTokens.has(token) || modifierSuffix.test(token)) continue;
+                        if (stateAdjectives.has(token) && !found) break;
+                        if (terms[j].tags && terms[j].tags.Participle) { found = terms[j].text; break; }
+                        break;
+                    }
+                    if (found) matches.add(`${terms[i].text} ... ${found}`);
+                }
+            });
+
+            if (!matches.size) return SA_Logic.findPassiveRegex(text);
+            return [...matches];
         },
         // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
         findPassiveRegex: (text) => { 
@@ -2707,7 +2744,8 @@
                 readabilityCache: [],
                 limitReached: false,
                 premiumUpgradeDismissed: false,
-                markerData: []
+                markerData: [],
+                nominalChains: []
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -3173,12 +3211,17 @@
                 this.analysisWorker.onmessage = (event) => {
                     const { id, result } = event.data || {};
                     if (!id || !this.workerRequests.has(id)) return;
-                    const { resolve } = this.workerRequests.get(id);
+                    const { resolve, timeoutId } = this.workerRequests.get(id);
+                    if (timeoutId) clearTimeout(timeoutId);
                     this.workerRequests.delete(id);
                     resolve(result);
                 };
                 this.analysisWorker.onerror = () => {
                     this.analysisWorker = null;
+                    this.workerRequests.forEach(({ resolve, timeoutId }) => {
+                        if (timeoutId) clearTimeout(timeoutId);
+                        if (resolve) resolve(null);
+                    });
                     this.workerRequests.clear();
                 };
             } catch (err) {
@@ -3208,7 +3251,12 @@
             if (!this.analysisWorker) return Promise.resolve(null);
             const id = ++this.workerRequestId;
             return new Promise((resolve) => {
-                this.workerRequests.set(id, { resolve });
+                const timeoutId = setTimeout(() => {
+                    if (!this.workerRequests.has(id)) return;
+                    this.workerRequests.delete(id);
+                    resolve(null);
+                }, 2500);
+                this.workerRequests.set(id, { resolve, timeoutId });
                 this.analysisWorker.postMessage({
                     id,
                     type,
@@ -3385,7 +3433,8 @@
         applyTeleprompterMirror(modal = null) {
             const target = modal || document.getElementById('ska-teleprompter-modal');
             if (!target) return;
-            target.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
+            const mirrorTarget = target.querySelector('.ska-teleprompter-modal') || target;
+            mirrorTarget.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
             const toggle = target.querySelector('[data-action="teleprompter-mirror"]');
             if (toggle) toggle.checked = !!this.settings.teleprompterMirror;
         }
@@ -3844,6 +3893,10 @@
             if (act === 'show-stumble-clusters') {
                 const items = this.state.stumbleData?.consonant_clusters || [];
                 this.renderStumbleModal('clusters', items);
+                return true;
+            }
+            if (act === 'show-nominal-chains') {
+                this.renderNominalChainModal(this.state.nominalChains || []);
                 return true;
             }
             if (act === 'toggle-card') {
@@ -5260,6 +5313,10 @@
                                 stopwords: SA_CONFIG.STOPWORDS
                             }).then((result) => {
                                 if (token !== this.state.analysisToken || !isActive('keyword_focus')) return;
+                                if (!result) {
+                                    this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), true);
+                                    return;
+                                }
                                 this.renderKeywordFocusCard(result || { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }, true);
                             });
                             break;
@@ -5377,15 +5434,12 @@
 
             const total = data.total || 0;
             const top = data.top || [];
-            const tfIdfTop = data.tfIdfTop || [];
-            const clusters = data.clusters || [];
             const focusKeywords = data.focusKeywords || [];
             const focusCounts = data.focusCounts || [];
             const focusDensity = data.focusDensity || 0;
             const focusLimit = data.focusLimit || 0;
             const focusOverLimit = data.focusOverLimit;
             const focusTotalCount = data.focusTotalCount || 0;
-            const tfIdfTotal = data.tfIdfTotal || 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
@@ -5435,77 +5489,7 @@
                 }
             }
 
-            const dominant = tfIdfTop[0] || top[0];
-            const tfIdfRatio = tfIdfTotal > 0 ? (dominant.tfidf / tfIdfTotal) * 100 : 0;
-            let label = 'Fokus verteilt';
-            let color = SA_CONFIG.COLORS.warn;
-            if (tfIdfRatio >= 22) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
-            else if (tfIdfRatio >= 12) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
-
-            h += `
-                <div style="margin-bottom:1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
-                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">TF-IDF Fokus-Score</span>
-                        <span style="font-weight:700; color:${color};">${label}</span>
-                    </div>
-                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                        <div style="width:${Math.min(100, tfIdfRatio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
-                    </div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${tfIdfRatio.toFixed(1)}% TF-IDF-Anteil)</div>
-                </div>
-                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
-
-            const tfIdfMax = tfIdfTop[0]?.tfidf || 1;
-            h += `<div class="ska-section-title">TF-IDF Highlights</div>`;
-            h += `<div class="ska-filler-list">`;
-            tfIdfTop.slice(0, 6).forEach(item => {
-                const pct = (item.tfidf / tfIdfMax) * 100;
-                h += `<div class="ska-filler-item">
-                        <span class="ska-filler-word" style="font-weight:600;">${item.word}</span>
-                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
-                        <span class="ska-filler-count">${item.count}x</span>
-                      </div>`;
-            });
-            h += `</div>`;
-
-            const palette = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0f766e', '#1d4ed8', '#9333ea'];
-            const clusterColors = new Map();
-            clusters.forEach((cluster, idx) => {
-                clusterColors.set(cluster.label, palette[idx % palette.length]);
-            });
-
-            if (tfIdfTop.length) {
-                h += `<div class="ska-section-title">Semantische Cluster & Wordcloud</div>`;
-                h += `<div style="display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.7rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; min-height:88px;">`;
-                const minSize = 12;
-                const maxSize = 26;
-                tfIdfTop.slice(0, 18).forEach(item => {
-                    const size = minSize + ((item.tfidf || 0) / tfIdfMax) * (maxSize - minSize);
-                    const cluster = clusters.find(group => group.terms.some(term => term.word === item.word));
-                    const color = cluster ? clusterColors.get(cluster.label) : '#334155';
-                    h += `<span style="font-size:${size.toFixed(0)}px; font-weight:600; color:${color};">#${item.word}</span>`;
-                });
-                h += `</div>`;
-            }
-
-            if (clusters.length) {
-                h += `<div style="margin-top:0.8rem;">`;
-                clusters.slice(0, 6).forEach(cluster => {
-                    const color = clusterColors.get(cluster.label) || '#334155';
-                    h += `<div style="margin-bottom:0.6rem;">
-                            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:700; color:${color};">
-                                <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:${color};"></span>
-                                ${cluster.label}
-                            </div>
-                            <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.35rem;">`;
-                    cluster.terms.slice(0, 6).forEach(term => {
-                        h += `<span class="skriptanalyse-badge" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155;">${term.word} (${term.count}x)</span>`;
-                    });
-                    h += `</div></div>`;
-                });
-                h += `</div>`;
-            }
-
+            h += `<div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
             h += `<div class="ska-section-title">Häufigkeit (Substantive)</div>`;
             h += `<div class="ska-filler-list">`;
             const maxVal = top[0].count || 1;
@@ -5936,6 +5920,34 @@
             document.body.classList.add('ska-modal-open');
         }
 
+        renderNominalChainModal(items) {
+            const existing = document.getElementById('ska-nominal-chain-modal');
+            if (existing) existing.remove();
+
+            const chains = Array.isArray(items) ? items : [];
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal';
+            modal.id = 'ska-nominal-chain-modal';
+            modal.ariaHidden = 'true';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-nominal-chain"></div>
+                <div class="skriptanalyse-modal-content" style="max-width:640px;">
+                    <button type="button" class="ska-close-icon" data-action="close-nominal-chain">&times;</button>
+                    <div class="ska-modal-header"><h3>Nominal-Ketten</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <div class="ska-problem-list">
+                            ${chains.map((txt) => `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${SA_Utils.escapeHtml(txt)}</div>`).join('')}
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                        <button type="button" class="ska-btn ska-btn--secondary" data-action="close-nominal-chain">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
+        }
+
         renderSyllableEntropyModal(issues) {
             const existing = document.getElementById('ska-syllable-entropy-modal');
             if (existing) existing.remove();
@@ -6178,14 +6190,19 @@
             if(!active) return this.updateCard('nominal_chain', this.renderDisabledState(), this.bottomGrid, '', '', true);
             
             let h = '';
+            this.state.nominalChains = Array.isArray(chains) ? chains : [];
             if(!chains || chains.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">👍 Kein Behördendeutsch-Alarm!</div>`;
             } else {
                  h += `<div class="ska-section-title">Kritische Passagen</div><div class="ska-problem-list">`;
-                 chains.forEach(txt => {
-                     h += `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${txt}</div>`;
+                 chains.slice(0, 5).forEach(txt => {
+                     h += `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${SA_Utils.escapeHtml(txt)}</div>`;
                  });
                  h += `</div>`;
+                 if (chains.length > 5) {
+                     const hiddenCount = chains.length - 5;
+                     h += `<button class="ska-expand-link ska-more-toggle" data-action="show-nominal-chains" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
+                 }
                  h += this.renderTipSection('nominal_chain', true);
             }
             this.updateCard('nominal_chain', h);
@@ -6273,7 +6290,7 @@
             const benchmarkMetric = isSps ? 'sps' : 'wpm';
             const benchmarkValue = isSps ? SA_Logic.getSps(effectiveSettings) : wpm;
             const benchmarkLabel = isSps ? 'Benchmark (SPS)' : 'Benchmark (WPM)';
-            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel);
+            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel, { showPercentile: false });
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
@@ -6596,6 +6613,11 @@
             const stretchLabel = stretch
                 ? `Langer Atembogen: ${stretch.syllables} Silben ohne Pause (Ziel < ${stretchThreshold}).`
                 : 'Atembögen wirken natürlich gesetzt.';
+            const avgSentence = read && Number.isFinite(read.avgSentence) ? read.avgSentence : 0;
+            let flowText = 'Guter Satzfluss';
+            let flowCol = SA_CONFIG.COLORS.success;
+            if (avgSentence >= 20) { flowText = 'Sätze eher lang'; flowCol = SA_CONFIG.COLORS.warn; }
+            else if (avgSentence <= 10) { flowText = 'Kurz & knackig'; flowCol = SA_CONFIG.COLORS.blue; }
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
@@ -6615,6 +6637,10 @@
                         <div class="ska-mini-card-label">Atembogen</div>
                         <div class="ska-mini-card-sub">${stretch ? `${stretch.syllables} Silben` : 'Im grünen Bereich'}</div>
                     </div>
+                    <div class="ska-mini-card" style="border-top:3px solid ${flowCol};">
+                        <div class="ska-mini-card-label">Satzfluss</div>
+                        <div class="ska-mini-card-sub">${flowText}${avgSentence ? ` (${avgSentence.toFixed(1)} Wörter Ø)` : ''}</div>
+                    </div>
                 </div>
 
                 <div style="background:#eff6ff; padding:1rem; border-radius:8px; border-left:4px solid ${SA_CONFIG.COLORS.blue}; display:flex; align-items:center; gap:1rem;">
@@ -6631,6 +6657,8 @@
                         <li>${stretchLabel}</li>
                         <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
                         <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
+                        <li>Pausen markieren: bewusste Atempunkte geben Sicherheit beim Sprechen.</li>
+                        <li>Schlüsselwörter betonen: Kernnutzen hörbar hervorheben.</li>
                     </ul>
                     ${genreCoachNote}
                 </div>`;
@@ -6992,7 +7020,7 @@
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
-            h += this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.');
+            h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
             this.updateCard('marker', h);
         }
 
