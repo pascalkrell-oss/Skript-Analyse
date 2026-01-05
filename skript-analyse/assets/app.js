@@ -132,6 +132,30 @@
         },
         TTS_SERVICES: [],
 
+        THESAURUS_SOURCE: {
+            mode: 'local',
+            apiUrl: 'https://www.openthesaurus.de/synonyme/search?format=application/json&query=',
+            timeoutMs: 4000,
+            maxResults: 8
+        },
+        THESAURUS_DB: {
+            gut: ['positiv', 'stark', 'solide', 'hervorragend', 'gelungen'],
+            schnell: ['rasch', 'zügig', 'flink', 'fix'],
+            wichtig: ['entscheidend', 'bedeutend', 'maßgeblich', 'zentral'],
+            klar: ['verständlich', 'deutlich', 'präzise', 'sauber'],
+            einfach: ['simpel', 'leicht', 'unkompliziert'],
+            groß: ['riesig', 'umfangreich', 'mächtig', 'gewaltig'],
+            klein: ['winzig', 'kompakt', 'gering'],
+            machen: ['erstellen', 'erzeugen', 'umsetzen', 'realisieren'],
+            sagen: ['äußern', 'berichten', 'erklären', 'mitteilen'],
+            nutzen: ['verwenden', 'einsetzen', 'gebrauchen', 'anwenden'],
+            zeigen: ['darstellen', 'präsentieren', 'vorführen', 'aufzeigen'],
+            beginnen: ['starten', 'anfangen', 'einleiten'],
+            verbessern: ['optimieren', 'steigern', 'verfeinern', 'ausbauen'],
+            ändern: ['anpassen', 'modifizieren', 'variieren', 'aktualisieren'],
+            schnellstmöglich: ['sofort', 'umgehend', 'zeitnah']
+        },
+
         GENDER_DB: {
             'mitarbeiter': 'Mitarbeitende',
             'teilnehmer': 'Teilnehmende',
@@ -422,6 +446,8 @@
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
         escapeRegex: (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        normalizeWord: (text) => String(text || '').toLowerCase().replace(/[^a-zäöüß]/gi, '').trim(),
+        uniqueList: (list) => Array.from(new Set(list.filter(Boolean))),
         escapeHtml: (text) => text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -625,6 +651,33 @@
             modal.setAttribute('aria-hidden', 'true');
             if (typeof onClosed === 'function') onClosed();
         },
+        copyToClipboard: async (text) => {
+            const value = String(text || '').trim();
+            if (!value) return false;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText(value);
+                    return true;
+                } catch (err) {
+                    // fallback below
+                }
+            }
+            const textarea = document.createElement('textarea');
+            textarea.value = value;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                success = false;
+            }
+            document.body.removeChild(textarea);
+            return success;
+        },
         
         getPhoneticSpelling: (word) => {
             if (SA_CONFIG.PRONUNCIATION_DB[word]) return SA_CONFIG.PRONUNCIATION_DB[word];
@@ -742,6 +795,84 @@
                     }
                     .ska-tip-next-btn:hover { background: #f1f5f9 !important; color: #1a93ee !important; }
                     .ska-tip-content { margin: 0 !important; color: #334155 !important; font-size: 0.9rem !important; line-height: 1.5 !important; }
+
+                    .ska-synonym-tooltip {
+                        position: fixed;
+                        z-index: 9999;
+                        min-width: 220px;
+                        max-width: 320px;
+                        background: #0f172a;
+                        color: #e2e8f0;
+                        border-radius: 12px;
+                        padding: 0.75rem;
+                        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.25);
+                        font-size: 0.78rem;
+                        opacity: 0;
+                        transform: translateY(6px);
+                        transition: opacity 0.15s ease, transform 0.15s ease;
+                        pointer-events: none;
+                    }
+                    .ska-synonym-tooltip.is-visible {
+                        opacity: 1;
+                        transform: translateY(0);
+                        pointer-events: auto;
+                    }
+                    .ska-synonym-tooltip-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 0.5rem;
+                        font-weight: 700;
+                    }
+                    .ska-synonym-tooltip-source {
+                        font-size: 0.68rem;
+                        color: #94a3b8;
+                    }
+                    .ska-synonym-list {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 0.35rem;
+                        margin: 0.4rem 0 0.6rem;
+                    }
+                    .ska-synonym-chip {
+                        background: rgba(148, 163, 184, 0.2);
+                        color: #e2e8f0;
+                        border: 1px solid rgba(148, 163, 184, 0.4);
+                        border-radius: 999px;
+                        padding: 0.18rem 0.55rem;
+                        font-size: 0.7rem;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+                    .ska-synonym-chip:hover {
+                        background: rgba(59, 130, 246, 0.2);
+                        border-color: rgba(59, 130, 246, 0.5);
+                        color: #e0f2fe;
+                    }
+                    .ska-synonym-actions {
+                        display: flex;
+                        gap: 0.4rem;
+                        flex-wrap: wrap;
+                    }
+                    .ska-synonym-action-btn {
+                        background: #1e293b;
+                        color: #e2e8f0;
+                        border: 1px solid #334155;
+                        border-radius: 8px;
+                        padding: 0.2rem 0.55rem;
+                        font-size: 0.68rem;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+                    .ska-synonym-action-btn:hover {
+                        border-color: #38bdf8;
+                        color: #e0f2fe;
+                    }
+                    .ska-synonym-tooltip-note {
+                        margin-top: 0.4rem;
+                        font-size: 0.68rem;
+                        color: #94a3b8;
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -2294,6 +2425,8 @@
                 limitReached: false,
                 premiumUpgradeDismissed: false
             };
+            this.synonymCache = new Map();
+            this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
             }
@@ -2315,6 +2448,7 @@
             this.bindEvents();
             
             this.injectGlobalStyles(); // CSS Overrides
+            this.initSynonymTooltip();
 
             const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
             if (savedVersion && savedVersion.trim().length > 0) {
@@ -3828,6 +3962,10 @@
                     this.renderUpgradePanel();
                 }
 
+                if (this.handleSynonymQuickAction(e.target)) {
+                    return;
+                }
+
                 if(hideBtn) { this.toggleCard(hideBtn.closest('.skriptanalyse-card').dataset.cardId, false); return; }
                 if(restoreChip) { this.toggleCard(restoreChip.dataset.restoreId, true); return; }
                 
@@ -4011,6 +4149,21 @@
                 }
             });
 
+            this.root.addEventListener('mouseover', (e) => {
+                const badge = e.target.closest('.ska-synonym-target');
+                if (!badge || !this.root.contains(badge)) return;
+                this.showSynonymTooltip(badge);
+            });
+            this.root.addEventListener('mouseout', (e) => {
+                const badge = e.target.closest('.ska-synonym-target');
+                if (!badge) return;
+                const related = e.relatedTarget;
+                if (this.synonymTooltip && (this.synonymTooltip === related || this.synonymTooltip.contains(related))) {
+                    return;
+                }
+                this.scheduleSynonymTooltipHide();
+            });
+
             document.body.addEventListener('click', (e) => {
                 const modal = e.target.closest('.skriptanalyse-modal');
                 if(!modal) return; 
@@ -4084,6 +4237,218 @@
                     });
                 }
             });
+        }
+
+        initSynonymTooltip() {
+            if (this.synonymTooltip) return;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'ska-synonym-tooltip';
+            tooltip.setAttribute('aria-hidden', 'true');
+            tooltip.innerHTML = '<div class="ska-synonym-tooltip-header">Synonyme</div>';
+            tooltip.addEventListener('click', (e) => {
+                if (this.handleSynonymQuickAction(e.target)) {
+                    e.preventDefault();
+                }
+            });
+            tooltip.addEventListener('mouseenter', () => {
+                if (this.synonymHoverState.hideTimer) {
+                    clearTimeout(this.synonymHoverState.hideTimer);
+                    this.synonymHoverState.hideTimer = null;
+                }
+            });
+            tooltip.addEventListener('mouseleave', () => {
+                this.scheduleSynonymTooltipHide();
+            });
+            document.body.appendChild(tooltip);
+            this.synonymTooltip = tooltip;
+        }
+
+        handleSynonymQuickAction(target) {
+            const synonymInsert = target.closest('[data-action="synonym-insert"]');
+            const synonymCopy = target.closest('[data-action="synonym-copy"]');
+            if (synonymInsert && this.textarea) {
+                const synonym = synonymInsert.dataset.synonym || '';
+                if (synonym) {
+                    SA_Utils.insertAtCursor(this.textarea, synonym);
+                    this.analyze(this.getText());
+                }
+                this.hideSynonymTooltip(true);
+                return true;
+            }
+            if (synonymCopy) {
+                const list = synonymCopy.dataset.synonyms || '';
+                const originalText = synonymCopy.textContent;
+                SA_Utils.copyToClipboard(list).then((success) => {
+                    synonymCopy.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
+                    setTimeout(() => { synonymCopy.textContent = originalText; }, 1200);
+                });
+                return true;
+            }
+            return false;
+        }
+
+        scheduleSynonymTooltipHide() {
+            if (!this.synonymTooltip) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+            }
+            this.synonymHoverState.hideTimer = setTimeout(() => {
+                this.hideSynonymTooltip();
+            }, 120);
+        }
+
+        hideSynonymTooltip(force = false) {
+            if (!this.synonymTooltip) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+                this.synonymHoverState.hideTimer = null;
+            }
+            if (force || !this.synonymTooltip.matches(':hover')) {
+                this.synonymTooltip.classList.remove('is-visible');
+                this.synonymTooltip.setAttribute('aria-hidden', 'true');
+                this.synonymHoverState.activeWord = null;
+                this.synonymHoverState.activeTarget = null;
+            }
+        }
+
+        showSynonymTooltip(target) {
+            if (!target || !this.synonymTooltip) return;
+            const rawWord = target.dataset.synonymWord || target.textContent || '';
+            const word = SA_Utils.normalizeWord(rawWord);
+            if (!word) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+                this.synonymHoverState.hideTimer = null;
+            }
+            this.synonymHoverState.activeWord = word;
+            this.synonymHoverState.activeTarget = target;
+            this.renderSynonymTooltipContent({ state: 'loading', word });
+            this.positionSynonymTooltip(target);
+            this.synonymTooltip.classList.add('is-visible');
+            this.synonymTooltip.setAttribute('aria-hidden', 'false');
+
+            const requestId = ++this.synonymHoverState.requestId;
+            this.getSynonymsForWord(word).then((data) => {
+                if (this.synonymHoverState.activeWord !== word || requestId !== this.synonymHoverState.requestId) return;
+                this.renderSynonymTooltipContent(data);
+                this.positionSynonymTooltip(target);
+            });
+        }
+
+        positionSynonymTooltip(target) {
+            if (!this.synonymTooltip || !target) return;
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = this.synonymTooltip.getBoundingClientRect();
+            const spacing = 10;
+            const top = rect.top - tooltipRect.height - spacing;
+            const fallbackTop = rect.bottom + spacing;
+            const finalTop = (top > 8) ? top : fallbackTop;
+            const left = Math.min(
+                window.innerWidth - tooltipRect.width - 12,
+                Math.max(12, rect.left + (rect.width / 2) - (tooltipRect.width / 2))
+            );
+            this.synonymTooltip.style.top = `${finalTop}px`;
+            this.synonymTooltip.style.left = `${left}px`;
+        }
+
+        async getSynonymsForWord(word) {
+            const normalized = SA_Utils.normalizeWord(word);
+            if (!normalized) {
+                return { word: '', synonyms: [], source: 'none', fallback: true, premiumLocked: false };
+            }
+            if (this.synonymCache.has(normalized)) {
+                return this.synonymCache.get(normalized);
+            }
+
+            const localSynonyms = SA_Utils.uniqueList(SA_CONFIG.THESAURUS_DB[normalized] || []);
+            const hasLocal = localSynonyms.length > 0;
+            const allowRemote = this.isPremiumActive() && SA_CONFIG.THESAURUS_SOURCE.apiUrl;
+            const premiumLocked = !this.isPremiumActive() && Boolean(SA_CONFIG.THESAURUS_SOURCE.apiUrl);
+
+            if (!allowRemote) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'none', fallback: !hasLocal, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            }
+
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'offline', fallback: true, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), SA_CONFIG.THESAURUS_SOURCE.timeoutMs);
+            try {
+                const response = await fetch(`${SA_CONFIG.THESAURUS_SOURCE.apiUrl}${encodeURIComponent(normalized)}`, { signal: controller.signal });
+                if (!response.ok) throw new Error('Thesaurus API error');
+                const data = await response.json();
+                const remoteSynonyms = [];
+                (data.synsets || []).forEach((set) => {
+                    (set.terms || []).forEach((term) => {
+                        const value = SA_Utils.normalizeWord(term.term || term.word || '');
+                        if (value && value !== normalized) {
+                            remoteSynonyms.push(value);
+                        }
+                    });
+                });
+                const merged = SA_Utils.uniqueList(remoteSynonyms.length ? remoteSynonyms : localSynonyms)
+                    .slice(0, SA_CONFIG.THESAURUS_SOURCE.maxResults);
+                const result = {
+                    word: normalized,
+                    synonyms: merged,
+                    source: remoteSynonyms.length ? 'api' : (hasLocal ? 'local' : 'none'),
+                    fallback: !remoteSynonyms.length,
+                    premiumLocked
+                };
+                this.synonymCache.set(normalized, result);
+                return result;
+            } catch (err) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'error', fallback: true, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        renderSynonymTooltipContent(data) {
+            if (!this.synonymTooltip) return;
+            const word = data.word || '';
+            if (data.state === 'loading') {
+                this.synonymTooltip.innerHTML = `
+                    <div class="ska-synonym-tooltip-header">Synonyme</div>
+                    <div class="ska-synonym-tooltip-note">Suche nach Vorschlägen...</div>`;
+                return;
+            }
+            const synonyms = (data.synonyms || []).slice(0, SA_CONFIG.THESAURUS_SOURCE.maxResults);
+            const sourceLabels = {
+                api: 'Online-Thesaurus',
+                local: 'Lokaler Thesaurus',
+                offline: 'Offline',
+                none: 'Keine Daten',
+                error: 'Fallback'
+            };
+            const sourceLabel = sourceLabels[data.source] || 'Thesaurus';
+            const chipsHtml = synonyms.length
+                ? `<div class="ska-synonym-list">${synonyms.map((syn) => `<button type="button" class="ska-synonym-chip" data-action="synonym-insert" data-synonym="${SA_Utils.escapeHtml(syn)}">${SA_Utils.escapeHtml(syn)}</button>`).join('')}</div>`
+                : `<div class="ska-synonym-tooltip-note">Keine Synonyme gefunden.</div>`;
+            const copyText = synonyms.join(', ');
+            const premiumNote = data.premiumLocked ? '<div class="ska-synonym-tooltip-note">Premium: Online-Thesaurus freischalten.</div>' : '';
+            const fallbackNote = data.fallback && synonyms.length ? '<div class="ska-synonym-tooltip-note">Fallback aktiv (lokale Daten).</div>' : '';
+
+            this.synonymTooltip.innerHTML = `
+                <div class="ska-synonym-tooltip-header">
+                    <span>Synonyme zu "${SA_Utils.escapeHtml(word)}"</span>
+                    <span class="ska-synonym-tooltip-source">${sourceLabel}</span>
+                </div>
+                ${chipsHtml}
+                <div class="ska-synonym-actions">
+                    <button type="button" class="ska-synonym-action-btn" data-action="synonym-copy" data-synonyms="${SA_Utils.escapeHtml(copyText)}" ${copyText ? '' : 'disabled'}>Synonyme kopieren</button>
+                </div>
+                ${premiumNote}
+                ${fallbackNote}
+            `;
         }
 
         toggleCard(id, visible) {
@@ -5884,7 +6249,8 @@
             } else {
                 h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
-                    h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo">${w}</span>`;
+                    const safeWord = SA_Utils.escapeHtml(w);
+                    h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo ska-synonym-target" data-synonym-word="${safeWord}">${safeWord}</span>`;
                 });
                 h += `</div>`;
                 h += this.renderTipSection('echo', true);
