@@ -188,7 +188,7 @@ function ska_shortcode() {
             <div class="ska-tools-panel is-hidden">
                 <div class="ska-tools-header">
                     <div class="ska-tools-title">
-                        <h3>Werkzeuge</h3>
+                        <h3><span class="ska-tools-title-icon">🧰</span>Werkzeuge</h3>
                         <p>Teleprompter, Pacing & Marker für die Umsetzung.</p>
                     </div>
                 </div>
