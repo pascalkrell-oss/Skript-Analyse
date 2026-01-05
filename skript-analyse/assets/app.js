@@ -1595,6 +1595,24 @@
                 termsBySentence.get(term.sentenceIndex).push(term);
             });
 
+            const sentences = text.split(/[.!?]+(?=\s|$)/);
+            sentences.forEach((sentence, index) => {
+                const trimmed = sentence.trim();
+                if (!trimmed) return;
+                const words = trimmed.split(/\s+/);
+                const wordCount = words.length;
+                const terms = termsBySentence.get(index) || [];
+                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && !whitelist.has(term.normal)).length;
+
+                if ((wordCount < 15 && nominalCount >= 2) || (wordCount >= 15 && nominalCount >= 3)) {
+                    if (nominalCount / wordCount > 0.15) {
+                        chains.push(trimmed);
+                    }
+                }
+            });
+            return chains;
+        },
+
         findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
         findAdverbs: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]{4,}(?:erweise|weise))\b/gi;
