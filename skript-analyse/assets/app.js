@@ -1548,10 +1548,11 @@
         },
         findNominalStyle: (text) => {
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
             const pos = SA_Logic.getPosTags(text);
             if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalStyleRegex(text);
             const nouns = pos.terms
-                .filter(term => term.tags && term.tags.Noun)
+                .filter(term => term.tags && term.tags.Noun && nominalRegex.test(term.normal))
                 .map(term => term.text)
                 .filter(word => !whitelist.has(word.toLowerCase()));
             if (!nouns.length) return SA_Logic.findNominalStyleRegex(text);
@@ -1586,6 +1587,7 @@
             const pos = SA_Logic.getPosTags(text);
             if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalChainsRegex(text);
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
             const chains = [];
             const termsBySentence = new Map();
 
@@ -1603,7 +1605,7 @@
                 const words = trimmed.split(/\s+/);
                 const wordCount = words.length;
                 const terms = termsBySentence.get(index) || [];
-                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && !whitelist.has(term.normal)).length;
+                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && nominalRegex.test(term.normal) && !whitelist.has(term.normal)).length;
 
                 if ((wordCount < 15 && nominalCount >= 2) || (wordCount >= 15 && nominalCount >= 3)) {
                     if (nominalCount / wordCount > 0.15) {
@@ -2742,7 +2744,8 @@
                 readabilityCache: [],
                 limitReached: false,
                 premiumUpgradeDismissed: false,
-                markerData: []
+                markerData: [],
+                nominalChains: []
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -3208,12 +3211,17 @@
                 this.analysisWorker.onmessage = (event) => {
                     const { id, result } = event.data || {};
                     if (!id || !this.workerRequests.has(id)) return;
-                    const { resolve } = this.workerRequests.get(id);
+                    const { resolve, timeoutId } = this.workerRequests.get(id);
+                    if (timeoutId) clearTimeout(timeoutId);
                     this.workerRequests.delete(id);
                     resolve(result);
                 };
                 this.analysisWorker.onerror = () => {
                     this.analysisWorker = null;
+                    this.workerRequests.forEach(({ resolve, timeoutId }) => {
+                        if (timeoutId) clearTimeout(timeoutId);
+                        if (resolve) resolve(null);
+                    });
                     this.workerRequests.clear();
                 };
             } catch (err) {
@@ -3243,7 +3251,12 @@
             if (!this.analysisWorker) return Promise.resolve(null);
             const id = ++this.workerRequestId;
             return new Promise((resolve) => {
-                this.workerRequests.set(id, { resolve });
+                const timeoutId = setTimeout(() => {
+                    if (!this.workerRequests.has(id)) return;
+                    this.workerRequests.delete(id);
+                    resolve(null);
+                }, 2500);
+                this.workerRequests.set(id, { resolve, timeoutId });
                 this.analysisWorker.postMessage({
                     id,
                     type,
@@ -3420,7 +3433,8 @@
         applyTeleprompterMirror(modal = null) {
             const target = modal || document.getElementById('ska-teleprompter-modal');
             if (!target) return;
-            target.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
+            const mirrorTarget = target.querySelector('.ska-teleprompter-modal') || target;
+            mirrorTarget.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
             const toggle = target.querySelector('[data-action="teleprompter-mirror"]');
             if (toggle) toggle.checked = !!this.settings.teleprompterMirror;
         }
@@ -3879,6 +3893,10 @@
             if (act === 'show-stumble-clusters') {
                 const items = this.state.stumbleData?.consonant_clusters || [];
                 this.renderStumbleModal('clusters', items);
+                return true;
+            }
+            if (act === 'show-nominal-chains') {
+                this.renderNominalChainModal(this.state.nominalChains || []);
                 return true;
             }
             if (act === 'toggle-card') {
@@ -5295,6 +5313,10 @@
                                 stopwords: SA_CONFIG.STOPWORDS
                             }).then((result) => {
                                 if (token !== this.state.analysisToken || !isActive('keyword_focus')) return;
+                                if (!result) {
+                                    this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), true);
+                                    return;
+                                }
                                 this.renderKeywordFocusCard(result || { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }, true);
                             });
                             break;
@@ -5971,6 +5993,34 @@
             document.body.classList.add('ska-modal-open');
         }
 
+        renderNominalChainModal(items) {
+            const existing = document.getElementById('ska-nominal-chain-modal');
+            if (existing) existing.remove();
+
+            const chains = Array.isArray(items) ? items : [];
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal';
+            modal.id = 'ska-nominal-chain-modal';
+            modal.ariaHidden = 'true';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-nominal-chain"></div>
+                <div class="skriptanalyse-modal-content" style="max-width:640px;">
+                    <button type="button" class="ska-close-icon" data-action="close-nominal-chain">&times;</button>
+                    <div class="ska-modal-header"><h3>Nominal-Ketten</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <div class="ska-problem-list">
+                            ${chains.map((txt) => `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${SA_Utils.escapeHtml(txt)}</div>`).join('')}
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                        <button type="button" class="ska-btn ska-btn--secondary" data-action="close-nominal-chain">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
+        }
+
         renderSyllableEntropyModal(issues) {
             const existing = document.getElementById('ska-syllable-entropy-modal');
             if (existing) existing.remove();
@@ -6213,14 +6263,19 @@
             if(!active) return this.updateCard('nominal_chain', this.renderDisabledState(), this.bottomGrid, '', '', true);
             
             let h = '';
+            this.state.nominalChains = Array.isArray(chains) ? chains : [];
             if(!chains || chains.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">👍 Kein Behördendeutsch-Alarm!</div>`;
             } else {
                  h += `<div class="ska-section-title">Kritische Passagen</div><div class="ska-problem-list">`;
-                 chains.forEach(txt => {
-                     h += `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${txt}</div>`;
+                 chains.slice(0, 5).forEach(txt => {
+                     h += `<div class="ska-problem-item" style="border-left:3px solid #ef4444;">${SA_Utils.escapeHtml(txt)}</div>`;
                  });
                  h += `</div>`;
+                 if (chains.length > 5) {
+                     const hiddenCount = chains.length - 5;
+                     h += `<button class="ska-expand-link ska-more-toggle" data-action="show-nominal-chains" data-total="${hiddenCount}">...und ${hiddenCount} weitere anzeigen</button>`;
+                 }
                  h += this.renderTipSection('nominal_chain', true);
             }
             this.updateCard('nominal_chain', h);
@@ -6666,6 +6721,8 @@
                         <li>${stretchLabel}</li>
                         <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
                         <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
+                        <li>Pausen markieren: bewusste Atempunkte geben Sicherheit beim Sprechen.</li>
+                        <li>Schlüsselwörter betonen: Kernnutzen hörbar hervorheben.</li>
                     </ul>
                     ${genreCoachNote}
                 </div>`;
