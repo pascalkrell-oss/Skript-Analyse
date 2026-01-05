@@ -2521,6 +2521,51 @@
                         }
                     }
 
+                    if (options.notesColumn) {
+                        doc.addPage();
+                        const notesMargin = 15;
+                        const notesGap = 8;
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const notesContentWidth = pageWidth - (notesMargin * 2);
+                        const scriptWidth = (notesContentWidth - notesGap) * 0.62;
+                        const notesWidth = notesContentWidth - notesGap - scriptWidth;
+                        const scriptX = notesMargin;
+                        const notesX = notesMargin + scriptWidth + notesGap;
+                        const lineHeight = 6;
+                        const headerOffset = 10;
+                        const bottomLimit = pageHeight - notesMargin;
+
+                        const renderNotesHeader = () => {
+                            doc.setFontSize(12);
+                            doc.setTextColor(26, 147, 238);
+                            doc.setFont(undefined, 'bold');
+                            doc.text("Skript", scriptX, y);
+                            doc.text("Notizen", notesX, y);
+                            doc.setDrawColor(226, 232, 240);
+                            doc.line(notesMargin, y + 2, notesMargin + notesContentWidth, y + 2);
+                            y += headerOffset;
+                            doc.setFontSize(11);
+                            doc.setTextColor(0);
+                            doc.setFont(undefined, 'normal');
+                        };
+
+                        y = 20;
+                        renderNotesHeader();
+
+                        const splitNotesScript = doc.splitTextToSize(text, scriptWidth);
+                        splitNotesScript.forEach((line) => {
+                            if (y + lineHeight > bottomLimit) {
+                                doc.addPage();
+                                y = 20;
+                                renderNotesHeader();
+                            }
+                            doc.text(line, scriptX, y);
+                            doc.setDrawColor(226, 232, 240);
+                            doc.line(notesX, y + 1, notesX + notesWidth, y + 1);
+                            y += lineHeight;
+                        });
+                    }
+
                     doc.save('Skript-Analyse-Report.pdf'); 
                     
                     btnElement.textContent = 'Fertig ✔';
@@ -4153,13 +4198,15 @@
         syncPdfOptions() {
             const modal = document.getElementById('ska-pdf-modal');
             if (!modal) return;
+            this.ensurePdfNotesOption();
             const isPremium = this.isPremiumActive();
             const premiumOptionIds = [
                 'pdf-opt-details',
                 'pdf-opt-tips',
                 'pdf-opt-compare',
                 'pdf-opt-syllable-entropy',
-                'pdf-opt-compliance'
+                'pdf-opt-compliance',
+                'pdf-opt-notes'
             ];
             const allOptionIds = [
                 'pdf-opt-overview',
@@ -4168,6 +4215,7 @@
                 'pdf-opt-compliance',
                 'pdf-opt-tips',
                 'pdf-opt-compare',
+                'pdf-opt-notes',
                 'pdf-opt-script'
             ];
             premiumOptionIds.forEach((id) => {
@@ -4183,6 +4231,34 @@
                     const input = modal.querySelector(`#${id}`);
                     if (input) input.checked = true;
                 });
+            }
+        }
+
+        ensurePdfNotesOption() {
+            const modal = document.getElementById('ska-pdf-modal');
+            if (!modal) return;
+            const grid = modal.querySelector('.ska-compact-options-grid');
+            if (!grid) return;
+            if (grid.querySelector('#pdf-opt-notes')) return;
+
+            const label = document.createElement('label');
+            label.className = 'ska-compact-option ska-compact-option--premium ska-full-width-option';
+            label.innerHTML = `
+                <input type="checkbox" id="pdf-opt-notes" checked>
+                <div class="ska-compact-option-inner">
+                    <div class="ska-option-check"></div>
+                    <div class="ska-option-text">
+                        <strong>Skript mit Notizspalte <span class="ska-premium-pill">Premium</span></strong>
+                        <span>Links Skript, rechts Platz für Notizen.</span>
+                    </div>
+                </div>
+            `;
+
+            const scriptOption = grid.querySelector('#pdf-opt-script')?.closest('label');
+            if (scriptOption) {
+                grid.insertBefore(label, scriptOption);
+            } else {
+                grid.appendChild(label);
             }
         }
 
@@ -4514,6 +4590,7 @@
                         tips: isPremium && modal.querySelector('#pdf-opt-tips')?.checked, 
                         compare: isPremium && modal.querySelector('#pdf-opt-compare')?.checked, 
                         script: modal.querySelector('#pdf-opt-script')?.checked,
+                        notesColumn: isPremium && modal.querySelector('#pdf-opt-notes')?.checked,
                         syllableEntropy: isPremium && modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
                         compliance: isPremium && modal.querySelector('#pdf-opt-compliance')?.checked
                     };
