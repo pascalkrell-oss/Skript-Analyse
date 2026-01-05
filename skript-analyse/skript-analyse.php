@@ -235,13 +235,12 @@ function ska_shortcode() {
         
         <div class="skriptanalyse-modal" id="ska-help-modal" aria-hidden="true">
             <div class="skriptanalyse-modal-overlay" data-action="close-help"></div>
-            <div class="skriptanalyse-modal-content" style="max-width:750px;">
+            <div class="skriptanalyse-modal-content" style="max-width:880px;">
                 <button type="button" class="ska-close-icon" data-action="close-help">&times;</button>
                 <div class="ska-modal-header"><h3>Anleitung & Hilfe</h3></div>
                 <div class="skriptanalyse-modal-body">
                     <div class="ska-help-hero">
                         <div>
-                            <p class="ska-help-kicker">Anleitung & Hilfe</p>
                             <h4>Alles, was du für eine perfekte Skriptanalyse brauchst</h4>
                             <p>Die Skript-Analyse arbeitet live im Browser: Texte, Timing, Wirkung und Sprechbarkeit werden automatisch ausgewertet. Hier findest du alle Funktionen, Werkzeuge und Tipps – kompakt, verständlich und sofort anwendbar.</p>
                         </div>
@@ -305,14 +304,14 @@ function ska_shortcode() {
                             <h4>🧭 Oberfläche & Navigation</h4>
                             <p>So findest du dich sofort zurecht.</p>
                         </header>
-                        <ul class="ska-help-list">
-                            <li><strong>Header-Leiste:</strong> Genre, Tempo (WPM/SPS) und Zielzeit – steuert das Timing der Analyse.</li>
+                        <ul class="ska-help-list ska-help-list--arrows">
+                            <li><strong>Steuerleiste:</strong> Genre, Tempo (WPM/SPS) und Zielzeit – steuert das Timing der Analyse.</li>
                             <li><strong>Analyse-Karten:</strong> Jede Karte zeigt ein Thema. Nutze die Filterleiste, um Karten an- oder auszuschalten.</li>
                             <li><strong>Tools-Bereich:</strong> Teleprompter, Marker und Pacing-Training befinden sich im Werkzeugbereich.</li>
                             <li><strong>Legende & Hilfe:</strong> Erklärt Marker, Badges und bietet den direkten Einstieg in diese Anleitung.</li>
                         </ul>
                         <div class="ska-help-box ska-help-box--help">
-                            <strong>Hilfe:</strong> Nutze die Filter-Pills, um deine Lieblingskarten dauerhaft sichtbar zu halten.
+                            <strong>Tipp:</strong> Nutze die Filter-Schalter, damit deine wichtigsten Karten dauerhaft sichtbar bleiben.
                         </div>
                     </section>
 
@@ -332,7 +331,7 @@ function ska_shortcode() {
                             </div>
                             <div class="ska-help-tabs-content">
                                 <div class="ska-help-tab-panel" data-tab="ska-help-tab-1">
-                                    <ul class="ska-help-list">
+                                    <ul class="ska-help-list ska-help-list--arrows">
                                         <li><strong>WPM/SPS:</strong> Standard-Tempo oder Silben pro Sekunde für längere Wörter.</li>
                                         <li><strong>Zielzeit:</strong> Die Analyse zeigt, wie nah du am gewünschten Timing bist.</li>
                                         <li><strong>Pausen-Automatik <span class="ska-premium-badge">Premium</span>:</strong> Berechnet Pausen automatisch anhand von Satzstruktur & Markern.</li>
@@ -340,7 +339,7 @@ function ska_shortcode() {
                                     </ul>
                                 </div>
                                 <div class="ska-help-tab-panel" data-tab="ska-help-tab-2">
-                                    <ul class="ska-help-list">
+                                    <ul class="ska-help-list ska-help-list--arrows">
                                         <li><strong>Zielgruppe (Komplexität) <span class="ska-premium-badge">Premium</span>:</strong> Passt Verständlichkeits-Checks an das Publikum an.</li>
                                         <li><strong>Keyword-Dichte <span class="ska-premium-badge">Premium</span>:</strong> Zeigt, ob Kernbegriffe dominant genug sind.</li>
                                         <li><strong>Sentiment & Emotion:</strong> Ermittelt, wie positiv/negativ/emotional der Text wirkt.</li>
@@ -348,7 +347,7 @@ function ska_shortcode() {
                                     </ul>
                                 </div>
                                 <div class="ska-help-tab-panel" data-tab="ska-help-tab-3">
-                                    <ul class="ska-help-list">
+                                    <ul class="ska-help-list ska-help-list--arrows">
                                         <li><strong>Buzzword-Blacklist <span class="ska-premium-badge">Premium</span>:</strong> Markiert Floskeln und austauschbare Phrasen.</li>
                                         <li><strong>Pflichtpassagen <span class="ska-premium-badge">Premium</span>:</strong> Prüft, ob Pflichttexte exakt enthalten sind.</li>
                                         <li><strong>Zahlenverarbeitung:</strong> Zahlen als Wort oder Ziffer zählen – passend zum Einsatzzweck.</li>
@@ -358,7 +357,7 @@ function ska_shortcode() {
                             </div>
                         </div>
                         <div class="ska-help-box ska-help-box--guide">
-                            <strong>Anleitung:</strong> Stelle zuerst Genre + Zielzeit ein, optimiere dann die Karten – so bleibt das Timing stabil.
+                            <strong>Tipp:</strong> Stelle zuerst Genre + Zielzeit ein, optimiere dann die Karten – so bleibt das Timing stabil.
                         </div>
                     </section>
 
@@ -395,7 +394,7 @@ function ska_shortcode() {
                         <div class="ska-help-columns">
                             <div>
                                 <h5>Struktur & Verständlichkeit</h5>
-                                <ul class="ska-help-list">
+                                <ul class="ska-help-list ska-help-list--checks">
                                     <li>Schnell-Überblick</li>
                                     <li>Textlänge, Kapitel & Struktur</li>
                                     <li>Rhythmus, Satzanfänge, Satzlängen</li>
@@ -406,7 +405,7 @@ function ska_shortcode() {
                             </div>
                             <div>
                                 <h5>Wortwahl & Wirkung</h5>
-                                <ul class="ska-help-list">
+                                <ul class="ska-help-list ska-help-list--checks">
                                     <li>Keyword-Fokus</li>
                                     <li>Wortschatz & Wiederholungen</li>
                                     <li>Buzzwords <span class="ska-premium-badge">Premium</span></li>
@@ -417,7 +416,7 @@ function ska_shortcode() {
                             </div>
                             <div>
                                 <h5>Sprecherlichkeit</h5>
-                                <ul class="ska-help-list">
+                                <ul class="ska-help-list ska-help-list--checks">
                                     <li>Stolpersteine & Phonetik</li>
                                     <li>Plosive & Atemführung</li>
                                     <li>Pronunciation-Hilfen</li>
@@ -426,12 +425,12 @@ function ska_shortcode() {
                                 </ul>
                             </div>
                             <div>
-                                <h5>Pflicht & Compliance</h5>
-                                <ul class="ska-help-list">
-                                    <li>Pflichtpassagen-Check <span class="ska-premium-badge">Premium</span></li>
-                                    <li>Compliance-Warnungen <span class="ska-premium-badge">Premium</span></li>
-                                    <li>Tonality & Stil-Analyse</li>
-                                    <li>Sentiment & Emotion</li>
+                                <h5>Recht & Tonalität</h5>
+                                <ul class="ska-help-list ska-help-list--checks">
+                                    <li>Pflichttexte & rechtliche Passagen sauber prüfen</li>
+                                    <li>Warnhinweise früh erkennen und absichern</li>
+                                    <li>Tonalität & Stil konsistent halten</li>
+                                    <li>Emotionale Wirkung gezielt steuern</li>
                                 </ul>
                             </div>
                         </div>
@@ -491,7 +490,7 @@ function ska_shortcode() {
                             </tbody>
                         </table>
                         <div class="ska-help-box ska-help-box--guide">
-                            <strong>Anleitung:</strong> Setze Pausen nach Sinnabschnitten und verwende Regie-Marker sparsam – zu viele Marker verlangsamen die Performance.
+                            <strong>Tipp:</strong> Setze Pausen nach Sinnabschnitten und verwende Regie-Marker sparsam – zu viele Marker verlangsamen die Performance.
                         </div>
                     </section>
 
@@ -554,7 +553,6 @@ function ska_shortcode() {
                     </section>
                 </div>
                  <div class="ska-modal-footer" style="display:flex; justify-content:flex-end; gap:0.75rem;">
-                     <button type="button" class="ska-btn ska-btn--primary" data-action="download-help-pdf">Anleitung herunterladen</button>
                      <button type="button" class="ska-btn ska-btn--secondary" data-action="close-help">Fenster schließen</button>
                  </div>
             </div>

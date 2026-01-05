@@ -83,6 +83,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-settings-btn-inline { margin-left: -0.5rem; margin-right: 0; }
 .ska-premium-pill { display: inline-flex; align-items: center; justify-content: center; padding: 0 0.45rem; height: 18px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; background: #e0f2fe; color: #0369a1; margin-left: 0.4rem; }
 .ska-plan-premium .ska-premium-pill { display: none; }
+.ska-plan-premium .ska-premium-badge { display: none; }
 .ska-wpm-calibration.is-locked { opacity: 0.6; }
 
 /* MAIN GRID LAYOUT */
@@ -1308,6 +1309,11 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-help-section header p { margin: 0 0 1.2rem 0; color: var(--ska-text-muted); }
 .ska-help-list { list-style: none; padding: 0; margin: 0 0 1.5rem 0; display: grid; gap: 0.65rem; color: #475569; font-size: 0.9rem; }
 .ska-help-list li strong { color: #0f172a; }
+.ska-help-list--arrows li,
+.ska-help-list--checks li { display: flex; gap: 0.55rem; align-items: flex-start; }
+.ska-help-list--arrows li::before { content: "➜"; color: #0ea5e9; font-weight: 700; margin-top: 0.05rem; }
+.ska-help-list--checks { gap: 0.4rem; }
+.ska-help-list--checks li::before { content: "✓"; color: #16a34a; font-weight: 700; margin-top: 0.05rem; }
 .ska-help-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
 .ska-help-columns h5 { margin: 0 0 0.6rem 0; color: #0f172a; font-size: 0.9rem; }
 .ska-help-text { color: #64748b; font-size: 0.9rem; line-height: 1.6; margin: 0 0 1rem 0; }
@@ -1319,7 +1325,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-help-tabs { position: relative; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; }
 .ska-help-tab-input { position: absolute; opacity: 0; pointer-events: none; }
 .ska-help-tabs-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-.ska-help-tabs-nav label { cursor: pointer; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 600; transition: all 0.2s ease; }
+.ska-help-tabs-nav label { cursor: pointer; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 600; transition: all 0.2s ease; flex: 1; text-align: center; }
 .ska-help-tabs-content { display: grid; gap: 0.5rem; }
 .ska-help-tab-panel { display: none; }
 #ska-help-tab-1:checked ~ .ska-help-tabs-nav label[for="ska-help-tab-1"],
