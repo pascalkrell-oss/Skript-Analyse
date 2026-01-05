@@ -1724,6 +1724,41 @@
             });
             return { total, matches: results };
         },
+        findPassive: (text) => {
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findPassiveRegex(text);
+            const matches = new Set();
+            const auxForms = new Set(['wurde', 'wurden', 'wird', 'werden', 'worden', 'geworden']);
+            const skipTokens = new Set(['nicht', 'nie', 'kaum', 'schon', 'auch', 'nur', 'noch', 'gerade', 'eben', 'wohl', 'sehr', 'mehr', 'weniger', 'ganz', 'eher', 'immer', 'oft', 'wieder', 'erst', 'dann', 'jetzt', 'hier', 'dort', 'sofort', 'schnell', 'langsam', 'gerne', 'gern', 'heute', 'morgen']);
+            const stateAdjectives = new Set(['dunkel', 'hell', 'kalt', 'warm', 'klar', 'laut', 'leise', 'ruhig', 'still', 'besser', 'schlimmer', 'schwer', 'leicht', 'müde', 'satt', 'froh']);
+            const modifierSuffix = /(lich|ig|weise|erweise|sam|bar)$/i;
+            const termsBySentence = new Map();
+
+            pos.terms.forEach(term => {
+                if (!termsBySentence.has(term.sentenceIndex)) {
+                    termsBySentence.set(term.sentenceIndex, []);
+                }
+                termsBySentence.get(term.sentenceIndex).push(term);
+            });
+
+            termsBySentence.forEach(terms => {
+                for (let i = 0; i < terms.length; i += 1) {
+                    if (!auxForms.has(terms[i].normal)) continue;
+                    let found = null;
+                    for (let j = i + 1; j < Math.min(terms.length, i + 7); j += 1) {
+                        const token = terms[j].normal;
+                        if (skipTokens.has(token) || modifierSuffix.test(token)) continue;
+                        if (stateAdjectives.has(token) && !found) break;
+                        if (terms[j].tags && terms[j].tags.Participle) { found = terms[j].text; break; }
+                        break;
+                    }
+                    if (found) matches.add(`${terms[i].text} ... ${found}`);
+                }
+            });
+
+            if (!matches.size) return SA_Logic.findPassiveRegex(text);
+            return [...matches];
+        },
         // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
         findPassiveRegex: (text) => { 
             const sentences = text.split(/[.!?]+(?=\s|$)/);
