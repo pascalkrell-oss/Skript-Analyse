@@ -1595,6 +1595,24 @@
                 termsBySentence.get(term.sentenceIndex).push(term);
             });
 
+            const sentences = text.split(/[.!?]+(?=\s|$)/);
+            sentences.forEach((sentence, index) => {
+                const trimmed = sentence.trim();
+                if (!trimmed) return;
+                const words = trimmed.split(/\s+/);
+                const wordCount = words.length;
+                const terms = termsBySentence.get(index) || [];
+                const nominalCount = terms.filter(term => term.tags && term.tags.Noun && !whitelist.has(term.normal)).length;
+
+                if ((wordCount < 15 && nominalCount >= 2) || (wordCount >= 15 && nominalCount >= 3)) {
+                    if (nominalCount / wordCount > 0.15) {
+                        chains.push(trimmed);
+                    }
+                }
+            });
+            return chains;
+        },
+
         findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
         findAdverbs: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]{4,}(?:erweise|weise))\b/gi;
@@ -3304,6 +3322,21 @@
                 </div>`;
             document.body.appendChild(m);
             m.dataset.wordCount = String(wordCount);
+        }
+
+        renderBenchmarkBadge(metric, value, label = 'Benchmark') {
+            const result = SA_Logic.getBenchmarkPercentile(value, metric);
+            if (!result) return '';
+
+            const percentile = Math.round(result.percentile);
+            const labelText = result.label ? `${result.label}` : `Perzentil ${percentile}`;
+
+            return `
+                <div class="ska-overview-benchmark" style="margin-top:0.55rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">${label}</span>
+                    <span style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:999px;">${labelText}</span>
+                    <span style="font-size:0.75rem; color:#94a3b8;">P${percentile}</span>
+                </div>`;
         }
 
         renderTeleprompterModal() {
