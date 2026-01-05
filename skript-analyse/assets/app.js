@@ -476,6 +476,13 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
+        escapeCsvValue: (value) => {
+            const str = String(value ?? '');
+            if (/[",\n\r]/.test(str)) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        },
         normalizeWhitespace: (text) => String(text || '').replace(/\s+/g, ' ').trim(),
         formatMarkerTime: (sec) => {
             const total = Math.max(0, sec || 0);
@@ -483,6 +490,16 @@
             const m = Math.floor((total % 3600) / 60);
             const s = (total % 60).toFixed(2);
             return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        },
+        buildExportFilename: (base, ext) => {
+            const safeBase = String(base || 'skript-export')
+                .toLowerCase()
+                .replace(/[^a-z0-9_-]+/g, '-')
+                .replace(/^-+|-+$/g, '') || 'skript-export';
+            const now = new Date();
+            const pad = (val) => String(val).padStart(2, '0');
+            const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+            return `${safeBase}-${stamp}.${ext}`;
         },
         cleanTextForCounting: (text) => {
             const markerTokens = (SA_CONFIG.MARKERS || [])
@@ -648,8 +665,10 @@
             const a = document.createElement('a'); a.href = url; a.download = filename;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
         },
-        downloadText: (text, filename) => {
-            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        downloadText: (text, filename, options = {}) => {
+            const bom = options.bom ? '\uFEFF' : '';
+            const mime = options.mime || 'text/plain;charset=utf-8';
+            const blob = new Blob([bom + text], { type: mime });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = filename;
             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
@@ -1946,8 +1965,8 @@
                 markers.push({ 
                     id: i + 1, 
                     time: timeStr, 
-                    seconds: currentTime.toFixed(2),
-                    label: p.substring(0, 30).replace(/\n/g, ' ') + '...' 
+                    seconds: Number(currentTime.toFixed(2)),
+                    label: SA_Utils.normalizeWhitespace(p).substring(0, 30) + '...' 
                 });
                 const read = SA_Logic.analyzeReadability(p, settings);
                 const pause = SA_Utils.getPausenTime(p, settings);
@@ -1957,6 +1976,41 @@
                 currentTime += dur;
             });
             return markers;
+        },
+        formatMarkerCsv: (markers = []) => {
+            const header = ['Marker', 'Timecode', 'Seconds', 'Label'];
+            const rows = markers.map((marker) => ([
+                marker.id ?? '',
+                marker.time ?? '',
+                (marker.seconds ?? '').toString(),
+                marker.label ?? ''
+            ]));
+            const allRows = [header, ...rows];
+            return allRows
+                .map((row) => row.map(SA_Utils.escapeCsvValue).join(','))
+                .join('\r\n');
+        },
+        formatEdlTimecode: (seconds, fps = 25) => {
+            const total = Math.max(0, Number(seconds) || 0);
+            const hours = Math.floor(total / 3600);
+            const minutes = Math.floor((total % 3600) / 60);
+            const secs = Math.floor(total % 60);
+            const frames = Math.floor((total - Math.floor(total)) * fps);
+            const pad = (val) => String(val).padStart(2, '0');
+            return `${pad(hours)}:${pad(minutes)}:${pad(secs)}:${pad(frames)}`;
+        },
+        formatMarkerEdl: (markers = [], options = {}) => {
+            const fps = options.fps || 25;
+            const title = options.title || 'Skript Marker Export';
+            const lines = [`TITLE: ${title}`, 'FCM: NON-DROP FRAME'];
+            markers.forEach((marker, idx) => {
+                const tc = SA_Logic.formatEdlTimecode(marker.seconds, fps);
+                const number = String(idx + 1).padStart(3, '0');
+                lines.push(`${number}  001      V     C        ${tc} ${tc} ${tc} ${tc}`);
+                lines.push(`* LOC: ${tc}`);
+                lines.push(`* COMMENT: ${marker.label || `Marker ${marker.id || idx + 1}`}`);
+            });
+            return lines.join('\r\n');
         },
         analyzeTone: (text) => {
             const l = text.toLowerCase();
@@ -2628,7 +2682,8 @@
                 analysisToken: 0,
                 readabilityCache: [],
                 limitReached: false,
-                premiumUpgradeDismissed: false
+                premiumUpgradeDismissed: false,
+                markerData: []
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -4530,8 +4585,23 @@
                 }
 
                 if(act === 'export-marker-json') {
-                    const markers = SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
-                    SA_Utils.downloadJSON(markers, 'skript-marker-export.json');
+                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
+                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'json');
+                    SA_Utils.downloadJSON(markers, filename);
+                }
+
+                if(act === 'export-marker-csv') {
+                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
+                    const csv = SA_Logic.formatMarkerCsv(markers);
+                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'csv');
+                    SA_Utils.downloadText(csv, filename, { bom: true, mime: 'text/csv;charset=utf-8' });
+                }
+
+                if(act === 'export-marker-edl') {
+                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
+                    const edl = SA_Logic.formatMarkerEdl(markers, { title: 'Skript Marker Export' });
+                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'edl');
+                    SA_Utils.downloadText(edl, filename, { bom: true, mime: 'text/plain;charset=utf-8' });
                 }
             });
 
@@ -5043,6 +5113,7 @@
             }
 
             this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
+            this.state.markerData = raw.trim() ? SA_Logic.generateMarkerData(raw, effectiveSettings) : [];
             this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
             if (read.wordCount === 0) {
@@ -6813,7 +6884,11 @@
             
             let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <p style="font-size:0.85rem; color:#64748b; margin:0;">Struktur-Vorschlag:</p>
-                        <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-json">📍 DAW-Marker exportieren (.json)</button>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-json">📍 Export .json</button>
+                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-csv">📍 Export .csv</button>
+                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-edl">📍 Export .edl</button>
+                        </div>
                      </div>`;
             
             if(s.length < 2) {
