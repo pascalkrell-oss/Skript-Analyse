@@ -24,6 +24,29 @@
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
         SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, buch: 3.2, default: 3.8 },
+        BENCHMARK_PERCENTILES: {
+            wpm: [
+                { p: 10, value: 115, label: 'Ruhig' },
+                { p: 25, value: 135, label: 'Gemächlich' },
+                { p: 50, value: 155, label: 'Standard' },
+                { p: 75, value: 175, label: 'Sportlich' },
+                { p: 90, value: 195, label: 'Sehr schnell' }
+            ],
+            sps: [
+                { p: 10, value: 3.2, label: 'Ruhig' },
+                { p: 25, value: 3.6, label: 'Gemächlich' },
+                { p: 50, value: 4.0, label: 'Standard' },
+                { p: 75, value: 4.6, label: 'Sportlich' },
+                { p: 90, value: 5.1, label: 'Sehr schnell' }
+            ],
+            flesch: [
+                { p: 10, value: 45, label: 'Komplex' },
+                { p: 25, value: 55, label: 'Anspruchsvoll' },
+                { p: 50, value: 65, label: 'Ausgewogen' },
+                { p: 75, value: 75, label: 'Leicht' },
+                { p: 90, value: 85, label: 'Sehr leicht' }
+            ]
+        },
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
@@ -39,7 +62,7 @@
         },
         GENRE_CARD_TIPS: {
             fillers: 'Füllwörter konsequent streichen, damit die Aussage fokussiert bleibt.',
-            passive: 'Aktiv formulieren, damit der Text Energie behält.',
+            passive: 'Passiv nur gezielt einsetzen, sonst wirkt der Text distanziert.',
             nominal: 'Nominalstil reduzieren und Verben nach vorn holen.',
             nominal_chain: 'Nominalketten auflösen, damit der Satz luftiger wirkt.',
             anglicism: 'Fremdwörter nur dort nutzen, wo sie wirklich nötig sind.',
@@ -48,6 +71,7 @@
             stumble: 'Sprecherfreundliche Wörter bevorzugen und Zungenbrecher glätten.',
             cta: 'Handlungsaufforderung klar und direkt platzieren.',
             adjective: 'Adjektive sparsam setzen und starke Bilder wählen.',
+            adverb: 'Adverbien gezielt einsetzen, damit der Satz klar bleibt.',
             rhythm: 'Satzlängen variieren, damit der Rhythmus trägt.',
             syllable_entropy: 'Unruhige Silbenfolgen glätten, damit der Flow sauber bleibt.',
             dialog: 'Dialoganteile passend zur Szene dosieren.',
@@ -109,6 +133,30 @@
         },
         TTS_SERVICES: [],
 
+        THESAURUS_SOURCE: {
+            mode: 'local',
+            apiUrl: 'https://www.openthesaurus.de/synonyme/search?format=application/json&query=',
+            timeoutMs: 4000,
+            maxResults: 8
+        },
+        THESAURUS_DB: {
+            gut: ['positiv', 'stark', 'solide', 'hervorragend', 'gelungen'],
+            schnell: ['rasch', 'zügig', 'flink', 'fix'],
+            wichtig: ['entscheidend', 'bedeutend', 'maßgeblich', 'zentral'],
+            klar: ['verständlich', 'deutlich', 'präzise', 'sauber'],
+            einfach: ['simpel', 'leicht', 'unkompliziert'],
+            groß: ['riesig', 'umfangreich', 'mächtig', 'gewaltig'],
+            klein: ['winzig', 'kompakt', 'gering'],
+            machen: ['erstellen', 'erzeugen', 'umsetzen', 'realisieren'],
+            sagen: ['äußern', 'berichten', 'erklären', 'mitteilen'],
+            nutzen: ['verwenden', 'einsetzen', 'gebrauchen', 'anwenden'],
+            zeigen: ['darstellen', 'präsentieren', 'vorführen', 'aufzeigen'],
+            beginnen: ['starten', 'anfangen', 'einleiten'],
+            verbessern: ['optimieren', 'steigern', 'verfeinern', 'ausbauen'],
+            ändern: ['anpassen', 'modifizieren', 'variieren', 'aktualisieren'],
+            schnellstmöglich: ['sofort', 'umgehend', 'zeitnah']
+        },
+
         GENDER_DB: {
             'mitarbeiter': 'Mitarbeitende',
             'teilnehmer': 'Teilnehmende',
@@ -154,10 +202,10 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
+            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -181,6 +229,7 @@
             cta: '📣 Call to Action', 
             compare: '⚖️ Versions-Vergleich', 
             adjective: '🌸 Adjektiv-Dichte',
+            adverb: '🌀 Adverbien-Check',
             rhythm: '🌊 Satz-Rhythmus',
             syllable_entropy: '🎼 Silben-Entropie',
             dialog: '💬 Dialog-Balance',
@@ -208,12 +257,12 @@
         },
 
         CARD_DESCRIPTIONS: {
-            overview: 'Die wichtigsten Zahlen: Zeit, Wörter und Flesch-Index.',
+            overview: 'Die wichtigsten Zahlen: Zeit, Wörter sowie Flesch- & LIX-Index plus Stil-Dimensionen.',
             char: 'Prüft, wie dein Text wirkt: Persönlich? Positiv? Verständlich?',
             stumble: 'Findet Zungenbrecher (Phonetik), S-Laut-Häufungen und lange Wortungetüme.',
             breath: 'Findet Sätze, die den natürlichen Atemfluss unterbrechen könnten.', 
             echo: 'Findet unschöne Wortwiederholungen auf engem Raum.',
-            passive: 'Prüft das Verhältnis von aktiver zu passiver Sprache.',
+            passive: 'Prüft Passiv-Konstruktionen (Hilfsverb + Partizip II) und ignoriert Zustandsformen wie "Es wird dunkel".',
             fillers: 'Findet Wörter, die man oft streichen kann.',
             nominal: 'Markiert einzelne Wörter im "Papierdeutsch" (-ung, -heit).',
             nominal_chain: 'Findet ganze Passagen mit hoher Dichte an "Behördensprache".',
@@ -223,6 +272,7 @@
             cta: 'Prüft, ob am Ende eine klare Handlungsaufforderung steht (Conversion-Fokus).',
             compare: 'Vergleich mit der gespeicherten Version.',
             adjective: 'Prüft, ob der Text durch zu viele Adjektive (Endungen wie -ig, -lich) überladen wirkt.',
+            adverb: 'Prüft Adverbien (z.B. -weise/-erweise) als eigenständigen Stil-Indikator.',
             rhythm: 'Visualisiert die Abfolge von kurzen und langen Sätzen (Short-Short-Long Prinzip).',
             syllable_entropy: 'Analysiert betonte/unbetonte Silbenfolgen für Rhythmus-Stolperstellen.',
             dialog: 'Zeigt das Verhältnis zwischen Erzähler-Text und wörtlicher Rede (Dialog).',
@@ -249,7 +299,7 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'rhythm', 'coach', 'chapter_calc', 'syllable_entropy', 'keyword_focus', 'role_dist', 'pronunciation', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'anglicism', 'marker', 'cta', 'sentiment_intensity', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -282,14 +332,14 @@
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
+            werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
             imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
             erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
             hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
             ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
             elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'adverb', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
             buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
         },
         
@@ -338,19 +388,55 @@
             'sehr', 'mehr', 'weniger', 'viel', 'viele', 'wenig', 'etwas', 'nichts', 'alles', 'jeder', 'jede', 'jedes', 'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes',
             'kein', 'keine', 'keiner', 'keines', 'keinem', 'keinen', 'bitte', 'danke', 'okay', 'ok', 'ja', 'nein'
         ],
+
+        KEYWORD_REFERENCE_TOTAL: 1000000,
+        KEYWORD_REFERENCE_FREQ_FALLBACK: 2,
+        KEYWORD_REFERENCE_FREQ: {
+            zeit: 4800,
+            jahr: 3200,
+            mensch: 2600,
+            menschen: 2400,
+            arbeit: 1800,
+            unternehmen: 1700,
+            kunden: 1400,
+            kunde: 1300,
+            produktion: 900,
+            produkt: 850,
+            service: 820,
+            markt: 760,
+            daten: 720,
+            projekt: 700,
+            angebot: 680,
+            idee: 650,
+            qualität: 620,
+            lösung: 600,
+            system: 590,
+            team: 560,
+            marke: 520,
+            sicherheit: 480,
+            energie: 460,
+            technik: 440,
+            zukunft: 420,
+            erfolg: 400,
+            preis: 380,
+            video: 200,
+            software: 180,
+            compliance: 90
+        },
         
         TIPS: {
             fillers: ["Hoch-Gewichtete Wörter sind 'Semantisches Rauschen'.", "Wörter like 'eigentlich' suggerieren Unsicherheit. Sei konkret!", "Nutze Füllwörter nur bewusst für einen sehr lockeren Umgangston.", "Je kürzer der Spot (Werbung), desto tödlicher ist jedes 'vielleicht'.", "Prüfe bei jedem Füllwort: Ändert sich der Sinn, wenn es fehlt? Wenn nein: Weg damit."],
             nominal: ["Wörter auf -ung, -heit, -keit ersticken den Sprachfluss.", "Nominalstil klingt nach Behörde. Ein Skript sollte so klingen, wie Menschen wirklich reden.", "Suche nach dem 'versteckten Verb' in Substantiven wie 'die Bearbeitung' -> 'wir bearbeiten'.", "Textdichte durch Nominalstil ermüdet das Ohr deines Hörers sehr schnell.", "Verben sind die Motoren deiner Sprache – sie bringen Bewegung und Leben in das Skript."],
             nominal_chain: ["Behördensprache ist der Feind von Audio.", "Löse diese Cluster auf, indem du sie in zwei einfachere Sätze mit Verben verwandelst.", "Ketten von Substantiven (-ung, -heit, -ät) machen den Text atemlos und hölzern.", "Baue mehr Verben ein: Sie ziehen den Satz nach vorn und klingen natürlicher.", "Vermeide Genitiv-Ketten – lieber mit Präpositionen auflösen."],
             role_dist: ["Nutze die Rollenerkennung für Zeit-Kalkulation.", "Zu viele kurze Einwürfe können den Fluss stören, zu lange Monologe ermüden.", "Achte auf ein ausgewogenes Verhältnis, wenn es ein Dialog sein soll.", "Wechsle zwischen Erzähler und Dialog, um Monotonie zu vermeiden.", "Achte auf klare Sprecherwechsel, damit der Hörer sofort folgt."],
-            passive: ["Aktivsprache erzeugt Bilder im Kopf.", "Passiv versteckt den Handelnden ('Es wurde entschieden' vs 'Wir entschieden').", "Der Passiv-Killer sucht nach 'werden' + 'gemacht/getan' (Partizip II).", "Vermeide 'wurde/werden', wenn du Dynamik und Verantwortung transportieren willst.", "Aktive Sätze sind meist kürzer, prägnanter und überzeugender."],
+            passive: ["Aktivsprache erzeugt Bilder im Kopf.", "Passiv versteckt den Handelnden ('Es wurde entschieden' vs 'Wir entschieden').", "Passiv wird nur bei Hilfsverb + Partizip II markiert (nicht: 'Es wird dunkel').", "Vermeide 'wurde/werden', wenn du Dynamik und Verantwortung transportieren willst.", "Aktive Sätze sind meist kürzer, prägnanter und überzeugender."],
             anglicism: ["Bleib verständlich.", "Prüfe kritisch: Gibt es ein einfacheres deutsches Wort, das jeder sofort versteht?", "Anglizismen können modern wirken, aber auch eine Barriere zwischen dir und dem Hörer bauen.", "Nutze englische Begriffe nur dort, wo sie als etablierter Fachbegriff unverzichtbar sind.", "In Audio-Medien zählen vertraute Wörter mehr, da der Hörer nicht zurückblättern kann."],
             echo: ["Variiere deine Wortwahl für mehr Lebendigkeit.", "Suche nach Synonymen, um den Text für den Sprecher lebendig zu halten.", "Echos innerhalb von zwei Sätzen fallen im Audio sofort als 'Sprechfehler' auf.", "Wortwiederholungen ermüden das Gehör. Nutze ein Thesaurus-Tool für Abwechslung.", "Ein reicher Wortschatz wirkt kompetenter und hält die Aufmerksamkeit des Hörers hoch."],
             breath: ["Ein Gedanke pro Satz. Das gibt Raum zum Atmen.", "Viele Kommas sind oft ein Zeichen für Schachtelsätze. Trenne sie mit einem Punkt.", "Lange Sätze zwingen den Sprecher zu hohem Tempo – das stresst den Hörer.", "Prüfe: Kannst du den Satz laut lesen, ohne am Ende außer Atem zu sein?", "Kurze Sätze erhöhen die Textverständlichkeit bei komplexen Themen drastisch."],
             stumble: ["Einfache Phonetik hilft der Emotion.", "Vermeide Bandwurmwörter – sie sind schwer zu betonen und fehleranfällig.", "Lies kritische Stellen dreimal schnell hintereinander laut. Klappt es? Dann ist es okay.", "Hiatus (Vokal trifft Vokal) klingt oft holprig – glätten oder verbinden.", "Konsonanten-Cluster an Wortgrenzen können haken: lieber entkoppeln oder umstellen."],
             cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
             adjective: ["Streiche Adjektive, die im Substantiv stecken.", "Show, don't tell: Statt 'es war ein gefährlicher Hund', beschreibe das Knurren.", "Zu viele Adjektive wirken oft 'blumig' und schwächen starke Substantive und Verben.", "Nutze Adjektive sparsam, um echte Highlights zu setzen.", "Wörter auf -lich oder -ig klingen in Häufung oft nach Werbesprache."],
+            adverb: ["Adverbien auf -weise sind schnell Füllmaterial. Prüfe, ob sie wirklich nötig sind.", "Adverbien sollen Bedeutung schärfen, nicht den Satz verwässern.", "Statt 'glücklicherweise' lieber den Effekt beschreiben.", "Ein starkes Verb ersetzt oft zwei Adverbien.", "Adverbien gezielt als Rhythmus- oder Tonalitäts-Tool nutzen."],
             rhythm: ["Short-Short-Long ist ein klassischer Rhythmus.", "Monotonie tötet die Aufmerksamkeit. Vermeide viele gleich lange Sätze hintereinander.", "Nutze kurze Sätze für Fakten und Tempo. Nutze längere für Erklärungen.", "Ein guter Text tanzt: Variiere zwischen kurzen und mittellangen Sätzen.", "Die visuelle Welle zeigt dir sofort, wo dein Text ins Stocken gerät."],
             syllable_entropy: ["Betonte und unbetonte Silben sollten rhythmisch balanciert sein.", "Viele Silben-Klumpen erzeugen Stolpern im Vortrag.", "Kürze Bandwurmwörter, wenn der Rhythmus hart bricht.", "Nutze Silbenwechsel als Taktgefühl für Claims.", "Glätte harte Übergänge durch Umstellen oder Kürzen."],
             dialog: ["Achte auf klare Sprecherwechsel.", "Werbespots wirken durch Dialoge ('Szenen') oft authentischer als reine Ansagen.", "Zu viel Dialog ohne Erzähler kann den Hörer orientierungslos machen.", "Hörbücher brauchen lebendige Figuren. Zu wenig Dialog wirkt oft trocken.", "Dialoge lockern lange Erklär-Passagen auf und erhöhen die Aufmerksamkeit."],
@@ -382,6 +468,8 @@
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
         escapeRegex: (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        normalizeWord: (text) => String(text || '').toLowerCase().replace(/[^a-zäöüß]/gi, '').trim(),
+        uniqueList: (list) => Array.from(new Set(list.filter(Boolean))),
         escapeHtml: (text) => text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -412,8 +500,21 @@
                 .replace(/\s*\[[^\]]+\]\s*/g, ' ')
                 .replace(/\s*\|\s*/g, ' ')
                 .replace(/[\u200B\uFEFF]/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
+            .replace(/\s+/g, ' ')
+            .trim();
+        },
+        stemWord: (word) => {
+            if (!word) return '';
+            let w = String(word).toLowerCase().replace(/[^a-zäöüß]/g, '');
+            if (w.length < 3) return w;
+            if (w.startsWith('ge') && w.length > 5) w = w.slice(2);
+            const suffixes = ['chen', 'lein', 'ungen', 'ung', 'heit', 'keit', 'isch', 'lich', 'igkeit', 'igkeiten', 'ig', 'end', 'ern', 'er', 'en', 'e', 's', 'n'];
+            suffixes.forEach((suffix) => {
+                if (w.length > 4 && w.endsWith(suffix)) {
+                    w = w.slice(0, -suffix.length);
+                }
+            });
+            return w;
         },
         renderMarkersToHtml: (text) => {
             const safeText = SA_Utils.escapeHtml(String(text || ''));
@@ -572,6 +673,33 @@
             modal.setAttribute('aria-hidden', 'true');
             if (typeof onClosed === 'function') onClosed();
         },
+        copyToClipboard: async (text) => {
+            const value = String(text || '').trim();
+            if (!value) return false;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                try {
+                    await navigator.clipboard.writeText(value);
+                    return true;
+                } catch (err) {
+                    // fallback below
+                }
+            }
+            const textarea = document.createElement('textarea');
+            textarea.value = value;
+            textarea.setAttribute('readonly', '');
+            textarea.style.position = 'fixed';
+            textarea.style.top = '-999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                success = false;
+            }
+            document.body.removeChild(textarea);
+            return success;
+        },
         
         getPhoneticSpelling: (word) => {
             if (SA_CONFIG.PRONUNCIATION_DB[word]) return SA_CONFIG.PRONUNCIATION_DB[word];
@@ -689,6 +817,84 @@
                     }
                     .ska-tip-next-btn:hover { background: #f1f5f9 !important; color: #1a93ee !important; }
                     .ska-tip-content { margin: 0 !important; color: #334155 !important; font-size: 0.9rem !important; line-height: 1.5 !important; }
+
+                    .ska-synonym-tooltip {
+                        position: fixed;
+                        z-index: 9999;
+                        min-width: 220px;
+                        max-width: 320px;
+                        background: #0f172a;
+                        color: #e2e8f0;
+                        border-radius: 12px;
+                        padding: 0.75rem;
+                        box-shadow: 0 18px 35px rgba(15, 23, 42, 0.25);
+                        font-size: 0.78rem;
+                        opacity: 0;
+                        transform: translateY(6px);
+                        transition: opacity 0.15s ease, transform 0.15s ease;
+                        pointer-events: none;
+                    }
+                    .ska-synonym-tooltip.is-visible {
+                        opacity: 1;
+                        transform: translateY(0);
+                        pointer-events: auto;
+                    }
+                    .ska-synonym-tooltip-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 0.5rem;
+                        font-weight: 700;
+                    }
+                    .ska-synonym-tooltip-source {
+                        font-size: 0.68rem;
+                        color: #94a3b8;
+                    }
+                    .ska-synonym-list {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 0.35rem;
+                        margin: 0.4rem 0 0.6rem;
+                    }
+                    .ska-synonym-chip {
+                        background: rgba(148, 163, 184, 0.2);
+                        color: #e2e8f0;
+                        border: 1px solid rgba(148, 163, 184, 0.4);
+                        border-radius: 999px;
+                        padding: 0.18rem 0.55rem;
+                        font-size: 0.7rem;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+                    .ska-synonym-chip:hover {
+                        background: rgba(59, 130, 246, 0.2);
+                        border-color: rgba(59, 130, 246, 0.5);
+                        color: #e0f2fe;
+                    }
+                    .ska-synonym-actions {
+                        display: flex;
+                        gap: 0.4rem;
+                        flex-wrap: wrap;
+                    }
+                    .ska-synonym-action-btn {
+                        background: #1e293b;
+                        color: #e2e8f0;
+                        border: 1px solid #334155;
+                        border-radius: 8px;
+                        padding: 0.2rem 0.55rem;
+                        font-size: 0.68rem;
+                        cursor: pointer;
+                        transition: all 0.15s ease;
+                    }
+                    .ska-synonym-action-btn:hover {
+                        border-color: #38bdf8;
+                        color: #e0f2fe;
+                    }
+                    .ska-synonym-tooltip-note {
+                        margin-top: 0.4rem;
+                        font-size: 0.68rem;
+                        color: #94a3b8;
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -744,6 +950,40 @@
             SA_CONFIG.SENTIMENT.negative.forEach(word => { lexicon[word] = -2; });
             return lexicon;
         },
+        getBenchmarkPercentile: (value, metric) => {
+            if (!Number.isFinite(value)) return null;
+            const table = SA_CONFIG.BENCHMARK_PERCENTILES && SA_CONFIG.BENCHMARK_PERCENTILES[metric];
+            if (!Array.isArray(table) || !table.length) return null;
+
+            const points = table
+                .map(entry => ({
+                    p: Number(entry.p),
+                    value: Number(entry.value),
+                    label: entry.label || ''
+                }))
+                .filter(entry => Number.isFinite(entry.p) && Number.isFinite(entry.value))
+                .sort((a, b) => a.value - b.value);
+
+            if (!points.length) return null;
+            if (value <= points[0].value) return { percentile: points[0].p, label: points[0].label };
+            if (value >= points[points.length - 1].value) {
+                const last = points[points.length - 1];
+                return { percentile: last.p, label: last.label };
+            }
+
+            for (let i = 0; i < points.length - 1; i += 1) {
+                const left = points[i];
+                const right = points[i + 1];
+                if (value >= left.value && value <= right.value) {
+                    const span = right.value - left.value || 1;
+                    const ratio = (value - left.value) / span;
+                    const percentile = left.p + (right.p - left.p) * ratio;
+                    const label = ratio < 0.5 ? left.label : right.label;
+                    return { percentile, label };
+                }
+            }
+            return null;
+        },
         countSyllables: (word) => {
             const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
             if (!clean) return 0;
@@ -757,12 +997,72 @@
             const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
         },
+        splitIntoSections: (text) => {
+            const sections = (text || '')
+                .split(/\n\s*\n/)
+                .map(part => part.trim())
+                .filter(Boolean);
+            if (!sections.length && text && text.trim()) return [text.trim()];
+            return sections;
+        },
+        analyzePacingSections: (text, settings = {}, timeMode = 'wpm') => {
+            const sections = SA_Logic.splitIntoSections(text);
+            if (!sections.length) return [];
+            const wpm = SA_Logic.getWpm(settings);
+            const sps = SA_Logic.getSps(settings);
+            return sections
+                .map((section, index) => {
+                    const read = SA_Logic.analyzeReadability(section, settings);
+                    if (!read.wordCount) return null;
+                    const pause = SA_Utils.getPausenTime(section, settings);
+                    let duration = 0;
+                    let rate = 0;
+                    if (timeMode === 'sps') {
+                        duration = (read.totalSyllables / sps) + pause;
+                        rate = duration > 0 ? read.totalSyllables / duration : 0;
+                    } else {
+                        duration = (read.speakingWordCount / wpm * 60) + pause;
+                        rate = duration > 0 ? read.speakingWordCount / (duration / 60) : 0;
+                    }
+                    return {
+                        index: index + 1,
+                        text: section,
+                        wordCount: read.wordCount,
+                        syllables: read.totalSyllables,
+                        pause,
+                        duration,
+                        rate
+                    };
+                })
+                .filter(Boolean);
+        },
+        analyzeSyllableStretches: (text) => {
+            const source = text || '';
+            if (!source.trim()) return { stretches: [], avgSyllables: 0, maxSyllables: 0, threshold: 0 };
+            const normalized = source.replace(/\|([0-9.]+S?)\|/g, '|');
+            const parts = normalized.split(/[.!?;:\n|]+/g).map(part => part.trim()).filter(Boolean);
+            const stretches = parts.map(segment => {
+                const words = segment.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+                const syllables = words.reduce((sum, word) => sum + Math.max(1, SA_Logic.countSyllables(word)), 0);
+                return { segment, syllables, words: words.length };
+            }).filter(item => item.words > 0);
+            if (!stretches.length) return { stretches: [], avgSyllables: 0, maxSyllables: 0, threshold: 0 };
+            const totalSyllables = stretches.reduce((sum, item) => sum + item.syllables, 0);
+            const avgSyllables = totalSyllables / stretches.length;
+            const maxSyllables = Math.max(...stretches.map(item => item.syllables));
+            const threshold = Math.max(18, Math.round(avgSyllables * 1.6));
+            const flagged = stretches
+                .filter(item => item.syllables >= threshold)
+                .sort((a, b) => b.syllables - a.syllables)
+                .slice(0, 5);
+            return { stretches: flagged, avgSyllables, maxSyllables, threshold };
+        },
         analyzeReadability: (text, settings = {}) => {
             let clean = SA_Utils.cleanTextForCounting(text).trim();
             if (settings.numberMode === 'word') {
                 clean = SA_Logic.expandNumbersForAudio(clean);
             }
-            if(!clean) return { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0 };
+            if(!clean) return { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0, longWordCount: 0, lix: 0 };
             
             let tempText = clean;
             const abbrevs = ['z.B.', 'ca.', 'bzw.', 'vgl.', 'inkl.', 'max.', 'min.', 'Dr.', 'Prof.', 'Hr.', 'Fr.', 'Nr.'];
@@ -774,6 +1074,7 @@
                 .map(s => s.replace(/@@/g, '.'));
             const words = clean.split(/\s+/).filter(w => w.length > 0);
             const wc = words.length;
+            const longWordCount = words.filter(w => w.replace(/[^a-zäöüß]/gi, '').length > 6).length;
 
             let speakingWordCount = 0;
             words.forEach(w => {
@@ -801,8 +1102,56 @@
             const avgS = wc / (sentences.length || 1);
             const avgW = wc > 0 ? totalSyllables / wc : 0;
             const score = 180 - avgS - (58.5 * avgW);
+            const lix = wc > 0 ? avgS + (longWordCount * 100 / wc) : 0;
 
-            return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables };
+            return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables, longWordCount, lix };
+        },
+        analyzeStyleDimensions: (read, raw = '') => {
+            const clamp = (value) => Math.max(0, Math.min(100, value));
+            if (!read || !read.wordCount) {
+                return { simplicity: 0, structure: 0, brevity: 0, precision: 0, contentRatio: 0, lexicalShare: 0, variance: 0 };
+            }
+
+            const sentenceEase = clamp(100 - (read.avgSentence - 10) * 4);
+            const syllableEase = clamp(100 - (read.syllablesPerWord - 1.4) * 60);
+            const lixEase = clamp(100 - (read.lix - 30) * 2.2);
+            const simplicity = clamp((sentenceEase * 0.35) + (syllableEase * 0.35) + (lixEase * 0.3));
+
+            const maxSentenceScore = clamp(100 - (read.maxSentenceWords - 20) * 3);
+            const brevity = clamp((sentenceEase * 0.7) + (maxSentenceScore * 0.3));
+
+            const sentences = read.sentences ? read.sentences.length : 0;
+            const idealParagraphs = Math.max(1, Math.round(sentences / 4));
+            const paragraphScore = clamp((read.paragraphs / idealParagraphs) * 100);
+            const variance = SA_Logic.calculateVariance(read.sentences || []);
+            const varianceScore = clamp(100 - Math.abs(variance - 3.5) * 22);
+            const structure = clamp((paragraphScore * 0.6) + (varianceScore * 0.4));
+
+            const stopwords = new Set(SA_CONFIG.STOPWORDS);
+            const normalizedWords = (read.words || [])
+                .map(word => word.toLowerCase().replace(/[^a-zäöüß]/gi, ''))
+                .filter(Boolean);
+            const contentCount = normalizedWords.filter(word => !stopwords.has(word)).length;
+            const uniqueWords = new Set(normalizedWords);
+            const lexicalShare = normalizedWords.length ? (uniqueWords.size / normalizedWords.length) * 100 : 0;
+            const contentRatio = normalizedWords.length ? (contentCount / normalizedWords.length) * 100 : 0;
+            const contentScore = clamp((contentRatio - 25) * 2.5);
+            const precision = clamp((contentScore * 0.6) + (lexicalShare * 0.4));
+
+            return { simplicity, structure, brevity, precision, contentRatio, lexicalShare, variance };
+        },
+        getDimensionSummary: (score) => {
+            if (score >= 80) return { label: 'Sehr stark', color: SA_CONFIG.COLORS.success };
+            if (score >= 60) return { label: 'Solide', color: SA_CONFIG.COLORS.blue };
+            if (score >= 40) return { label: 'Ausbaufähig', color: SA_CONFIG.COLORS.warn };
+            return { label: 'Schwach', color: SA_CONFIG.COLORS.error };
+        },
+        getLixSummary: (lix) => {
+            if (lix <= 30) return { label: 'Sehr leicht', color: SA_CONFIG.COLORS.success };
+            if (lix <= 40) return { label: 'Leicht', color: SA_CONFIG.COLORS.blue };
+            if (lix <= 50) return { label: 'Mittel', color: SA_CONFIG.COLORS.warn };
+            if (lix <= 60) return { label: 'Schwer', color: SA_CONFIG.COLORS.error };
+            return { label: 'Sehr schwer', color: '#7f1d1d' };
         },
         expandNumbersForAudio: (text) => {
             const toWords = (num) => {
@@ -855,8 +1204,106 @@
             const ttr = (unique.size / normalized.length) * 100;
             return { ttr: ttr, unique: unique.size, total: normalized.length };
         },
+        normalizeKeyword: (word) => {
+            if (!word) return '';
+            return word
+                .toLowerCase()
+                .replace(/[äÄ]/g, 'ae')
+                .replace(/[öÖ]/g, 'oe')
+                .replace(/[üÜ]/g, 'ue')
+                .replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9]/g, '');
+        },
+        stemKeyword: (word) => {
+            const clean = SA_Logic.normalizeKeyword(word);
+            if (clean.length <= 4) return clean;
+            const suffixes = ['chen', 'lein', 'ungen', 'ungen', 'ungen', 'ung', 'heit', 'keit', 'tion', 'sion', 'ment', 'schaft', 'lich', 'isch', 'ismus', 'isten', 'ist', 'ieren', 'ierung', 'ungen', 'ern', 'er', 'en', 'es', 'e', 's', 'n'];
+            for (const suffix of suffixes) {
+                if (clean.length - suffix.length <= 3) continue;
+                if (clean.endsWith(suffix)) {
+                    return clean.slice(0, -suffix.length);
+                }
+            }
+            return clean;
+        },
+        buildKeywordNgrams: (word, size = 3) => {
+            const clean = SA_Logic.normalizeKeyword(word);
+            if (clean.length <= size) return new Set([clean]);
+            const grams = new Set();
+            for (let i = 0; i <= clean.length - size; i += 1) {
+                grams.add(clean.slice(i, i + size));
+            }
+            return grams;
+        },
+        keywordSimilarity: (a, b) => {
+            if (!a || !b) return 0;
+            if (a.stem && b.stem && a.stem === b.stem) return 1;
+            const gramsA = a.ngrams || new Set();
+            const gramsB = b.ngrams || new Set();
+            const union = new Set([...gramsA, ...gramsB]);
+            if (!union.size) return 0;
+            let intersect = 0;
+            gramsA.forEach((g) => {
+                if (gramsB.has(g)) intersect += 1;
+            });
+            const jaccard = intersect / union.size;
+            const prefixLength = (() => {
+                const aNorm = a.normalized || '';
+                const bNorm = b.normalized || '';
+                let i = 0;
+                while (i < aNorm.length && i < bNorm.length && aNorm[i] === bNorm[i]) i += 1;
+                return i;
+            })();
+            const prefixBoost = prefixLength >= 4 ? 0.2 : 0;
+            return Math.min(1, jaccard + prefixBoost);
+        },
+        getKeywordIdf: (word) => {
+            const normalized = SA_Logic.normalizeKeyword(word);
+            const freq = SA_CONFIG.KEYWORD_REFERENCE_FREQ[normalized] || SA_CONFIG.KEYWORD_REFERENCE_FREQ_FALLBACK;
+            const total = SA_CONFIG.KEYWORD_REFERENCE_TOTAL;
+            return Math.log((total + 1) / (freq + 1)) + 1;
+        },
+        clusterKeywords: (entries, limit = 18) => {
+            const selected = (entries || []).slice(0, limit);
+            const clusters = [];
+            selected.forEach((entry) => {
+                const normalized = SA_Logic.normalizeKeyword(entry.word);
+                const stem = SA_Logic.stemKeyword(normalized);
+                const ngrams = SA_Logic.buildKeywordNgrams(normalized);
+                const candidate = { normalized, stem, ngrams };
+                let bestCluster = null;
+                let bestScore = 0;
+                clusters.forEach((cluster) => {
+                    const score = SA_Logic.keywordSimilarity(candidate, cluster.representative);
+                    if (score > 0.42 && score > bestScore) {
+                        bestScore = score;
+                        bestCluster = cluster;
+                    }
+                });
+                if (!bestCluster) {
+                    clusters.push({
+                        representative: candidate,
+                        terms: [{ word: entry.word, count: entry.count, tfidf: entry.tfidf }],
+                        totalTfidf: entry.tfidf || 0
+                    });
+                } else {
+                    bestCluster.terms.push({ word: entry.word, count: entry.count, tfidf: entry.tfidf });
+                    bestCluster.totalTfidf += entry.tfidf || 0;
+                }
+            });
+            return clusters
+                .map((cluster) => {
+                    const sortedTerms = cluster.terms.sort((a, b) => b.tfidf - a.tfidf || b.count - a.count || a.word.localeCompare(b.word));
+                    return {
+                        label: sortedTerms[0]?.word || '',
+                        terms: sortedTerms,
+                        totalTfidf: cluster.totalTfidf
+                    };
+                })
+                .sort((a, b) => b.totalTfidf - a.totalTfidf);
+        },
         analyzeKeywordClusters: (text, settings = {}) => {
-            if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
+            if(!text || !text.trim()) return { top: [], tfIdfTop: [], clusters: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0, tfIdfTotal: 0 };
             const stopwords = new Set(SA_CONFIG.STOPWORDS);
             const counts = new Map();
             let total = 0;
@@ -920,9 +1367,21 @@
                 if (b.count !== a.count) return b.count - a.count;
                 return a.word.localeCompare(b.word);
             });
+            const enriched = top.map((entry) => {
+                const tf = total > 0 ? entry.count / total : 0;
+                const idf = SA_Logic.getKeywordIdf(entry.word);
+                return { ...entry, tf, idf, tfidf: tf * idf };
+            });
+            const tfIdfTop = [...enriched].sort((a, b) => {
+                if (b.tfidf !== a.tfidf) return b.tfidf - a.tfidf;
+                if (b.count !== a.count) return b.count - a.count;
+                return a.word.localeCompare(b.word);
+            });
+            const tfIdfTotal = enriched.reduce((sum, entry) => sum + (entry.tfidf || 0), 0);
             const topCount = top.length > 0 ? top[0].count : 0;
             const focusScore = total > 0 ? topCount / total : 0;
-            return { top, total, focusScore, focusKeywords, focusCounts, focusTotalCount, focusDensity, focusLimit, focusOverLimit, totalWords: totalWords.length };
+            const clusters = SA_Logic.clusterKeywords(tfIdfTop, 20);
+            return { top, tfIdfTop, clusters, total, focusScore, focusKeywords, focusCounts, focusTotalCount, focusDensity, focusLimit, focusOverLimit, totalWords: totalWords.length, tfIdfTotal };
         },
         getWpm: (s) => {
             if (s.manualWpm && s.manualWpm > 0) return s.manualWpm;
@@ -1051,15 +1510,36 @@
             }); 
             return f; 
         },
-        findNominalStyle: (text) => {
+        getPosTagger: () => {
+            return window.SkaPosTagger || null;
+        },
+        getPosTags: (text) => {
+            const tagger = SA_Logic.getPosTagger();
+            if (!tagger || typeof tagger.tag !== 'function') return null;
+            return tagger.tag(text || '');
+        },
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findNominalStyleRegex: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
             const matches = text.match(regex) || [];
             const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
             const filtered = matches.filter(word => !whitelist.has(word.toLowerCase()));
             return [...new Set(filtered)];
         },
+        findNominalStyle: (text) => {
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalStyleRegex(text);
+            const nouns = pos.terms
+                .filter(term => term.tags && term.tags.Noun)
+                .map(term => term.text)
+                .filter(word => !whitelist.has(word.toLowerCase()));
+            if (!nouns.length) return SA_Logic.findNominalStyleRegex(text);
+            return [...new Set(nouns)];
+        },
         
-        findNominalChains: (text) => {
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findNominalChainsRegex: (text) => {
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const chains = [];
             const nominalRegex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis|ät))\b/i;
@@ -1082,8 +1562,28 @@
             });
             return chains;
         },
+        findNominalChains: (text) => {
+            const pos = SA_Logic.getPosTags(text);
+            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findNominalChainsRegex(text);
+            const whitelist = new Set(SA_CONFIG.NOMINAL_WHITELIST);
+            const chains = [];
+            const termsBySentence = new Map();
+
+            pos.terms.forEach(term => {
+                if (!termsBySentence.has(term.sentenceIndex)) {
+                    termsBySentence.set(term.sentenceIndex, []);
+                }
+                termsBySentence.get(term.sentenceIndex).push(term);
+            });
 
         findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findAdverbs: (text) => {
+            const regex = /\b([a-zA-ZäöüÄÖÜß]{4,}(?:erweise|weise))\b/gi;
+            const matches = text.match(regex) || [];
+            const blacklist = new Set(['weise']);
+            const cleaned = matches.filter(word => !blacklist.has(word.toLowerCase()));
+            return [...new Set(cleaned)];
+        },
         findAnglicisms: (text) => { if(!SA_CONFIG.ANGLICISMS.length) return []; const regex = new RegExp(`\\b(${SA_CONFIG.ANGLICISMS.join('|')})\\b`, 'gi'); const matches = text.match(regex) || []; return [...new Set(matches.map(w => w.toLowerCase()))]; },
         findGenderBias: (text) => {
             const l = text.toLowerCase();
@@ -1144,18 +1644,23 @@
         findWordEchoes: (text) => {
             const words = text.toLowerCase().match(/\b[a-zäöüß]+\b/g) || [];
             const echoes = new Set();
-            const minLen = 5; const range = 35; 
-            const ignore = ['nicht', 'eine', 'einer', 'einem', 'einen', 'eines', 'diese', 'dieser', 'dieses', 'dass', 'wenn', 'aber', 'oder', 'und', 'denn', 'doch', 'auch', 'noch', 'schon', 'sich', 'mich', 'dich', 'uns', 'euch', 'ihnen', 'mein', 'dein', 'sein', 'ihr', 'sein', 'haben', 'werden', 'können', 'müssen', 'wollen', 'sollen', 'dürfen', 'mögen', 'sind', 'wird', 'wurde', 'war', 'hat', 'hatte', 'wäre', 'hätte', 'habe', 'kann', 'muss', 'über', 'unter', 'nach', 'vor', 'aus', 'bei', 'mit', 'von', 'seit', 'durch', 'gegen', 'ohne', 'für', 'weil', 'trotz', 'wegen', 'dabei', 'dafür', 'damit', 'daran', 'hier', 'dort', 'dann', 'jetzt', 'heute', 'morgen', 'gestern', 'immer', 'nie', 'oft', 'alles', 'etwas', 'nichts', 'viel', 'wenig', 'manche', 'einige', 'viele', 'machen', 'macht', 'getan', 'sehen', 'sieht', 'gehen', 'geht', 'kommen', 'kommt', 'sagen', 'sagt', 'gesagt', 'geben', 'gibt', 'nehmen', 'nimmt', 'lassen', 'lässt'];
+            const minLen = 5;
+            const range = 35;
+            const ignore = new Set(SA_CONFIG.ECHO_STOPWORDS || SA_CONFIG.STOPWORDS);
             const lastSeen = new Map();
+            const stemToLabel = new Map();
             for(let i=0; i < words.length; i++) {
                 const current = words[i];
-                if(current.length < minLen || ignore.includes(current)) continue;
-                if(lastSeen.has(current)) {
-                    if((i - lastSeen.get(current)) <= range) echoes.add(current);
+                if(ignore.has(current)) continue;
+                const stem = SA_Utils.stemWord(current);
+                if(stem.length < minLen) continue;
+                if(!stemToLabel.has(stem)) stemToLabel.set(stem, current);
+                if(lastSeen.has(stem)) {
+                    if((i - lastSeen.get(stem)) <= range) echoes.add(stem);
                 }
-                lastSeen.set(current, i);
+                lastSeen.set(stem, i);
             }
-            return [...echoes];
+            return [...echoes].map((stem) => stemToLabel.get(stem) || stem);
         },
         analyzeMetaphorPhrases: (text) => {
             if (!text || !text.trim()) return { total: 0, matches: [] };
@@ -1181,17 +1686,30 @@
             });
             return { total, matches: results };
         },
-        findPassive: (text) => { 
+        // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
+        findPassiveRegex: (text) => { 
             const sentences = text.split(/[.!?]+(?=\s|$)/);
             const matches = new Set();
-            const auxRegex = /\b(wurde|wurden|wird|werden|worden|geworden)\b/i;
+            const auxForms = new Set(['wurde', 'wurden', 'wird', 'werden', 'worden', 'geworden']);
             const partRegex = /\b(ge[a-zäöüß]{2,}(?:t|en)|[a-zäöüß]{3,}iert)\b/i;
+            const skipTokens = new Set(['nicht', 'nie', 'kaum', 'schon', 'auch', 'nur', 'noch', 'gerade', 'eben', 'wohl', 'sehr', 'mehr', 'weniger', 'ganz', 'eher', 'immer', 'oft', 'wieder', 'erst', 'dann', 'jetzt', 'hier', 'dort', 'sofort', 'schnell', 'langsam', 'gerne', 'gern', 'heute', 'morgen']);
+            const stateAdjectives = new Set(['dunkel', 'hell', 'kalt', 'warm', 'klar', 'laut', 'leise', 'ruhig', 'still', 'besser', 'schlimmer', 'schwer', 'leicht', 'müde', 'satt', 'froh']);
+            const modifierSuffix = /(lich|ig|weise|erweise|sam|bar)$/i;
+
             sentences.forEach(s => {
-                if(auxRegex.test(s) && partRegex.test(s)) {
-                    const auxMatch = s.match(auxRegex);
-                    const partMatch = s.match(partRegex);
-                    if(auxMatch && partMatch) matches.add(`${auxMatch[0]} ... ${partMatch[0]}`);
-                    else matches.add(auxMatch ? auxMatch[0] : 'Passiv-Konstruktion');
+                const tokens = s.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+                const lower = tokens.map(t => t.toLowerCase());
+                for (let i = 0; i < lower.length; i += 1) {
+                    if (!auxForms.has(lower[i])) continue;
+                    let found = null;
+                    for (let j = i + 1; j < Math.min(lower.length, i + 7); j += 1) {
+                        const token = lower[j];
+                        if (skipTokens.has(token) || modifierSuffix.test(token)) continue;
+                        if (stateAdjectives.has(token) && !found) break;
+                        if (partRegex.test(token)) { found = tokens[j]; break; }
+                        break;
+                    }
+                    if (found) matches.add(`${tokens[i]} ... ${found}`);
                 }
             });
             return [...matches];
@@ -1245,6 +1763,10 @@
             return { hiatus: [...hiatus], consonantClusters: [...consonantClusters] };
         },
         findStumbles: (text) => { 
+            const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
+            if (sharedUtils && sharedUtils.findStumbles) {
+                return sharedUtils.findStumbles(text, SA_CONFIG.PHONETICS);
+            }
             const words = text.split(/\s+/).map(x=>x.replace(/[.,;!?:"()]/g,'')); 
             const result = { long: [], camel: [], phonetic: [], alliter: [], hiatus: [], consonant_clusters: [], sibilant_warning: false, sibilant_density: 0 };
             const phoneticRegex = new RegExp(`(${SA_CONFIG.PHONETICS.join('|')})`, 'i');
@@ -1454,20 +1976,19 @@
             return 'Sehr schwer (Akademisch / Gesetz)';
         },
         analyzeRedundancy: (sentences) => {
+            const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
+            if (sharedUtils && sharedUtils.analyzeRedundancy) {
+                return sharedUtils.analyzeRedundancy(sentences);
+            }
             if (!sentences || sentences.length < 2) return [];
-            const stemWord = (word) => {
-                let w = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
-                const suffixes = ['chen', 'lein', 'ungen', 'ung', 'heit', 'keit', 'isch', 'lich', 'end', 'ern', 'er', 'en', 'e', 's'];
-                suffixes.forEach(s => {
-                    if (w.length > 4 && w.endsWith(s)) {
-                        w = w.slice(0, -s.length);
-                    }
-                });
-                return w;
-            };
             const tokenize = (sentence) => {
                 const words = sentence.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
-                return words.map(stemWord).filter(w => w.length > 2);
+                const stopwords = new Set(SA_CONFIG.STOPWORDS);
+                return words.map((word) => {
+                    const lower = word.toLowerCase();
+                    return { lower, stem: SA_Utils.stemWord(lower) };
+                }).filter(({ lower, stem }) => stem.length > 2 && !stopwords.has(lower) && !stopwords.has(stem))
+                    .map(({ stem }) => stem);
             };
             const levenshtein = (a, b) => {
                 const m = a.length;
@@ -1753,6 +2274,7 @@
                     const passive = SA_Logic.findPassive(read.cleanedText);
                     const nominal = SA_Logic.findNominalStyle(read.cleanedText);
                     const adjectives = SA_Logic.findAdjectives(read.cleanedText);
+                    const adverbs = SA_Logic.findAdverbs(read.cleanedText);
                     const anglicisms = SA_Logic.findAnglicisms(read.cleanedText);
                     const echoes = SA_Logic.findWordEchoes(read.cleanedText);
                     const breath = SA_Logic.findBreathKillers(read.sentences);
@@ -1904,6 +2426,7 @@
                         }
                         if(startIssues.length) addRow("Satzanfänge (Wdh):", startIssues);
                         if(adjectives.length) addRow("Adjektive (blumig):", adjectives);
+                        if(adverbs.length) addRow("Adverbien (-weise):", adverbs);
                         if(anglicisms.length) addRow("Anglizismen:", anglicisms);
                         if(echoes.length) addRow("Wort-Wiederholungen:", echoes);
                         const stumbleArr = [...stumbles.phonetic, ...stumbles.camel, ...stumbles.long, ...stumbles.alliter, ...stumbles.hiatus, ...stumbles.consonant_clusters];
@@ -2046,7 +2569,7 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, adverb: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
@@ -2055,12 +2578,15 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], activeIndex: -1 },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
+                clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: [],
                 limitReached: false,
                 premiumUpgradeDismissed: false
             };
+            this.synonymCache = new Map();
+            this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
             }
@@ -2068,6 +2594,7 @@
             this.analysisWorker = null;
             this.workerRequests = new Map();
             this.workerRequestId = 0;
+            this.analysisUtilsRequested = false;
             this.isRestoring = false;
             this.overviewResizeObserver = null;
 
@@ -2081,6 +2608,7 @@
             this.bindEvents();
             
             this.injectGlobalStyles(); // CSS Overrides
+            this.initSynonymTooltip();
 
             const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
             if (savedVersion && savedVersion.trim().length > 0) {
@@ -2515,14 +3043,15 @@
         initAnalysisWorker() {
             const workerUrl = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.workerUrl;
             if (!workerUrl || !window.Worker) return;
+            this.loadAnalysisUtils(workerUrl);
             try {
                 this.analysisWorker = new Worker(workerUrl);
                 this.analysisWorker.onmessage = (event) => {
-                    const { id, results } = event.data || {};
+                    const { id, result } = event.data || {};
                     if (!id || !this.workerRequests.has(id)) return;
                     const { resolve } = this.workerRequests.get(id);
                     this.workerRequests.delete(id);
-                    resolve(results || []);
+                    resolve(result);
                 };
                 this.analysisWorker.onerror = () => {
                     this.analysisWorker = null;
@@ -2533,18 +3062,43 @@
             }
         }
 
-        requestWorkerReadability(paragraphs) {
-            if (!this.analysisWorker) return Promise.resolve([]);
+        loadAnalysisUtils(workerUrl) {
+            if (this.analysisUtilsRequested || !workerUrl || typeof document === 'undefined' || !document.head) return;
+            const utilsUrl = workerUrl.replace(/analysis-worker\.js(\?.*)?$/, 'analysis-utils.js');
+            if (!utilsUrl || utilsUrl === workerUrl) return;
+            if (window.SA_ANALYSIS_UTILS) {
+                this.analysisUtilsRequested = true;
+                return;
+            }
+            this.analysisUtilsRequested = true;
+            const script = document.createElement('script');
+            script.src = utilsUrl;
+            script.async = true;
+            script.onerror = () => {
+                this.analysisUtilsRequested = false;
+            };
+            document.head.appendChild(script);
+        }
+
+        requestWorkerTask(type, payload) {
+            if (!this.analysisWorker) return Promise.resolve(null);
             const id = ++this.workerRequestId;
             return new Promise((resolve) => {
                 this.workerRequests.set(id, { resolve });
                 this.analysisWorker.postMessage({
                     id,
-                    type: 'paragraphs',
-                    paragraphs,
-                    settings: { numberMode: this.settings.numberMode }
+                    type,
+                    payload
                 });
             });
+        }
+
+        requestWorkerReadability(paragraphs) {
+            if (!this.analysisWorker) return Promise.resolve([]);
+            return this.requestWorkerTask('paragraphs', {
+                paragraphs,
+                settings: { numberMode: this.settings.numberMode }
+            }).then((result) => result || []);
         }
 
         buildReadabilityFromCache(paragraphs) {
@@ -2845,6 +3399,71 @@
             this.pausePacing();
             this.state.pacing.elapsed = 0;
             this.updatePacingUI(0);
+            this.stopClickTrack();
+        }
+
+        ensureClickTrackContext() {
+            if (this.state.clickTrack.context) return this.state.clickTrack.context;
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return null;
+            this.state.clickTrack.context = new AudioCtx();
+            return this.state.clickTrack.context;
+        }
+
+        playClickTrackTick() {
+            const ctx = this.ensureClickTrackContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.09);
+        }
+
+        startClickTrack(bpm) {
+            if (!bpm || bpm <= 0) return false;
+            const ctx = this.ensureClickTrackContext();
+            if (!ctx) return false;
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+            this.stopClickTrack();
+            this.state.clickTrack.playing = true;
+            this.state.clickTrack.bpm = bpm;
+            this.playClickTrackTick();
+            const intervalMs = Math.max(200, Math.round(60000 / bpm));
+            this.state.clickTrack.timerId = setInterval(() => {
+                if (!this.state.clickTrack.playing) return;
+                this.playClickTrackTick();
+            }, intervalMs);
+            this.updateClickTrackButton();
+            return true;
+        }
+
+        stopClickTrack() {
+            if (this.state.clickTrack.timerId) clearInterval(this.state.clickTrack.timerId);
+            this.state.clickTrack.timerId = null;
+            this.state.clickTrack.playing = false;
+            this.updateClickTrackButton();
+        }
+
+        updateClickTrackButton() {
+            const btn = this.bottomGrid?.querySelector('[data-action="pacing-clicktrack"]');
+            if (!btn) return;
+            const bpm = parseFloat(btn.dataset.bpm || '0');
+            if (this.state.clickTrack.playing) {
+                btn.textContent = 'Click-Track stoppen';
+            } else if (bpm > 0) {
+                btn.textContent = `Click-Track ${bpm} BPM`;
+            } else {
+                btn.textContent = 'Click-Track (BPM fehlt)';
+            }
         }
 
         parseBullshitList() {
@@ -2872,6 +3491,9 @@
                 if (!SA_CONFIG.IS_ADMIN) return true;
                 const isPremium = btn.checked;
                 this.state.planMode = isPremium ? 'premium' : 'free';
+                if (!isPremium) {
+                    this.stopClickTrack();
+                }
                 this.saveUIState();
                 this.updatePlanUI();
                 this.renderFilterBar();
@@ -3153,6 +3775,24 @@
                     const durationSec = parseFloat(btn.dataset.duration || '0');
                     const started = this.startPacing(durationSec);
                     if (btnLabel) btnLabel.textContent = started ? 'Pause' : 'Start';
+                }
+                return true;
+            }
+
+            if (act === 'pacing-clicktrack') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Der Click-Track ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                const bpm = parseFloat(btn.dataset.bpm || '0');
+                if (!bpm || bpm <= 0) {
+                    this.showPremiumNotice('Kein BPM-Wert verfügbar. Ergänze mehr Text für eine Analyse.');
+                    return true;
+                }
+                if (this.state.clickTrack.playing) {
+                    this.stopClickTrack();
+                } else {
+                    this.startClickTrack(bpm);
                 }
                 return true;
             }
@@ -3482,6 +4122,10 @@
                     this.renderUpgradePanel();
                 }
 
+                if (this.handleSynonymQuickAction(e.target)) {
+                    return;
+                }
+
                 if(hideBtn) { this.toggleCard(hideBtn.closest('.skriptanalyse-card').dataset.cardId, false); return; }
                 if(restoreChip) { this.toggleCard(restoreChip.dataset.restoreId, true); return; }
                 
@@ -3665,6 +4309,21 @@
                 }
             });
 
+            this.root.addEventListener('mouseover', (e) => {
+                const badge = e.target.closest('.ska-synonym-target');
+                if (!badge || !this.root.contains(badge)) return;
+                this.showSynonymTooltip(badge);
+            });
+            this.root.addEventListener('mouseout', (e) => {
+                const badge = e.target.closest('.ska-synonym-target');
+                if (!badge) return;
+                const related = e.relatedTarget;
+                if (this.synonymTooltip && (this.synonymTooltip === related || this.synonymTooltip.contains(related))) {
+                    return;
+                }
+                this.scheduleSynonymTooltipHide();
+            });
+
             document.body.addEventListener('click', (e) => {
                 const modal = e.target.closest('.skriptanalyse-modal');
                 if(!modal) return; 
@@ -3738,6 +4397,218 @@
                     });
                 }
             });
+        }
+
+        initSynonymTooltip() {
+            if (this.synonymTooltip) return;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'ska-synonym-tooltip';
+            tooltip.setAttribute('aria-hidden', 'true');
+            tooltip.innerHTML = '<div class="ska-synonym-tooltip-header">Synonyme</div>';
+            tooltip.addEventListener('click', (e) => {
+                if (this.handleSynonymQuickAction(e.target)) {
+                    e.preventDefault();
+                }
+            });
+            tooltip.addEventListener('mouseenter', () => {
+                if (this.synonymHoverState.hideTimer) {
+                    clearTimeout(this.synonymHoverState.hideTimer);
+                    this.synonymHoverState.hideTimer = null;
+                }
+            });
+            tooltip.addEventListener('mouseleave', () => {
+                this.scheduleSynonymTooltipHide();
+            });
+            document.body.appendChild(tooltip);
+            this.synonymTooltip = tooltip;
+        }
+
+        handleSynonymQuickAction(target) {
+            const synonymInsert = target.closest('[data-action="synonym-insert"]');
+            const synonymCopy = target.closest('[data-action="synonym-copy"]');
+            if (synonymInsert && this.textarea) {
+                const synonym = synonymInsert.dataset.synonym || '';
+                if (synonym) {
+                    SA_Utils.insertAtCursor(this.textarea, synonym);
+                    this.analyze(this.getText());
+                }
+                this.hideSynonymTooltip(true);
+                return true;
+            }
+            if (synonymCopy) {
+                const list = synonymCopy.dataset.synonyms || '';
+                const originalText = synonymCopy.textContent;
+                SA_Utils.copyToClipboard(list).then((success) => {
+                    synonymCopy.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
+                    setTimeout(() => { synonymCopy.textContent = originalText; }, 1200);
+                });
+                return true;
+            }
+            return false;
+        }
+
+        scheduleSynonymTooltipHide() {
+            if (!this.synonymTooltip) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+            }
+            this.synonymHoverState.hideTimer = setTimeout(() => {
+                this.hideSynonymTooltip();
+            }, 120);
+        }
+
+        hideSynonymTooltip(force = false) {
+            if (!this.synonymTooltip) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+                this.synonymHoverState.hideTimer = null;
+            }
+            if (force || !this.synonymTooltip.matches(':hover')) {
+                this.synonymTooltip.classList.remove('is-visible');
+                this.synonymTooltip.setAttribute('aria-hidden', 'true');
+                this.synonymHoverState.activeWord = null;
+                this.synonymHoverState.activeTarget = null;
+            }
+        }
+
+        showSynonymTooltip(target) {
+            if (!target || !this.synonymTooltip) return;
+            const rawWord = target.dataset.synonymWord || target.textContent || '';
+            const word = SA_Utils.normalizeWord(rawWord);
+            if (!word) return;
+            if (this.synonymHoverState.hideTimer) {
+                clearTimeout(this.synonymHoverState.hideTimer);
+                this.synonymHoverState.hideTimer = null;
+            }
+            this.synonymHoverState.activeWord = word;
+            this.synonymHoverState.activeTarget = target;
+            this.renderSynonymTooltipContent({ state: 'loading', word });
+            this.positionSynonymTooltip(target);
+            this.synonymTooltip.classList.add('is-visible');
+            this.synonymTooltip.setAttribute('aria-hidden', 'false');
+
+            const requestId = ++this.synonymHoverState.requestId;
+            this.getSynonymsForWord(word).then((data) => {
+                if (this.synonymHoverState.activeWord !== word || requestId !== this.synonymHoverState.requestId) return;
+                this.renderSynonymTooltipContent(data);
+                this.positionSynonymTooltip(target);
+            });
+        }
+
+        positionSynonymTooltip(target) {
+            if (!this.synonymTooltip || !target) return;
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = this.synonymTooltip.getBoundingClientRect();
+            const spacing = 10;
+            const top = rect.top - tooltipRect.height - spacing;
+            const fallbackTop = rect.bottom + spacing;
+            const finalTop = (top > 8) ? top : fallbackTop;
+            const left = Math.min(
+                window.innerWidth - tooltipRect.width - 12,
+                Math.max(12, rect.left + (rect.width / 2) - (tooltipRect.width / 2))
+            );
+            this.synonymTooltip.style.top = `${finalTop}px`;
+            this.synonymTooltip.style.left = `${left}px`;
+        }
+
+        async getSynonymsForWord(word) {
+            const normalized = SA_Utils.normalizeWord(word);
+            if (!normalized) {
+                return { word: '', synonyms: [], source: 'none', fallback: true, premiumLocked: false };
+            }
+            if (this.synonymCache.has(normalized)) {
+                return this.synonymCache.get(normalized);
+            }
+
+            const localSynonyms = SA_Utils.uniqueList(SA_CONFIG.THESAURUS_DB[normalized] || []);
+            const hasLocal = localSynonyms.length > 0;
+            const allowRemote = this.isPremiumActive() && SA_CONFIG.THESAURUS_SOURCE.apiUrl;
+            const premiumLocked = !this.isPremiumActive() && Boolean(SA_CONFIG.THESAURUS_SOURCE.apiUrl);
+
+            if (!allowRemote) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'none', fallback: !hasLocal, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            }
+
+            if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'offline', fallback: true, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), SA_CONFIG.THESAURUS_SOURCE.timeoutMs);
+            try {
+                const response = await fetch(`${SA_CONFIG.THESAURUS_SOURCE.apiUrl}${encodeURIComponent(normalized)}`, { signal: controller.signal });
+                if (!response.ok) throw new Error('Thesaurus API error');
+                const data = await response.json();
+                const remoteSynonyms = [];
+                (data.synsets || []).forEach((set) => {
+                    (set.terms || []).forEach((term) => {
+                        const value = SA_Utils.normalizeWord(term.term || term.word || '');
+                        if (value && value !== normalized) {
+                            remoteSynonyms.push(value);
+                        }
+                    });
+                });
+                const merged = SA_Utils.uniqueList(remoteSynonyms.length ? remoteSynonyms : localSynonyms)
+                    .slice(0, SA_CONFIG.THESAURUS_SOURCE.maxResults);
+                const result = {
+                    word: normalized,
+                    synonyms: merged,
+                    source: remoteSynonyms.length ? 'api' : (hasLocal ? 'local' : 'none'),
+                    fallback: !remoteSynonyms.length,
+                    premiumLocked
+                };
+                this.synonymCache.set(normalized, result);
+                return result;
+            } catch (err) {
+                const result = { word: normalized, synonyms: localSynonyms, source: hasLocal ? 'local' : 'error', fallback: true, premiumLocked };
+                this.synonymCache.set(normalized, result);
+                return result;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        renderSynonymTooltipContent(data) {
+            if (!this.synonymTooltip) return;
+            const word = data.word || '';
+            if (data.state === 'loading') {
+                this.synonymTooltip.innerHTML = `
+                    <div class="ska-synonym-tooltip-header">Synonyme</div>
+                    <div class="ska-synonym-tooltip-note">Suche nach Vorschlägen...</div>`;
+                return;
+            }
+            const synonyms = (data.synonyms || []).slice(0, SA_CONFIG.THESAURUS_SOURCE.maxResults);
+            const sourceLabels = {
+                api: 'Online-Thesaurus',
+                local: 'Lokaler Thesaurus',
+                offline: 'Offline',
+                none: 'Keine Daten',
+                error: 'Fallback'
+            };
+            const sourceLabel = sourceLabels[data.source] || 'Thesaurus';
+            const chipsHtml = synonyms.length
+                ? `<div class="ska-synonym-list">${synonyms.map((syn) => `<button type="button" class="ska-synonym-chip" data-action="synonym-insert" data-synonym="${SA_Utils.escapeHtml(syn)}">${SA_Utils.escapeHtml(syn)}</button>`).join('')}</div>`
+                : `<div class="ska-synonym-tooltip-note">Keine Synonyme gefunden.</div>`;
+            const copyText = synonyms.join(', ');
+            const premiumNote = data.premiumLocked ? '<div class="ska-synonym-tooltip-note">Premium: Online-Thesaurus freischalten.</div>' : '';
+            const fallbackNote = data.fallback && synonyms.length ? '<div class="ska-synonym-tooltip-note">Fallback aktiv (lokale Daten).</div>' : '';
+
+            this.synonymTooltip.innerHTML = `
+                <div class="ska-synonym-tooltip-header">
+                    <span>Synonyme zu "${SA_Utils.escapeHtml(word)}"</span>
+                    <span class="ska-synonym-tooltip-source">${sourceLabel}</span>
+                </div>
+                ${chipsHtml}
+                <div class="ska-synonym-actions">
+                    <button type="button" class="ska-synonym-action-btn" data-action="synonym-copy" data-synonyms="${SA_Utils.escapeHtml(copyText)}" ${copyText ? '' : 'disabled'}>Synonyme kopieren</button>
+                </div>
+                ${premiumNote}
+                ${fallbackNote}
+            `;
         }
 
         toggleCard(id, visible) {
@@ -3885,16 +4756,20 @@
         }
 
         performAnalysis(raw, read) {
+            const token = this.state.analysisToken;
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const sps = SA_Logic.getSps(effectiveSettings);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
+            const timeMode = this.getEffectiveTimeMode();
+            const sectionStats = SA_Logic.analyzePacingSections(raw, effectiveSettings, timeMode);
+            const syllableStretches = SA_Logic.analyzeSyllableStretches(raw);
             
             // TIME CALCULATION SWITCH
             let dur = 0;
-            if (this.getEffectiveTimeMode() === 'sps') {
+            if (timeMode === 'sps') {
                 // Total Syllables / SPS = Seconds
                 const seconds = read.totalSyllables / sps;
                 dur = seconds + pause;
@@ -3937,6 +4812,15 @@
                 }
             }
 
+            const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, this.settings);
+            const previousBpm = this.state.clickTrack?.bpm || 0;
+            this.state.clickTrack.bpm = bpmSuggestion.bpm;
+            if (!this.isPremiumActive() && this.state.clickTrack.playing) {
+                this.stopClickTrack();
+            } else if (this.state.clickTrack.playing && bpmSuggestion.bpm > 0 && bpmSuggestion.bpm !== previousBpm) {
+                this.startClickTrack(bpmSuggestion.bpm);
+            }
+
             this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
             this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
@@ -3954,6 +4838,7 @@
             }
 
             const isActive = (id) => !this.state.excludedCards.has(id);
+            const useWorker = Boolean(this.analysisWorker);
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
@@ -3990,7 +4875,7 @@
 
                 switch(id) {
                     case 'char': this.renderCharCard(read, raw, active); break;
-                    case 'coach': this.renderCoachCard(dur, read.score, raw, read.sentences, active); break;
+                    case 'coach': this.renderCoachCard(dur, read, raw, read.sentences, active, sectionStats, syllableStretches); break;
                     case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(raw), active); break;
                     case 'fillers': this.renderFillerCard(SA_Logic.findFillers(read.cleanedText), active); break;
                     case 'nominal': this.renderNominalCard(SA_Logic.findNominalStyle(read.cleanedText), active); break;
@@ -4002,6 +4887,7 @@
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
                     case 'cta': this.renderCtaCard(raw, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
+                    case 'adverb': this.renderAdverbCard(SA_Logic.findAdverbs(read.cleanedText), read.wordCount, active); break;
                     case 'rhythm': this.renderRhythmCard(read.sentences, read.maxSentenceWords, active); break;
                     case 'syllable_entropy': this.renderSyllableEntropyCard(SA_Logic.analyzeSyllableEntropy(read.sentences), active); break;
                     case 'chapter_calc': this.renderChapterCalculatorCard(raw, active); break;
@@ -4011,9 +4897,45 @@
                     case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(raw), active); break;
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
-                    case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), active); break;
+                    case 'keyword_focus':
+                        if (!active) {
+                            this.renderKeywordFocusCard(null, false);
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('keyword_focus', this.renderLoadingState('Keyword-Fokus wird berechnet...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('keyword_focus', {
+                                text: raw,
+                                settings: {
+                                    focusKeywords: this.settings.focusKeywords,
+                                    keywordDensityLimit: this.settings.keywordDensityLimit
+                                },
+                                stopwords: SA_CONFIG.STOPWORDS
+                            }).then((result) => {
+                                if (token !== this.state.analysisToken || !isActive('keyword_focus')) return;
+                                this.renderKeywordFocusCard(result || { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }, true);
+                            });
+                            break;
+                        }
+                        this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), true);
+                        break;
                     case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
-                    case 'redundancy': this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), active); break;
+                    case 'redundancy':
+                        if (!active) {
+                            this.renderRedundancyCard(null, false);
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('redundancy', this.renderLoadingState('Redundanz wird geprüft...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('redundancy', { sentences: read.sentences })
+                                .then((result) => {
+                                    if (token !== this.state.analysisToken || !isActive('redundancy')) return;
+                                    this.renderRedundancyCard(result || [], true);
+                                });
+                            break;
+                        }
+                        this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), true);
+                        break;
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
@@ -4023,7 +4945,7 @@
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
-                    case 'pacing': this.renderPacingCard(dur, raw, active); break;
+                    case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'compliance_check': this.renderComplianceCard(raw, active); break;
                 }
@@ -4117,12 +5039,15 @@
 
             const total = data.total || 0;
             const top = data.top || [];
+            const tfIdfTop = data.tfIdfTop || [];
+            const clusters = data.clusters || [];
             const focusKeywords = data.focusKeywords || [];
             const focusCounts = data.focusCounts || [];
             const focusDensity = data.focusDensity || 0;
             const focusLimit = data.focusLimit || 0;
             const focusOverLimit = data.focusOverLimit;
             const focusTotalCount = data.focusTotalCount || 0;
+            const tfIdfTotal = data.tfIdfTotal || 0;
             let h = '';
 
             if(total === 0 || top.length === 0) {
@@ -4172,27 +5097,79 @@
                 }
             }
 
-            const dominant = top[0];
-            const ratio = total > 0 ? (dominant.count / total) * 100 : 0;
+            const dominant = tfIdfTop[0] || top[0];
+            const tfIdfRatio = tfIdfTotal > 0 ? (dominant.tfidf / tfIdfTotal) * 100 : 0;
             let label = 'Fokus verteilt';
             let color = SA_CONFIG.COLORS.warn;
-            if (ratio >= 24) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
-            else if (ratio >= 14) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
+            if (tfIdfRatio >= 22) { label = 'Klarer Fokus'; color = SA_CONFIG.COLORS.success; }
+            else if (tfIdfRatio >= 12) { label = 'Solide Dominanz'; color = SA_CONFIG.COLORS.blue; }
 
             h += `
                 <div style="margin-bottom:1rem;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
-                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Fokus-Score</span>
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">TF-IDF Fokus-Score</span>
                         <span style="font-weight:700; color:${color};">${label}</span>
                     </div>
                     <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
-                        <div style="width:${Math.min(100, ratio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
+                        <div style="width:${Math.min(100, tfIdfRatio)}%; height:100%; background:linear-gradient(90deg, #dbeafe, ${color}); transition:width 0.5s;"></div>
                     </div>
-                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${ratio.toFixed(1)}% aller Substantive)</div>
+                    <div style="margin-top:0.4rem; font-size:0.8rem; color:#94a3b8;">Top-Begriff: <strong style="color:#334155;">${dominant.word}</strong> (${tfIdfRatio.toFixed(1)}% TF-IDF-Anteil)</div>
                 </div>
-                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>
-                <div class="ska-filler-list">`;
+                <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">Substantive gesamt: <strong>${total}</strong></div>`;
 
+            const tfIdfMax = tfIdfTop[0]?.tfidf || 1;
+            h += `<div class="ska-section-title">TF-IDF Highlights</div>`;
+            h += `<div class="ska-filler-list">`;
+            tfIdfTop.slice(0, 6).forEach(item => {
+                const pct = (item.tfidf / tfIdfMax) * 100;
+                h += `<div class="ska-filler-item">
+                        <span class="ska-filler-word" style="font-weight:600;">${item.word}</span>
+                        <div class="ska-filler-bar-bg"><div class="ska-filler-bar-fill" style="width:${pct}%; background:linear-gradient(90deg, #dbeafe, #1a93ee);"></div></div>
+                        <span class="ska-filler-count">${item.count}x</span>
+                      </div>`;
+            });
+            h += `</div>`;
+
+            const palette = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0f766e', '#1d4ed8', '#9333ea'];
+            const clusterColors = new Map();
+            clusters.forEach((cluster, idx) => {
+                clusterColors.set(cluster.label, palette[idx % palette.length]);
+            });
+
+            if (tfIdfTop.length) {
+                h += `<div class="ska-section-title">Semantische Cluster & Wordcloud</div>`;
+                h += `<div style="display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.7rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; min-height:88px;">`;
+                const minSize = 12;
+                const maxSize = 26;
+                tfIdfTop.slice(0, 18).forEach(item => {
+                    const size = minSize + ((item.tfidf || 0) / tfIdfMax) * (maxSize - minSize);
+                    const cluster = clusters.find(group => group.terms.some(term => term.word === item.word));
+                    const color = cluster ? clusterColors.get(cluster.label) : '#334155';
+                    h += `<span style="font-size:${size.toFixed(0)}px; font-weight:600; color:${color};">#${item.word}</span>`;
+                });
+                h += `</div>`;
+            }
+
+            if (clusters.length) {
+                h += `<div style="margin-top:0.8rem;">`;
+                clusters.slice(0, 6).forEach(cluster => {
+                    const color = clusterColors.get(cluster.label) || '#334155';
+                    h += `<div style="margin-bottom:0.6rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:700; color:${color};">
+                                <span style="display:inline-flex; width:10px; height:10px; border-radius:50%; background:${color};"></span>
+                                ${cluster.label}
+                            </div>
+                            <div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-top:0.35rem;">`;
+                    cluster.terms.slice(0, 6).forEach(term => {
+                        h += `<span class="skriptanalyse-badge" style="background:#f8fafc; border:1px solid #e2e8f0; color:#334155;">${term.word} (${term.count}x)</span>`;
+                    });
+                    h += `</div></div>`;
+                });
+                h += `</div>`;
+            }
+
+            h += `<div class="ska-section-title">Häufigkeit (Substantive)</div>`;
+            h += `<div class="ska-filler-list">`;
             const maxVal = top[0].count || 1;
             top.slice(0, 6).forEach(item => {
                 const pct = (item.count / maxVal) * 100;
@@ -4481,7 +5458,7 @@
             this.updateCard('teleprompter', h);
         }
 
-        renderPacingCard(durationSec, raw, active) {
+        renderPacingCard(durationSec, raw, active, sectionStats) {
             if (!active) return this.updateCard('pacing', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if (!durationSec || durationSec <= 0) {
                 this.resetPacing();
@@ -4497,14 +5474,25 @@
             const progress = this.state.pacing.duration > 0 ? (this.state.pacing.elapsed / this.state.pacing.duration) : 0;
             const clamped = Math.max(0, Math.min(1, progress));
             const effectiveSettings = this.getEffectiveSettings();
-            const paceLabel = this.getEffectiveTimeMode() === 'sps'
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const paceLabel = isSps
                 ? `${SA_Logic.getSps(effectiveSettings)} SPS`
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
+            const bpmValue = this.state.clickTrack?.bpm || 0;
+            const clickTrackLabel = this.state.clickTrack?.playing
+                ? 'Click-Track stoppen'
+                : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)');
+            const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0;
             const checkpoints = [0, 0.25, 0.5, 0.75, 1].map((step) => ({
                 pct: Math.round(step * 100),
                 time: SA_Utils.formatMin(durationSec * step)
             }));
+            const sectionPacingHtml = this.renderSectionPacing(sectionStats, isSps ? 'sps' : 'wpm', {
+                title: 'Abschnitts-Pacing',
+                compact: true,
+                maxItems: 4
+            });
 
             const previewHtml = SA_Utils.escapeHtml(raw || '').replace(/\n/g, '<br>');
             const h = `
@@ -4530,9 +5518,11 @@
                     <span class="ska-info-badge" data-role="pacing-target">${Math.round(clamped * 100)}% Soll-Position</span>
                     <span class="ska-info-badge" data-role="pacing-time">${SA_Utils.formatMin(durationSec * clamped)} / ${SA_Utils.formatMin(durationSec)}</span>
                 </div>
+                ${sectionPacingHtml}
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-toggle" data-duration="${durationSec}">${btnLabel}</button>
+                    <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-clicktrack" data-bpm="${bpmValue}" ${clickTrackDisabled ? 'disabled' : ''}>${clickTrackLabel}</button>
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-reset">Reset</button>
                 </div>
                 ${this.renderTipSection('pacing', true)}`;
@@ -4834,7 +5824,43 @@
             this.updateCard('nominal_chain', h);
         }
 
-        renderOverview(sec, words, chars, wpm, pause, r) {
+        renderSectionPacing(sectionStats, mode, options = {}) {
+            const sections = (sectionStats || []).filter(item => item.duration > 0 && item.wordCount > 0);
+            if (sections.length <= 1) return '';
+            const maxItems = options.maxItems || sections.length;
+            const unit = mode === 'sps' ? 'SPS' : 'WPM';
+            const rates = sections.map(item => item.rate);
+            const minRate = Math.min(...rates);
+            const maxRate = Math.max(...rates);
+            const span = Math.max(0.01, maxRate - minRate);
+            const totalDuration = sections.reduce((sum, item) => sum + item.duration, 0);
+            const diffLabel = mode === 'sps' ? (maxRate - minRate).toFixed(2) : Math.round(maxRate - minRate);
+            const title = options.title || 'Abschnitts-Tempo';
+            const layoutStyle = options.compact ? 'margin-top:0.6rem;' : 'margin-top:1rem;';
+
+            let html = `<div class="ska-overview-genre-box" style="${layoutStyle}">
+                <h4>${title} <span style="font-size:0.75rem; font-weight:600; color:#94a3b8;">(Δ ${diffLabel} ${unit})</span></h4>
+                <div class="ska-filler-list">`;
+            sections.slice(0, maxItems).forEach((item) => {
+                const rateLabel = mode === 'sps' ? item.rate.toFixed(2) : Math.round(item.rate);
+                const pct = span > 0 ? ((item.rate - minRate) / span) * 100 : 100;
+                const width = Math.max(12, Math.min(100, pct));
+                const durationLabel = SA_Utils.formatMin(item.duration);
+                const shareLabel = totalDuration > 0 ? ` • ${(item.duration / totalDuration * 100).toFixed(0)}%` : '';
+                html += `
+                    <div class="ska-filler-item">
+                        <span class="ska-filler-word" style="font-weight:600;">Abschnitt ${item.index}</span>
+                        <div class="ska-filler-bar-bg">
+                            <div class="ska-filler-bar-fill" style="width:${width}%; background:linear-gradient(90deg, #dbeafe, ${SA_CONFIG.COLORS.blue});"></div>
+                        </div>
+                        <span class="ska-filler-count">${rateLabel} ${unit} · ${durationLabel}${shareLabel}</span>
+                    </div>`;
+            });
+            html += `</div></div>`;
+            return html;
+        }
+
+        renderOverview(sec, words, chars, wpm, pause, r, sectionStats) {
             let meterHtml = '';
             let targetStatusHtml = '';
 
@@ -4877,6 +5903,10 @@
             const effectiveSettings = this.getEffectiveSettings();
             const isSps = this.getEffectiveTimeMode() === 'sps';
             const rateLabel = isSps ? `${SA_Logic.getSps(effectiveSettings)} SPS` : `${wpm} WPM`;
+            const benchmarkMetric = isSps ? 'sps' : 'wpm';
+            const benchmarkValue = isSps ? SA_Logic.getSps(effectiveSettings) : wpm;
+            const benchmarkLabel = isSps ? 'Benchmark (SPS)' : 'Benchmark (WPM)';
+            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel);
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
@@ -4913,14 +5943,33 @@
                 scoreHintHtml = `<span class="ska-info-badge ska-info-badge--${traffic.class}"><span class="ska-tool-tooltip">${hintText}</span>INFO</span>`;
             }
 
+            const dimensions = r ? SA_Logic.analyzeStyleDimensions(r, this.getText()) : null;
+            const dimensionHints = {
+                simplicity: 'Hoher Wert = kurze Sätze + einfache Wörter. Beispiel: „Der Hund läuft.“ (hoch) vs. „Aufgrund der Komplexität…“ (niedrig).',
+                structure: 'Misst Absatz-Gliederung + Satzrhythmus. Beispiel: kurze Abschnitte mit klaren Übergängen (hoch) vs. Textblock ohne Pausen (niedrig).',
+                brevity: 'Bewertet, wie kompakt Sätze formuliert sind. Beispiel: „Kurz. Klar.“ (hoch) vs. „Es sollte erwähnt werden, dass…“ (niedrig).',
+                precision: 'Mehr Inhaltswörter, weniger Füllung. Beispiel: „Preis sinkt um 20%.“ (hoch) vs. „In gewisser Weise könnte…“ (niedrig).'
+            };
+            const dimensionItems = dimensions ? [
+                { key: 'simplicity', label: 'Einfachheit', score: dimensions.simplicity },
+                { key: 'structure', label: 'Gliederung', score: dimensions.structure },
+                { key: 'brevity', label: 'Kürze', score: dimensions.brevity },
+                { key: 'precision', label: 'Prägnanz', score: dimensions.precision }
+            ] : [];
+
+            const lixSummary = r ? SA_Logic.getLixSummary(r.lix) : { label: '–', color: SA_CONFIG.COLORS.muted };
+            const lixHintHtml = `<span class="ska-info-badge"><span class="ska-tool-tooltip">LIX = Satzlänge + Anteil langer Wörter (≥7 Buchstaben). Beispiel: „Kurz und klar.“ (LIX ~ 25) vs. „In Anbetracht der Komplexität…“ (LIX > 50).</span>INFO</span>`;
+
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
             const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
+            const sectionPacingHtml = this.renderSectionPacing(sectionStats, isSps ? 'sps' : 'wpm', { title: 'Abschnitts-Tempo' });
             const html = `<div style="display:flex; flex-direction:column; gap:1.5rem; height:100%;">
                 <div>
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
                     <div style="font-size:0.8rem; color:#64748b; font-weight:500;">Ø ${rateLabel}${pauseText}</div>
+                    ${benchmarkHtml}
                     ${genreNote}
                 </div>
                 ${meterHtml}
@@ -4932,7 +5981,9 @@
                     <div class="ska-stat-item"><span>Silben</span><strong>${r ? r.totalSyllables : 0}</strong></div>
                     <div class="ska-stat-item"><span>Längster Satz</span><strong style="color:${maxSCol}">${maxSVal} W</strong></div>
                     <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${r ? r.score.toFixed(0) : 0}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${r ? r.lix.toFixed(0) : 0}</strong></div>
                 </div>
+                ${sectionPacingHtml}
                 ${genreList}</div>`;
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
@@ -4945,6 +5996,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
                 <p>Analyse pausiert</p>
+            </div>`;
+        }
+
+        renderLoadingState(label = 'Analyse läuft...') {
+            return `<div class="ska-disabled-state">
+                <div style="font-size:1.4rem;">⏳</div>
+                <p>${label}</p>
             </div>`;
         }
 
@@ -5013,10 +6071,19 @@
             const variance = SA_Logic.calculateVariance(r.sentences || []);
             const uniqueWords = new Set((r.words || []).map((word) => word.toLowerCase())).size;
             const lexicalShare = r.wordCount ? (uniqueWords / r.wordCount) * 100 : 0;
+            const dimensions = SA_Logic.analyzeStyleDimensions(r, raw);
+            const lixSummary = SA_Logic.getLixSummary(r.lix);
+            const dimensionHints = {
+                simplicity: 'Hoher Wert = kurze Sätze + einfache Wörter. Beispiel: „Der Hund läuft.“ (hoch) vs. „Aufgrund der Komplexität…“ (niedrig).',
+                structure: 'Misst Absatz-Gliederung + Satzrhythmus. Beispiel: kurze Abschnitte mit klaren Übergängen (hoch) vs. Textblock ohne Pausen (niedrig).',
+                brevity: 'Bewertet, wie kompakt Sätze formuliert sind. Beispiel: „Kurz. Klar.“ (hoch) vs. „Es sollte erwähnt werden, dass…“ (niedrig).',
+                precision: 'Mehr Inhaltswörter, weniger Füllung. Beispiel: „Preis sinkt um 20%.“ (hoch) vs. „In gewisser Weise könnte…“ (niedrig).'
+            };
 
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
             const txt = traffic.label;
+            const benchmarkFlesch = this.renderBenchmarkBadge('flesch', r.score, 'Benchmark (Flesch)');
             
             // Temperature gradient calculation (mapped from -100..100 to 0..100%)
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
@@ -5026,6 +6093,7 @@
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
+                    ${benchmarkFlesch}
                     <div style="width:100%; height:8px; background:#e2e8f0; border-radius:4px; margin-top:0.8rem; overflow:hidden;">
                         <div style="width:${r.score}%; height:100%; background:linear-gradient(90deg, #f1f5f9, ${col}); transition:width 0.5s;"></div>
                     </div>
@@ -5078,17 +6146,49 @@
                     <div style="margin-top:0.6rem; font-size:0.8rem; color:#475569;">
                         Rhythmus-Varianz: <strong style="color:${variance < 2.5 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">${variance.toFixed(2)}</strong> (höher = abwechslungsreicher).
                     </div>
+                </div>
+                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Dimensionen</div>
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;">
+                        ${[
+                            { key: 'simplicity', label: 'Einfachheit', score: dimensions.simplicity },
+                            { key: 'structure', label: 'Gliederung', score: dimensions.structure },
+                            { key: 'brevity', label: 'Kürze', score: dimensions.brevity },
+                            { key: 'precision', label: 'Prägnanz', score: dimensions.precision }
+                        ].map(item => {
+                            const summary = SA_Logic.getDimensionSummary(item.score);
+                            return `
+                                <div style="border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; background:#f8fafc;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                                        <span style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">${item.label}</span>
+                                        <span class="ska-info-badge" style="font-size:10px; padding:2px 6px; background:${summary.color}1a; color:${summary.color};">${summary.label}<span class="ska-tool-tooltip">${dimensionHints[item.key]}</span></span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                                        <strong style="color:${summary.color}; font-size:0.95rem;">${Math.round(item.score)}</strong>
+                                        <div style="flex:1; height:6px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                                            <div style="width:${Math.min(100, Math.round(item.score))}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${summary.color});"></div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }).join('')}
+                    </div>
                 </div>`;
             
             this.updateCard('char', h);
         }
 
-        renderCoachCard(sec, sc, raw, sentences, active) {
+        renderCoachCard(sec, read, raw, sentences, active, sectionStats, syllableStretches) {
             if(!active) return this.updateCard('coach', this.renderDisabledState(), this.bottomGrid, '', '', true);
             
-            const wpm = SA_Logic.getWpm(this.getEffectiveSettings());
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const wpm = SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
             const variance = SA_Logic.calculateVariance(sentences);
             const tone = SA_Logic.analyzeTone(raw);
+            const effectiveRate = isSps
+                ? (sec > 0 ? (read.totalSyllables / sec) : 0)
+                : (sec > 0 ? (read.speakingWordCount / (sec / 60)) : 0);
 
             // 1. Dynamics
             let dynText = "Lebendig & Abwechslungsreich";
@@ -5098,21 +6198,55 @@
             // 2. Tempo
             let tempoText = "Optimales Tempo";
             let tempoCol = SA_CONFIG.COLORS.success;
-            if(wpm > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
-            else if(wpm < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+            if (isSps) {
+                if (effectiveRate > 4.2) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
+                else if (effectiveRate < 3.3) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+                else tempoText = `Ausgewogen (${effectiveRate.toFixed(2)} SPS)`;
+            } else {
+                if(effectiveRate > 165) { tempoText = "Sehr sportlich/schnell"; tempoCol = SA_CONFIG.COLORS.warn; }
+                else if(effectiveRate < 125) { tempoText = "Ruhig / Getragen"; tempoCol = SA_CONFIG.COLORS.blue; }
+                else tempoText = `Ausgewogen (${Math.round(effectiveRate)} WPM)`;
+            }
+
+            const sections = (sectionStats || []).filter(item => item.duration > 0);
+            let sectionTip = 'Abschnitts-Tempo wirkt stabil.';
+            if (sections.length > 1) {
+                const rates = sections.map(item => item.rate);
+                const minRate = Math.min(...rates);
+                const maxRate = Math.max(...rates);
+                const diff = maxRate - minRate;
+                const diffLabel = isSps ? diff.toFixed(2) : Math.round(diff);
+                const unit = isSps ? 'SPS' : 'WPM';
+                if (diff > (isSps ? 0.5 : 15)) {
+                    sectionTip = `Tempo schwankt spürbar (Δ ${diffLabel} ${unit}). Übergänge glätten.`;
+                } else {
+                    sectionTip = `Abschnitts-Tempo gleichmäßig (Δ ${diffLabel} ${unit}).`;
+                }
+            }
+
+            const stretch = syllableStretches && syllableStretches.stretches ? syllableStretches.stretches[0] : null;
+            const stretchThreshold = syllableStretches ? syllableStretches.threshold : 0;
+            const stretchLabel = stretch
+                ? `Langer Atembogen: ${stretch.syllables} Silben ohne Pause (Ziel < ${stretchThreshold}).`
+                : 'Atembögen wirken natürlich gesetzt.';
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipPrefix}: ${genreContext.tipFocus}.</div>` : '';
+            const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
             const h = `
                 <div class="ska-mini-grid">
                     <div class="ska-mini-card" style="border-top:3px solid ${tempoCol};">
                         <div class="ska-mini-card-label">Tempo</div>
-                        <div class="ska-mini-card-sub">${tempoText}</div>
+                        <div class="ska-mini-card-sub">${tempoText} • Ziel ${rateLabel}</div>
                     </div>
                     <div class="ska-mini-card" style="border-top:3px solid ${dynCol};">
                         <div class="ska-mini-card-label">Dynamik</div>
                         <div class="ska-mini-card-sub">${dynText}</div>
+                    </div>
+                    <div class="ska-mini-card" style="border-top:3px solid ${stretch ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">
+                        <div class="ska-mini-card-label">Atembogen</div>
+                        <div class="ska-mini-card-sub">${stretch ? `${stretch.syllables} Silben` : 'Im grünen Bereich'}</div>
                     </div>
                 </div>
 
@@ -5126,8 +6260,8 @@
                 <div style="margin-top:0.8rem; padding:0.9rem; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0;">
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Regie-Hilfen</div>
                     <ul style="margin:0; padding-left:1.1rem; color:#475569; font-size:0.85rem; line-height:1.5;">
-                        <li>Betonung planen: markiere Schlüsselsätze für klare Peaks.</li>
-                        <li>Atmung führen: nach Sinnabschnitten bewusst Pausen setzen.</li>
+                        <li>${sectionTip}</li>
+                        <li>${stretchLabel}</li>
                         <li>Subtexte notieren: Was soll der Satz beim Hörer auslösen?</li>
                         <li>Tempo variieren: kurze Sätze = Punch, lange Sätze = Atmosphäre.</li>
                     </ul>
@@ -5213,6 +6347,40 @@
                 h += this.renderTipSection('adjective', true);
             }
             this.updateCard('adjective', h);
+        }
+
+        renderAdverbCard(words, totalWords, active) {
+            if(!active) return this.updateCard('adverb', this.renderDisabledState(), this.bottomGrid, '', '', true);
+
+            const ratio = totalWords > 0 ? (words.length / totalWords) * 100 : 0;
+            let status = 'Ausgewogen';
+            let color = SA_CONFIG.COLORS.success;
+            if(ratio > 8) { status = 'Sehr adverb-lastig'; color = SA_CONFIG.COLORS.error; }
+            else if(ratio > 4) { status = 'Viele Adverbien'; color = SA_CONFIG.COLORS.warn; }
+
+            let h = `
+                <div style="margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+                        <span style="font-size:0.8rem; font-weight:700; color:#64748b; text-transform:uppercase;">Dichte-Check</span>
+                        <span style="font-weight:700; color:${color};">${status} (${ratio.toFixed(1)}%)</span>
+                    </div>
+                    <div style="width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden;">
+                        <div style="width:${Math.min(100, ratio * 8)}%; height:100%; background:linear-gradient(90deg, #ecfeff, ${color}); transition:width 0.5s;"></div>
+                    </div>
+                </div>`;
+
+            if(!words.length) {
+                 h += `<p style="color:#64748b; font-size:0.9rem;">Keine auffälligen Adverbien gefunden.</p>`;
+            } else {
+                h += `<div class="ska-section-title">Gefundene Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
+                words.slice(0, 20).forEach(w => {
+                    h+=`<span class="skriptanalyse-badge" style="background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc;">${w}</span>`;
+                });
+                h += `</div>`;
+                if(words.length > 20) h += `<span style="font-size:0.8rem; color:#94a3b8; align-self:center;">...und ${words.length - 20} weitere</span>`;
+                h += this.renderTipSection('adverb', true);
+            }
+            this.updateCard('adverb', h);
         }
 
         renderFillerCard(fillers, active) {
@@ -5320,7 +6488,8 @@
             } else {
                 h += `<div class="ska-section-title">Gefundene Wiederholungen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`;
                 words.forEach(w => {
-                    h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo">${w}</span>`;
+                    const safeWord = SA_Utils.escapeHtml(w);
+                    h+=`<span class="skriptanalyse-badge skriptanalyse-badge--echo ska-synonym-target" data-synonym-word="${safeWord}">${safeWord}</span>`;
                 });
                 h += `</div>`;
                 h += this.renderTipSection('echo', true);
