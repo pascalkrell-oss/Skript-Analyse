@@ -855,6 +855,10 @@
             return { ttr: ttr, unique: unique.size, total: normalized.length };
         },
         analyzeKeywordClusters: (text, settings = {}) => {
+            const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
+            if (sharedUtils && sharedUtils.analyzeKeywordClusters) {
+                return sharedUtils.analyzeKeywordClusters(text, settings, SA_CONFIG.STOPWORDS);
+            }
             if(!text || !text.trim()) return { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
             const stopwords = new Set(SA_CONFIG.STOPWORDS);
             const counts = new Map();
@@ -1288,6 +1292,10 @@
             return [...matches];
         },
         findStumbles: (text) => { 
+            const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
+            if (sharedUtils && sharedUtils.findStumbles) {
+                return sharedUtils.findStumbles(text, SA_CONFIG.PHONETICS);
+            }
             const words = text.split(/\s+/).map(x=>x.replace(/[.,;!?:"()]/g,'')); 
             const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
             const phoneticRegex = new RegExp(`(${SA_CONFIG.PHONETICS.join('|')})`, 'i');
@@ -1490,6 +1498,10 @@
             return 'Sehr schwer (Akademisch / Gesetz)';
         },
         analyzeRedundancy: (sentences) => {
+            const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
+            if (sharedUtils && sharedUtils.analyzeRedundancy) {
+                return sharedUtils.analyzeRedundancy(sentences);
+            }
             if (!sentences || sentences.length < 2) return [];
             const stemWord = (word) => {
                 let w = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
@@ -2097,6 +2109,7 @@
             this.analysisWorker = null;
             this.workerRequests = new Map();
             this.workerRequestId = 0;
+            this.analysisUtilsRequested = false;
             this.isRestoring = false;
             this.overviewResizeObserver = null;
 
@@ -2544,14 +2557,15 @@
         initAnalysisWorker() {
             const workerUrl = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.workerUrl;
             if (!workerUrl || !window.Worker) return;
+            this.loadAnalysisUtils(workerUrl);
             try {
                 this.analysisWorker = new Worker(workerUrl);
                 this.analysisWorker.onmessage = (event) => {
-                    const { id, results } = event.data || {};
+                    const { id, result } = event.data || {};
                     if (!id || !this.workerRequests.has(id)) return;
                     const { resolve } = this.workerRequests.get(id);
                     this.workerRequests.delete(id);
-                    resolve(results || []);
+                    resolve(result);
                 };
                 this.analysisWorker.onerror = () => {
                     this.analysisWorker = null;
@@ -2562,18 +2576,43 @@
             }
         }
 
-        requestWorkerReadability(paragraphs) {
-            if (!this.analysisWorker) return Promise.resolve([]);
+        loadAnalysisUtils(workerUrl) {
+            if (this.analysisUtilsRequested || !workerUrl || typeof document === 'undefined' || !document.head) return;
+            const utilsUrl = workerUrl.replace(/analysis-worker\.js(\?.*)?$/, 'analysis-utils.js');
+            if (!utilsUrl || utilsUrl === workerUrl) return;
+            if (window.SA_ANALYSIS_UTILS) {
+                this.analysisUtilsRequested = true;
+                return;
+            }
+            this.analysisUtilsRequested = true;
+            const script = document.createElement('script');
+            script.src = utilsUrl;
+            script.async = true;
+            script.onerror = () => {
+                this.analysisUtilsRequested = false;
+            };
+            document.head.appendChild(script);
+        }
+
+        requestWorkerTask(type, payload) {
+            if (!this.analysisWorker) return Promise.resolve(null);
             const id = ++this.workerRequestId;
             return new Promise((resolve) => {
                 this.workerRequests.set(id, { resolve });
                 this.analysisWorker.postMessage({
                     id,
-                    type: 'paragraphs',
-                    paragraphs,
-                    settings: { numberMode: this.settings.numberMode }
+                    type,
+                    payload
                 });
             });
+        }
+
+        requestWorkerReadability(paragraphs) {
+            if (!this.analysisWorker) return Promise.resolve([]);
+            return this.requestWorkerTask('paragraphs', {
+                paragraphs,
+                settings: { numberMode: this.settings.numberMode }
+            }).then((result) => result || []);
         }
 
         buildReadabilityFromCache(paragraphs) {
@@ -3914,6 +3953,7 @@
         }
 
         performAnalysis(raw, read) {
+            const token = this.state.analysisToken;
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
@@ -3983,6 +4023,7 @@
             }
 
             const isActive = (id) => !this.state.excludedCards.has(id);
+            const useWorker = Boolean(this.analysisWorker);
 
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
@@ -4020,7 +4061,22 @@
                 switch(id) {
                     case 'char': this.renderCharCard(read, raw, active); break;
                     case 'coach': this.renderCoachCard(dur, read.score, raw, read.sentences, active); break;
-                    case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(raw), active); break;
+                    case 'stumble':
+                        if (!active) {
+                            this.renderStumbleCard(null, false);
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('stumble', this.renderLoadingState('Stolpersteine werden analysiert...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('stumble', { text: raw, phonetics: SA_CONFIG.PHONETICS })
+                                .then((result) => {
+                                    if (token !== this.state.analysisToken || !isActive('stumble')) return;
+                                    this.renderStumbleCard(result || { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 }, true);
+                                });
+                            break;
+                        }
+                        this.renderStumbleCard(SA_Logic.findStumbles(raw), true);
+                        break;
                     case 'fillers': this.renderFillerCard(SA_Logic.findFillers(read.cleanedText), active); break;
                     case 'nominal': this.renderNominalCard(SA_Logic.findNominalStyle(read.cleanedText), active); break;
                     case 'nominal_chain': this.renderNominalChainCard(SA_Logic.findNominalChains(read.cleanedText), active); break;
@@ -4040,9 +4096,45 @@
                     case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(raw), active); break;
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
-                    case 'keyword_focus': this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), active); break;
+                    case 'keyword_focus':
+                        if (!active) {
+                            this.renderKeywordFocusCard(null, false);
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('keyword_focus', this.renderLoadingState('Keyword-Fokus wird berechnet...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('keyword_focus', {
+                                text: raw,
+                                settings: {
+                                    focusKeywords: this.settings.focusKeywords,
+                                    keywordDensityLimit: this.settings.keywordDensityLimit
+                                },
+                                stopwords: SA_CONFIG.STOPWORDS
+                            }).then((result) => {
+                                if (token !== this.state.analysisToken || !isActive('keyword_focus')) return;
+                                this.renderKeywordFocusCard(result || { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }, true);
+                            });
+                            break;
+                        }
+                        this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), true);
+                        break;
                     case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
-                    case 'redundancy': this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), active); break;
+                    case 'redundancy':
+                        if (!active) {
+                            this.renderRedundancyCard(null, false);
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('redundancy', this.renderLoadingState('Redundanz wird geprüft...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('redundancy', { sentences: read.sentences })
+                                .then((result) => {
+                                    if (token !== this.state.analysisToken || !isActive('redundancy')) return;
+                                    this.renderRedundancyCard(result || [], true);
+                                });
+                            break;
+                        }
+                        this.renderRedundancyCard(SA_Logic.analyzeRedundancy(read.sentences), true);
+                        break;
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
@@ -4950,6 +5042,13 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
                 <p>Analyse pausiert</p>
+            </div>`;
+        }
+
+        renderLoadingState(label = 'Analyse läuft...') {
+            return `<div class="ska-disabled-state">
+                <div style="font-size:1.4rem;">⏳</div>
+                <p>${label}</p>
             </div>`;
         }
 
