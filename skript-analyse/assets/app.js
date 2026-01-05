@@ -7432,7 +7432,7 @@
                 'PDF-Export (Basis)'
             ];
             const premiumFunctions = [
-                'Alles aus Free',
+                'Alles aus der Basis-Version',
                 'SPS-Modus',
                 'Pausen-Automatik',
                 'WPM-Kalibrierung',
