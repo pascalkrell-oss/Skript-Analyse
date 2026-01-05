@@ -478,7 +478,7 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;'),
         escapeCsvValue: (value) => {
-            const str = String(value ?? '');
+            const str = String(value == null ? '' : value);
             if (/[",\n\r]/.test(str)) {
                 return `"${str.replace(/"/g, '""')}"`;
             }
@@ -610,8 +610,8 @@
                 return acc + (val ? parseFloat(val[1]) : 0);
             }, 0);
             total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
-            const commaPause = parseFloat(settings.commaPause ?? 0);
-            const periodPause = parseFloat(settings.periodPause ?? 0);
+            const commaPause = parseFloat(settings.commaPause != null ? settings.commaPause : 0);
+            const periodPause = parseFloat(settings.periodPause != null ? settings.periodPause : 0);
             if (commaPause > 0) {
                 total += (cleaned.match(/,/g) || []).length * commaPause;
             }
@@ -1316,7 +1316,7 @@
                 .map((cluster) => {
                     const sortedTerms = cluster.terms.sort((a, b) => b.tfidf - a.tfidf || b.count - a.count || a.word.localeCompare(b.word));
                     return {
-                        label: sortedTerms[0]?.word || '',
+                        label: (sortedTerms[0] ? sortedTerms[0].word : '') || '',
                         terms: sortedTerms,
                         totalTfidf: cluster.totalTfidf
                     };
@@ -2034,10 +2034,10 @@
         formatMarkerCsv: (markers = []) => {
             const header = ['Marker', 'Timecode', 'Seconds', 'Label'];
             const rows = markers.map((marker) => ([
-                marker.id ?? '',
-                marker.time ?? '',
-                (marker.seconds ?? '').toString(),
-                marker.label ?? ''
+                marker.id != null ? marker.id : '',
+                marker.time != null ? marker.time : '',
+                (marker.seconds != null ? marker.seconds : '').toString(),
+                marker.label != null ? marker.label : ''
             ]));
             const allRows = [header, ...rows];
             return allRows
@@ -2497,8 +2497,10 @@
                         }
                         if (depthCheck.length) addRow("Satz-Verschachtelung:", `${depthCheck.filter(d => d.isDeep).length} kritisch`);
                         if (sentimentIntensity.length) {
-                            const start = sentimentIntensity[0]?.score ?? 0;
-                            const end = sentimentIntensity[sentimentIntensity.length - 1]?.score ?? 0;
+                            const start = sentimentIntensity[0] ? sentimentIntensity[0].score : 0;
+                            const end = sentimentIntensity[sentimentIntensity.length - 1]
+                                ? sentimentIntensity[sentimentIntensity.length - 1].score
+                                : 0;
                             addRow("Stimmungs-Intensität:", `Start ${start.toFixed(2)} → Ende ${end.toFixed(2)}`);
                         }
                         if (namingCheck.length) addRow("Naming-Check:", namingCheck.slice(0, 3).map(n => `${n.first}/${n.second}`));
@@ -3153,11 +3155,11 @@
                             <div class="ska-settings-grid-two">
                                 <div>
                                     <span class="ska-settings-helper-label">Komma-Pause (Sekunden)</span>
-                                    <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause ?? 0.2}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
+                                    <input type="number" step="0.1" min="0" id="ska-set-comma-pause" value="${this.settings.commaPause != null ? this.settings.commaPause : 0.2}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
                                 </div>
                                 <div>
                                     <span class="ska-settings-helper-label">Punkt-Pause (Sekunden)</span>
-                                    <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause ?? 0.5}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
+                                    <input type="number" step="0.1" min="0" id="ska-set-period-pause" value="${this.settings.periodPause != null ? this.settings.periodPause : 0.5}" class="ska-settings-input" ${isPremium ? '' : 'disabled'}>
                                 </div>
                             </div>
                             <p class="ska-settings-help">Mikro-Pausen werden zur Gesamtzeit addiert – ideal für Voice-Optimierung.</p>
@@ -3195,7 +3197,7 @@
                             <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff" ${isPremium ? '' : 'disabled'}>${this.settings.focusKeywords || ''}</textarea>
                             <div class="ska-settings-inline">
                                 <span class="ska-settings-helper-label">Dichte-Limit (%)</span>
-                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit ?? 2}" class="ska-settings-input ska-settings-input--compact" ${isPremium ? '' : 'disabled'}>
+                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit != null ? this.settings.keywordDensityLimit : 2}" class="ska-settings-input ska-settings-input--compact" ${isPremium ? '' : 'disabled'}>
                             </div>
                             <p class="ska-settings-help">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
                         </div>
@@ -3642,11 +3644,11 @@
         openToolModal(toolId) {
             if (!toolId) return;
             if (!this.isCardUnlocked(toolId)) return;
-            const card = this.toolsModalStore?.querySelector(`[data-card-id="${toolId}"]`);
+            const card = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${toolId}"]`) : null;
             if (!card) return;
             const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
             const description = SA_CONFIG.CARD_DESCRIPTIONS[toolId];
-            const bodyHtml = card.querySelector('.ska-card-body')?.innerHTML || '';
+            const bodyHtml = card && card.querySelector('.ska-card-body') ? card.querySelector('.ska-card-body').innerHTML : '';
             let modal = document.getElementById('ska-tool-card-modal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -4089,7 +4091,7 @@
         }
 
         updatePacingUI(progress = null) {
-            const card = this.bottomGrid?.querySelector('[data-card-id="pacing"]');
+            const card = this.bottomGrid ? this.bottomGrid.querySelector('[data-card-id="pacing"]') : null;
             if (!card) return;
             const fill = card.querySelector('[data-role="pacing-fill"]');
             const marker = card.querySelector('[data-role="pacing-marker"]');
@@ -4204,7 +4206,7 @@
         }
 
         updateClickTrackButton() {
-            const btn = this.bottomGrid?.querySelector('[data-action="pacing-clicktrack"]');
+            const btn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-clicktrack"]') : null;
             if (!btn) return;
             const bpm = parseFloat(btn.dataset.bpm || '0');
             if (this.state.clickTrack.playing) {
@@ -4565,7 +4567,7 @@
 
             if (act === 'pacing-reset') {
                 this.resetPacing();
-                const startBtn = this.bottomGrid?.querySelector('[data-action="pacing-toggle"]');
+                const startBtn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-toggle"]') : null;
                 if (startBtn) startBtn.textContent = 'Start';
                 return true;
             }
@@ -4743,7 +4745,8 @@
                     saveBtn.disabled = !isPremium;
                     saveBtn.classList.toggle('is-disabled', !isPremium);
                     saveBtn.setAttribute('aria-disabled', String(!isPremium));
-                    const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
+                    const wrapper = saveBtn.closest('.ska-tool-wrapper');
+                    const tooltip = wrapper ? wrapper.querySelector('.ska-tool-tooltip--premium') : null;
                     if (tooltip) {
                         tooltip.textContent = isPremium
                             ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
@@ -4832,7 +4835,8 @@
                 </div>
             `;
 
-            const scriptOption = grid.querySelector('#pdf-opt-script')?.closest('label');
+            const scriptInput = grid.querySelector('#pdf-opt-script');
+            const scriptOption = scriptInput ? scriptInput.closest('label') : null;
             if (scriptOption) {
                 grid.insertBefore(label, scriptOption);
             } else {
@@ -5178,14 +5182,14 @@
                 if(act === 'generate-pdf-final') {
                     const isPremium = this.isPremiumActive();
                     const opts = { 
-                        metrics: modal.querySelector('#pdf-opt-overview')?.checked, 
-                        details: isPremium && modal.querySelector('#pdf-opt-details')?.checked, 
-                        tips: isPremium && modal.querySelector('#pdf-opt-tips')?.checked, 
-                        compare: isPremium && modal.querySelector('#pdf-opt-compare')?.checked, 
-                        script: modal.querySelector('#pdf-opt-script')?.checked,
-                        notesColumn: isPremium && modal.querySelector('#pdf-opt-notes')?.checked,
-                        syllableEntropy: isPremium && modal.querySelector('#pdf-opt-syllable-entropy')?.checked,
-                        compliance: isPremium && modal.querySelector('#pdf-opt-compliance')?.checked
+                        metrics: modal.querySelector('#pdf-opt-overview') ? modal.querySelector('#pdf-opt-overview').checked : false, 
+                        details: isPremium && (modal.querySelector('#pdf-opt-details') ? modal.querySelector('#pdf-opt-details').checked : false), 
+                        tips: isPremium && (modal.querySelector('#pdf-opt-tips') ? modal.querySelector('#pdf-opt-tips').checked : false), 
+                        compare: isPremium && (modal.querySelector('#pdf-opt-compare') ? modal.querySelector('#pdf-opt-compare').checked : false), 
+                        script: modal.querySelector('#pdf-opt-script') ? modal.querySelector('#pdf-opt-script').checked : false,
+                        notesColumn: isPremium && (modal.querySelector('#pdf-opt-notes') ? modal.querySelector('#pdf-opt-notes').checked : false),
+                        syllableEntropy: isPremium && (modal.querySelector('#pdf-opt-syllable-entropy') ? modal.querySelector('#pdf-opt-syllable-entropy').checked : false),
+                        compliance: isPremium && (modal.querySelector('#pdf-opt-compliance') ? modal.querySelector('#pdf-opt-compliance').checked : false)
                     };
                     const pdfData = { ...this.state.currentData, savedVersion: this.state.savedVersion };
                     const pdfSettings = this.getEffectiveSettings();
@@ -5618,7 +5622,7 @@
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const sps = SA_Logic.getSps(effectiveSettings);
-            const analysisText = analysisRaw ?? SA_Utils.cleanTextForCounting(raw);
+            const analysisText = analysisRaw != null ? analysisRaw : SA_Utils.cleanTextForCounting(raw);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
             const timeMode = this.getEffectiveTimeMode();
@@ -5679,7 +5683,7 @@
             }
 
             const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, this.settings);
-            const previousBpm = this.state.clickTrack?.bpm || 0;
+            const previousBpm = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
             this.state.clickTrack.bpm = bpmSuggestion.bpm;
             if (!this.isPremiumActive() && this.state.clickTrack.playing) {
                 this.stopClickTrack();
@@ -5846,7 +5850,7 @@
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
                 }
-                const c = this.toolsModalStore?.querySelector(`[data-card-id="${id}"]`);
+                const c = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${id}"]`) : null;
                 if (c) c.style.order = idx;
             });
             this.renderToolsButtons(toolsToRender);
@@ -5886,7 +5890,7 @@
         }
 
         observeOverviewHeight() {
-            const overviewCard = this.topPanel?.querySelector('.skriptanalyse-card--overview');
+            const overviewCard = this.topPanel ? this.topPanel.querySelector('.skriptanalyse-card--overview') : null;
             if (!overviewCard || typeof ResizeObserver === 'undefined') return;
             if (!this.overviewResizeObserver) {
                 this.overviewResizeObserver = new ResizeObserver(() => this.syncEditorHeight());
@@ -5898,7 +5902,7 @@
         renderPronunciationCard(data, active) {
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
-            const issues = data?.words || [];
+            const issues = data && data.words ? data.words : [];
             if((!issues || issues.length === 0)) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
@@ -6010,7 +6014,7 @@
             if(!active) return this.updateCard('plosive', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
             const isPremium = this.isPremiumActive();
-            const clusters = data?.plosives || [];
+            const clusters = data && data.plosives ? data.plosives : [];
 
             if((!clusters || clusters.length === 0)) {
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
@@ -6201,8 +6205,8 @@
             if(!active) return this.updateCard('sentiment_intensity', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!data || data.length === 0) return this.updateCard('sentiment_intensity', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für einen Vibe-Check.</p>');
 
-            const start = data[0]?.score || 0;
-            const end = data[data.length - 1]?.score || 0;
+            const start = data[0] ? data[0].score : 0;
+            const end = data[data.length - 1] ? data[data.length - 1].score : 0;
             const avgScore = data.reduce((acc, item) => acc + (item.score || 0), 0) / (data.length || 1);
             const trend = end - start;
             let trendLabel = 'Stabil';
@@ -6287,8 +6291,8 @@
                 ? `${SA_Logic.getSps(effectiveSettings)} SPS`
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
-            const bpmValue = this.state.clickTrack?.bpm || 0;
-            const clickTrackLabel = this.state.clickTrack?.playing
+            const bpmValue = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
+            const clickTrackLabel = this.state.clickTrack && this.state.clickTrack.playing
                 ? 'Click-Track stoppen'
                 : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)');
             const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0;
@@ -7117,7 +7121,7 @@
                 ? `Atempunkte früher setzen (Ziel < ${stretchThreshold} Silben).`
                 : 'Atempausen wirken sauber gesetzt.';
             const emphasisDirective = focusText => focusText ? `Schlüsselwort betonen: „${focusText}“ als Fokus setzen.` : 'Kernaussage pro Satz markieren und hervorheben.';
-            const primaryKeyword = read?.words?.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
+            const primaryKeyword = read && read.words && read.words.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
 
             const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
@@ -7783,7 +7787,7 @@
 
         updatePremiumPlanUI() {
             if (!this.legendContainer) return;
-            const card = this.legendContainer.parentElement?.querySelector('.ska-premium-upgrade-card');
+            const card = this.legendContainer.parentElement ? this.legendContainer.parentElement.querySelector('.ska-premium-upgrade-card') : null;
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
