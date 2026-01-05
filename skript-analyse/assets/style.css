@@ -1291,6 +1291,43 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-help-card h4 { margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--ska-primary); font-weight: 600; }
 .ska-help-card p { margin: 0; font-size: 0.85rem; color: var(--ska-text-muted); line-height: 1.6; }
 .ska-help-table code { background: var(--ska-primary-light); color: var(--ska-primary); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; border: 1px solid #bae6fd; font-size: 0.9em; }
+.ska-help-hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; margin-bottom: 2rem; align-items: stretch; }
+.ska-help-hero h4 { margin: 0 0 0.6rem 0; color: var(--ska-primary); font-size: 1.2rem; }
+.ska-help-hero p { margin: 0; color: var(--ska-text-muted); line-height: 1.7; }
+.ska-help-kicker { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; font-size: 0.7rem; color: #94a3b8; margin-bottom: 0.4rem; }
+.ska-help-hero-card { background: linear-gradient(135deg, #f8fafc, #eef2ff); border-radius: 14px; border: 1px solid #e2e8f0; padding: 1.2rem 1.4rem; box-shadow: 0 10px 24px -20px rgba(15, 23, 42, 0.4); }
+.ska-help-hero-card strong { display: block; color: #0f172a; margin-bottom: 0.6rem; font-size: 0.95rem; }
+.ska-help-hero-card ol { margin: 0; padding-left: 1.2rem; color: #475569; font-size: 0.85rem; display: grid; gap: 0.35rem; }
+.ska-help-toc { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 2rem; box-shadow: 0 12px 24px -24px rgba(15, 23, 42, 0.45); }
+.ska-help-toc h5 { margin: 0 0 0.75rem 0; color: #0f172a; font-size: 0.9rem; }
+.ska-help-toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.5rem 1rem; }
+.ska-help-toc-grid a { color: var(--ska-primary); font-size: 0.85rem; text-decoration: none; padding: 0.35rem 0.5rem; border-radius: 8px; background: #f8fafc; border: 1px solid transparent; transition: all 0.2s ease; }
+.ska-help-toc-grid a:hover { border-color: #cbd5e1; background: #f1f5f9; }
+.ska-help-section { margin-bottom: 2.5rem; scroll-margin-top: 80px; }
+.ska-help-section header h4 { margin: 0 0 0.35rem 0; color: #0f172a; }
+.ska-help-section header p { margin: 0 0 1.2rem 0; color: var(--ska-text-muted); }
+.ska-help-list { list-style: none; padding: 0; margin: 0 0 1.5rem 0; display: grid; gap: 0.65rem; color: #475569; font-size: 0.9rem; }
+.ska-help-list li strong { color: #0f172a; }
+.ska-help-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+.ska-help-columns h5 { margin: 0 0 0.6rem 0; color: #0f172a; font-size: 0.9rem; }
+.ska-help-text { color: #64748b; font-size: 0.9rem; line-height: 1.6; margin: 0 0 1rem 0; }
+.ska-help-box { border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid transparent; color: #1e293b; font-size: 0.85rem; margin-top: 1rem; }
+.ska-help-box strong { display: inline-block; margin-right: 0.4rem; }
+.ska-help-box--hint { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+.ska-help-box--help { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.ska-help-box--guide { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+.ska-help-tabs { position: relative; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; }
+.ska-help-tab-input { position: absolute; opacity: 0; pointer-events: none; }
+.ska-help-tabs-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+.ska-help-tabs-nav label { cursor: pointer; padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 600; transition: all 0.2s ease; }
+.ska-help-tabs-content { display: grid; gap: 0.5rem; }
+.ska-help-tab-panel { display: none; }
+#ska-help-tab-1:checked ~ .ska-help-tabs-nav label[for="ska-help-tab-1"],
+#ska-help-tab-2:checked ~ .ska-help-tabs-nav label[for="ska-help-tab-2"],
+#ska-help-tab-3:checked ~ .ska-help-tabs-nav label[for="ska-help-tab-3"] { background: var(--ska-primary); color: #ffffff; border-color: var(--ska-primary); }
+#ska-help-tab-1:checked ~ .ska-help-tabs-content [data-tab="ska-help-tab-1"],
+#ska-help-tab-2:checked ~ .ska-help-tabs-content [data-tab="ska-help-tab-2"],
+#ska-help-tab-3:checked ~ .ska-help-tabs-content [data-tab="ska-help-tab-3"] { display: block; }
 
 /* RESPONSIVE */
 @media (max-width: 900px) {
@@ -1304,6 +1341,8 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-footer-actions { flex-direction: column; width: 100%; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
+    .ska-help-hero { grid-template-columns: 1fr; }
+    .ska-help-tabs-nav { flex-direction: column; align-items: stretch; }
     .ska-settings-option-group--time { grid-template-columns: 1fr; }
 }
 

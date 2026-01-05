@@ -239,67 +239,319 @@ function ska_shortcode() {
                 <button type="button" class="ska-close-icon" data-action="close-help">&times;</button>
                 <div class="ska-modal-header"><h3>Anleitung & Hilfe</h3></div>
                 <div class="skriptanalyse-modal-body">
-                   <p style="margin-bottom:1.5rem; color:#64748b; line-height:1.7;">Dieses Tool analysiert deinen Text live im Browser und erklärt dir verständlich, was am Tempo, an der Struktur und an der Wirkung optimiert werden kann. Keine Vorkenntnisse nötig – du bekommst konkrete Hinweise, was du ändern kannst und warum.</p>
+                    <div class="ska-help-hero">
+                        <div>
+                            <p class="ska-help-kicker">Anleitung & Hilfe</p>
+                            <h4>Alles, was du für eine perfekte Skriptanalyse brauchst</h4>
+                            <p>Die Skript-Analyse arbeitet live im Browser: Texte, Timing, Wirkung und Sprechbarkeit werden automatisch ausgewertet. Hier findest du alle Funktionen, Werkzeuge und Tipps – kompakt, verständlich und sofort anwendbar.</p>
+                        </div>
+                        <div class="ska-help-hero-card">
+                            <strong>Quick-Flow</strong>
+                            <ol>
+                                <li>Text einfügen & Genre wählen.</li>
+                                <li>Zielzeit/Settings setzen.</li>
+                                <li>Analyse-Karten abarbeiten.</li>
+                                <li>Teleprompter & Export nutzen.</li>
+                            </ol>
+                        </div>
+                    </div>
 
-                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem;">
-                       <div class="ska-help-card">
-                           <h4>🚀 Schnellstart in 60 Sekunden</h4>
-                           <p>Text einfügen → Genre auswählen → Analyse lesen → markierte Stellen anpassen → PDF exportieren. Alles aktualisiert sich automatisch.</p>
-                       </div>
-                       <div class="ska-help-card">
-                           <h4>⏱️ Timing & Tempo</h4>
-                           <p>Wähle WPM (Standard) oder SPS (präziser für lange Wörter). Zielzeit und Pausen werden in die Berechnung einbezogen.</p>
-                       </div>
-                       <div class="ska-help-card">
-                           <h4>🎯 Zielgruppe & Wirkung</h4>
-                           <p>Lege Zielgruppe, Keyword-Fokus und Blacklists fest. Das Tool warnt bei zu komplexen Sätzen oder zu hoher Dichte.</p>
-                       </div>
-                       <div class="ska-help-card">
-                           <h4>🪄 Teleprompter</h4>
-                           <p>Starte den Teleprompter aus der Analyse. Der Scroll folgt deiner berechneten Dauer und hilft beim Einsprechen.</p>
-                       </div>
-                   </div>
+                    <nav class="ska-help-toc" aria-label="Inhaltsverzeichnis">
+                        <h5>Inhaltsverzeichnis</h5>
+                        <div class="ska-help-toc-grid">
+                            <a href="#ska-help-start">Schnellstart</a>
+                            <a href="#ska-help-layout">Oberfläche & Navigation</a>
+                            <a href="#ska-help-input">Text & Einstellungen</a>
+                            <a href="#ska-help-analysis">Analyse verstehen</a>
+                            <a href="#ska-help-cards">Analyse-Karten</a>
+                            <a href="#ska-help-tools">Werkzeuge</a>
+                            <a href="#ska-help-markers">Marker & Regie</a>
+                            <a href="#ska-help-export">Export & Ergebnisse</a>
+                            <a href="#ska-help-premium">Premium-Funktionen</a>
+                            <a href="#ska-help-privacy">Datenschutz & Support</a>
+                        </div>
+                    </nav>
 
-                   <h4 style="margin-bottom:0.75rem; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">So liest du die Analyse</h4>
-                   <ul style="list-style:none; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:2rem; color:#64748b; font-size:0.9rem;">
-                       <li><strong>⚖️ Tempo & Dauer:</strong> reale Sprechzeit inkl. Pausenmarker.</li>
-                       <li><strong>📏 Satzlänge & Rhythmus:</strong> zu lange oder monotone Abschnitte werden markiert.</li>
-                       <li><strong>🎯 Fokus & Keywords:</strong> zeigt, ob Kernbegriffe dominant genug sind.</li>
-                       <li><strong>🧠 Verständlichkeit:</strong> entdeckt Schachtelsätze und komplizierte Wörter.</li>
-                       <li><strong>🎵 Audio-BPM:</strong> empfiehlt Musiktempo passend zur Lesegeschwindigkeit.</li>
-                       <li><strong>🧨 Buzzwords:</strong> markiert Floskeln oder Blacklist-Begriffe.</li>
-                       <li><strong>🗣️ Sprecherlichkeit:</strong> warnt bei schwierigen Kombinationen oder Betonungsfallen.</li>
-                       <li><strong>📍 Marker-Übersicht:</strong> listet alle Marker und ihre Wirkung im Timing.</li>
-                   </ul>
+                    <section id="ska-help-start" class="ska-help-section">
+                        <header>
+                            <h4>🚀 Schnellstart</h4>
+                            <p>In wenigen Schritten von Text zu sendefertigem Skript.</p>
+                        </header>
+                        <div class="ska-help-grid">
+                            <div class="ska-help-card">
+                                <h4>1. Text einfügen</h4>
+                                <p>Füge dein Skript in das Eingabefeld ein. Änderungen werden automatisch gespeichert und live analysiert.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>2. Genre wählen</h4>
+                                <p>Wähle den Einsatzzweck (z. B. Werbung, Erklärvideo, Hörbuch). Tempo & Tipps passen sich an.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>3. Analyse lesen</h4>
+                                <p>Bearbeite die wichtigsten Karten von oben nach unten. Jede Karte zeigt konkrete Optimierungen.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>4. Ergebnis nutzen</h4>
+                                <p>Starte den Teleprompter, prüfe das Timing und exportiere den PDF-Report.</p>
+                            </div>
+                        </div>
+                        <div class="ska-help-box ska-help-box--hint">
+                            <strong>Hinweis:</strong> Die Analyse ist live. Jeder Tipp aktualisiert sich sofort, wenn du Text oder Einstellungen änderst.
+                        </div>
+                    </section>
 
-                   <h4 style="margin-bottom:0.75rem; color:#0f172a;">🖍️ Marker & Regieanweisungen</h4>
-                   <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Marker steuern Pausen, Dynamik und Sprecheranweisungen. Sie beeinflussen das Timing, werden aber nicht als Text gezählt:</p>
-                   <table class="ska-help-table">
-                       <thead><tr><th>Marker / Code</th><th>Funktion</th></tr></thead>
-                       <tbody>
-                           <?php foreach ($markers_config as $marker): ?>
-                               <tr>
-                                   <td><code><?php echo esc_html($marker['val']); ?></code></td>
-                                   <td><?php echo esc_html($marker['desc']); ?></td>
-                               </tr>
-                           <?php endforeach; ?>
-                       </tbody>
-                   </table>
+                    <section id="ska-help-layout" class="ska-help-section">
+                        <header>
+                            <h4>🧭 Oberfläche & Navigation</h4>
+                            <p>So findest du dich sofort zurecht.</p>
+                        </header>
+                        <ul class="ska-help-list">
+                            <li><strong>Header-Leiste:</strong> Genre, Tempo (WPM/SPS) und Zielzeit – steuert das Timing der Analyse.</li>
+                            <li><strong>Analyse-Karten:</strong> Jede Karte zeigt ein Thema. Nutze die Filterleiste, um Karten an- oder auszuschalten.</li>
+                            <li><strong>Tools-Bereich:</strong> Teleprompter, Marker und Pacing-Training befinden sich im Werkzeugbereich.</li>
+                            <li><strong>Legende & Hilfe:</strong> Erklärt Marker, Badges und bietet den direkten Einstieg in diese Anleitung.</li>
+                        </ul>
+                        <div class="ska-help-box ska-help-box--help">
+                            <strong>Hilfe:</strong> Nutze die Filter-Pills, um deine Lieblingskarten dauerhaft sichtbar zu halten.
+                        </div>
+                    </section>
 
-                   <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:2rem;">
-                       <div class="ska-help-card">
-                           <h4>💡 Tipps & Tricks</h4>
-                           <p>Setze kurze Pausen nach Sinnabschnitten. Vermeide drei lange Sätze hintereinander. Wiederhole Kernwörter an Satzanfängen.</p>
-                       </div>
-                       <div class="ska-help-card">
-                           <h4>✅ Best Practices</h4>
-                           <p>Ein Gedanke pro Satz. Aktiv statt Passiv. Zahlen in Wörter umwandeln, wenn sie gesprochen werden sollen.</p>
-                       </div>
-                   </div>
+                    <section id="ska-help-input" class="ska-help-section">
+                        <header>
+                            <h4>📝 Text & Einstellungen</h4>
+                            <p>Steuere Zielzeit, Tonalität und die Analyse-Schärfe.</p>
+                        </header>
+                        <div class="ska-help-tabs">
+                            <input class="ska-help-tab-input" type="radio" name="ska-help-tabs" id="ska-help-tab-1" checked>
+                            <input class="ska-help-tab-input" type="radio" name="ska-help-tabs" id="ska-help-tab-2">
+                            <input class="ska-help-tab-input" type="radio" name="ska-help-tabs" id="ska-help-tab-3">
+                            <div class="ska-help-tabs-nav">
+                                <label for="ska-help-tab-1">Timing</label>
+                                <label for="ska-help-tab-2">Wirkung & Zielgruppe</label>
+                                <label for="ska-help-tab-3">Sprache & Regeln</label>
+                            </div>
+                            <div class="ska-help-tabs-content">
+                                <div class="ska-help-tab-panel" data-tab="ska-help-tab-1">
+                                    <ul class="ska-help-list">
+                                        <li><strong>WPM/SPS:</strong> Standard-Tempo oder Silben pro Sekunde für längere Wörter.</li>
+                                        <li><strong>Zielzeit:</strong> Die Analyse zeigt, wie nah du am gewünschten Timing bist.</li>
+                                        <li><strong>Pausen-Automatik <span class="ska-premium-badge">Premium</span>:</strong> Berechnet Pausen automatisch anhand von Satzstruktur & Markern.</li>
+                                        <li><strong>Persönliches WPM <span class="ska-premium-badge">Premium</span>:</strong> Nutze dein eigenes Sprecher-Tempo als Standard.</li>
+                                    </ul>
+                                </div>
+                                <div class="ska-help-tab-panel" data-tab="ska-help-tab-2">
+                                    <ul class="ska-help-list">
+                                        <li><strong>Zielgruppe (Komplexität) <span class="ska-premium-badge">Premium</span>:</strong> Passt Verständlichkeits-Checks an das Publikum an.</li>
+                                        <li><strong>Keyword-Dichte <span class="ska-premium-badge">Premium</span>:</strong> Zeigt, ob Kernbegriffe dominant genug sind.</li>
+                                        <li><strong>Sentiment & Emotion:</strong> Ermittelt, wie positiv/negativ/emotional der Text wirkt.</li>
+                                        <li><strong>Archetypen & Tonalität:</strong> Stellt Stil und Stimmung transparent dar.</li>
+                                    </ul>
+                                </div>
+                                <div class="ska-help-tab-panel" data-tab="ska-help-tab-3">
+                                    <ul class="ska-help-list">
+                                        <li><strong>Buzzword-Blacklist <span class="ska-premium-badge">Premium</span>:</strong> Markiert Floskeln und austauschbare Phrasen.</li>
+                                        <li><strong>Pflichtpassagen <span class="ska-premium-badge">Premium</span>:</strong> Prüft, ob Pflichttexte exakt enthalten sind.</li>
+                                        <li><strong>Zahlenverarbeitung:</strong> Zahlen als Wort oder Ziffer zählen – passend zum Einsatzzweck.</li>
+                                        <li><strong>Synonyme/Thesaurus:</strong> Liefert Alternativen für Wiederholungen (online <span class="ska-premium-badge">Premium</span>).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ska-help-box ska-help-box--guide">
+                            <strong>Anleitung:</strong> Stelle zuerst Genre + Zielzeit ein, optimiere dann die Karten – so bleibt das Timing stabil.
+                        </div>
+                    </section>
 
-                   <div style="margin-top:2rem; padding:1rem; border-radius:10px; background:#eff6ff; color:#1e3a8a;">
-                       <strong>Datenschutz:</strong> Alle Analysen laufen lokal im Browser. Dein Text verlässt dein Gerät nicht.
-                   </div>
+                    <section id="ska-help-analysis" class="ska-help-section">
+                        <header>
+                            <h4>📊 Analyse verstehen</h4>
+                            <p>Diese Kennzahlen bestimmen die Qualität deines Skripts.</p>
+                        </header>
+                        <div class="ska-help-grid">
+                            <div class="ska-help-card">
+                                <h4>Tempo & Dauer</h4>
+                                <p>Reale Sprechzeit inkl. Pausenmarker, Zielzeit und Tempo-Trend.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Rhythmus & Satzlänge</h4>
+                                <p>Zu lange Sätze, monotone Passagen und Rhythmusbrüche werden markiert.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Verständlichkeit</h4>
+                                <p>Schachtelsätze, Komplexität und Flesch-Werte zeigen, wie leicht der Text ist.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Wirkung & Emotion</h4>
+                                <p>Sentiment, Intensität und Wortwahl zeigen, wie der Text ankommt.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="ska-help-cards" class="ska-help-section">
+                        <header>
+                            <h4>🧩 Analyse-Karten (Themenübersicht)</h4>
+                            <p>Jede Karte gibt dir konkrete Hinweise zur Optimierung.</p>
+                        </header>
+                        <div class="ska-help-columns">
+                            <div>
+                                <h5>Struktur & Verständlichkeit</h5>
+                                <ul class="ska-help-list">
+                                    <li>Schnell-Überblick</li>
+                                    <li>Textlänge, Kapitel & Struktur</li>
+                                    <li>Rhythmus, Satzanfänge, Satzlängen</li>
+                                    <li>Schachtelsätze / Depth-Check</li>
+                                    <li>Einfache Sprache</li>
+                                    <li>Dialog- und Rollenverteilung</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5>Wortwahl & Wirkung</h5>
+                                <ul class="ska-help-list">
+                                    <li>Keyword-Fokus</li>
+                                    <li>Wortschatz & Wiederholungen</li>
+                                    <li>Buzzwords <span class="ska-premium-badge">Premium</span></li>
+                                    <li>Metaphern & Bildsprache</li>
+                                    <li>Anglizismen, Füllwörter, Adjektive/Adverbien</li>
+                                    <li>CTA / Handlungsaufforderungen</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5>Sprecherlichkeit</h5>
+                                <ul class="ska-help-list">
+                                    <li>Stolpersteine & Phonetik</li>
+                                    <li>Plosive & Atemführung</li>
+                                    <li>Pronunciation-Hilfen</li>
+                                    <li>Silben-Entropie</li>
+                                    <li>Tempo-Training (Pacing)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h5>Pflicht & Compliance</h5>
+                                <ul class="ska-help-list">
+                                    <li>Pflichtpassagen-Check <span class="ska-premium-badge">Premium</span></li>
+                                    <li>Compliance-Warnungen <span class="ska-premium-badge">Premium</span></li>
+                                    <li>Tonality & Stil-Analyse</li>
+                                    <li>Sentiment & Emotion</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="ska-help-box ska-help-box--hint">
+                            <strong>Tipp:</strong> Karten mit ⚠️ zeigen konkrete Stellen im Text – klicke sie an und optimiere direkt.
+                        </div>
+                    </section>
+
+                    <section id="ska-help-tools" class="ska-help-section">
+                        <header>
+                            <h4>🛠️ Werkzeuge</h4>
+                            <p>Praktische Tools für Produktion, Aufnahme und Export.</p>
+                        </header>
+                        <div class="ska-help-grid">
+                            <div class="ska-help-card">
+                                <h4>Teleprompter <span class="ska-premium-badge">Premium</span></h4>
+                                <p>Scrollt automatisch im Analyse-Tempo – perfekt für Aufnahme oder Proben.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Pacing-Training <span class="ska-premium-badge">Premium</span></h4>
+                                <p>Zeigt Tempo-Abweichungen und hilft, gleichmäßige Sprecherleistung zu trainieren.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Marker-Manager</h4>
+                                <p>Fügt Pausen und Regie-Hinweise ein. Marker beeinflussen Timing, nicht die Wortzahl.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Benchmark-Modal</h4>
+                                <p>Vergleicht Tempo und Lesbarkeit mit Referenzwerten (z. B. Standard, sportlich).</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>PDF-Report</h4>
+                                <p>Exportiere Zusammenfassung, Karten & Text – ideal fürs Team oder Kunden.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Export (Teleprompter) <span class="ska-premium-badge">Premium</span></h4>
+                                <p>Teleprompter-Text als TXT/JSON exportieren für Cutter oder Sprecher.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="ska-help-markers" class="ska-help-section">
+                        <header>
+                            <h4>🖍️ Marker & Regieanweisungen</h4>
+                            <p>Steuere Pausen, Dynamik und Sprecherführung ohne den Text zu verändern.</p>
+                        </header>
+                        <p class="ska-help-text">Marker beeinflussen die Dauer, werden aber nicht als gesprochener Text gezählt.</p>
+                        <table class="ska-help-table">
+                            <thead><tr><th>Marker / Code</th><th>Funktion</th></tr></thead>
+                            <tbody>
+                                <?php foreach ($markers_config as $marker): ?>
+                                    <tr>
+                                        <td><code><?php echo esc_html($marker['val']); ?></code></td>
+                                        <td><?php echo esc_html($marker['desc']); ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div class="ska-help-box ska-help-box--guide">
+                            <strong>Anleitung:</strong> Setze Pausen nach Sinnabschnitten und verwende Regie-Marker sparsam – zu viele Marker verlangsamen die Performance.
+                        </div>
+                    </section>
+
+                    <section id="ska-help-export" class="ska-help-section">
+                        <header>
+                            <h4>📦 Export & Ergebnisse</h4>
+                            <p>So nutzt du das Ergebnis in der Produktion.</p>
+                        </header>
+                        <ul class="ska-help-list">
+                            <li><strong>PDF-Report:</strong> Zusammenfassung, Analyse-Karten und Textansicht.</li>
+                            <li><strong>Skript mit Notizspalte <span class="ska-premium-badge">Premium</span>:</strong> Für Korrekturen & Regiekommentare.</li>
+                            <li><strong>Text-Export <span class="ska-premium-badge">Premium</span>:</strong> Teleprompter als TXT/JSON für Cutter oder Sprecher.</li>
+                            <li><strong>Benchmark-Check:</strong> Einordnen, ob Tempo/Lesbarkeit zur Branche passen.</li>
+                        </ul>
+                    </section>
+
+                    <section id="ska-help-premium" class="ska-help-section">
+                        <header>
+                            <h4>💎 Premium-Funktionen</h4>
+                            <p>Premium-Themen sind mit dem Badge markiert.</p>
+                        </header>
+                        <div class="ska-help-grid">
+                            <div class="ska-help-card">
+                                <h4>Erweiterte Analyse</h4>
+                                <p>Buzzword-Check, Keyword-Dichte, Pflichttexte, tiefergehende Detail-Listen.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Profi-Werkzeuge</h4>
+                                <p>Teleprompter, Pacing-Training, Export-Formate, Online-Thesaurus.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Personalisierung</h4>
+                                <p>Pausen-Automatik, persönliches WPM, Zielgruppen-Komplexität.</p>
+                            </div>
+                            <div class="ska-help-card">
+                                <h4>Premium-Analysen</h4>
+                                <p>Weitere Details in Karten wie Plosive, Fragen, Rhythmus und Silben-Entropie.</p>
+                            </div>
+                        </div>
+                        <div class="ska-help-box ska-help-box--hint">
+                            <strong>Hinweis:</strong> Premium-Karten bleiben sichtbar, sind aber in der freien Version begrenzt. Das Badge zeigt, welche Funktionen freigeschaltet werden.
+                        </div>
+                    </section>
+
+                    <section id="ska-help-privacy" class="ska-help-section">
+                        <header>
+                            <h4>🔒 Datenschutz & Support</h4>
+                            <p>Dein Text bleibt bei dir, Hilfe ist immer erreichbar.</p>
+                        </header>
+                        <div class="ska-help-columns">
+                            <div>
+                                <h5>Datenschutz</h5>
+                                <p class="ska-help-text">Alle Analysen laufen lokal im Browser. Dein Skript wird nicht an externe Server gesendet.</p>
+                            </div>
+                            <div>
+                                <h5>Support</h5>
+                                <p class="ska-help-text">Fragen? Nutze den Kontakt-Link im Footer oder starte eine Sprecher-Anfrage.</p>
+                            </div>
+                        </div>
+                    </section>
                 </div>
                  <div class="ska-modal-footer" style="display:flex; justify-content:flex-end;">
                      <button type="button" class="ska-btn ska-btn--secondary" data-action="close-help">Fenster schließen</button>
