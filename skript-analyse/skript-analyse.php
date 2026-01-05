@@ -185,6 +185,15 @@ function ska_shortcode() {
         <div class="skriptanalyse-compare-row"></div>
 
         <div class="skriptanalyse-analysis-bottom">
+            <div class="ska-tools-panel is-hidden">
+                <div class="ska-tools-header">
+                    <div class="ska-tools-title">
+                        <h3>Werkzeuge</h3>
+                        <p>Teleprompter, Pacing & Marker für die Umsetzung.</p>
+                    </div>
+                </div>
+                <div class="ska-tools-grid"></div>
+            </div>
             <div class="ska-analysis-filterbar"></div>
             <div class="skriptanalyse-analysis-bottom-grid"></div>
             <div class="skriptanalyse-hidden-panel"></div>
