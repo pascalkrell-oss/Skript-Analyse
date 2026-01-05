@@ -337,6 +337,20 @@
             'sehr', 'mehr', 'weniger', 'viel', 'viele', 'wenig', 'etwas', 'nichts', 'alles', 'jeder', 'jede', 'jedes', 'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes',
             'kein', 'keine', 'keiner', 'keines', 'keinem', 'keinen', 'bitte', 'danke', 'okay', 'ok', 'ja', 'nein'
         ],
+        ECHO_STOPWORDS: [
+            'der', 'die', 'das', 'ein', 'eine', 'einer', 'eines', 'einem', 'einen', 'und', 'oder', 'aber', 'denn', 'weil', 'als', 'wenn', 'dass', 'damit',
+            'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'sie', 'mich', 'dich', 'uns', 'euch', 'ihnen', 'mein', 'dein', 'sein', 'ihr', 'unser', 'euer',
+            'mit', 'von', 'für', 'auf', 'an', 'in', 'im', 'am', 'zum', 'zur', 'bei', 'aus', 'nach', 'vor', 'über', 'unter', 'zwischen', 'durch', 'gegen', 'ohne',
+            'ist', 'sind', 'war', 'waren', 'wird', 'werden', 'hat', 'haben', 'hatte', 'hätte', 'kann', 'können', 'muss', 'müssen', 'soll', 'sollen', 'darf', 'dürfen',
+            'auch', 'noch', 'schon', 'nur', 'hier', 'dort', 'heute', 'morgen', 'gestern', 'immer', 'nie', 'jetzt', 'gleich', 'so', 'wie', 'was', 'wer', 'wo', 'wann',
+            'sehr', 'mehr', 'weniger', 'viel', 'viele', 'wenig', 'etwas', 'nichts', 'alles', 'jeder', 'jede', 'jedes', 'dieser', 'diese', 'dieses', 'jener', 'jene', 'jenes',
+            'kein', 'keine', 'keiner', 'keines', 'keinem', 'keinen', 'bitte', 'danke', 'okay', 'ok', 'ja', 'nein',
+            'nicht', 'diese', 'dieser', 'dieses', 'aber', 'auch', 'schon', 'sich', 'mich', 'dich', 'uns', 'euch', 'ihnen', 'sein', 'haben', 'werden', 'können', 'müssen',
+            'wollen', 'sollen', 'dürfen', 'mögen', 'sind', 'wird', 'wurde', 'war', 'hat', 'hatte', 'wäre', 'hätte', 'habe', 'kann', 'muss', 'über', 'unter', 'nach', 'vor',
+            'aus', 'bei', 'mit', 'von', 'seit', 'durch', 'gegen', 'ohne', 'für', 'weil', 'trotz', 'wegen', 'dabei', 'dafür', 'damit', 'daran', 'hier', 'dort', 'dann',
+            'jetzt', 'heute', 'morgen', 'gestern', 'immer', 'nie', 'oft', 'alles', 'etwas', 'nichts', 'viel', 'wenig', 'manche', 'einige', 'viele', 'machen', 'macht', 'getan',
+            'sehen', 'sieht', 'gehen', 'geht', 'kommen', 'kommt', 'sagen', 'sagt', 'gesagt', 'geben', 'gibt', 'nehmen', 'nimmt', 'lassen', 'lässt'
+        ],
         
         TIPS: {
             fillers: ["Hoch-Gewichtete Wörter sind 'Semantisches Rauschen'.", "Wörter like 'eigentlich' suggerieren Unsicherheit. Sei konkret!", "Nutze Füllwörter nur bewusst für einen sehr lockeren Umgangston.", "Je kürzer der Spot (Werbung), desto tödlicher ist jedes 'vielleicht'.", "Prüfe bei jedem Füllwort: Ändert sich der Sinn, wenn es fehlt? Wenn nein: Weg damit."],
@@ -411,8 +425,21 @@
                 .replace(/\s*\[[^\]]+\]\s*/g, ' ')
                 .replace(/\s*\|\s*/g, ' ')
                 .replace(/[\u200B\uFEFF]/g, '')
-                .replace(/\s+/g, ' ')
-                .trim();
+            .replace(/\s+/g, ' ')
+            .trim();
+        },
+        stemWord: (word) => {
+            if (!word) return '';
+            let w = String(word).toLowerCase().replace(/[^a-zäöüß]/g, '');
+            if (w.length < 3) return w;
+            if (w.startsWith('ge') && w.length > 5) w = w.slice(2);
+            const suffixes = ['chen', 'lein', 'ungen', 'ung', 'heit', 'keit', 'isch', 'lich', 'igkeit', 'igkeiten', 'ig', 'end', 'ern', 'er', 'en', 'e', 's', 'n'];
+            suffixes.forEach((suffix) => {
+                if (w.length > 4 && w.endsWith(suffix)) {
+                    w = w.slice(0, -suffix.length);
+                }
+            });
+            return w;
         },
         renderMarkersToHtml: (text) => {
             const safeText = SA_Utils.escapeHtml(String(text || ''));
@@ -1142,18 +1169,23 @@
         findWordEchoes: (text) => {
             const words = text.toLowerCase().match(/\b[a-zäöüß]+\b/g) || [];
             const echoes = new Set();
-            const minLen = 5; const range = 35; 
-            const ignore = ['nicht', 'eine', 'einer', 'einem', 'einen', 'eines', 'diese', 'dieser', 'dieses', 'dass', 'wenn', 'aber', 'oder', 'und', 'denn', 'doch', 'auch', 'noch', 'schon', 'sich', 'mich', 'dich', 'uns', 'euch', 'ihnen', 'mein', 'dein', 'sein', 'ihr', 'sein', 'haben', 'werden', 'können', 'müssen', 'wollen', 'sollen', 'dürfen', 'mögen', 'sind', 'wird', 'wurde', 'war', 'hat', 'hatte', 'wäre', 'hätte', 'habe', 'kann', 'muss', 'über', 'unter', 'nach', 'vor', 'aus', 'bei', 'mit', 'von', 'seit', 'durch', 'gegen', 'ohne', 'für', 'weil', 'trotz', 'wegen', 'dabei', 'dafür', 'damit', 'daran', 'hier', 'dort', 'dann', 'jetzt', 'heute', 'morgen', 'gestern', 'immer', 'nie', 'oft', 'alles', 'etwas', 'nichts', 'viel', 'wenig', 'manche', 'einige', 'viele', 'machen', 'macht', 'getan', 'sehen', 'sieht', 'gehen', 'geht', 'kommen', 'kommt', 'sagen', 'sagt', 'gesagt', 'geben', 'gibt', 'nehmen', 'nimmt', 'lassen', 'lässt'];
+            const minLen = 5;
+            const range = 35;
+            const ignore = new Set(SA_CONFIG.ECHO_STOPWORDS || SA_CONFIG.STOPWORDS);
             const lastSeen = new Map();
+            const stemToLabel = new Map();
             for(let i=0; i < words.length; i++) {
                 const current = words[i];
-                if(current.length < minLen || ignore.includes(current)) continue;
-                if(lastSeen.has(current)) {
-                    if((i - lastSeen.get(current)) <= range) echoes.add(current);
+                if(ignore.has(current)) continue;
+                const stem = SA_Utils.stemWord(current);
+                if(stem.length < minLen) continue;
+                if(!stemToLabel.has(stem)) stemToLabel.set(stem, current);
+                if(lastSeen.has(stem)) {
+                    if((i - lastSeen.get(stem)) <= range) echoes.add(stem);
                 }
-                lastSeen.set(current, i);
+                lastSeen.set(stem, i);
             }
-            return [...echoes];
+            return [...echoes].map((stem) => stemToLabel.get(stem) || stem);
         },
         analyzeMetaphorPhrases: (text) => {
             if (!text || !text.trim()) return { total: 0, matches: [] };
@@ -1398,19 +1430,14 @@
         },
         analyzeRedundancy: (sentences) => {
             if (!sentences || sentences.length < 2) return [];
-            const stemWord = (word) => {
-                let w = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
-                const suffixes = ['chen', 'lein', 'ungen', 'ung', 'heit', 'keit', 'isch', 'lich', 'end', 'ern', 'er', 'en', 'e', 's'];
-                suffixes.forEach(s => {
-                    if (w.length > 4 && w.endsWith(s)) {
-                        w = w.slice(0, -s.length);
-                    }
-                });
-                return w;
-            };
             const tokenize = (sentence) => {
                 const words = sentence.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
-                return words.map(stemWord).filter(w => w.length > 2);
+                const stopwords = new Set(SA_CONFIG.STOPWORDS);
+                return words.map((word) => {
+                    const lower = word.toLowerCase();
+                    return { lower, stem: SA_Utils.stemWord(lower) };
+                }).filter(({ lower, stem }) => stem.length > 2 && !stopwords.has(lower) && !stopwords.has(stem))
+                    .map(({ stem }) => stem);
             };
             const levenshtein = (a, b) => {
                 const m = a.length;
