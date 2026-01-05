@@ -1,23 +1,33 @@
 /* eslint-disable no-restricted-globals */
-const cleanTextForCounting = (text) =>
+let sharedUtils = self.SA_ANALYSIS_UTILS;
+try {
+    if (!sharedUtils && typeof importScripts === 'function') {
+        importScripts(new URL('analysis-utils.js', self.location.href).href);
+        sharedUtils = self.SA_ANALYSIS_UTILS;
+    }
+} catch (err) {
+    sharedUtils = sharedUtils || null;
+}
+
+const cleanTextForCounting = sharedUtils?.cleanTextForCounting || ((text) =>
     text
         .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
         .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
         .replace(/\s*\[[A-ZÄÖÜ]{2,}\]\s*/g, ' ')
         .replace(/\s*\|\s*/g, ' ')
         .replace(/\s+/g, ' ')
-        .trim();
+        .trim());
 
-const countSyllables = (word) => {
+const countSyllables = sharedUtils?.countSyllables || ((word) => {
     const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
     if (!clean) return 0;
     if (clean.length <= 3) return 1;
     const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
     const matches = normalized.match(/[aeiouäöü]/g);
     return matches ? matches.length : 1;
-};
+});
 
-const expandNumbersForAudio = (text) => {
+const expandNumbersForAudio = sharedUtils?.expandNumbersForAudio || ((text) => {
     const toWords = (num) => {
         const units = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
         const tens = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
@@ -60,9 +70,9 @@ const expandNumbersForAudio = (text) => {
     };
 
     return text.replace(/(\d{1,3}(?:\.\d{3})+|\d+)([.,]\d+)?%?/g, (m) => normalize(m));
-};
+});
 
-const analyzeReadability = (text, settings = {}) => {
+const analyzeReadability = sharedUtils?.analyzeReadability || ((text, settings = {}) => {
     let clean = cleanTextForCounting(text).trim();
     if (settings.numberMode === 'word') {
         clean = expandNumbersForAudio(clean);
@@ -138,14 +148,43 @@ const analyzeReadability = (text, settings = {}) => {
         maxSentenceWords,
         totalSyllables
     };
-};
+});
+
+const analyzeKeywordClusters = sharedUtils?.analyzeKeywordClusters;
+const findStumbles = sharedUtils?.findStumbles;
+const analyzeRedundancy = sharedUtils?.analyzeRedundancy;
 
 self.onmessage = (event) => {
-    const { id, type, paragraphs, settings } = event.data || {};
-    if (type !== 'paragraphs') return;
-    const results = (paragraphs || []).map((entry) => {
-        const result = analyzeReadability(entry.text || '', settings || {});
-        return { index: entry.index, text: entry.text || '', result };
-    });
-    self.postMessage({ id, results });
+    const { id, type, payload } = event.data || {};
+    if (!id || !type) return;
+    if (type === 'paragraphs') {
+        const { paragraphs, settings } = payload || {};
+        const result = (paragraphs || []).map((entry) => {
+            const analysis = analyzeReadability(entry.text || '', settings || {});
+            return { index: entry.index, text: entry.text || '', result: analysis };
+        });
+        self.postMessage({ id, type, result });
+        return;
+    }
+    if (type === 'keyword_focus') {
+        const { text, settings, stopwords } = payload || {};
+        const result = analyzeKeywordClusters
+            ? analyzeKeywordClusters(text || '', settings || {}, stopwords || [])
+            : { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
+        self.postMessage({ id, type, result });
+        return;
+    }
+    if (type === 'stumble') {
+        const { text, phonetics } = payload || {};
+        const result = findStumbles
+            ? findStumbles(text || '', phonetics || [])
+            : { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+        self.postMessage({ id, type, result });
+        return;
+    }
+    if (type === 'redundancy') {
+        const { sentences } = payload || {};
+        const result = analyzeRedundancy ? analyzeRedundancy(sentences || []) : [];
+        self.postMessage({ id, type, result });
+    }
 };
