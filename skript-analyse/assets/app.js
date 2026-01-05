@@ -7385,6 +7385,10 @@
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
+                'Zeichen-Zählung',
+                'Wort- & Satzstatistik',
+                'Lesbarkeits-Score',
+                'Füllwort-Analyse (Basis)',
                 'Autosave (lokal)',
                 'PDF-Export (Basis)'
             ];
@@ -7696,7 +7700,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse und Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -7720,7 +7724,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade für volle Ergebnisse.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse und Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
