@@ -553,7 +553,8 @@ function ska_shortcode() {
                         </div>
                     </section>
                 </div>
-                 <div class="ska-modal-footer" style="display:flex; justify-content:flex-end;">
+                 <div class="ska-modal-footer" style="display:flex; justify-content:flex-end; gap:0.75rem;">
+                     <button type="button" class="ska-btn ska-btn--primary" data-action="download-help-pdf">Anleitung herunterladen</button>
                      <button type="button" class="ska-btn ska-btn--secondary" data-action="close-help">Fenster schließen</button>
                  </div>
             </div>
