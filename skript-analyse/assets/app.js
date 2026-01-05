@@ -3324,6 +3324,21 @@
             m.dataset.wordCount = String(wordCount);
         }
 
+        renderBenchmarkBadge(metric, value, label = 'Benchmark') {
+            const result = SA_Logic.getBenchmarkPercentile(value, metric);
+            if (!result) return '';
+
+            const percentile = Math.round(result.percentile);
+            const labelText = result.label ? `${result.label}` : `Perzentil ${percentile}`;
+
+            return `
+                <div class="ska-overview-benchmark" style="margin-top:0.55rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">${label}</span>
+                    <span style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:999px;">${labelText}</span>
+                    <span style="font-size:0.75rem; color:#94a3b8;">P${percentile}</span>
+                </div>`;
+        }
+
         renderTeleprompterModal() {
             let m = document.getElementById('ska-teleprompter-modal');
             if (m) m.remove();
