@@ -683,7 +683,8 @@
         },
         isPremiumFeatureEnabled: () => {
             const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            return (SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN) && planMode === 'premium';
+            const hasPremiumFlag = SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN || planMode === 'premium';
+            return hasPremiumFlag && planMode === 'premium';
         },
         closeModal: (modal, onClosed) => {
             if (!modal) return;
@@ -2682,6 +2683,11 @@
 
             this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
+            const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
+            const initialPlanMode = SA_CONFIG.PRO_MODE
+                ? 'premium'
+                : ((planModeFromWindow === 'premium' || planModeFromWindow === 'free') ? planModeFromWindow : 'free');
+
             this.state = { 
                 savedVersion: '', 
                 currentData: {}, 
@@ -2690,7 +2696,7 @@
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
-                planMode: SA_CONFIG.PRO_MODE ? 'premium' : 'free',
+                planMode: initialPlanMode,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
@@ -3324,18 +3330,19 @@
             m.dataset.wordCount = String(wordCount);
         }
 
-        renderBenchmarkBadge(metric, value, label = 'Benchmark') {
+        renderBenchmarkBadge(metric, value, label = 'Benchmark', options = {}) {
             const result = SA_Logic.getBenchmarkPercentile(value, metric);
             if (!result) return '';
 
             const percentile = Math.round(result.percentile);
             const labelText = result.label ? `${result.label}` : `Perzentil ${percentile}`;
+            const showPercentile = options.showPercentile !== false;
 
             return `
                 <div class="ska-overview-benchmark" style="margin-top:0.55rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:0.7rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">${label}</span>
                     <span style="background:#e0f2fe; color:#0369a1; font-weight:700; font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:999px;">${labelText}</span>
-                    <span style="font-size:0.75rem; color:#94a3b8;">P${percentile}</span>
+                    ${showPercentile ? `<span style="font-size:0.75rem; color:#94a3b8;">P${percentile}</span>` : ''}
                 </div>`;
         }
 
@@ -3829,6 +3836,16 @@
                 }
                 return true;
             }
+            if (act === 'show-stumble-hiatus') {
+                const items = this.state.stumbleData?.hiatus || [];
+                this.renderStumbleModal('hiatus', items);
+                return true;
+            }
+            if (act === 'show-stumble-clusters') {
+                const items = this.state.stumbleData?.consonant_clusters || [];
+                this.renderStumbleModal('clusters', items);
+                return true;
+            }
             if (act === 'toggle-card') {
                 const id = btn.dataset.card;
                 if (id) {
@@ -4165,11 +4182,16 @@
             if(h) this.state.hiddenCards = new Set(JSON.parse(h));
             const e = SA_Utils.storage.load(SA_CONFIG.UI_KEY_EXCLUDED);
             if(e) this.state.excludedCards = new Set(JSON.parse(e));
+            const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
             if (SA_CONFIG.IS_ADMIN) {
                 const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
                 if (p === 'premium' || p === 'free') this.state.planMode = p;
+            } else if (planModeFromWindow === 'premium' || planModeFromWindow === 'free') {
+                this.state.planMode = planModeFromWindow;
             }
-            if (!SA_CONFIG.PRO_MODE) {
+            if (SA_CONFIG.PRO_MODE) {
+                this.state.planMode = 'premium';
+            } else if (this.state.planMode !== 'premium') {
                 this.state.planMode = 'free';
             }
 
@@ -5325,8 +5347,7 @@
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
             const issues = data?.words || [];
-            const hiatuses = data?.hiatuses || [];
-            if((!issues || issues.length === 0) && (!hiatuses || hiatuses.length === 0)) {
+            if((!issues || issues.length === 0)) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
                  if (issues.length) {
@@ -5343,14 +5364,6 @@
                                 <span style="font-weight:600; color:#334155; font-size:0.85rem;">${item.word}</span>
                                 <span style="color:#2563eb; font-size:0.8rem;">${item.hint}</span>
                                </div>`;
-                     });
-                     h += `</div>`;
-                 }
-                 if (hiatuses.length) {
-                     h += `<div class="ska-section-title" style="margin-top:0.8rem;">Hiatus an Wortgrenzen</div>`;
-                     h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
-                     hiatuses.forEach((phrase) => {
-                         h += `<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${phrase}</span>`;
                      });
                      h += `</div>`;
                  }
@@ -5517,9 +5530,8 @@
             let h = '';
             const isPremium = this.isPremiumActive();
             const clusters = data?.plosives || [];
-            const consonantClusters = data?.consonantClusters || [];
 
-            if((!clusters || clusters.length === 0) && (!consonantClusters || consonantClusters.length === 0)) {
+            if((!clusters || clusters.length === 0)) {
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
             } else {
                 if (clusters.length) {
@@ -5548,14 +5560,6 @@
                     } else if (remaining.length) {
                         h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-plosive" data-total="${remaining.length}" data-premium-hint="Mehr Plosiv-Details gibt es in Premium." aria-disabled="true">...und ${remaining.length} weitere anzeigen</button>`;
                     }
-                }
-                if (consonantClusters.length) {
-                    h += `<div class="ska-section-title" style="margin-top:0.8rem;">Harte Konsonanten-Cluster</div>`;
-                    h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
-                    consonantClusters.forEach((phrase) => {
-                        h += `<span class="skriptanalyse-badge" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">${phrase}</span>`;
-                    });
-                    h += `</div>`;
                 }
                 h += this.renderTipSection('plosive', true);
             }
@@ -5892,6 +5896,44 @@
 
             h += this.renderTipSection('syllable_entropy', true);
             this.updateCard('syllable_entropy', h);
+        }
+
+        renderStumbleModal(type, items) {
+            const existing = document.getElementById('ska-stumble-modal');
+            if (existing) existing.remove();
+            const safeItems = Array.isArray(items) ? items : [];
+            const labels = {
+                hiatus: 'Hiatus an Wortgrenzen',
+                clusters: 'Harte Konsonanten-Cluster'
+            };
+            const styles = {
+                hiatus: { bg: '#eef2ff', color: '#4338ca', border: '#c7d2fe' },
+                clusters: { bg: '#fff7ed', color: '#9a3412', border: '#fed7aa' }
+            };
+            const label = labels[type] || 'Stolpersteine';
+            const style = styles[type] || styles.hiatus;
+
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal';
+            modal.id = 'ska-stumble-modal';
+            modal.ariaHidden = 'true';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-stumble-modal"></div>
+                <div class="skriptanalyse-modal-content" style="max-width:640px;">
+                    <button type="button" class="ska-close-icon" data-action="close-stumble-modal">&times;</button>
+                    <div class="ska-modal-header"><h3>${label}</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+                            ${safeItems.map(item => `<span class="skriptanalyse-badge" style="background:${style.bg}; color:${style.color}; border:1px solid ${style.border};">${item}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="ska-modal-footer">
+                        <button type="button" class="ska-btn ska-btn--secondary" data-action="close-stumble-modal">Schließen</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
         }
 
         renderSyllableEntropyModal(issues) {
@@ -6408,7 +6450,7 @@
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
             const txt = traffic.label;
-            const benchmarkFlesch = this.renderBenchmarkBadge('flesch', r.score, 'Benchmark (Flesch)');
+            const benchmarkFlesch = this.renderBenchmarkBadge('flesch', r.score, 'Benchmark (Flesch)', { showPercentile: false });
             
             // Temperature gradient calculation (mapped from -100..100 to 0..100%)
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
@@ -6822,55 +6864,76 @@
             this.updateCard('echo', h);
         }
 
+        normalizeStumbles(s) {
+            const source = s || {};
+            const consonantClusters = Array.isArray(source.consonant_clusters)
+                ? source.consonant_clusters
+                : (Array.isArray(source.consonantClusters) ? source.consonantClusters : []);
+            return {
+                long: Array.isArray(source.long) ? source.long : [],
+                camel: Array.isArray(source.camel) ? source.camel : [],
+                phonetic: Array.isArray(source.phonetic) ? source.phonetic : [],
+                alliter: Array.isArray(source.alliter) ? source.alliter : [],
+                hiatus: Array.isArray(source.hiatus) ? source.hiatus : [],
+                consonant_clusters: consonantClusters
+            };
+        }
+
         renderStumbleCard(s, active) {
             if(!active) return this.updateCard('stumble', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
             let h = '';
-            const hasIssues = (s.long.length > 0 || s.camel.length > 0 || s.phonetic.length > 0 || s.alliter.length > 0 || s.hiatus.length > 0 || s.consonant_clusters.length > 0);
+            const normalized = this.normalizeStumbles(s);
+            this.state.stumbleData = normalized;
+            const hasIssues = (normalized.long.length > 0 || normalized.camel.length > 0 || normalized.phonetic.length > 0 || normalized.alliter.length > 0 || normalized.hiatus.length > 0 || normalized.consonant_clusters.length > 0);
 
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
-                if(s.phonetic.length) { 
+                if(normalized.phonetic.length) { 
                     h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.phonetic.forEach(w => {
+                    normalized.phonetic.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.camel.length) { 
+                if(normalized.camel.length) { 
                     h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.camel.forEach(w => {
+                    normalized.camel.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--camel">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.long.length) { 
+                if(normalized.long.length) { 
                     h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.long.forEach(w => {
+                    normalized.long.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--long">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.alliter.length) {
+                if(normalized.alliter.length) {
                     h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.alliter.forEach(w => {
+                    normalized.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.hiatus.length) {
+                if(normalized.hiatus.length) {
+                    const hiatusPreview = normalized.hiatus.slice(0, 8);
                     h += `<div class="ska-section-title">Hiatus an Wortgrenzen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.hiatus.forEach(w => {
+                    hiatusPreview.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${w}</span>`;
                     });
                     h+='</div>'; 
+                    h += `<button class="ska-expand-link ska-more-toggle" data-action="show-stumble-hiatus">Alle Hiatus anzeigen (${normalized.hiatus.length})</button>`;
                 }
-                if(s.consonant_clusters.length) {
+                if(normalized.consonant_clusters.length) {
+                    const clusterPreview = normalized.consonant_clusters.slice(0, 8);
                     h += `<div class="ska-section-title">Harte Konsonanten-Cluster</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.consonant_clusters.forEach(w => {
+                    clusterPreview.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">${w}</span>`;
                     });
                     h+='</div>'; 
+                    h += `<button class="ska-expand-link ska-more-toggle" data-action="show-stumble-clusters">Alle Konsonanten-Cluster anzeigen (${normalized.consonant_clusters.length})</button>`;
                 }
                 h += this.renderTipSection('stumble', true);
             }
@@ -7099,7 +7162,10 @@
         }
 
         isPremiumActive() {
-            return (SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN) && this.state.planMode === 'premium';
+            const planMode = this.state.planMode;
+            const windowPlanMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
+            const hasPremiumFlag = SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN || windowPlanMode === 'premium';
+            return hasPremiumFlag && planMode === 'premium';
         }
 
         getEffectiveTimeMode() {
@@ -7409,7 +7475,7 @@
             const countObj = (r, raw) => ({
                 fillers: getFillerWeight(SA_Logic.findFillers(r.cleanedText)),
                 passive: SA_Logic.findPassive(r.cleanedText).length,
-                stumbles: (() => { const s = SA_Logic.findStumbles(raw); return s.long.length + s.camel.length + s.phonetic.length + s.hiatus.length + s.consonant_clusters.length; })()
+                stumbles: (() => { const s = this.normalizeStumbles(SA_Logic.findStumbles(raw)); return s.long.length + s.camel.length + s.phonetic.length + s.hiatus.length + s.consonant_clusters.length; })()
             });
 
             const oldMetrics = { ...countObj(oldRead, oldRaw), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
