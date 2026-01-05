@@ -2563,7 +2563,7 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2, complianceText: '' };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
             this.state = { 
                 savedVersion: '', 
@@ -3222,6 +3222,10 @@
                         <div class="ska-teleprompter-controls">
                             <button class="ska-btn ska-btn--secondary" data-action="teleprompter-smaller">A-</button>
                             <button class="ska-btn ska-btn--secondary" data-action="teleprompter-bigger">A+</button>
+                            <label class="ska-teleprompter-toggle">
+                                <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
+                                <span>Spiegeln</span>
+                            </label>
                             <button class="ska-btn ska-btn--primary" data-action="teleprompter-toggle">Start</button>
                             <button class="ska-btn ska-btn--secondary" data-action="teleprompter-reset">Reset</button>
                             <button class="ska-btn ska-btn--ghost" data-action="close-teleprompter">Schließen</button>
@@ -3235,6 +3239,15 @@
                     </div>
                 </div>`;
             document.body.appendChild(m);
+            this.applyTeleprompterMirror(m);
+        }
+
+        applyTeleprompterMirror(modal = null) {
+            const target = modal || document.getElementById('ska-teleprompter-modal');
+            if (!target) return;
+            target.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
+            const toggle = target.querySelector('[data-action="teleprompter-mirror"]');
+            if (toggle) toggle.checked = !!this.settings.teleprompterMirror;
         }
 
         updateTeleprompterMeta(read) {
@@ -3540,6 +3553,7 @@
                 }
                 const modal = document.getElementById('ska-teleprompter-modal');
                 if (modal) {
+                    this.applyTeleprompterMirror(modal);
                     SA_Utils.openModal(modal);
                     document.body.classList.add('ska-modal-open');
                     this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
@@ -3916,6 +3930,7 @@
                 if(typeof global.focusKeywords !== 'undefined') this.settings.focusKeywords = global.focusKeywords;
                 if(typeof global.keywordDensityLimit !== 'undefined') this.settings.keywordDensityLimit = global.keywordDensityLimit;
                 if(typeof global.complianceText !== 'undefined') this.settings.complianceText = global.complianceText;
+                if(typeof global.teleprompterMirror !== 'undefined') this.settings.teleprompterMirror = global.teleprompterMirror;
                 
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
@@ -3950,7 +3965,8 @@
                 periodPause: this.settings.periodPause,
                 focusKeywords: this.settings.focusKeywords,
                 keywordDensityLimit: this.settings.keywordDensityLimit,
-                complianceText: this.settings.complianceText
+                complianceText: this.settings.complianceText,
+                teleprompterMirror: this.settings.teleprompterMirror
             }));
         }
 
@@ -4309,19 +4325,13 @@
                 }
             });
 
-            this.root.addEventListener('mouseover', (e) => {
-                const badge = e.target.closest('.ska-synonym-target');
-                if (!badge || !this.root.contains(badge)) return;
-                this.showSynonymTooltip(badge);
-            });
-            this.root.addEventListener('mouseout', (e) => {
-                const badge = e.target.closest('.ska-synonym-target');
-                if (!badge) return;
-                const related = e.relatedTarget;
-                if (this.synonymTooltip && (this.synonymTooltip === related || this.synonymTooltip.contains(related))) {
-                    return;
+            document.body.addEventListener('change', (e) => {
+                const mirrorToggle = e.target.closest('[data-action="teleprompter-mirror"]');
+                if (mirrorToggle) {
+                    this.settings.teleprompterMirror = mirrorToggle.checked;
+                    this.saveUIState();
+                    this.applyTeleprompterMirror();
                 }
-                this.scheduleSynonymTooltipHide();
             });
 
             document.body.addEventListener('click', (e) => {
