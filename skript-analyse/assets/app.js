@@ -2343,9 +2343,25 @@
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
                     const margin = 20;
                     const contentWidth = pageWidth - (margin * 2);
                     let y = 25;
+                    const footerText = [
+                        'Skript-Analyse Tool bereitgestellt von Sprecher Pascal Krell',
+                        'www.sprecher-pascal.de | kontakt@sprecher-pascal.de'
+                    ];
+                    const renderFooter = () => {
+                        const footerTop = pageHeight - 16;
+                        doc.setDrawColor(226, 232, 240);
+                        doc.line(margin, footerTop, margin + contentWidth, footerTop);
+                        doc.setFontSize(8);
+                        doc.setTextColor(120);
+                        doc.setFont(undefined, 'normal');
+                        doc.text(footerText[0], margin, footerTop + 5);
+                        doc.text(footerText[1], margin, footerTop + 9);
+                        doc.setTextColor(0);
+                    };
 
                     const checkPage = (heightIfNeeded) => {
                         if (y + heightIfNeeded >= 280) {
@@ -2389,12 +2405,19 @@
                     };
 
                     // --- HEADER ---
-                    doc.setFontSize(22); doc.setTextColor(26, 147, 238); doc.setFont(undefined, 'bold');
-                    doc.text("Skript-Analyse Report", margin, y);
-                    y += 8;
-                    doc.setFontSize(10); doc.setTextColor(100); doc.setFont(undefined, 'normal');
-                    doc.text("Erstellt am: " + new Date().toLocaleDateString() + " um " + new Date().toLocaleTimeString(), margin, y);
-                    y += 15;
+                    const headerTop = y - 8;
+                    doc.setFillColor(241, 245, 249);
+                    doc.rect(margin, headerTop, contentWidth, 22, 'F');
+                    doc.setFontSize(20);
+                    doc.setTextColor(26, 147, 238);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Skript-Analyse Report", margin + 2, y);
+                    y += 7;
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.setFont(undefined, 'normal');
+                    doc.text("Erstellt am: " + new Date().toLocaleDateString() + " um " + new Date().toLocaleTimeString(), margin + 2, y);
+                    y += 16;
 
                     const read = SA_Logic.analyzeReadability(text, settings);
                     const stumbles = SA_Logic.findStumbles(text);
@@ -2697,6 +2720,11 @@
                         });
                     }
 
+                    const totalPages = doc.internal.getNumberOfPages();
+                    for (let page = 1; page <= totalPages; page++) {
+                        doc.setPage(page);
+                        renderFooter();
+                    }
                     doc.save('Skript-Analyse-Report.pdf'); 
                     
                     btnElement.textContent = 'Fertig ✔';
@@ -2721,183 +2749,6 @@
                     btnElement.disabled = false;
                 }
             }, 100);
-        },
-        generateHelp: function(modalEl, btnElement) {
-            if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF-Bibliothek nicht geladen.'); return; }
-            if (!modalEl) return;
-            const originalText = btnElement.textContent;
-            btnElement.textContent = 'Erstelle...';
-            btnElement.disabled = true;
-
-            setTimeout(() => {
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const margin = 18;
-                    const contentWidth = pageWidth - (margin * 2);
-                    let y = 22;
-
-                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
-                    const getText = (root, selector) => {
-                        if (!root) return '';
-                        const el = selector ? root.querySelector(selector) : root;
-                        return el ? el.textContent : '';
-                    };
-                    const checkPage = (heightIfNeeded) => {
-                        if (y + heightIfNeeded >= 280) {
-                            doc.addPage();
-                            y = 20;
-                        }
-                    };
-                    const addTitle = (text) => {
-                        doc.setFontSize(18);
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(text, margin, y);
-                        y += 8;
-                        doc.setFontSize(9);
-                        doc.setTextColor(100);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`Stand: ${new Date().toLocaleDateString()}`, margin, y);
-                        y += 12;
-                        doc.setTextColor(0);
-                    };
-                    const addSectionTitle = (text) => {
-                        checkPage(14);
-                        doc.setFontSize(12);
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(text, margin, y);
-                        doc.setDrawColor(226, 232, 240);
-                        doc.line(margin, y + 2, margin + contentWidth, y + 2);
-                        y += 10;
-                        doc.setFont(undefined, 'normal');
-                        doc.setTextColor(0);
-                    };
-                    const addParagraph = (text) => {
-                        const t = normalize(text);
-                        if (!t) return;
-                        doc.setFontSize(10);
-                        const split = doc.splitTextToSize(t, contentWidth);
-                        checkPage(split.length * 5 + 4);
-                        doc.text(split, margin, y);
-                        y += split.length * 5 + 4;
-                    };
-                    const addBulletList = (items) => {
-                        if (!items.length) return;
-                        doc.setFontSize(10);
-                        items.forEach((item) => {
-                            const line = normalize(item);
-                            if (!line) return;
-                            const split = doc.splitTextToSize(`• ${line}`, contentWidth);
-                            checkPage(split.length * 5 + 2);
-                            doc.text(split, margin, y);
-                            y += split.length * 5 + 2;
-                        });
-                        y += 2;
-                    };
-                    const addCard = (title, body) => {
-                        const titleText = normalize(title);
-                        const bodyText = normalize(body);
-                        if (!titleText && !bodyText) return;
-                        doc.setFontSize(10);
-                        const bodySplit = bodyText ? doc.splitTextToSize(bodyText, contentWidth - 6) : [];
-                        const cardHeight = Math.max(12, (bodySplit.length * 5) + 12);
-                        checkPage(cardHeight + 4);
-                        doc.setFillColor(248, 250, 252);
-                        doc.rect(margin, y, contentWidth, cardHeight, 'F');
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(titleText, margin + 3, y + 6);
-                        doc.setFont(undefined, 'normal');
-                        doc.setTextColor(60);
-                        if (bodySplit.length) {
-                            doc.text(bodySplit, margin + 3, y + 12);
-                        }
-                        doc.setTextColor(0);
-                        y += cardHeight + 6;
-                    };
-
-                    const modalTitle = normalize(getText(modalEl, '.ska-modal-header h3')) || 'Anleitung';
-                    addTitle(modalTitle);
-
-                    const hero = modalEl.querySelector('.ska-help-hero');
-                    if (hero) {
-                        addSectionTitle('Überblick');
-                        addParagraph(getText(hero, 'h4'));
-                        addParagraph(getText(hero, 'p'));
-                        const heroList = hero.querySelectorAll('ol li');
-                        addBulletList([...heroList].map(li => li.textContent));
-                    }
-
-                    const tocLinks = modalEl.querySelectorAll('.ska-help-toc-grid a');
-                    if (tocLinks.length) {
-                        addSectionTitle('Inhaltsverzeichnis');
-                        addBulletList([...tocLinks].map(link => link.textContent));
-                    }
-
-                    const sections = modalEl.querySelectorAll('.ska-help-section');
-                    sections.forEach((section) => {
-                        const heading = normalize(getText(section, 'header h4'));
-                        if (heading) addSectionTitle(heading);
-                        addParagraph(getText(section, 'header p'));
-
-                        const tabs = section.querySelectorAll('.ska-help-tabs');
-                        tabs.forEach((tabsEl) => {
-                            const panels = tabsEl.querySelectorAll('.ska-help-tab-panel');
-                            panels.forEach((panel) => {
-                                const tabId = panel.getAttribute('data-tab');
-                                const label = getText(tabsEl, `label[for="${tabId}"]`);
-                                if (label) addParagraph(label);
-                                const list = panel.querySelectorAll('li');
-                                addBulletList([...list].map(li => li.textContent));
-                            });
-                        });
-
-                        const cards = [...section.querySelectorAll('.ska-help-card')].filter(card => !card.closest('.ska-help-tabs'));
-                        cards.forEach((card) => addCard(getText(card, 'h4'), getText(card, 'p')));
-
-                        const lists = [...section.querySelectorAll('.ska-help-list')].filter(list => !list.closest('.ska-help-tabs'));
-                        lists.forEach((list) => addBulletList([...list.querySelectorAll('li')].map(li => li.textContent)));
-
-                        section.querySelectorAll('.ska-help-columns > div').forEach((col) => {
-                            const title = getText(col, 'h5');
-                            if (title) addParagraph(title);
-                            const colList = col.querySelectorAll('li');
-                            if (colList.length) {
-                                addBulletList([...colList].map(li => li.textContent));
-                            } else {
-                                addParagraph(getText(col, 'p'));
-                            }
-                        });
-
-                        section.querySelectorAll('.ska-help-box').forEach((box) => {
-                            addParagraph(box.textContent);
-                        });
-
-                        section.querySelectorAll('.ska-help-table tbody tr').forEach((row) => {
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length >= 2) {
-                                addBulletList([`${cells[0].textContent} – ${cells[1].textContent}`]);
-                            }
-                        });
-                    });
-
-                    doc.save('Skript-Analyse-Anleitung.pdf');
-
-                    btnElement.textContent = 'Fertig ✔';
-                    setTimeout(() => {
-                        btnElement.textContent = originalText;
-                        btnElement.disabled = false;
-                    }, 1400);
-                } catch (err) {
-                    console.error(err);
-                    alert('PDF konnte nicht erstellt werden.');
-                    btnElement.textContent = originalText;
-                    btnElement.disabled = false;
-                }
-            }, 150);
         }
     };
 
@@ -3842,179 +3693,6 @@
             return true;
         }
 
-        generateHelp(modalEl, btnElement) {
-            if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF-Bibliothek nicht geladen.'); return; }
-            if (!modalEl) return;
-            const originalText = btnElement.textContent;
-            btnElement.textContent = 'Erstelle...';
-            btnElement.disabled = true;
-
-            setTimeout(() => {
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    const margin = 18;
-                    const contentWidth = pageWidth - (margin * 2);
-                    let y = 22;
-
-                    const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
-                    const checkPage = (heightIfNeeded) => {
-                        if (y + heightIfNeeded >= 280) {
-                            doc.addPage();
-                            y = 20;
-                        }
-                    };
-                    const addTitle = (text) => {
-                        doc.setFontSize(18);
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(text, margin, y);
-                        y += 8;
-                        doc.setFontSize(9);
-                        doc.setTextColor(100);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(`Stand: ${new Date().toLocaleDateString()}`, margin, y);
-                        y += 12;
-                        doc.setTextColor(0);
-                    };
-                    const addSectionTitle = (text) => {
-                        checkPage(14);
-                        doc.setFontSize(12);
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(text, margin, y);
-                        doc.setDrawColor(226, 232, 240);
-                        doc.line(margin, y + 2, margin + contentWidth, y + 2);
-                        y += 10;
-                        doc.setFont(undefined, 'normal');
-                        doc.setTextColor(0);
-                    };
-                    const addParagraph = (text) => {
-                        const t = normalize(text);
-                        if (!t) return;
-                        doc.setFontSize(10);
-                        const split = doc.splitTextToSize(t, contentWidth);
-                        checkPage(split.length * 5 + 4);
-                        doc.text(split, margin, y);
-                        y += split.length * 5 + 4;
-                    };
-                    const addBulletList = (items) => {
-                        if (!items.length) return;
-                        doc.setFontSize(10);
-                        items.forEach((item) => {
-                            const line = normalize(item);
-                            if (!line) return;
-                            const split = doc.splitTextToSize(`• ${line}`, contentWidth);
-                            checkPage(split.length * 5 + 2);
-                            doc.text(split, margin, y);
-                            y += split.length * 5 + 2;
-                        });
-                        y += 2;
-                    };
-                    const addCard = (title, body) => {
-                        const titleText = normalize(title);
-                        const bodyText = normalize(body);
-                        if (!titleText && !bodyText) return;
-                        doc.setFontSize(10);
-                        const bodySplit = bodyText ? doc.splitTextToSize(bodyText, contentWidth - 6) : [];
-                        const cardHeight = Math.max(12, (bodySplit.length * 5) + 12);
-                        checkPage(cardHeight + 4);
-                        doc.setFillColor(248, 250, 252);
-                        doc.rect(margin, y, contentWidth, cardHeight, 'F');
-                        doc.setTextColor(26, 147, 238);
-                        doc.setFont(undefined, 'bold');
-                        doc.text(titleText, margin + 3, y + 6);
-                        doc.setFont(undefined, 'normal');
-                        doc.setTextColor(60);
-                        if (bodySplit.length) {
-                            doc.text(bodySplit, margin + 3, y + 12);
-                        }
-                        doc.setTextColor(0);
-                        y += cardHeight + 6;
-                    };
-
-                    const modalTitle = normalize(modalEl.querySelector('.ska-modal-header h3')?.textContent) || 'Anleitung';
-                    addTitle(modalTitle);
-
-                    const hero = modalEl.querySelector('.ska-help-hero');
-                    if (hero) {
-                        addSectionTitle('Überblick');
-                        addParagraph(hero.querySelector('h4')?.textContent);
-                        addParagraph(hero.querySelector('p')?.textContent);
-                        const heroList = hero.querySelectorAll('ol li');
-                        addBulletList([...heroList].map(li => li.textContent));
-                    }
-
-                    const tocLinks = modalEl.querySelectorAll('.ska-help-toc-grid a');
-                    if (tocLinks.length) {
-                        addSectionTitle('Inhaltsverzeichnis');
-                        addBulletList([...tocLinks].map(link => link.textContent));
-                    }
-
-                    const sections = modalEl.querySelectorAll('.ska-help-section');
-                    sections.forEach((section) => {
-                        const heading = normalize(section.querySelector('header h4')?.textContent);
-                        if (heading) addSectionTitle(heading);
-                        addParagraph(section.querySelector('header p')?.textContent);
-
-                        const tabs = section.querySelectorAll('.ska-help-tabs');
-                        tabs.forEach((tabsEl) => {
-                            const panels = tabsEl.querySelectorAll('.ska-help-tab-panel');
-                            panels.forEach((panel) => {
-                                const tabId = panel.getAttribute('data-tab');
-                                const label = tabsEl.querySelector(`label[for="${tabId}"]`)?.textContent;
-                                if (label) addParagraph(label);
-                                const list = panel.querySelectorAll('li');
-                                addBulletList([...list].map(li => li.textContent));
-                            });
-                        });
-
-                        const cards = [...section.querySelectorAll('.ska-help-card')].filter(card => !card.closest('.ska-help-tabs'));
-                        cards.forEach((card) => addCard(card.querySelector('h4')?.textContent, card.querySelector('p')?.textContent));
-
-                        const lists = [...section.querySelectorAll('.ska-help-list')].filter(list => !list.closest('.ska-help-tabs'));
-                        lists.forEach((list) => addBulletList([...list.querySelectorAll('li')].map(li => li.textContent)));
-
-                        section.querySelectorAll('.ska-help-columns > div').forEach((col) => {
-                            const title = col.querySelector('h5')?.textContent;
-                            if (title) addParagraph(title);
-                            const colList = col.querySelectorAll('li');
-                            if (colList.length) {
-                                addBulletList([...colList].map(li => li.textContent));
-                            } else {
-                                addParagraph(col.querySelector('p')?.textContent);
-                            }
-                        });
-
-                        section.querySelectorAll('.ska-help-box').forEach((box) => {
-                            addParagraph(box.textContent);
-                        });
-
-                        section.querySelectorAll('.ska-help-table tbody tr').forEach((row) => {
-                            const cells = row.querySelectorAll('td');
-                            if (cells.length >= 2) {
-                                addBulletList([`${cells[0].textContent} – ${cells[1].textContent}`]);
-                            }
-                        });
-                    });
-
-                    doc.save('Skript-Analyse-Anleitung.pdf');
-
-                    btnElement.textContent = 'Fertig ✔';
-                    setTimeout(() => {
-                        btnElement.textContent = originalText;
-                        btnElement.disabled = false;
-                    }, 1400);
-                } catch (err) {
-                    console.error(err);
-                    alert('PDF konnte nicht erstellt werden.');
-                    btnElement.textContent = originalText;
-                    btnElement.disabled = false;
-                }
-            });
-        }
-
         stopTeleprompterSpeechRecognition() {
             this.state.teleprompter.speechActive = false;
             const recognition = this.state.teleprompter.speechRecognition;
@@ -4289,13 +3967,6 @@
                     this.syncPdfOptions();
                     SA_Utils.openModal(modal);
                     document.body.classList.add('ska-modal-open');
-                }
-                return true;
-            }
-            if (act === 'download-help-pdf') {
-                const modal = document.getElementById('ska-help-modal');
-                if (modal) {
-                    SA_PDF.generateHelp(modal, btn);
                 }
                 return true;
             }
