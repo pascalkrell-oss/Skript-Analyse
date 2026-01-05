@@ -2737,6 +2737,11 @@
                     let y = 22;
 
                     const normalize = (text) => (text || '').replace(/\s+/g, ' ').trim();
+                    const getText = (root, selector) => {
+                        if (!root) return '';
+                        const el = selector ? root.querySelector(selector) : root;
+                        return el ? el.textContent : '';
+                    };
                     const checkPage = (heightIfNeeded) => {
                         if (y + heightIfNeeded >= 280) {
                             doc.addPage();
@@ -2812,14 +2817,14 @@
                         y += cardHeight + 6;
                     };
 
-                    const modalTitle = normalize(modalEl.querySelector('.ska-modal-header h3')?.textContent) || 'Anleitung';
+                    const modalTitle = normalize(getText(modalEl, '.ska-modal-header h3')) || 'Anleitung';
                     addTitle(modalTitle);
 
                     const hero = modalEl.querySelector('.ska-help-hero');
                     if (hero) {
                         addSectionTitle('Überblick');
-                        addParagraph(hero.querySelector('h4')?.textContent);
-                        addParagraph(hero.querySelector('p')?.textContent);
+                        addParagraph(getText(hero, 'h4'));
+                        addParagraph(getText(hero, 'p'));
                         const heroList = hero.querySelectorAll('ol li');
                         addBulletList([...heroList].map(li => li.textContent));
                     }
@@ -2832,16 +2837,16 @@
 
                     const sections = modalEl.querySelectorAll('.ska-help-section');
                     sections.forEach((section) => {
-                        const heading = normalize(section.querySelector('header h4')?.textContent);
+                        const heading = normalize(getText(section, 'header h4'));
                         if (heading) addSectionTitle(heading);
-                        addParagraph(section.querySelector('header p')?.textContent);
+                        addParagraph(getText(section, 'header p'));
 
                         const tabs = section.querySelectorAll('.ska-help-tabs');
                         tabs.forEach((tabsEl) => {
                             const panels = tabsEl.querySelectorAll('.ska-help-tab-panel');
                             panels.forEach((panel) => {
                                 const tabId = panel.getAttribute('data-tab');
-                                const label = tabsEl.querySelector(`label[for="${tabId}"]`)?.textContent;
+                                const label = getText(tabsEl, `label[for="${tabId}"]`);
                                 if (label) addParagraph(label);
                                 const list = panel.querySelectorAll('li');
                                 addBulletList([...list].map(li => li.textContent));
@@ -2849,19 +2854,19 @@
                         });
 
                         const cards = [...section.querySelectorAll('.ska-help-card')].filter(card => !card.closest('.ska-help-tabs'));
-                        cards.forEach((card) => addCard(card.querySelector('h4')?.textContent, card.querySelector('p')?.textContent));
+                        cards.forEach((card) => addCard(getText(card, 'h4'), getText(card, 'p')));
 
                         const lists = [...section.querySelectorAll('.ska-help-list')].filter(list => !list.closest('.ska-help-tabs'));
                         lists.forEach((list) => addBulletList([...list.querySelectorAll('li')].map(li => li.textContent)));
 
                         section.querySelectorAll('.ska-help-columns > div').forEach((col) => {
-                            const title = col.querySelector('h5')?.textContent;
+                            const title = getText(col, 'h5');
                             if (title) addParagraph(title);
                             const colList = col.querySelectorAll('li');
                             if (colList.length) {
                                 addBulletList([...colList].map(li => li.textContent));
                             } else {
-                                addParagraph(col.querySelector('p')?.textContent);
+                                addParagraph(getText(col, 'p'));
                             }
                         });
 
