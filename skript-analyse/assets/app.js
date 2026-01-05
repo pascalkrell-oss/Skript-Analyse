@@ -3464,10 +3464,7 @@
 
         openToolModal(toolId) {
             if (!toolId) return;
-            if (!this.isCardUnlocked(toolId)) {
-                this.showPremiumNotice();
-                return;
-            }
+            if (!this.isCardUnlocked(toolId)) return;
             const card = this.toolsModalStore?.querySelector(`[data-card-id="${toolId}"]`);
             if (!card) return;
             const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
@@ -5151,6 +5148,11 @@
                 pacing: '⏱️',
                 marker: '📍'
             };
+            const toolHints = {
+                teleprompter: 'Premium: Teleprompter freischalten.',
+                pacing: 'Premium: Sprech-Pacing freischalten.',
+                marker: 'Premium: Marker-Tool freischalten.'
+            };
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
             this.toolsGrid.innerHTML = toolIds.map((id) => {
                 const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id] || id);
@@ -5159,6 +5161,7 @@
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
                 const action = id === 'teleprompter' ? 'open-teleprompter' : 'open-tool-modal';
                 const toolAttr = action === 'open-tool-modal' ? `data-tool-id="${id}"` : '';
+                const hint = locked ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
                 return `
                     <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
                         <div class="ska-tool-tile-header">
@@ -5167,6 +5170,7 @@
                         </div>
                         <p>${description}</p>
                         <span class="ska-tool-tile-cta">Werkzeug öffnen</span>
+                        ${hint}
                     </button>
                 `;
             }).join('');
@@ -5233,10 +5237,11 @@
 
         analyze(text) {
             const raw = text || '';
+            const analysisRaw = SA_Utils.cleanTextForCounting(raw);
             this.enforceFreeSettings();
             this.state.analysisToken += 1;
             const token = this.state.analysisToken;
-            if (!this.isPremiumActive() && raw.length > SA_CONFIG.FREE_TEXT_LIMIT) {
+            if (!this.isPremiumActive() && analysisRaw.length > SA_CONFIG.FREE_TEXT_LIMIT) {
                 if (!this.state.limitReached) {
                     this.showPremiumNotice('Free-Version: Bitte kürzere Texte analysieren oder Premium freischalten.');
                 }
@@ -5244,27 +5249,28 @@
                 return;
             }
             this.state.limitReached = false;
-            if (this.analysisWorker && raw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
-                this.getReadabilityWithDiff(raw).then((read) => {
+            if (this.analysisWorker && analysisRaw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
+                this.getReadabilityWithDiff(analysisRaw).then((read) => {
                     if (token !== this.state.analysisToken) return;
-                    this.performAnalysis(raw, read);
+                    this.performAnalysis(raw, read, analysisRaw);
                 });
                 return;
             }
-            this.performAnalysis(raw, SA_Logic.analyzeReadability(raw, this.settings));
+            this.performAnalysis(raw, SA_Logic.analyzeReadability(analysisRaw, this.settings), analysisRaw);
         }
 
-        performAnalysis(raw, read) {
+        performAnalysis(raw, read, analysisRaw = null) {
             const token = this.state.analysisToken;
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
             const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const sps = SA_Logic.getSps(effectiveSettings);
+            const analysisText = analysisRaw ?? SA_Utils.cleanTextForCounting(raw);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
             const timeMode = this.getEffectiveTimeMode();
-            const sectionStats = SA_Logic.analyzePacingSections(raw, effectiveSettings, timeMode);
-            const syllableStretches = SA_Logic.analyzeSyllableStretches(raw);
+            const sectionStats = SA_Logic.analyzePacingSections(analysisText, effectiveSettings, timeMode);
+            const syllableStretches = SA_Logic.analyzeSyllableStretches(analysisText);
             
             // TIME CALCULATION SWITCH
             let dur = 0;
@@ -5399,8 +5405,8 @@
 
                 switch(id) {
                     case 'char': this.renderCharCard(read, raw, active); break;
-                    case 'coach': this.renderCoachCard(dur, read, raw, read.sentences, active, sectionStats, syllableStretches); break;
-                    case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(raw), active); break;
+                    case 'coach': this.renderCoachCard(dur, read, analysisText, read.sentences, active, sectionStats, syllableStretches); break;
+                    case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(analysisText), active); break;
                     case 'fillers': this.renderFillerCard(SA_Logic.findFillers(read.cleanedText), active); break;
                     case 'nominal': this.renderNominalCard(SA_Logic.findNominalStyle(read.cleanedText), active); break;
                     case 'nominal_chain': this.renderNominalChainCard(SA_Logic.findNominalChains(read.cleanedText), active); break;
@@ -5409,16 +5415,16 @@
                     case 'echo': this.renderEchoCard(SA_Logic.findWordEchoes(read.cleanedText), active); break;
                     case 'passive': this.renderPassiveCard(SA_Logic.findPassive(read.cleanedText), read.wordCount, active); break;
                     case 'marker': this.renderMarkerCard(read.sentences, active); break;
-                    case 'cta': this.renderCtaCard(raw, active); break;
+                    case 'cta': this.renderCtaCard(analysisText, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
                     case 'adverb': this.renderAdverbCard(SA_Logic.findAdverbs(read.cleanedText), read.wordCount, active); break;
                     case 'rhythm': this.renderRhythmCard(read.sentences, read.maxSentenceWords, active); break;
                     case 'syllable_entropy': this.renderSyllableEntropyCard(SA_Logic.analyzeSyllableEntropy(read.sentences), active); break;
-                    case 'chapter_calc': this.renderChapterCalculatorCard(raw, active); break;
-                    case 'dialog': this.renderDialogCard(SA_Logic.analyzeDialog(raw), active); break;
-                    case 'gender': this.renderGenderCard(SA_Logic.findGenderBias(raw), active); break;
+                    case 'chapter_calc': this.renderChapterCalculatorCard(analysisText, active); break;
+                    case 'dialog': this.renderDialogCard(SA_Logic.analyzeDialog(analysisText), active); break;
+                    case 'gender': this.renderGenderCard(SA_Logic.findGenderBias(analysisText), active); break;
                     case 'start_var': this.renderRepetitiveStartsCard(SA_Logic.analyzeSentenceStarts(read.sentences), active); break;
-                    case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(raw), active); break;
+                    case 'role_dist': this.renderRoleCard(SA_Logic.analyzeRoles(analysisText), active); break;
                     case 'vocabulary': this.renderVocabularyCard(SA_Logic.analyzeVocabulary(read.words), active); break;
                     case 'pronunciation': this.renderPronunciationCard(SA_Logic.analyzePronunciation(read.cleanedText), active); break;
                     case 'keyword_focus':
@@ -5429,7 +5435,7 @@
                         if (useWorker) {
                             this.updateCard('keyword_focus', this.renderLoadingState('Keyword-Fokus wird berechnet...'), this.bottomGrid, '', '', true);
                             this.requestWorkerTask('keyword_focus', {
-                                text: raw,
+                                text: analysisText,
                                 settings: {
                                     focusKeywords: this.settings.focusKeywords,
                                     keywordDensityLimit: this.settings.keywordDensityLimit
@@ -5445,9 +5451,9 @@
                             });
                             break;
                         }
-                        this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(raw, this.settings), true);
+                        this.renderKeywordFocusCard(SA_Logic.analyzeKeywordClusters(analysisText, this.settings), true);
                         break;
-                    case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(raw), active); break;
+                    case 'plosive': this.renderPlosiveCard(SA_Logic.findPlosiveClusters(analysisText), active); break;
                     case 'redundancy':
                         if (!active) {
                             this.renderRedundancyCard(null, false);
@@ -5467,15 +5473,15 @@
                     case 'bpm': this.renderBpmCard(SA_Logic.analyzeBpmSuggestion(read, this.settings), active); break;
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
-                    case 'metaphor': this.renderMetaphorCard(SA_Logic.analyzeMetaphorPhrases(raw), active); break;
+                    case 'metaphor': this.renderMetaphorCard(SA_Logic.analyzeMetaphorPhrases(analysisText), active); break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
-                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(raw, read.sentences), active); break;
+                    case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(analysisText, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
                     case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
                     case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
-                    case 'compliance_check': this.renderComplianceCard(raw, active); break;
+                    case 'compliance_check': this.renderComplianceCard(analysisText, active); break;
                 }
                 const c = this.bottomGrid.querySelector(`[data-card-id="${id}"]`); if(c) c.style.order = idx;
             });
@@ -7609,6 +7615,7 @@
             const existing = container.querySelector('.ska-premium-teaser-note');
             if (existing) existing.remove();
             if (this.isPremiumActive()) return;
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const showAll = profile ? this.state.showAllCards : true;
@@ -7616,8 +7623,8 @@
                 if (!allowed || showAll) return true;
                 return allowed.has(id);
             }));
-            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id) && filteredItems.has(id));
-            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id) && filteredItems.has(id));
+            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
+            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
             const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
             if (!remainingCount) return;
             const note = document.createElement('div');
@@ -7634,11 +7641,14 @@
         renderComparison(sec, w, sc) {
             const oldRaw = this.state.savedVersion;
             const effectiveSettings = this.getEffectiveSettings();
-            const oldRead = SA_Logic.analyzeReadability(oldRaw, effectiveSettings);
+            const oldRawClean = SA_Utils.cleanTextForCounting(oldRaw);
+            const oldRead = SA_Logic.analyzeReadability(oldRawClean, effectiveSettings);
             const oldWpm = SA_Logic.getWpm(effectiveSettings);
             const oldSec = (oldRead.speakingWordCount / oldWpm * 60) + SA_Utils.getPausenTime(oldRaw, effectiveSettings);
             
-            const curRead = SA_Logic.analyzeReadability(this.getText(), effectiveSettings);
+            const curRaw = this.getText();
+            const curRawClean = SA_Utils.cleanTextForCounting(curRaw);
+            const curRead = SA_Logic.analyzeReadability(curRawClean, effectiveSettings);
             const curWpm = SA_Logic.getWpm(effectiveSettings);
             
             // Helper to get total weight for comparison
@@ -7652,8 +7662,8 @@
                 stumbles: (() => { const s = this.normalizeStumbles(SA_Logic.findStumbles(raw)); return s.long.length + s.camel.length + s.phonetic.length + s.alliter.length; })()
             });
 
-            const oldMetrics = { ...countObj(oldRead, oldRaw), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
-            const curMetrics = { ...countObj(curRead, this.getText()), score: parseFloat(sc), words: w, time: sec };
+            const oldMetrics = { ...countObj(oldRead, oldRawClean), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
+            const curMetrics = { ...countObj(curRead, curRawClean), score: parseFloat(sc), words: w, time: sec };
 
             const createDeltaPill = (v, label, betterIsLower = true) => {
                 let cls = 'ska-pill--neutral';
@@ -7687,7 +7697,7 @@
                 }
             }
 
-            const diff = SA_Utils.generateWordDiff(oldRaw, this.getText());
+            const diff = SA_Utils.generateWordDiff(oldRaw, curRaw);
             const diffHtml = diff.tooLarge
                 ? `<div class="ska-diff-warning">Diff-Ansicht deaktiviert (Text zu lang). Tipp: kürzere Abschnitte vergleichen.</div>`
                 : (diff.html

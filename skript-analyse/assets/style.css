@@ -693,6 +693,7 @@ body.ska-modal-open { overflow: hidden !important; }
     gap: 0.65rem;
     text-align: left;
     cursor: pointer;
+    position: relative;
     box-shadow: 0 14px 30px -26px rgba(15, 23, 42, 0.35);
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -712,7 +713,7 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .ska-tool-tile strong {
     font-size: 1rem;
-    color: #0f172a;
+    color: #334155;
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -739,6 +740,38 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-tool-tile.is-locked {
     border-style: dashed;
     opacity: 0.8;
+}
+.ska-tool-tile-tooltip {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 16px;
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition: all 0.2s ease;
+    box-shadow: 0 16px 30px -20px rgba(15, 23, 42, 0.6);
+    pointer-events: none;
+    max-width: 220px;
+}
+.ska-tool-tile.is-locked:hover .ska-tool-tile-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.ska-tool-tile-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #0f172a transparent transparent transparent;
 }
 .ska-tool-tile-badge {
     background: #e0f2fe;
