@@ -4599,7 +4599,7 @@
                 const act = btn.dataset.action;
 
                 if(act.startsWith('open-')) { 
-                    if (act === 'open-syllable-entropy' && !this.isPremiumActive()) {
+                    if ((act === 'open-syllable-entropy' || act === 'open-teleprompter') && !this.isPremiumActive()) {
                         e.preventDefault();
                         return;
                     }
@@ -5151,8 +5151,9 @@
                 pacing: '⏱️',
                 marker: '📍'
             };
+            const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
             this.toolsGrid.innerHTML = toolIds.map((id) => {
-                const title = SA_CONFIG.CARD_TITLES[id] || id;
+                const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id] || id);
                 const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
                 const locked = !this.isCardUnlocked(id);
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
@@ -7148,7 +7149,7 @@
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
             }
-            h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert die Marker-Analyse', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
+            h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert der Marker', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
             this.updateCard('marker', h, targetGrid);
         }
 
