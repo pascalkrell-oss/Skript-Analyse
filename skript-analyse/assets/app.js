@@ -207,7 +207,7 @@
         },
 
         CARD_DESCRIPTIONS: {
-            overview: 'Die wichtigsten Zahlen: Zeit, Wörter und Flesch-Index.',
+            overview: 'Die wichtigsten Zahlen: Zeit, Wörter sowie Flesch- & LIX-Index plus Stil-Dimensionen.',
             char: 'Prüft, wie dein Text wirkt: Persönlich? Positiv? Verständlich?',
             stumble: 'Findet Zungenbrecher (Phonetik), S-Laut-Häufungen und lange Wortungetüme.',
             breath: 'Findet Sätze, die den natürlichen Atemfluss unterbrechen könnten.', 
@@ -761,7 +761,7 @@
             if (settings.numberMode === 'word') {
                 clean = SA_Logic.expandNumbersForAudio(clean);
             }
-            if(!clean) return { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0 };
+            if(!clean) return { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0, longWordCount: 0, lix: 0 };
             
             let tempText = clean;
             const abbrevs = ['z.B.', 'ca.', 'bzw.', 'vgl.', 'inkl.', 'max.', 'min.', 'Dr.', 'Prof.', 'Hr.', 'Fr.', 'Nr.'];
@@ -773,6 +773,7 @@
                 .map(s => s.replace(/@@/g, '.'));
             const words = clean.split(/\s+/).filter(w => w.length > 0);
             const wc = words.length;
+            const longWordCount = words.filter(w => w.replace(/[^a-zäöüß]/gi, '').length > 6).length;
 
             let speakingWordCount = 0;
             words.forEach(w => {
@@ -800,8 +801,56 @@
             const avgS = wc / (sentences.length || 1);
             const avgW = wc > 0 ? totalSyllables / wc : 0;
             const score = 180 - avgS - (58.5 * avgW);
+            const lix = wc > 0 ? avgS + (longWordCount * 100 / wc) : 0;
 
-            return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables };
+            return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables, longWordCount, lix };
+        },
+        analyzeStyleDimensions: (read, raw = '') => {
+            const clamp = (value) => Math.max(0, Math.min(100, value));
+            if (!read || !read.wordCount) {
+                return { simplicity: 0, structure: 0, brevity: 0, precision: 0, contentRatio: 0, lexicalShare: 0, variance: 0 };
+            }
+
+            const sentenceEase = clamp(100 - (read.avgSentence - 10) * 4);
+            const syllableEase = clamp(100 - (read.syllablesPerWord - 1.4) * 60);
+            const lixEase = clamp(100 - (read.lix - 30) * 2.2);
+            const simplicity = clamp((sentenceEase * 0.35) + (syllableEase * 0.35) + (lixEase * 0.3));
+
+            const maxSentenceScore = clamp(100 - (read.maxSentenceWords - 20) * 3);
+            const brevity = clamp((sentenceEase * 0.7) + (maxSentenceScore * 0.3));
+
+            const sentences = read.sentences ? read.sentences.length : 0;
+            const idealParagraphs = Math.max(1, Math.round(sentences / 4));
+            const paragraphScore = clamp((read.paragraphs / idealParagraphs) * 100);
+            const variance = SA_Logic.calculateVariance(read.sentences || []);
+            const varianceScore = clamp(100 - Math.abs(variance - 3.5) * 22);
+            const structure = clamp((paragraphScore * 0.6) + (varianceScore * 0.4));
+
+            const stopwords = new Set(SA_CONFIG.STOPWORDS);
+            const normalizedWords = (read.words || [])
+                .map(word => word.toLowerCase().replace(/[^a-zäöüß]/gi, ''))
+                .filter(Boolean);
+            const contentCount = normalizedWords.filter(word => !stopwords.has(word)).length;
+            const uniqueWords = new Set(normalizedWords);
+            const lexicalShare = normalizedWords.length ? (uniqueWords.size / normalizedWords.length) * 100 : 0;
+            const contentRatio = normalizedWords.length ? (contentCount / normalizedWords.length) * 100 : 0;
+            const contentScore = clamp((contentRatio - 25) * 2.5);
+            const precision = clamp((contentScore * 0.6) + (lexicalShare * 0.4));
+
+            return { simplicity, structure, brevity, precision, contentRatio, lexicalShare, variance };
+        },
+        getDimensionSummary: (score) => {
+            if (score >= 80) return { label: 'Sehr stark', color: SA_CONFIG.COLORS.success };
+            if (score >= 60) return { label: 'Solide', color: SA_CONFIG.COLORS.blue };
+            if (score >= 40) return { label: 'Ausbaufähig', color: SA_CONFIG.COLORS.warn };
+            return { label: 'Schwach', color: SA_CONFIG.COLORS.error };
+        },
+        getLixSummary: (lix) => {
+            if (lix <= 30) return { label: 'Sehr leicht', color: SA_CONFIG.COLORS.success };
+            if (lix <= 40) return { label: 'Leicht', color: SA_CONFIG.COLORS.blue };
+            if (lix <= 50) return { label: 'Mittel', color: SA_CONFIG.COLORS.warn };
+            if (lix <= 60) return { label: 'Schwer', color: SA_CONFIG.COLORS.error };
+            return { label: 'Sehr schwer', color: '#7f1d1d' };
         },
         expandNumbersForAudio: (text) => {
             const toWords = (num) => {
@@ -5010,6 +5059,23 @@
                 scoreHintHtml = `<span class="ska-info-badge ska-info-badge--${traffic.class}"><span class="ska-tool-tooltip">${hintText}</span>INFO</span>`;
             }
 
+            const dimensions = r ? SA_Logic.analyzeStyleDimensions(r, this.getText()) : null;
+            const dimensionHints = {
+                simplicity: 'Hoher Wert = kurze Sätze + einfache Wörter. Beispiel: „Der Hund läuft.“ (hoch) vs. „Aufgrund der Komplexität…“ (niedrig).',
+                structure: 'Misst Absatz-Gliederung + Satzrhythmus. Beispiel: kurze Abschnitte mit klaren Übergängen (hoch) vs. Textblock ohne Pausen (niedrig).',
+                brevity: 'Bewertet, wie kompakt Sätze formuliert sind. Beispiel: „Kurz. Klar.“ (hoch) vs. „Es sollte erwähnt werden, dass…“ (niedrig).',
+                precision: 'Mehr Inhaltswörter, weniger Füllung. Beispiel: „Preis sinkt um 20%.“ (hoch) vs. „In gewisser Weise könnte…“ (niedrig).'
+            };
+            const dimensionItems = dimensions ? [
+                { key: 'simplicity', label: 'Einfachheit', score: dimensions.simplicity },
+                { key: 'structure', label: 'Gliederung', score: dimensions.structure },
+                { key: 'brevity', label: 'Kürze', score: dimensions.brevity },
+                { key: 'precision', label: 'Prägnanz', score: dimensions.precision }
+            ] : [];
+
+            const lixSummary = r ? SA_Logic.getLixSummary(r.lix) : { label: '–', color: SA_CONFIG.COLORS.muted };
+            const lixHintHtml = `<span class="ska-info-badge"><span class="ska-tool-tooltip">LIX = Satzlänge + Anteil langer Wörter (≥7 Buchstaben). Beispiel: „Kurz und klar.“ (LIX ~ 25) vs. „In Anbetracht der Komplexität…“ (LIX > 50).</span>INFO</span>`;
+
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
             const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
@@ -5029,7 +5095,27 @@
                     <div class="ska-stat-item"><span>Silben</span><strong>${r ? r.totalSyllables : 0}</strong></div>
                     <div class="ska-stat-item"><span>Längster Satz</span><strong style="color:${maxSCol}">${maxSVal} W</strong></div>
                     <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${r ? r.score.toFixed(0) : 0}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${r ? r.lix.toFixed(0) : 0}</strong></div>
                 </div>
+                ${dimensionItems.length ? `
+                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;">
+                    ${dimensionItems.map(item => {
+                        const summary = SA_Logic.getDimensionSummary(item.score);
+                        return `
+                            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.6rem 0.7rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+                                    <span style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">${item.label}</span>
+                                    <span class="ska-info-badge" style="font-size:10px; padding:2px 6px; background:${summary.color}1a; color:${summary.color};">${summary.label}<span class="ska-tool-tooltip">${dimensionHints[item.key]}</span></span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <strong style="color:${summary.color}; font-size:1rem;">${Math.round(item.score)}</strong>
+                                    <div style="flex:1; height:6px; background:#e2e8f0; border-radius:999px; margin-left:0.5rem; overflow:hidden;">
+                                        <div style="width:${Math.min(100, Math.round(item.score))}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${summary.color});"></div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }).join('')}
+                </div>` : ''}
                 ${genreList}</div>`;
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
@@ -5117,6 +5203,14 @@
             const variance = SA_Logic.calculateVariance(r.sentences || []);
             const uniqueWords = new Set((r.words || []).map((word) => word.toLowerCase())).size;
             const lexicalShare = r.wordCount ? (uniqueWords / r.wordCount) * 100 : 0;
+            const dimensions = SA_Logic.analyzeStyleDimensions(r, raw);
+            const lixSummary = SA_Logic.getLixSummary(r.lix);
+            const dimensionHints = {
+                simplicity: 'Hoher Wert = kurze Sätze + einfache Wörter. Beispiel: „Der Hund läuft.“ (hoch) vs. „Aufgrund der Komplexität…“ (niedrig).',
+                structure: 'Misst Absatz-Gliederung + Satzrhythmus. Beispiel: kurze Abschnitte mit klaren Übergängen (hoch) vs. Textblock ohne Pausen (niedrig).',
+                brevity: 'Bewertet, wie kompakt Sätze formuliert sind. Beispiel: „Kurz. Klar.“ (hoch) vs. „Es sollte erwähnt werden, dass…“ (niedrig).',
+                precision: 'Mehr Inhaltswörter, weniger Füllung. Beispiel: „Preis sinkt um 20%.“ (hoch) vs. „In gewisser Weise könnte…“ (niedrig).'
+            };
 
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
@@ -5130,6 +5224,7 @@
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
+                    <div style="margin-top:0.3rem; font-size:0.75rem; color:#64748b;">LIX: <strong style="color:${lixSummary.color};">${r.lix.toFixed(0)}</strong> (${lixSummary.label})</div>
                     <div style="width:100%; height:8px; background:#e2e8f0; border-radius:4px; margin-top:0.8rem; overflow:hidden;">
                         <div style="width:${r.score}%; height:100%; background:linear-gradient(90deg, #f1f5f9, ${col}); transition:width 0.5s;"></div>
                     </div>
@@ -5181,6 +5276,32 @@
                     </div>
                     <div style="margin-top:0.6rem; font-size:0.8rem; color:#475569;">
                         Rhythmus-Varianz: <strong style="color:${variance < 2.5 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">${variance.toFixed(2)}</strong> (höher = abwechslungsreicher).
+                    </div>
+                </div>
+                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
+                    <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Dimensionen</div>
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;">
+                        ${[
+                            { key: 'simplicity', label: 'Einfachheit', score: dimensions.simplicity },
+                            { key: 'structure', label: 'Gliederung', score: dimensions.structure },
+                            { key: 'brevity', label: 'Kürze', score: dimensions.brevity },
+                            { key: 'precision', label: 'Prägnanz', score: dimensions.precision }
+                        ].map(item => {
+                            const summary = SA_Logic.getDimensionSummary(item.score);
+                            return `
+                                <div style="border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; background:#f8fafc;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+                                        <span style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">${item.label}</span>
+                                        <span class="ska-info-badge" style="font-size:10px; padding:2px 6px; background:${summary.color}1a; color:${summary.color};">${summary.label}<span class="ska-tool-tooltip">${dimensionHints[item.key]}</span></span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                                        <strong style="color:${summary.color}; font-size:0.95rem;">${Math.round(item.score)}</strong>
+                                        <div style="flex:1; height:6px; background:#e2e8f0; border-radius:999px; overflow:hidden;">
+                                            <div style="width:${Math.min(100, Math.round(item.score))}%; height:100%; background:linear-gradient(90deg, #e2e8f0, ${summary.color});"></div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        }).join('')}
                     </div>
                 </div>`;
             
