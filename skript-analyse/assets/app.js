@@ -24,6 +24,29 @@
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
         SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, buch: 3.2, default: 3.8 },
+        BENCHMARK_PERCENTILES: {
+            wpm: [
+                { p: 10, value: 115, label: 'Ruhig' },
+                { p: 25, value: 135, label: 'Gemächlich' },
+                { p: 50, value: 155, label: 'Standard' },
+                { p: 75, value: 175, label: 'Sportlich' },
+                { p: 90, value: 195, label: 'Sehr schnell' }
+            ],
+            sps: [
+                { p: 10, value: 3.2, label: 'Ruhig' },
+                { p: 25, value: 3.6, label: 'Gemächlich' },
+                { p: 50, value: 4.0, label: 'Standard' },
+                { p: 75, value: 4.6, label: 'Sportlich' },
+                { p: 90, value: 5.1, label: 'Sehr schnell' }
+            ],
+            flesch: [
+                { p: 10, value: 45, label: 'Komplex' },
+                { p: 25, value: 55, label: 'Anspruchsvoll' },
+                { p: 50, value: 65, label: 'Ausgewogen' },
+                { p: 75, value: 75, label: 'Leicht' },
+                { p: 90, value: 85, label: 'Sehr leicht' }
+            ]
+        },
 
         GENRE_LABELS: { werbung: 'Werbung', imagefilm: 'Imagefilm', erklaer: 'Erklärvideo', hoerbuch: 'Hörbuch', podcast: 'Podcast', ansage: 'Telefonansage', elearning: 'E-Learning', social: 'Social Media', buch: 'Buch/Roman' },
         GENRE_CONTEXT: {
@@ -742,6 +765,40 @@
             SA_CONFIG.SENTIMENT.positive.forEach(word => { lexicon[word] = 2; });
             SA_CONFIG.SENTIMENT.negative.forEach(word => { lexicon[word] = -2; });
             return lexicon;
+        },
+        getBenchmarkPercentile: (value, metric) => {
+            if (!Number.isFinite(value)) return null;
+            const table = SA_CONFIG.BENCHMARK_PERCENTILES && SA_CONFIG.BENCHMARK_PERCENTILES[metric];
+            if (!Array.isArray(table) || !table.length) return null;
+
+            const points = table
+                .map(entry => ({
+                    p: Number(entry.p),
+                    value: Number(entry.value),
+                    label: entry.label || ''
+                }))
+                .filter(entry => Number.isFinite(entry.p) && Number.isFinite(entry.value))
+                .sort((a, b) => a.value - b.value);
+
+            if (!points.length) return null;
+            if (value <= points[0].value) return { percentile: points[0].p, label: points[0].label };
+            if (value >= points[points.length - 1].value) {
+                const last = points[points.length - 1];
+                return { percentile: last.p, label: last.label };
+            }
+
+            for (let i = 0; i < points.length - 1; i += 1) {
+                const left = points[i];
+                const right = points[i + 1];
+                if (value >= left.value && value <= right.value) {
+                    const span = right.value - left.value || 1;
+                    const ratio = (value - left.value) / span;
+                    const percentile = left.p + (right.p - left.p) * ratio;
+                    const label = ratio < 0.5 ? left.label : right.label;
+                    return { percentile, label };
+                }
+            }
+            return null;
         },
         countSyllables: (word) => {
             const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
@@ -4746,6 +4803,18 @@
             this.updateCard('nominal_chain', h);
         }
 
+        renderBenchmarkBadge(metric, value, label) {
+            if (!this.isPremiumActive()) return '';
+            const result = SA_Logic.getBenchmarkPercentile(value, metric);
+            const title = label || 'Benchmark';
+            if (!result) {
+                return `<div style="font-size:0.75rem; color:#94a3b8;">${title}: nicht verfügbar</div>`;
+            }
+            const pct = Math.round(result.percentile);
+            const suffix = result.label ? ` • ${result.label}` : '';
+            return `<div style="font-size:0.75rem; color:#475569;">${title}: <strong style="color:#0f172a;">P${pct}</strong>${suffix}</div>`;
+        }
+
         renderOverview(sec, words, chars, wpm, pause, r) {
             let meterHtml = '';
             let targetStatusHtml = '';
@@ -4789,6 +4858,10 @@
             const effectiveSettings = this.getEffectiveSettings();
             const isSps = this.getEffectiveTimeMode() === 'sps';
             const rateLabel = isSps ? `${SA_Logic.getSps(effectiveSettings)} SPS` : `${wpm} WPM`;
+            const benchmarkMetric = isSps ? 'sps' : 'wpm';
+            const benchmarkValue = isSps ? SA_Logic.getSps(effectiveSettings) : wpm;
+            const benchmarkLabel = isSps ? 'Benchmark (SPS)' : 'Benchmark (WPM)';
+            const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel);
 
             let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
@@ -4833,6 +4906,7 @@
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
                     <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
                     <div style="font-size:0.8rem; color:#64748b; font-weight:500;">Ø ${rateLabel}${pauseText}</div>
+                    ${benchmarkHtml}
                     ${genreNote}
                 </div>
                 ${meterHtml}
@@ -4929,6 +5003,7 @@
             const traffic = SA_Logic.getTrafficLight(r);
             const col = traffic.class === 'green' ? SA_CONFIG.COLORS.success : (traffic.class === 'red' ? SA_CONFIG.COLORS.error : SA_CONFIG.COLORS.warn);
             const txt = traffic.label;
+            const benchmarkFlesch = this.renderBenchmarkBadge('flesch', r.score, 'Benchmark (Flesch)');
             
             // Temperature gradient calculation (mapped from -100..100 to 0..100%)
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
@@ -4938,6 +5013,7 @@
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
+                    ${benchmarkFlesch}
                     <div style="width:100%; height:8px; background:#e2e8f0; border-radius:4px; margin-top:0.8rem; overflow:hidden;">
                         <div style="width:${r.score}%; height:100%; background:linear-gradient(90deg, #f1f5f9, ${col}); transition:width 0.5s;"></div>
                     </div>
