@@ -3840,9 +3840,9 @@
                 return false;
             }
             return true;
-        },
+        }
 
-        generateHelp: function(modalEl, btnElement) {
+        generateHelp(modalEl, btnElement) {
             if (!window.jspdf || !window.jspdf.jsPDF) { alert('PDF-Bibliothek nicht geladen.'); return; }
             if (!modalEl) return;
             const originalText = btnElement.textContent;
