@@ -665,6 +665,9 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-teleprompter-modal { background: #ffffff; color: #0f172a; border-radius: 18px; width: min(1100px, 96vw); height: min(80vh, 760px); display: flex; flex-direction: column; box-shadow: 0 30px 60px -35px rgba(15, 23, 42, 0.4); position: relative; z-index: 10; border: 1px solid #e2e8f0; }
 .ska-teleprompter-header { padding: 0.9rem 1.3rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-top-left-radius: 18px; border-top-right-radius: 18px; }
 .ska-teleprompter-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ska-teleprompter-toggle { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.6rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-size: 0.8rem; font-weight: 600; }
+.ska-teleprompter-toggle input { margin: 0; accent-color: #1d4ed8; }
+.ska-teleprompter-modal.is-mirrored .ska-teleprompter-body { transform: scaleX(-1); transform-origin: center; }
 .ska-teleprompter-header .ska-btn--secondary { background: #ffffff; border: 1px solid #e2e8f0; color: #475569; }
 .ska-teleprompter-header .ska-btn--secondary:hover { border-color: #cbd5e1; background: #f1f5f9; color: #1e293b; }
 .ska-teleprompter-header .ska-btn--ghost { color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; }
