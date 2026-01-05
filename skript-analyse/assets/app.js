@@ -275,7 +275,8 @@
             'anglicism',
             'breath',
             'stumble',
-            'marker'
+            'marker',
+            'pronunciation'
         ],
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
@@ -3265,7 +3266,6 @@
                 saveBtn.disabled = !isPremium;
                 saveBtn.classList.toggle('is-disabled', !isPremium);
                 saveBtn.setAttribute('aria-disabled', String(!isPremium));
-                saveBtn.title = isPremium ? 'Version merken' : 'Nur mit Premium verfügbar.';
                 const tooltip = saveBtn.closest('.ska-tool-wrapper')?.querySelector('.ska-tool-tooltip--premium');
                 if (tooltip) {
                     tooltip.textContent = isPremium
@@ -5769,8 +5769,15 @@
             const existing = container.querySelector('.ska-premium-teaser-note');
             if (existing) existing.remove();
             if (this.isPremiumActive()) return;
-            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
-            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id));
+            const profile = this.settings.role;
+            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const showAll = profile ? this.state.showAllCards : true;
+            const filteredItems = new Set(SA_CONFIG.CARD_ORDER.filter((id) => {
+                if (!allowed || showAll) return true;
+                return allowed.has(id);
+            }));
+            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id) && filteredItems.has(id));
+            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => this.isCardAvailable(id) && filteredItems.has(id));
             const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
             if (!remainingCount) return;
             const note = document.createElement('div');
