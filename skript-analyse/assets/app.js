@@ -3451,6 +3451,41 @@
             this.applyTeleprompterMirror(m);
         }
 
+        openToolModal(toolId) {
+            if (!toolId) return;
+            const card = this.toolsGrid?.querySelector(`[data-card-id="${toolId}"]`);
+            if (!card) return;
+            const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
+            const description = SA_CONFIG.CARD_DESCRIPTIONS[toolId];
+            const bodyHtml = card.querySelector('.ska-card-body')?.innerHTML || '';
+            let modal = document.getElementById('ska-tool-card-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.className = 'skriptanalyse-modal';
+                modal.id = 'ska-tool-card-modal';
+                modal.innerHTML = `
+                    <div class="skriptanalyse-modal-overlay" data-action="close-tool-modal"></div>
+                    <div class="skriptanalyse-modal-content ska-tool-modal-content">
+                        <button type="button" class="ska-close-icon" data-action="close-tool-modal">&times;</button>
+                        <div class="ska-modal-header"><h3 data-role="tool-modal-title"></h3></div>
+                        <div class="skriptanalyse-modal-body" data-role="tool-modal-body"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            const titleEl = modal.querySelector('[data-role="tool-modal-title"]');
+            if (titleEl) titleEl.textContent = title;
+            const bodyEl = modal.querySelector('[data-role="tool-modal-body"]');
+            if (bodyEl) {
+                bodyEl.innerHTML = `
+                    ${description ? `<p class="ska-tool-modal-intro">${description}</p>` : ''}
+                    ${bodyHtml}
+                `;
+            }
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
+        }
+
         applyTeleprompterMirror(modal = null) {
             const target = modal || document.getElementById('ska-teleprompter-modal');
             if (!target) return;
@@ -3879,6 +3914,10 @@
                 this.state.premiumUpgradeDismissed = true;
                 this.saveUIState();
                 this.renderUpgradePanel();
+                return true;
+            }
+            if (act === 'open-tool-modal') {
+                this.openToolModal(btn.dataset.toolId);
                 return true;
             }
             if (act === 'open-pdf') {
@@ -7647,6 +7686,7 @@
         updateCard(id, html, parent = this.bottomGrid, extraClass = '', headerExtraHtml = '', isToggleable = true) {
             if (!parent) return; 
             let card = parent.querySelector(`[data-card-id="${id}"]`);
+            const isToolCard = parent === this.toolsGrid;
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
@@ -7666,13 +7706,23 @@
 
             const buildHeader = () => {
                 const lockBadge = isLocked ? '<span class="ska-premium-badge">Premium</span>' : '';
+                const expandBtn = isToolCard
+                    ? `<button class="ska-tool-expand-btn" data-action="open-tool-modal" data-tool-id="${id}" title="Werkzeug vergrößern" aria-label="Werkzeug vergrößern">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M15 3h6v6"></path>
+                                <path d="M9 21H3v-6"></path>
+                                <path d="M21 3l-7 7"></path>
+                                <path d="M3 21l7-7"></path>
+                            </svg>
+                        </button>`
+                    : '';
                 return `<div class="ska-card-header">
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <h3>${SA_CONFIG.CARD_TITLES[id]}</h3>
                                 ${infoHtml}
                             </div>
                             <div style="display:flex; gap:0.5rem; align-items:center;">
-                                ${headerExtraHtml}${lockBadge}${toggleBtnHtml}${id!=='overview' ? '<button class="ska-hide-btn" title="Ausblenden"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>' : ''}
+                                ${headerExtraHtml}${expandBtn}${lockBadge}${toggleBtnHtml}${id!=='overview' ? '<button class="ska-hide-btn" title="Ausblenden"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>' : ''}
                             </div>
                         </div>`;
             };
@@ -7700,7 +7750,7 @@
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse und Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & alle Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -7724,7 +7774,7 @@
                     if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse und Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & alle Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {
