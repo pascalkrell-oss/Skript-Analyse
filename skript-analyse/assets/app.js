@@ -6822,52 +6822,68 @@
             this.updateCard('echo', h);
         }
 
+        normalizeStumbles(s) {
+            const source = s || {};
+            const consonantClusters = Array.isArray(source.consonant_clusters)
+                ? source.consonant_clusters
+                : (Array.isArray(source.consonantClusters) ? source.consonantClusters : []);
+            return {
+                long: Array.isArray(source.long) ? source.long : [],
+                camel: Array.isArray(source.camel) ? source.camel : [],
+                phonetic: Array.isArray(source.phonetic) ? source.phonetic : [],
+                alliter: Array.isArray(source.alliter) ? source.alliter : [],
+                hiatus: Array.isArray(source.hiatus) ? source.hiatus : [],
+                consonant_clusters: consonantClusters
+            };
+        }
+
         renderStumbleCard(s, active) {
             if(!active) return this.updateCard('stumble', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
             let h = '';
-            const hasIssues = (s.long.length > 0 || s.camel.length > 0 || s.phonetic.length > 0 || s.alliter.length > 0 || s.hiatus.length > 0 || s.consonant_clusters.length > 0);
+            const normalized = this.normalizeStumbles(s);
+            const hasIssues = (normalized.long.length > 0 || normalized.camel.length > 0 || normalized.phonetic.length > 0 || normalized.alliter.length > 0 || normalized.hiatus.length > 0 || normalized.consonant_clusters.length > 0);
 
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
-                if(s.phonetic.length) { 
+                if(normalized.phonetic.length) { 
                     h += `<div class="ska-section-title">Zungenbrecher</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.phonetic.forEach(w => {
+                    normalized.phonetic.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#f3e8ff; color:#6b21a8; border:1px solid #e9d5ff;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.camel.length) { 
+                if(normalized.camel.length) { 
                     h += `<div class="ska-section-title">Fachbegriffe</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.camel.forEach(w => {
+                    normalized.camel.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--camel">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.long.length) { 
+                if(normalized.long.length) { 
                     h += `<div class="ska-section-title">Lange Wörter</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.long.forEach(w => {
+                    normalized.long.forEach(w => {
                         h+=`<span class="skriptanalyse-badge skriptanalyse-badge--long">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.alliter.length) {
+                if(normalized.alliter.length) {
                     h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.alliter.forEach(w => {
+                    normalized.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.hiatus.length) {
+                if(normalized.hiatus.length) {
                     h += `<div class="ska-section-title">Hiatus an Wortgrenzen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.hiatus.forEach(w => {
+                    normalized.hiatus.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
-                if(s.consonant_clusters.length) {
+                if(normalized.consonant_clusters.length) {
                     h += `<div class="ska-section-title">Harte Konsonanten-Cluster</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
-                    s.consonant_clusters.forEach(w => {
+                    normalized.consonant_clusters.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">${w}</span>`;
                     });
                     h+='</div>'; 
@@ -7409,7 +7425,7 @@
             const countObj = (r, raw) => ({
                 fillers: getFillerWeight(SA_Logic.findFillers(r.cleanedText)),
                 passive: SA_Logic.findPassive(r.cleanedText).length,
-                stumbles: (() => { const s = SA_Logic.findStumbles(raw); return s.long.length + s.camel.length + s.phonetic.length + s.hiatus.length + s.consonant_clusters.length; })()
+                stumbles: (() => { const s = this.normalizeStumbles(SA_Logic.findStumbles(raw)); return s.long.length + s.camel.length + s.phonetic.length + s.hiatus.length + s.consonant_clusters.length; })()
             });
 
             const oldMetrics = { ...countObj(oldRead, oldRaw), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
