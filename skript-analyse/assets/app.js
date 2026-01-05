@@ -2332,6 +2332,14 @@
 
             setTimeout(() => {
                 try {
+                    const normalizeStumbles = (source = {}) => ({
+                        long: Array.isArray(source.long) ? source.long : [],
+                        camel: Array.isArray(source.camel) ? source.camel : [],
+                        phonetic: Array.isArray(source.phonetic) ? source.phonetic : [],
+                        alliter: Array.isArray(source.alliter) ? source.alliter : [],
+                        sibilant_warning: source.sibilant_warning || false,
+                        sibilant_density: source.sibilant_density || 0
+                    });
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     const pageWidth = doc.internal.pageSize.getWidth();
@@ -2549,7 +2557,7 @@
                         if(adverbs.length) addRow("Adverbien (-weise):", adverbs);
                         if(anglicisms.length) addRow("Anglizismen:", anglicisms);
                         if(echoes.length) addRow("Wort-Wiederholungen:", echoes);
-                        const normalizedStumbles = this.normalizeStumbles(stumbles);
+                        const normalizedStumbles = normalizeStumbles(stumbles);
                         const stumbleArr = [...normalizedStumbles.phonetic, ...normalizedStumbles.camel, ...normalizedStumbles.long, ...normalizedStumbles.alliter];
                         if(stumbleArr.length) addRow("Stolpersteine:", stumbleArr);
                         if(normalizedStumbles.sibilant_warning) addRow("Warnung:", `Hohe Zischlaut-Dichte (${normalizedStumbles.sibilant_density}%)`);
