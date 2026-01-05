@@ -109,6 +109,7 @@
         PHONETICS: [
             'tzsch', 'tschs', 'zsch', 'pfsch', 'rststr', 'ngsts', 'chtschr', 'bststr', 'mpfst', 'rchsch'
         ],
+        WORD_BOUNDARY_VOWELS: ['a', 'e', 'i', 'o', 'u', 'ä', 'ö', 'ü', 'y'],
 
         PRONUNCIATION_DB: {
             'accessoire': 'Ak-sess-oar',
@@ -432,7 +433,7 @@
             anglicism: ["Bleib verständlich.", "Prüfe kritisch: Gibt es ein einfacheres deutsches Wort, das jeder sofort versteht?", "Anglizismen können modern wirken, aber auch eine Barriere zwischen dir und dem Hörer bauen.", "Nutze englische Begriffe nur dort, wo sie als etablierter Fachbegriff unverzichtbar sind.", "In Audio-Medien zählen vertraute Wörter mehr, da der Hörer nicht zurückblättern kann."],
             echo: ["Variiere deine Wortwahl für mehr Lebendigkeit.", "Suche nach Synonymen, um den Text für den Sprecher lebendig zu halten.", "Echos innerhalb von zwei Sätzen fallen im Audio sofort als 'Sprechfehler' auf.", "Wortwiederholungen ermüden das Gehör. Nutze ein Thesaurus-Tool für Abwechslung.", "Ein reicher Wortschatz wirkt kompetenter und hält die Aufmerksamkeit des Hörers hoch."],
             breath: ["Ein Gedanke pro Satz. Das gibt Raum zum Atmen.", "Viele Kommas sind oft ein Zeichen für Schachtelsätze. Trenne sie mit einem Punkt.", "Lange Sätze zwingen den Sprecher zu hohem Tempo – das stresst den Hörer.", "Prüfe: Kannst du den Satz laut lesen, ohne am Ende außer Atem zu sein?", "Kurze Sätze erhöhen die Textverständlichkeit bei komplexen Themen drastisch."],
-            stumble: ["Einfache Phonetik hilft der Emotion.", "Vermeide Bandwurmwörter – sie sind schwer zu betonen und fehleranfällig.", "Lies kritische Stellen dreimal schnell hintereinander laut. Klappt es? Dann ist es okay.", "CamelCase Wörter wie 'SoftwareLösung' sind visuelle Marker, aber akustische Hürden.", "Achte auf 'Zisch-Gewitter' (S, Z, Sch), die am Mikrofon oft unangenehm knallen."],
+            stumble: ["Einfache Phonetik hilft der Emotion.", "Vermeide Bandwurmwörter – sie sind schwer zu betonen und fehleranfällig.", "Lies kritische Stellen dreimal schnell hintereinander laut. Klappt es? Dann ist es okay.", "Hiatus (Vokal trifft Vokal) klingt oft holprig – glätten oder verbinden.", "Konsonanten-Cluster an Wortgrenzen können haken: lieber entkoppeln oder umstellen."],
             cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
             adjective: ["Streiche Adjektive, die im Substantiv stecken.", "Show, don't tell: Statt 'es war ein gefährlicher Hund', beschreibe das Knurren.", "Zu viele Adjektive wirken oft 'blumig' und schwächen starke Substantive und Verben.", "Nutze Adjektive sparsam, um echte Highlights zu setzen.", "Wörter auf -lich oder -ig klingen in Häufung oft nach Werbesprache."],
             adverb: ["Adverbien auf -weise sind schnell Füllmaterial. Prüfe, ob sie wirklich nötig sind.", "Adverbien sollen Bedeutung schärfen, nicht den Satz verwässern.", "Statt 'glücklicherweise' lieber den Effekt beschreiben.", "Ein starkes Verb ersetzt oft zwei Adverbien.", "Adverbien gezielt als Rhythmus- oder Tonalitäts-Tool nutzen."],
@@ -442,9 +443,9 @@
             gender: ["Sprache schafft Wirklichkeit.", "Oft sind Partizipien ('Mitarbeitende') eine elegante Lösung.", "Vermeide das generische Maskulinum in Corporate Communications.", "Neutrale Sprache wirkt moderner und professioneller.", "Überprüfe, ob 'Kunden' wirklich nur Männer meint, oder ob 'Kundschaft' besser passt."],
             start_var: ["Variiere den Satzanfang für mehr Dynamik.", "Variiere die Satzstruktur: Stell mal das Objekt oder eine Zeitangabe an den Anfang.", "Monotonie im Satzbau überträgt sich sofort auf die Sprechmelodie.", "Wiederholungen sind nur okay, wenn sie als rhetorisches Stilmittel (Anapher) gewollt sind.", "Verbinde kurze Sätze logisch miteinander, statt sie nur aneinanderzureihen."],
             vocabulary: ["Ein hoher TTR-Wert (>60) zeigt Reichtum.", "Ein niedriger Wert (<40) ist typisch für fokussierte Werbebotschaften oder Claims.", "Wiederholungen senken den Wortwert, sind aber für Audio-Branding oft gewollt.", "Überprüfe bei niedrigem Wert: Ist die Wiederholung Absicht oder Faulheit?", "Variiere Wortfelder bewusst, statt Synonyme wahllos zu streuen."],
-            pronunciation: ["Standarddeutsch: -ig wird wie -ich gesprochen.", "Fremdwörter wie 'Chance' oder 'Engagement' stolperfrei auszusprechen, wirkt professionell.", "Achte bei 'sp' und 'st' am Wortanfang immer auf den 'Sch'-Laut (Schtein, Schpiel).", "Schwierige Wörter früh erkennen und alternative Formulierungen bereithalten.", "Eigennamen: Schreibweise für Aussprache notieren (z.B. phonetisch)."],
+            pronunciation: ["Standarddeutsch: -ig wird wie -ich gesprochen.", "Hiatus prüfen: Vokal auf Vokal (z.B. „bei Ingo“) kann stocken.", "Achte bei 'sp' und 'st' am Wortanfang immer auf den 'Sch'-Laut (Schtein, Schpiel).", "Schwierige Wörter früh erkennen und alternative Formulierungen bereithalten.", "Eigennamen: Schreibweise für Aussprache notieren (z.B. phonetisch)."],
             keyword_focus: ["Ein starkes Kernwort sollte klar dominieren.", "Wenn die Top-Begriffe gleich stark sind, wirkt die Botschaft diffus.", "Produktname & Nutzen sollten in den Top-Keywords sichtbar sein.", "Setze Keywords an Satzanfänge – dort wirken sie am stärksten.", "Zu viele Fokuswörter verwässern die Botschaft – priorisieren."],
-            plosive: ["P- und B-Laute können am Mikrofon knallen.", "Entzerrung hilft: Zwischen Plosiv-Wörtern kurze Pausen setzen.", "Bei Nahbesprechung (z. B. im Podcast) leicht seitlich sprechen, um Pop-Geräusche zu vermeiden.", "Bei harten Plosiven (P/T/K) ggf. umformulieren oder mit weicherem Wort ersetzen.", "Sprecherfreundlich schreiben: Konsonanten-Cluster reduzieren."],
+            plosive: ["P- und B-Laute können am Mikrofon knallen.", "Entzerrung hilft: Zwischen Plosiv-Wörtern kurze Pausen setzen.", "Bei Nahbesprechung (z. B. im Podcast) leicht seitlich sprechen, um Pop-Geräusche zu vermeiden.", "Harte Konsonanten-Cluster (z.B. „Herbst‑Sturm“) können knacken – Entkopplung hilft.", "Sprecherfreundlich schreiben: Konsonanten-Cluster reduzieren."],
             redundancy: ["Wiederholungen direkt hintereinander wirken unfreiwillig.", "Formuliere den zweiten Satz mit anderem Fokus oder streiche ihn.", "Achte auf doppelte Bedeutungen ('weißer Schimmel').", "Streiche Dopplungen: Eine Aussage, ein Bild, ein Satz.", "Wiederholungen nur als Stilmittel – sonst kürzen."],
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig.", "Längere Sätze mit Kommas strukturieren, damit die Atmung mitkommt.", "Tempo entsteht durch Variation – nicht durch dauerhafte Beschleunigung."],
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres.", "Ein Gedanke pro Satz – das erhöht Verständlichkeit sofort.", "Fachbegriffe nur, wenn nötig – sonst erklären oder ersetzen."],
@@ -1632,12 +1633,13 @@
                 entry.occurrences += 1;
                 aggregated.set(phrase, entry);
             });
-
-            return [...aggregated.values()].sort((a, b) => {
+            const plosives = [...aggregated.values()].sort((a, b) => {
                 if (b.words !== a.words) return b.words - a.words;
                 if (b.occurrences !== a.occurrences) return b.occurrences - a.occurrences;
                 return a.phrase.localeCompare(b.phrase);
             });
+            const boundaryIssues = SA_Logic.analyzeWordBoundaries(text);
+            return { plosives, consonantClusters: boundaryIssues.consonantClusters };
         },
         findWordEchoes: (text) => {
             const words = text.toLowerCase().match(/\b[a-zäöüß]+\b/g) || [];
@@ -1712,35 +1714,53 @@
             });
             return [...matches];
         },
-        findPassive: (text) => { 
-            const pos = SA_Logic.getPosTags(text);
-            if (!pos || !pos.terms || !pos.terms.length) return SA_Logic.findPassiveRegex(text);
-            const matches = new Set();
-            const termsBySentence = new Map();
+        getWordBoundaryPairs: (text) => {
+            const normalized = (text || '').replace(/[–—-]/g, ' ');
+            const words = normalized.match(/[A-Za-zÄÖÜäöüß]+/g) || [];
+            const pairs = [];
+            for (let i = 0; i < words.length - 1; i++) {
+                const left = words[i];
+                const right = words[i + 1];
+                if (!left || !right) continue;
+                const pattern = new RegExp(`${SA_Utils.escapeRegex(left)}([\\s\\-–—]+)${SA_Utils.escapeRegex(right)}`, 'i');
+                const match = (text || '').match(pattern);
+                const separator = match ? (match[1].match(/[-–—]/) || [' '])[0] : ' ';
+                const phrase = `${left}${separator}${right}`;
+                pairs.push({ left, right, phrase });
+            }
+            return pairs;
+        },
+        analyzeWordBoundaries: (text) => {
+            const vowelChars = SA_CONFIG.WORD_BOUNDARY_VOWELS.join('');
+            const vowels = new Set(SA_CONFIG.WORD_BOUNDARY_VOWELS);
+            const consonantStart = new RegExp(`^[^${vowelChars}]+`, 'i');
+            const consonantEnd = new RegExp(`[^${vowelChars}]+$`, 'i');
+            const pairs = SA_Logic.getWordBoundaryPairs(text);
+            const hiatus = new Set();
+            const consonantClusters = new Set();
 
-            pos.terms.forEach(term => {
-                if (!termsBySentence.has(term.sentenceIndex)) {
-                    termsBySentence.set(term.sentenceIndex, []);
+            pairs.forEach(({ left, right, phrase }) => {
+                const leftClean = left.replace(/[^A-Za-zÄÖÜäöüß]/g, '');
+                const rightClean = right.replace(/[^A-Za-zÄÖÜäöüß]/g, '');
+                if (!leftClean || !rightClean) return;
+                const leftLast = leftClean.slice(-1).toLowerCase();
+                const rightFirst = rightClean.slice(0, 1).toLowerCase();
+                if (vowels.has(leftLast) && vowels.has(rightFirst)) {
+                    hiatus.add(phrase);
                 }
-                termsBySentence.get(term.sentenceIndex).push(term);
+                const endCluster = (leftClean.toLowerCase().match(consonantEnd) || [''])[0];
+                const startCluster = (rightClean.toLowerCase().match(consonantStart) || [''])[0];
+                if (endCluster && startCluster) {
+                    const clusterScore = endCluster.length + startCluster.length;
+                    const isHardCluster = (endCluster.length >= 2 && startCluster.length >= 2)
+                        || (endCluster.length >= 3 && startCluster.length >= 1)
+                        || (startCluster.length >= 3 && endCluster.length >= 1)
+                        || clusterScore >= 5;
+                    if (isHardCluster) consonantClusters.add(phrase);
+                }
             });
 
-            termsBySentence.forEach(terms => {
-                const auxIndices = [];
-                const participles = [];
-                terms.forEach((term, idx) => {
-                    if (term.tags && term.tags.Auxiliary) auxIndices.push(idx);
-                    if (term.tags && term.tags.Participle) participles.push({ idx, term });
-                });
-                auxIndices.forEach(auxIdx => {
-                    const candidate = participles.find(p => Math.abs(p.idx - auxIdx) <= 4);
-                    if (candidate) {
-                        matches.add(`${terms[auxIdx].text} ... ${candidate.term.text}`);
-                    }
-                });
-            });
-            if (!matches.size) return SA_Logic.findPassiveRegex(text);
-            return [...matches];
+            return { hiatus: [...hiatus], consonantClusters: [...consonantClusters] };
         },
         findStumbles: (text) => { 
             const sharedUtils = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null;
@@ -1748,7 +1768,7 @@
                 return sharedUtils.findStumbles(text, SA_CONFIG.PHONETICS);
             }
             const words = text.split(/\s+/).map(x=>x.replace(/[.,;!?:"()]/g,'')); 
-            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+            const result = { long: [], camel: [], phonetic: [], alliter: [], hiatus: [], consonant_clusters: [], sibilant_warning: false, sibilant_density: 0 };
             const phoneticRegex = new RegExp(`(${SA_CONFIG.PHONETICS.join('|')})`, 'i');
             
             // Sibilant check
@@ -1783,7 +1803,13 @@
                      result.alliter.push(`${w1} ${w2}`);
                 }
             }
-            result.long = [...new Set(result.long)]; result.camel = [...new Set(result.camel)]; result.phonetic = [...new Set(result.phonetic)]; result.alliter = [...new Set(result.alliter)];
+            const boundaryIssues = SA_Logic.analyzeWordBoundaries(text);
+            result.hiatus = boundaryIssues.hiatus;
+            result.consonant_clusters = boundaryIssues.consonantClusters;
+            result.long = [...new Set(result.long)];
+            result.camel = [...new Set(result.camel)];
+            result.phonetic = [...new Set(result.phonetic)];
+            result.alliter = [...new Set(result.alliter)];
             return result; 
         },
         analyzePronunciation: (text) => {
@@ -1791,6 +1817,7 @@
             const words = clean.split(/\s+/);
             const findings = [];
             const seen = new Set();
+            const boundaryIssues = SA_Logic.analyzeWordBoundaries(text);
     
             // 1. Check Dictionary
             words.forEach(w => {
@@ -1808,7 +1835,7 @@
                 }
             });
     
-            return findings;
+            return { words: findings, hiatuses: boundaryIssues.hiatus };
         },
         analyzeSentenceStarts: (sentences) => {
             if(!sentences || sentences.length < 2) return [];
@@ -2378,9 +2405,12 @@
                         if(nominalChains.length) addRow("Nominal-Ketten (Kritisch):", nominalChains);
                         else if(nominal.length) addRow("Nominalstil:", nominal);
                         
-                        if(pronunc.length > 0) {
-                            const pText = pronunc.map(p => `${p.word} (${p.hint})`).join(', ');
+                        if(pronunc.words.length > 0) {
+                            const pText = pronunc.words.map(p => `${p.word} (${p.hint})`).join(', ');
                             addRow("Aussprache:", pText);
+                        }
+                        if(pronunc.hiatuses.length > 0) {
+                            addRow("Hiatus (Wortgrenzen):", pronunc.hiatuses);
                         }
                         if(Object.keys(bullshit).length) addRow("Buzzword-Check:", Object.keys(bullshit));
                         if(redundancy.length > 0) {
@@ -2399,12 +2429,15 @@
                         if(adverbs.length) addRow("Adverbien (-weise):", adverbs);
                         if(anglicisms.length) addRow("Anglizismen:", anglicisms);
                         if(echoes.length) addRow("Wort-Wiederholungen:", echoes);
-                        const stumbleArr = [...stumbles.phonetic, ...stumbles.camel, ...stumbles.long, ...stumbles.alliter];
+                        const stumbleArr = [...stumbles.phonetic, ...stumbles.camel, ...stumbles.long, ...stumbles.alliter, ...stumbles.hiatus, ...stumbles.consonant_clusters];
                         if(stumbleArr.length) addRow("Stolpersteine:", stumbleArr);
                         if(stumbles.sibilant_warning) addRow("Warnung:", `Hohe Zischlaut-Dichte (${stumbles.sibilant_density}%)`);
-                        if(plosiveClusters.length) {
-                            const pText = plosiveClusters.slice(0, 3).map(p => `${p.phrase} (${p.words}x)`).join(', ');
+                        if(plosiveClusters.plosives.length) {
+                            const pText = plosiveClusters.plosives.slice(0, 3).map(p => `${p.phrase} (${p.words}x)`).join(', ');
                             addRow("Plosiv-Folgen:", pText);
+                        }
+                        if(plosiveClusters.consonantClusters.length) {
+                            addRow("Konsonanten-Cluster:", plosiveClusters.consonantClusters.slice(0, 5));
                         }
                         if(ctaData.all.length > 0) {
                             addRow("Call to Action (gefunden):", ctaData.all);
@@ -2453,13 +2486,13 @@
                         if(startIssues.length > 1) printTip("Vermeide gleiche Satzanfänge hintereinander (Monotonie).");
                         if(stumbles.sibilant_warning) printTip("Achtung Zischlaute! Der Text könnte im Mikrofon zischen/pfeifen.");
                         if(spreadIndex < 2.2) printTip("Rhythmus-Check: Satzlängen sind sehr ähnlich. Füge kurze Sätze für mehr Dynamik ein.");
-                        if(plosiveClusters.length > 0) printTip("Plosiv-Alarm: P/B/T/K am Wortanfang häufen sich. Etwas Abstand oder Umformulieren hilft.");
+                        if(plosiveClusters.plosives.length > 0) printTip("Plosiv-Alarm: P/B/T/K am Wortanfang häufen sich. Etwas Abstand oder Umformulieren hilft.");
+                        if(plosiveClusters.consonantClusters.length > 0) printTip("Harte Konsonanten-Cluster: Wortgrenzen mit starken Konsonantenketten glätten.");
                         if(keywordFocus.focusScore > 0 && keywordFocus.focusScore < 0.14) printTip("Keyword-Fokus: Die Kernbotschaft wirkt verteilt. Wiederhole den Hauptbegriff bewusst.");
                         if(redundancy.length > 0) printTip("Redundanz-Check: Entferne doppelte Aussagen in direkt aufeinanderfolgenden Sätzen.");
                         if(easyLanguage.genitives.length > 0) printTip("Leichte Sprache: Genitiv vermeiden, um verständlicher zu bleiben.");
                         if(adjectives.length > 5) printTip("Text wirkt 'blumig'. Prüfe, ob du alle Adjektive wirklich brauchst.");
-                        if(adverbs.length > 4) printTip("Viele Adverbien (-weise) gefunden. Prüfe, ob sie wirklich nötig sind.");
-                        if(pronunc.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
+                        if(pronunc.words.length > 0 || pronunc.hiatuses.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
                         if(echoes.length > 3) printTip("Achte auf Wortwiederholungen auf engem Raum (Wort-Echos).");
                         if(y == 25) { 
                              printTip("Dein Text sieht technisch sehr sauber aus! Achte beim Sprechen auf Betonung.");
@@ -4963,27 +4996,39 @@
             this.overviewResizeObserver.observe(overviewCard);
         }
         
-        renderPronunciationCard(issues, active) {
+        renderPronunciationCard(data, active) {
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
-            if(!issues || issues.length === 0) {
+            const issues = data?.words || [];
+            const hiatuses = data?.hiatuses || [];
+            if((!issues || issues.length === 0) && (!hiatuses || hiatuses.length === 0)) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
-                 h += `<div class="ska-section-title">Gefundene Wörter: <strong>${issues.length}</strong></div>`;
-                 
-                 // Use Grid only if multiple items
-                 const gridStyle = issues.length > 1 ? 'display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;' : '';
-                 
-                 h += `<div class="ska-problem-list" style="${gridStyle}">`;
-                 // Remove duplicates
-                 const unique = [...new Map(issues.map(item => [item.word, item])).values()];
-                 unique.forEach(item => {
-                     h += `<div class="ska-problem-item" style="display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #e2e8f0; padding:0.5rem; border-radius:6px;">
-                            <span style="font-weight:600; color:#334155; font-size:0.85rem;">${item.word}</span>
-                            <span style="color:#2563eb; font-size:0.8rem;">${item.hint}</span>
-                           </div>`;
-                 });
-                 h += `</div>`;
+                 if (issues.length) {
+                     h += `<div class="ska-section-title">Gefundene Wörter: <strong>${issues.length}</strong></div>`;
+                     
+                     // Use Grid only if multiple items
+                     const gridStyle = issues.length > 1 ? 'display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;' : '';
+                     
+                     h += `<div class="ska-problem-list" style="${gridStyle}">`;
+                     // Remove duplicates
+                     const unique = [...new Map(issues.map(item => [item.word, item])).values()];
+                     unique.forEach(item => {
+                         h += `<div class="ska-problem-item" style="display:flex; justify-content:space-between; align-items:center; background:#fff; border:1px solid #e2e8f0; padding:0.5rem; border-radius:6px;">
+                                <span style="font-weight:600; color:#334155; font-size:0.85rem;">${item.word}</span>
+                                <span style="color:#2563eb; font-size:0.8rem;">${item.hint}</span>
+                               </div>`;
+                     });
+                     h += `</div>`;
+                 }
+                 if (hiatuses.length) {
+                     h += `<div class="ska-section-title" style="margin-top:0.8rem;">Hiatus an Wortgrenzen</div>`;
+                     h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
+                     hiatuses.forEach((phrase) => {
+                         h += `<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${phrase}</span>`;
+                     });
+                     h += `</div>`;
+                 }
                  h += this.renderTipSection('pronunciation', true);
             }
             this.updateCard('pronunciation', h);
@@ -5142,38 +5187,50 @@
             this.updateCard('keyword_focus', h);
         }
 
-        renderPlosiveCard(clusters, active) {
+        renderPlosiveCard(data, active) {
             if(!active) return this.updateCard('plosive', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
             const isPremium = this.isPremiumActive();
+            const clusters = data?.plosives || [];
+            const consonantClusters = data?.consonantClusters || [];
 
-            if(!clusters || clusters.length === 0) {
+            if((!clusters || clusters.length === 0) && (!consonantClusters || consonantClusters.length === 0)) {
                 h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🎙️ Keine Plosiv-Alarmstellen erkannt.</div>`;
             } else {
-                h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Folgen: <strong>${clusters.length}</strong></div>`;
-                const initial = clusters.slice(0, 4);
-                const remaining = clusters.slice(4);
-                h += `<div class="ska-problem-list">`;
-                initial.forEach(cluster => {
-                    h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
-                            ${cluster.phrase}
-                            <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
-                          </div>`;
-                });
-                h += `</div>`;
-                if (remaining.length && isPremium) {
-                    h += `<div id="ska-plosive-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
+                if (clusters.length) {
+                    h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Plosiv-Folgen: <strong>${clusters.length}</strong></div>`;
+                    const initial = clusters.slice(0, 4);
+                    const remaining = clusters.slice(4);
                     h += `<div class="ska-problem-list">`;
-                    remaining.forEach(cluster => {
+                    initial.forEach(cluster => {
                         h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
                                 ${cluster.phrase}
                                 <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
                               </div>`;
                     });
-                    h += `</div></div>`;
-                    h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
-                } else if (remaining.length) {
-                    h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-plosive" data-total="${remaining.length}" data-premium-hint="Mehr Plosiv-Details gibt es in Premium." aria-disabled="true">...und ${remaining.length} weitere anzeigen</button>`;
+                    h += `</div>`;
+                    if (remaining.length && isPremium) {
+                        h += `<div id="ska-plosive-hidden" class="ska-hidden-content ska-hidden-content--compact">`;
+                        h += `<div class="ska-problem-list">`;
+                        remaining.forEach(cluster => {
+                            h += `<div class="ska-problem-item" style="border-left:3px solid #f97316;">
+                                    ${cluster.phrase}
+                                    <div class="ska-problem-meta">⚠️ ${cluster.words} Plosive in Folge${cluster.occurrences > 1 ? ` &bull; ${cluster.occurrences}x` : ''}</div>
+                                  </div>`;
+                        });
+                        h += `</div></div>`;
+                        h += `<button class="ska-expand-link ska-more-toggle" data-action="toggle-plosive" data-total="${remaining.length}">...und ${remaining.length} weitere anzeigen</button>`;
+                    } else if (remaining.length) {
+                        h += `<button class="ska-expand-link ska-more-toggle is-locked" data-action="toggle-plosive" data-total="${remaining.length}" data-premium-hint="Mehr Plosiv-Details gibt es in Premium." aria-disabled="true">...und ${remaining.length} weitere anzeigen</button>`;
+                    }
+                }
+                if (consonantClusters.length) {
+                    h += `<div class="ska-section-title" style="margin-top:0.8rem;">Harte Konsonanten-Cluster</div>`;
+                    h += `<div style="display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:10px;">`;
+                    consonantClusters.forEach((phrase) => {
+                        h += `<span class="skriptanalyse-badge" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">${phrase}</span>`;
+                    });
+                    h += `</div>`;
                 }
                 h += this.renderTipSection('plosive', true);
             }
@@ -6444,7 +6501,7 @@
             if(!active) return this.updateCard('stumble', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
             let h = '';
-            const hasIssues = (s.long.length > 0 || s.camel.length > 0 || s.phonetic.length > 0 || s.alliter.length > 0);
+            const hasIssues = (s.long.length > 0 || s.camel.length > 0 || s.phonetic.length > 0 || s.alliter.length > 0 || s.hiatus.length > 0 || s.consonant_clusters.length > 0);
 
             if(!hasIssues) h = `<p style="color:#64748b; font-size:0.9rem;">Keine Auffälligkeiten.</p>`;
             else {
@@ -6473,6 +6530,20 @@
                     h += `<div class="ska-section-title">Zungenbrecher & Alliterationen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
                     s.alliter.forEach(w => {
                         h+=`<span class="skriptanalyse-badge" style="background:#fff1f2; color:#be123c; border:1px solid #fda4af;">${w}</span>`;
+                    });
+                    h+='</div>'; 
+                }
+                if(s.hiatus.length) {
+                    h += `<div class="ska-section-title">Hiatus an Wortgrenzen</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
+                    s.hiatus.forEach(w => {
+                        h+=`<span class="skriptanalyse-badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe;">${w}</span>`;
+                    });
+                    h+='</div>'; 
+                }
+                if(s.consonant_clusters.length) {
+                    h += `<div class="ska-section-title">Harte Konsonanten-Cluster</div><div style="display:flex; flex-wrap:wrap; gap: 0.35rem; margin-bottom:10px;">`; 
+                    s.consonant_clusters.forEach(w => {
+                        h+=`<span class="skriptanalyse-badge" style="background:#fff7ed; color:#9a3412; border:1px solid #fed7aa;">${w}</span>`;
                     });
                     h+='</div>'; 
                 }
@@ -7009,7 +7080,7 @@
             const countObj = (r, raw) => ({
                 fillers: getFillerWeight(SA_Logic.findFillers(r.cleanedText)),
                 passive: SA_Logic.findPassive(r.cleanedText).length,
-                stumbles: (() => { const s = SA_Logic.findStumbles(raw); return s.long.length + s.camel.length + s.phonetic.length; })()
+                stumbles: (() => { const s = SA_Logic.findStumbles(raw); return s.long.length + s.camel.length + s.phonetic.length + s.hiatus.length + s.consonant_clusters.length; })()
             });
 
             const oldMetrics = { ...countObj(oldRead, oldRaw), score: oldRead.score, words: oldRead.wordCount, time: oldSec };
