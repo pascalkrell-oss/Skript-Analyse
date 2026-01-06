@@ -7831,8 +7831,11 @@
                             <div class="ska-premium-upgrade-title">Basis</div>
                             <span class="ska-premium-upgrade-base-tag">kostenlos</span>
                         </div>
-                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
-                        <div class="ska-premium-upgrade-price-note">für immer</div>
+                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
+                            <span class="ska-premium-upgrade-price-prefix">Für immer</span>
+                            <span class="ska-premium-upgrade-price-value">0,00 EUR</span>
+                        </div>
+                        <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing">

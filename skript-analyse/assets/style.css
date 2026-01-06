@@ -247,10 +247,10 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: visible; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
-    top: 18px;
-    left: -42px;
-    width: 200px;
-    height: 28px;
+    top: 14px;
+    left: -18px;
+    width: 160px;
+    height: 32px;
     background: linear-gradient(135deg, #1a93ee, #0066b3);
     color: #f8fafc;
     font-size: 0.82rem;
@@ -268,15 +268,16 @@ body.ska-modal-open { overflow: hidden !important; }
     box-shadow: 0 20px 34px -20px rgba(15, 23, 42, 0.6);
     text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
     z-index: 3;
+    border-radius: 999px;
 }
 .ska-premium-upgrade-ribbon::before,
 .ska-premium-upgrade-ribbon::after {
     content: "";
     position: absolute;
-    bottom: -12px;
-    border-top: 12px solid rgba(5, 55, 92, 0.55);
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
+    bottom: -6px;
+    border-top: 6px solid rgba(5, 55, 92, 0.45);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
 }
 .ska-premium-upgrade-ribbon::before {
     left: 0;
@@ -336,13 +337,14 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
 .ska-premium-upgrade-header-row .ska-premium-upgrade-title { margin-bottom: 0; }
 .ska-premium-upgrade-badge { background: #0f172a; color: #f8fafc; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; justify-content: center; text-align: center; animation: ska-fade-in 0.25s ease both; white-space: nowrap; min-width: 130px; line-height: 1; }
-.ska-premium-upgrade-price { font-size: 34px; font-weight: 800; color: #0284c7; margin: 0.5rem 0 0.75rem; animation: ska-fade-in 0.25s ease both; display: flex; align-items: baseline; gap: 0.45rem; }
+.ska-premium-upgrade-price { font-size: 34px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex; align-items: center; gap: 0.45rem; }
+.ska-premium-upgrade-price-prefix { font-size: 0.78rem; font-weight: 700; color: #64748b; letter-spacing: 0.01em; text-transform: uppercase; }
 .ska-premium-upgrade-price-label { font-size: 0.82rem; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; line-height: 1.1; }
 .ska-premium-upgrade-price-value { font-size: 34px; font-weight: 800; color: #0284c7; }
 .ska-premium-upgrade-price--free { color: #0f172a; }
-.ska-premium-upgrade-base-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
+.ska-premium-upgrade-base-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; justify-content: flex-start; }
 .ska-premium-upgrade-base-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 0.2rem 0.55rem; }
-.ska-premium-upgrade-price-note { font-size: 0.95rem; color: #475569; margin-top: -0.2rem; margin-bottom: 0.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 1.6rem; line-height: 1.4; animation: ska-fade-in 0.25s ease both; }
+.ska-premium-upgrade-price-note { font-size: 0.95rem; color: #475569; margin-top: -0.2rem; margin-bottom: 0.4rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 1rem; line-height: 1.4; animation: ska-fade-in 0.25s ease both; }
 .ska-premium-upgrade-savings { font-size: 0.78rem; color: #0f172a; font-weight: 700; background: #dcfce7; border: 1px solid #bbf7d0; padding: 0.2rem 0.5rem; border-radius: 999px; display: inline-flex; white-space: nowrap; animation: ska-fade-in 0.25s ease both; transition: opacity 0.25s ease, transform 0.25s ease; line-height: 1; }
 .ska-premium-upgrade-savings.is-hidden { opacity: 0; visibility: hidden; transform: none; }
 .ska-premium-upgrade-switch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin: 1rem 0 0.65rem; }
@@ -1112,7 +1114,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
-.ska-premium-upgrade-tax { font-size: 0.65rem; color: #94a3b8; font-weight: 600; display: inline-flex; flex-direction: column; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; align-self: baseline; }
+.ska-premium-upgrade-tax { font-size: 0.65rem; color: #94a3b8; font-weight: 600; display: inline-flex; flex-direction: column; line-height: 1; text-transform: uppercase; letter-spacing: 0.04em; align-self: center; }
 .ska-premium-upgrade-tax-prefix { font-size: 0.65rem; color: #94a3b8; }
 
 .ska-rating-box { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 18px; padding: 1.8rem; margin: 1.6rem auto 2.4rem; max-width: 1120px; box-shadow: 0 16px 32px -24px rgba(15, 23, 42, 0.18); display: none; }
