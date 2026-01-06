@@ -204,7 +204,13 @@ function ska_shortcode() {
                 </div>
                 <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
                 <div class="ska-rating-form">
-                    <?php echo do_shortcode('[fluentform id="7"]'); ?>
+                    <?php if (function_exists('do_shortcode')) : ?>
+                        <?php echo do_shortcode('[fluentform id="7"]'); ?>
+                    <?php else : ?>
+                        <div class="ska-rating-fallback">
+                            Das Bewertungsformular ist aktuell nicht verfügbar.
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

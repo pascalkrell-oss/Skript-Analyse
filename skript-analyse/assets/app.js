@@ -819,39 +819,6 @@
                         flex: 1;
                         min-height: 100%;
                     }
-                    .ska-search-box {
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.4rem;
-                        background: #f8fafc;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 999px;
-                        padding: 2px 8px;
-                        margin-left: 0.4rem;
-                    }
-                    .ska-search-input {
-                        border: none;
-                        background: transparent;
-                        font-size: 0.8rem;
-                        color: #0f172a;
-                        outline: none;
-                        min-width: 140px;
-                    }
-                    .ska-search-count {
-                        font-size: 0.7rem;
-                        color: #64748b;
-                        min-width: 36px;
-                        text-align: right;
-                    }
-                    .ska-search-btn {
-                        border: none;
-                        background: #e2e8f0;
-                        color: #0f172a;
-                        border-radius: 999px;
-                        padding: 2px 6px;
-                        font-size: 0.7rem;
-                        cursor: pointer;
-                    }
                     .ska-search-hit {
                         background: #fde68a;
                         padding: 0 2px;
@@ -2942,29 +2909,12 @@
                  btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
                  headerActions.appendChild(btn);
             }
-            if (headerActions && !this.root.querySelector('.ska-search-box')) {
-                const searchWrap = document.createElement('div');
-                searchWrap.className = 'ska-search-box';
-                searchWrap.innerHTML = `
-                    <button class="ska-search-toggle" type="button" data-action="toggle-search" aria-expanded="false">Suchen..</button>
-                    <div class="ska-search-panel" role="group" aria-label="Skript durchsuchen">
-                        <input type="search" class="ska-search-input" placeholder="Suchen..." aria-label="Skript durchsuchen">
-                        <div class="ska-search-controls">
-                            <span class="ska-search-count">0</span>
-                            <button class="ska-search-btn" type="button" data-action="search-prev">◀</button>
-                            <button class="ska-search-btn" type="button" data-action="search-next">▶</button>
-                            <button class="ska-search-btn" type="button" data-action="search-clear">✕</button>
-                        </div>
-                    </div>
-                `;
-                headerActions.appendChild(searchWrap);
-                this.searchBox = searchWrap;
-                this.searchInput = searchWrap.querySelector('.ska-search-input');
-                this.searchCount = searchWrap.querySelector('.ska-search-count');
-                this.searchPrevBtn = searchWrap.querySelector('[data-action="search-prev"]');
-                this.searchNextBtn = searchWrap.querySelector('[data-action="search-next"]');
-                this.searchClearBtn = searchWrap.querySelector('[data-action="search-clear"]');
-            }
+            this.searchBox = null;
+            this.searchInput = null;
+            this.searchCount = null;
+            this.searchPrevBtn = null;
+            this.searchNextBtn = null;
+            this.searchClearBtn = null;
 
             // PORTAL LOGIC
             const modals = this.root.querySelectorAll('.skriptanalyse-modal');
