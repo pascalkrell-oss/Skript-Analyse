@@ -1070,7 +1070,10 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; gap: 2rem; flex-wrap: wrap; }
 .ska-footer-intro { flex: 1; min-width: 300px; display: flex; align-items: center; }
 .ska-footer-intro p { margin: 0; font-size: 0.9rem; color: var(--ska-text-muted); line-height: 1.5; vertical-align: middle; }
-.ska-footer-actions { display: flex; gap: 1rem; align-items: center; flex-direction: row; }
+.ska-footer-actions { display: flex; gap: 1rem; align-items: stretch; flex-direction: row; }
+.ska-footer-actions > * { flex: 1 1 0; }
+.ska-footer-actions .ska-tool-wrapper { width: 100%; }
+.ska-footer-actions .ska-btn { width: 100%; justify-content: center; }
 
 /* =========================================
    MODAL SYSTEM (FIXED & PORTAL READY)
@@ -1363,7 +1366,19 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-help-hero { grid-template-columns: 1fr; }
     .ska-help-tabs-nav { flex-direction: column; align-items: stretch; }
     .ska-settings-option-group--time { grid-template-columns: 1fr; }
-    .ska-premium-upgrade-grid { grid-template-columns: 1fr; }
+    .ska-premium-upgrade-grid {
+        display: flex;
+        gap: 1.2rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 0.6rem;
+        -webkit-overflow-scrolling: touch;
+    }
+    .ska-premium-upgrade-col {
+        flex: 0 0 85%;
+        min-width: 280px;
+        scroll-snap-align: start;
+    }
     .ska-premium-upgrade-col.is-premium { transform: none; }
     .ska-premium-upgrade-col.is-free { margin-top: 0; }
     .ska-premium-upgrade-list { grid-template-columns: 1fr; }
