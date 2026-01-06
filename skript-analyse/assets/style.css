@@ -245,29 +245,46 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden !important; }
+/* 1. Basis-Styling (Mobile First) - Bleibt kompakt wie bisher */
 .ska-premium-upgrade-ribbon {
     position: absolute;
     top: 25px;
     left: -45px;
-    width: 190px;
+    width: 180px;
+    transform: rotate(-45deg);
+    z-index: 20;
+
+    /* FIX: Perfekte Zentrierung mit Flexbox */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1; /* Verhindert Höhen-Verschiebung */
+
+    /* Design */
     background: linear-gradient(90deg, #1a93ee, #0066b3);
     color: #fff;
-    text-align: center;
-    text-transform: uppercase;
     font-weight: 800;
-    font-size: 14.5px;
+    text-transform: uppercase;
     letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 30px;
-    padding: 0 0 0 17px;
-    box-sizing: border-box;
-    line-height: 1;
-    transform: rotate(-45deg);
-    transform-origin: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 20;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+    /* Mobile Größen */
+    font-size: 10px;
+    padding: 6px 0;
+    height: auto;
+}
+
+/* 2. Desktop-Upgrade (Ab 768px) - Macht alles etwas größer */
+@media (min-width: 768px) {
+    .ska-premium-upgrade-ribbon {
+        width: 240px;      /* Breiteres Band */
+        font-size: 13px;   /* Größere Schrift */
+        padding: 10px 0;   /* Dickerer Streifen */
+
+        /* Positions-Korrektur für die neue Größe */
+        top: 35px;
+        left: -60px;
+    }
 }
 .ska-premium-upgrade-ribbon span {
     display: inline-flex;
