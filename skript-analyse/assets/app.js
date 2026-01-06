@@ -6,6 +6,14 @@
 (function () {
     'use strict';
 
+    window.addEventListener('unhandledrejection', (event) => {
+        const reason = event && event.reason;
+        const message = typeof reason === 'object' && reason !== null && 'message' in reason ? String(reason.message) : String(reason || '');
+        if (message.includes('A listener indicated an asynchronous response by returning true')) {
+            event.preventDefault();
+        }
+    });
+
     // CONFIG
     const SA_CONFIG = {
         STORAGE_KEY: 'skriptanalyse_autosave_v4_99', 
@@ -7698,9 +7706,9 @@
 
         getPremiumPlans() {
             return [
-                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', priceLabel: 'pro Monat', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
-                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', priceLabel: 'pro Jahr', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
-                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', priceLabel: 'einmalig', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
+                { id: 'flex', label: 'Monatlich', price: '25,00', priceLabel: 'Pro Monat', note: 'Volle Flexibilität, <strong>monatlich kündbar</strong>!', savings: '' },
+                { id: 'pro', label: 'Jährlich', price: '144,00', priceLabel: 'Pro Jahr', note: 'Volles Studio-Setup für <strong>nur 12 €</strong> im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
+                { id: 'studio', label: 'Lifetime', price: '399,00', priceLabel: 'Einmalig', note: 'Einmal zahlen, für immer nutzen <strong>(inkl. Updates)</strong>', savings: '', badge: 'Limitierter Deal' }
             ];
         }
 
@@ -7710,12 +7718,12 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
-            const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
+            const priceValueEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
             }
-            const priceLabelEl = card.querySelector('.ska-premium-upgrade-price-label');
+            const priceLabelEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-label');
             if (priceLabelEl) {
                 priceLabelEl.textContent = priceLabel;
             }
@@ -7783,8 +7791,9 @@
                 'Cloud-Speicher (sofern verfügbar)'
             ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
+            const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -7826,14 +7835,15 @@
                     <span>Mehr Analysen, Reports, praktische Werkzeuge & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
-                    <div class="ska-premium-upgrade-col is-free">
-                        <div class="ska-premium-upgrade-base-header">
-                            <div class="ska-premium-upgrade-title">Basis</div>
-                            <span class="ska-premium-upgrade-base-tag">kostenlos</span>
+                        <div class="ska-premium-upgrade-col is-free">
+                        <div class="ska-premium-upgrade-header-row">
+                            <div class="ska-premium-upgrade-title">BASIS</div>
+                            <span class="ska-premium-upgrade-badge ska-premium-upgrade-badge--free">Kostenlos</span>
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
-                            <span class="ska-premium-upgrade-price-prefix">Für immer</span>
-                            <span class="ska-premium-upgrade-price-value">0,00 EUR</span>
+                            <span class="ska-premium-upgrade-price-value">${freePrice}</span>
+                            <span class="ska-premium-upgrade-price-currency">EUR</span>
+                            <span class="ska-premium-upgrade-price-suffix">Für immer!</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
@@ -7857,9 +7867,10 @@
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
+                            <span class="ska-premium-upgrade-price-currency">EUR</span>
                             <span class="ska-premium-upgrade-tax">
                                 <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
-                                <span>19% MwSt.</span>
+                                <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
                             </span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
