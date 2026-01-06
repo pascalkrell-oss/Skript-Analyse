@@ -247,43 +247,44 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: visible; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
-    top: 15px;
-    left: -30px;
-    width: 150px;
-    background: linear-gradient(90deg, #1a93ee, #0066b3);
+    top: 32px;
+    left: -42px;
+    width: 170px;
+    background: linear-gradient(90deg, #1a93ee 0%, #0066b3 100%);
     color: #fff;
     text-align: center;
-    font-weight: bold;
-    padding: 10px 0;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 8px 0;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     transform: rotate(-45deg);
     transform-origin: center;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     z-index: 20;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 .ska-premium-upgrade-ribbon::before,
 .ska-premium-upgrade-ribbon::after {
     content: "";
     position: absolute;
-    width: 0;
-    height: 0;
-    border-style: solid;
+    top: 100%;
     z-index: -1;
+    border: 3px solid #003366;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
 }
 .ska-premium-upgrade-ribbon::before {
-    top: -10px;
-    left: 0;
-    border-width: 10px 10px 0 0;
-    border-color: #004080 transparent transparent transparent;
+    left: 20px;
+    border-left-color: transparent;
 }
 .ska-premium-upgrade-ribbon::after {
-    top: 0;
-    left: -10px;
-    border-width: 0 10px 10px 0;
-    border-color: #004080 transparent transparent transparent;
+    right: 20px;
+    border-right-color: transparent;
 }
 .ska-premium-upgrade-close {
     position: absolute;
