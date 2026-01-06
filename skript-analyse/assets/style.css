@@ -245,29 +245,46 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden !important; }
+/* 1. Basis-Styling (Mobile First) - Bleibt kompakt wie bisher */
 .ska-premium-upgrade-ribbon {
     position: absolute;
     top: 25px;
     left: -45px;
-    width: 190px;
+    width: 180px;
+    transform: rotate(-45deg);
+    z-index: 20;
+
+    /* FIX: Perfekte Zentrierung mit Flexbox */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1; /* Verhindert Höhen-Verschiebung */
+
+    /* Design */
     background: linear-gradient(90deg, #1a93ee, #0066b3);
     color: #fff;
-    text-align: center;
-    text-transform: uppercase;
     font-weight: 800;
-    font-size: 14.5px;
+    text-transform: uppercase;
     letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    height: 30px;
-    padding: 0 0 0 17px;
-    box-sizing: border-box;
-    line-height: 1;
-    transform: rotate(-45deg);
-    transform-origin: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 20;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+
+    /* Mobile Größen */
+    font-size: 10px;
+    padding: 6px 0;
+    height: auto;
+}
+
+/* 2. Desktop-Upgrade (Ab 768px) - Macht alles etwas größer */
+@media (min-width: 768px) {
+    .ska-premium-upgrade-ribbon {
+        width: 240px;      /* Breiteres Band */
+        font-size: 13px;   /* Größere Schrift */
+        padding: 10px 0;   /* Dickerer Streifen */
+
+        /* Positions-Korrektur für die neue Größe */
+        top: 35px;
+        left: -60px;
+    }
 }
 .ska-premium-upgrade-close {
     position: absolute;
@@ -355,52 +372,55 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; }
+.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; }
 .ska-premium-upgrade-listing li::after {
     content: attr(data-info);
     position: absolute;
-    left: 0;
-    top: 100%;
-    margin-top: 6px;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    margin-bottom: 10px;
+    width: max-content;
+    max-width: 280px;
+    white-space: normal;
+    word-break: break-word;
     background: linear-gradient(140deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
     color: #f8fafc;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 500;
-    padding: 0.7rem 0.85rem;
-    border-radius: 12px;
-    white-space: normal;
-    max-width: 260px;
+    padding: 0.75rem 0.95rem;
+    border-radius: 10px;
     text-align: center;
     border: 1px solid rgba(148, 163, 184, 0.25);
-    box-shadow: 0 16px 28px -18px rgba(15, 23, 42, 0.7);
+    box-shadow: 0 16px 28px -18px rgba(15, 23, 42, 0.75);
     backdrop-filter: blur(6px);
     opacity: 0;
     pointer-events: none;
-    transform: translateY(-4px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    z-index: 2;
+    transition: all 0.2s ease;
+    z-index: 10;
 }
 .ska-premium-upgrade-listing li::before {
     content: '';
     position: absolute;
-    top: 100%;
-    left: 16px;
-    border-width: 7px;
+    bottom: 100%;
+    left: 50%;
+    margin-bottom: 2px;
+    border-width: 5px;
     border-style: solid;
     border-color: rgba(15, 23, 42, 0.98) transparent transparent transparent;
     opacity: 0;
-    transform: translateY(-4px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateX(-50%) translateY(0);
+    transition: all 0.2s ease;
     pointer-events: none;
-    z-index: 2;
+    z-index: 10;
 }
 .ska-premium-upgrade-listing li:hover::after {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(-4px);
 }
 .ska-premium-upgrade-listing li:hover::before {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(-4px);
 }
 .ska-premium-upgrade-listing li span { font-weight: 420; }
 .ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
@@ -1150,7 +1170,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
-.ska-premium-upgrade-tax { color: #94a3b8; font-weight: 700; display: inline-flex; flex-direction: column; justify-content: flex-end; line-height: 0.85; text-transform: uppercase; letter-spacing: 0.04em; align-self: baseline; height: 0.85em; max-height: 0.85em; font-size: inherit; margin-right: 0.2rem; }
+.ska-premium-upgrade-tax { color: #94a3b8; font-weight: 700; display: inline-flex; flex-direction: column; justify-content: flex-end; line-height: 0.9; text-transform: uppercase; letter-spacing: 0.04em; align-self: flex-end; font-size: inherit; margin-right: 0.2rem; }
 .ska-premium-upgrade-tax-prefix,
 .ska-premium-upgrade-tax-value { font-size: 0.3em; color: #94a3b8; line-height: 0.85; }
 
