@@ -4113,6 +4113,17 @@
                 this.showPremiumNotice('Mehr Informationen zu Premium folgen in Kürze.');
                 return true;
             }
+            if (act === 'toggle-search') {
+                const wrapper = btn.closest('.ska-search-box');
+                if (wrapper) {
+                    const isOpen = wrapper.classList.toggle('is-open');
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen && this.searchInput) {
+                        this.searchInput.focus();
+                    }
+                }
+                return true;
+            }
             if (act === 'toggle-premium-analysis') {
                 const section = btn.closest('.ska-premium-upgrade-section--analysis');
                 if (section) {
@@ -5359,6 +5370,23 @@
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
                 this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
+                const container = this.legendContainer.parentElement;
+                if (container) {
+                    const existingRating = container.querySelector('.ska-rating-box');
+                    if (existingRating) existingRating.remove();
+                    if (isPremium) {
+                        const ratingBox = document.createElement('div');
+                        ratingBox.className = 'ska-rating-box';
+                        ratingBox.innerHTML = `
+                            <div class="ska-card-header">
+                                <h3>Analyse-System bewerten</h3>
+                            </div>
+                            <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
+                            <div class="ska-rating-form">[fluentform id="7"]</div>
+                        `;
+                        container.insertBefore(ratingBox, this.legendContainer.nextSibling);
+                    }
+                }
             }
         }
 
