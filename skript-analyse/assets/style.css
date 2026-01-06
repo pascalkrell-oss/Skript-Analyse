@@ -247,16 +247,17 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
-    top: -36px;
-    left: -72px;
+    top: 25px;
+    left: -50px;
     width: 200px;
-    height: 40px;
-    background: #1a93ee;
-    color: #f8fafc;
+    background: #f97316;
+    color: #fff;
     font-size: 0.82rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    text-align: center;
+    padding: 8px 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -264,7 +265,7 @@ body.ska-modal-open { overflow: hidden !important; }
     transform: rotate(-45deg);
     transform-origin: center;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
-    z-index: 3;
+    z-index: 10;
     border-radius: 6px;
 }
 .ska-premium-upgrade-close {
