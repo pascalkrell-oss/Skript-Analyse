@@ -7828,7 +7828,7 @@
                             <button class="ska-premium-upgrade-more" type="button" data-action="toggle-premium-analysis" aria-expanded="false">Mehr Boxen anzeigen</button>
                         ` : '';
             const html = `
-                <div class="ska-premium-upgrade-ribbon">UPGRADE!</div>
+                <div class="ska-premium-upgrade-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 6L6 18"></path>
@@ -7883,7 +7883,6 @@
                                 <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
                                 <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
                             </span>
-                            <span class="ska-premium-upgrade-price-currency">EUR</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
