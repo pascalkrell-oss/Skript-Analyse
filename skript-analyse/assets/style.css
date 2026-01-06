@@ -245,8 +245,9 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden !important; }
-/* 1. Basis-Styling (Mobile First) - Bleibt kompakt wie bisher */
+/* 1. BASIS (Mobile First) - Kompakt & Sauber */
 .ska-premium-upgrade-ribbon {
+    /* Positionierung */
     position: absolute;
     top: 25px;
     left: -45px;
@@ -254,41 +255,37 @@ body.ska-modal-open { overflow: hidden !important; }
     transform: rotate(-45deg);
     z-index: 20;
 
-    /* FIX: Perfekte Zentrierung mit Flexbox */
+    /* FIX: Perfekte Text-Zentrierung (Vertikal & Horizontal) */
     display: flex;
     justify-content: center;
     align-items: center;
-    line-height: 1; /* Verhindert Höhen-Verschiebung */
 
     /* Design */
-    background: linear-gradient(90deg, #1a93ee, #0066b3);
+    background: linear-gradient(90deg, #1a93ee 0%, #0066b3 100%);
     color: #fff;
-    font-weight: 800;
     text-transform: uppercase;
+    font-weight: 800;
     letter-spacing: 1px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    border-top: 1px solid rgba(255,255,255,0.4); /* Lichtkante */
 
-    /* Mobile Größen */
+    /* Mobile Maße */
+    height: 32px;  /* Fixe Höhe hilft bei der Zentrierung */
     font-size: 10px;
-    padding: 6px 0;
-    height: auto;
+    padding: 0;    /* Padding 0, da Flexbox zentriert */
 }
 
-/* 2. Desktop-Upgrade (Ab 768px) - Macht alles etwas größer */
+/* 2. DESKTOP (Größer & Auffälliger) */
 @media (min-width: 768px) {
     .ska-premium-upgrade-ribbon {
-        width: 240px;      /* Breiteres Band */
-        font-size: 13px;   /* Größere Schrift */
-        padding: 10px 0;   /* Dickerer Streifen */
+        width: 260px;       /* Deutlich breiteres Band */
+        height: 40px;       /* Höher */
+        font-size: 13px;    /* Große, lesbare Schrift */
 
-        /* Positions-Korrektur für die neue Größe */
-        top: 35px;
-        left: -60px;
+        /* Angepasste Position für die neue Größe */
+        top: 35px;         /* Tiefer setzen */
+        left: -65px;       /* Weiter nach links schieben */
     }
-}
-.ska-premium-upgrade-ribbon span {
-    display: inline-flex;
-    transform: translate(6px, -6px);
 }
 .ska-premium-upgrade-close {
     position: absolute;
