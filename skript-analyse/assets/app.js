@@ -819,39 +819,6 @@
                         flex: 1;
                         min-height: 100%;
                     }
-                    .ska-search-box {
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 0.4rem;
-                        background: #f8fafc;
-                        border: 1px solid #e2e8f0;
-                        border-radius: 999px;
-                        padding: 2px 8px;
-                        margin-left: 0.4rem;
-                    }
-                    .ska-search-input {
-                        border: none;
-                        background: transparent;
-                        font-size: 0.8rem;
-                        color: #0f172a;
-                        outline: none;
-                        min-width: 140px;
-                    }
-                    .ska-search-count {
-                        font-size: 0.7rem;
-                        color: #64748b;
-                        min-width: 36px;
-                        text-align: right;
-                    }
-                    .ska-search-btn {
-                        border: none;
-                        background: #e2e8f0;
-                        color: #0f172a;
-                        border-radius: 999px;
-                        padding: 2px 6px;
-                        font-size: 0.7rem;
-                        cursor: pointer;
-                    }
                     .ska-search-hit {
                         background: #fde68a;
                         padding: 0 2px;
@@ -2942,23 +2909,12 @@
                  btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
                  headerActions.appendChild(btn);
             }
-            if (headerActions && !this.root.querySelector('.ska-search-box')) {
-                const searchWrap = document.createElement('div');
-                searchWrap.className = 'ska-search-box';
-                searchWrap.innerHTML = `
-                    <input type="search" class="ska-search-input" placeholder="Suchen..." aria-label="Skript durchsuchen">
-                    <span class="ska-search-count">0</span>
-                    <button class="ska-search-btn" type="button" data-action="search-prev">◀</button>
-                    <button class="ska-search-btn" type="button" data-action="search-next">▶</button>
-                    <button class="ska-search-btn" type="button" data-action="search-clear">✕</button>
-                `;
-                headerActions.appendChild(searchWrap);
-                this.searchInput = searchWrap.querySelector('.ska-search-input');
-                this.searchCount = searchWrap.querySelector('.ska-search-count');
-                this.searchPrevBtn = searchWrap.querySelector('[data-action="search-prev"]');
-                this.searchNextBtn = searchWrap.querySelector('[data-action="search-next"]');
-                this.searchClearBtn = searchWrap.querySelector('[data-action="search-clear"]');
-            }
+            this.searchBox = null;
+            this.searchInput = null;
+            this.searchCount = null;
+            this.searchPrevBtn = null;
+            this.searchNextBtn = null;
+            this.searchClearBtn = null;
 
             // PORTAL LOGIC
             const modals = this.root.querySelectorAll('.skriptanalyse-modal');
@@ -6881,7 +6837,7 @@
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
             
             const h = `
-                <div style="margin-bottom:1.5rem; text-align:center;">
+                <div class="ska-flesch-summary" style="margin-bottom:1.5rem; text-align:center;">
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
@@ -7714,9 +7670,9 @@
 
         getPremiumPlans() {
             return [
-                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
-                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
-                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
+                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', priceLabel: 'pro Monat', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
+                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', priceLabel: 'pro Jahr', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
+                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', priceLabel: 'einmalig', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
             ];
         }
 
@@ -7726,7 +7682,7 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
             const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
@@ -7785,7 +7741,7 @@
                 'Wort- & Satzstatistik',
                 'Lesbarkeits-Score',
                 'Füllwort-Analyse (Basis)',
-                'Autosave (lokal)',
+                'Autosave (lokal in Deinem Browser)',
                 'PDF-Export (Basis)'
             ].concat(freeToolTitles);
             const premiumFunctions = [
@@ -7800,7 +7756,7 @@
             ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -7837,15 +7793,21 @@
                                 <path d="M13 2L3 14h7l-1 8 12-14h-7l1-6z"></path>
                             </svg>
                         </span>
-                        <strong>Erhalte Premium Zugriff</strong>
+                        <strong>Erhalte Zugriff auf alle Analysen & Funktionen</strong>
                     </div>
                     <span>Mehr Analysen, Reports, praktische Werkzeuge & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col is-free">
-                        <div class="ska-premium-upgrade-title">Basis</div>
-                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
-                        <div class="ska-premium-upgrade-price-note">für immer</div>
+                        <div class="ska-premium-upgrade-base-header">
+                            <div class="ska-premium-upgrade-title">Basis</div>
+                            <span class="ska-premium-upgrade-base-tag">kostenlos</span>
+                        </div>
+                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
+                            <span class="ska-premium-upgrade-price-prefix">Für immer</span>
+                            <span class="ska-premium-upgrade-price-value">0,00 EUR</span>
+                        </div>
+                        <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
                             <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
                             <ul class="ska-premium-upgrade-listing">
@@ -7867,7 +7829,10 @@
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
-                            <span class="ska-premium-upgrade-tax">inkl. 19% MwSt.</span>
+                            <span class="ska-premium-upgrade-tax">
+                                <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
+                                <span>19% MwSt.</span>
+                            </span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
@@ -7924,6 +7889,15 @@
             grid.dataset.scrollBound = 'true';
             const update = () => {
                 if (!grid.isConnected) return;
+                if (!window.matchMedia('(max-width: 900px)').matches) {
+                    const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
+                    if (premiumCol) {
+                        premiumCol.style.maxHeight = '';
+                        premiumCol.style.overflow = '';
+                    }
+                    grid.classList.remove('has-scroll-hint', 'is-premium-focused');
+                    return;
+                }
                 const freeCol = grid.querySelector('.ska-premium-upgrade-col.is-free');
                 const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
                 const maxScroll = grid.scrollWidth - grid.clientWidth;
