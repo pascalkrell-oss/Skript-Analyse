@@ -612,11 +612,16 @@
             total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
             const commaPause = parseFloat(settings.commaPause != null ? settings.commaPause : 0);
             const periodPause = parseFloat(settings.periodPause != null ? settings.periodPause : 0);
+            const paragraphPause = parseFloat(settings.paragraphPause != null ? settings.paragraphPause : 1);
             if (commaPause > 0) {
                 total += (cleaned.match(/,/g) || []).length * commaPause;
             }
             if (periodPause > 0) {
                 total += (cleaned.match(/[.!?]/g) || []).length * periodPause;
+            }
+            if (paragraphPause > 0) {
+                const paragraphBreaks = safeText.split(/\n\s*\n+/).length - 1;
+                if (paragraphBreaks > 0) total += paragraphBreaks * paragraphPause;
             }
             return total;
         },
@@ -813,6 +818,48 @@
                         gap: 1.2rem;
                         flex: 1;
                         min-height: 100%;
+                    }
+                    .ska-search-box {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.4rem;
+                        background: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 999px;
+                        padding: 2px 8px;
+                        margin-left: 0.4rem;
+                    }
+                    .ska-search-input {
+                        border: none;
+                        background: transparent;
+                        font-size: 0.8rem;
+                        color: #0f172a;
+                        outline: none;
+                        min-width: 140px;
+                    }
+                    .ska-search-count {
+                        font-size: 0.7rem;
+                        color: #64748b;
+                        min-width: 36px;
+                        text-align: right;
+                    }
+                    .ska-search-btn {
+                        border: none;
+                        background: #e2e8f0;
+                        color: #0f172a;
+                        border-radius: 999px;
+                        padding: 2px 6px;
+                        font-size: 0.7rem;
+                        cursor: pointer;
+                    }
+                    .ska-search-hit {
+                        background: #fde68a;
+                        padding: 0 2px;
+                        border-radius: 4px;
+                    }
+                    .ska-search-hit.is-active {
+                        background: #f97316;
+                        color: #ffffff;
                     }
                     .ska-tip-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
                     .ska-tip-badge {
@@ -1617,7 +1664,12 @@
             return chains;
         },
 
-        findAdjectives: (text) => { const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi; const matches = text.match(regex) || []; return [...new Set(matches)]; },
+        findAdjectives: (text) => {
+            const source = String(text || '').normalize('NFC');
+            const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ig|lich|isch|haft|bar|sam|los))\b/gi;
+            const matches = source.match(regex) || [];
+            return [...new Set(matches)];
+        },
         findAdverbs: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]{4,}(?:erweise|weise))\b/gi;
             const matches = text.match(regex) || [];
@@ -2403,6 +2455,25 @@
                             y += 6;
                         }
                     };
+                    const markerPattern = /(\[[^\]]+\]|\|[0-9.]+S?\||\|)/g;
+                    const renderLineWithMarkers = (line, x, yPos) => {
+                        const parts = String(line || '').split(markerPattern).filter(Boolean);
+                        let offsetX = 0;
+                        parts.forEach((part) => {
+                            const isPause = part.startsWith('|');
+                            const isMarker = part.startsWith('[') && part.endsWith(']');
+                            if (isPause) {
+                                doc.setTextColor(234, 88, 12);
+                            } else if (isMarker) {
+                                doc.setTextColor(220, 38, 38);
+                            } else {
+                                doc.setTextColor(0);
+                            }
+                            doc.text(part, x + offsetX, yPos);
+                            offsetX += doc.getTextWidth(part);
+                        });
+                        doc.setTextColor(0);
+                    };
 
                     // --- HEADER ---
                     const headerTop = y - 8;
@@ -2670,7 +2741,7 @@
                                 doc.addPage();
                                 y = 20;
                             }
-                            doc.text(splitScript[i], margin, y);
+                            renderLineWithMarkers(splitScript[i], margin, y);
                             y += 6;
                         }
                     }
@@ -2767,7 +2838,7 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
             const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
             const initialPlanMode = SA_CONFIG.PRO_MODE
@@ -2794,7 +2865,8 @@
                 limitReached: false,
                 premiumUpgradeDismissed: false,
                 markerData: [],
-                nominalChains: []
+                nominalChains: [],
+                search: { query: '', matches: [], index: -1 }
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -2870,6 +2942,23 @@
                  btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
                  headerActions.appendChild(btn);
             }
+            if (headerActions && !this.root.querySelector('.ska-search-box')) {
+                const searchWrap = document.createElement('div');
+                searchWrap.className = 'ska-search-box';
+                searchWrap.innerHTML = `
+                    <input type="search" class="ska-search-input" placeholder="Suchen..." aria-label="Skript durchsuchen">
+                    <span class="ska-search-count">0</span>
+                    <button class="ska-search-btn" type="button" data-action="search-prev">◀</button>
+                    <button class="ska-search-btn" type="button" data-action="search-next">▶</button>
+                    <button class="ska-search-btn" type="button" data-action="search-clear">✕</button>
+                `;
+                headerActions.appendChild(searchWrap);
+                this.searchInput = searchWrap.querySelector('.ska-search-input');
+                this.searchCount = searchWrap.querySelector('.ska-search-count');
+                this.searchPrevBtn = searchWrap.querySelector('[data-action="search-prev"]');
+                this.searchNextBtn = searchWrap.querySelector('[data-action="search-next"]');
+                this.searchClearBtn = searchWrap.querySelector('[data-action="search-clear"]');
+            }
 
             // PORTAL LOGIC
             const modals = this.root.querySelectorAll('.skriptanalyse-modal');
@@ -2899,9 +2988,82 @@
             if (!this.textarea) return;
             if (this.textarea.isContentEditable) {
                 this.textarea.innerHTML = SA_Utils.renderMarkersToHtml(value);
+                this.clearSearchHighlights();
                 return;
             }
             else this.textarea.value = value;
+        }
+
+        clearSearchHighlights() {
+            if (!this.textarea || !this.textarea.isContentEditable) return;
+            const highlights = this.textarea.querySelectorAll('mark.ska-search-hit');
+            highlights.forEach((mark) => {
+                const text = document.createTextNode(mark.textContent || '');
+                mark.replaceWith(text);
+            });
+            this.textarea.normalize();
+            if (this.state.search) {
+                this.state.search.matches = [];
+                this.state.search.index = -1;
+            }
+            if (this.searchCount) this.searchCount.textContent = '0';
+        }
+
+        applySearchHighlights(query) {
+            if (!this.textarea || !this.textarea.isContentEditable) return;
+            this.clearSearchHighlights();
+            const term = String(query || '').trim();
+            if (!term) return;
+            const regex = new RegExp(SA_Utils.escapeRegex(term), 'gi');
+            const matches = [];
+            const walker = document.createTreeWalker(this.textarea, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    if (!node.parentNode) return NodeFilter.FILTER_REJECT;
+                    if (node.parentNode.closest('.ska-inline-marker')) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            while (walker.nextNode()) nodes.push(walker.currentNode);
+            nodes.forEach((node) => {
+                const text = node.nodeValue;
+                if (!text || !regex.test(text)) return;
+                regex.lastIndex = 0;
+                const frag = document.createDocumentFragment();
+                let lastIndex = 0;
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    const before = text.slice(lastIndex, match.index);
+                    if (before) frag.appendChild(document.createTextNode(before));
+                    const mark = document.createElement('mark');
+                    mark.className = 'ska-search-hit';
+                    mark.textContent = match[0];
+                    frag.appendChild(mark);
+                    matches.push(mark);
+                    lastIndex = match.index + match[0].length;
+                }
+                const after = text.slice(lastIndex);
+                if (after) frag.appendChild(document.createTextNode(after));
+                node.parentNode.replaceChild(frag, node);
+            });
+            if (this.state.search) {
+                this.state.search.matches = matches;
+                this.state.search.index = matches.length ? 0 : -1;
+            }
+            if (this.searchCount) this.searchCount.textContent = String(matches.length);
+            if (matches.length) this.focusSearchMatch(0);
+        }
+
+        focusSearchMatch(index) {
+            if (!this.state.search || !this.state.search.matches.length) return;
+            this.state.search.matches.forEach((mark) => mark.classList.remove('is-active'));
+            const clamped = ((index % this.state.search.matches.length) + this.state.search.matches.length) % this.state.search.matches.length;
+            const active = this.state.search.matches[clamped];
+            if (active) {
+                active.classList.add('is-active');
+                active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                this.state.search.index = clamped;
+            }
         }
         
         renderSettingsModal() {
@@ -3519,6 +3681,7 @@
             if (titleEl) titleEl.textContent = title;
             const bodyEl = modal.querySelector('[data-role="tool-modal-body"]');
             if (bodyEl) {
+                bodyEl.dataset.cardId = toolId;
                 bodyEl.innerHTML = `
                     ${description ? `<p class="ska-tool-modal-intro">${description}</p>` : ''}
                     ${bodyHtml}
@@ -3772,7 +3935,14 @@
         }
 
         updatePacingUI(progress = null) {
-            const cards = this.root ? this.root.querySelectorAll('[data-card-id="pacing"]') : [];
+            const cards = [];
+            if (this.root) {
+                cards.push(...this.root.querySelectorAll('[data-card-id="pacing"]'));
+            }
+            const toolModal = document.getElementById('ska-tool-card-modal');
+            if (toolModal) {
+                cards.push(...toolModal.querySelectorAll('[data-card-id="pacing"]'));
+            }
             if (!cards.length) return;
             const duration = this.state.pacing.duration || 0;
             const currentProgress = progress === null ? (duration > 0 ? this.state.pacing.elapsed / duration : 0) : progress;
@@ -3804,8 +3974,16 @@
         }
 
         updatePacingButtons(label) {
-            if (!this.root) return;
-            this.root.querySelectorAll('[data-action="pacing-toggle"]').forEach((button) => {
+            const buttons = [];
+            if (this.root) {
+                buttons.push(...this.root.querySelectorAll('[data-action="pacing-toggle"]'));
+            }
+            const toolModal = document.getElementById('ska-tool-card-modal');
+            if (toolModal) {
+                buttons.push(...toolModal.querySelectorAll('[data-action="pacing-toggle"]'));
+            }
+            if (!buttons.length) return;
+            buttons.forEach((button) => {
                 button.textContent = label;
             });
         }
@@ -3932,7 +4110,7 @@
                 return true;
             }
             if (act === 'next-tip') {
-                const card = btn.closest('.skriptanalyse-card');
+                const card = btn.closest('.skriptanalyse-card') || btn.closest('[data-card-id]');
                 if (card) {
                     const id = card.dataset.cardId;
                     const tips = SA_CONFIG.TIPS[id];
@@ -4287,6 +4465,17 @@
                 return true;
             }
 
+            if (act === 'copy-marker-list') {
+                const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
+                const list = markers.map(marker => `${marker.time} - ${marker.label || ''}`.trim()).join('\n');
+                const originalText = btn.textContent;
+                SA_Utils.copyToClipboard(list).then((success) => {
+                    btn.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
+                    setTimeout(() => { btn.textContent = originalText; }, 1200);
+                });
+                return true;
+            }
+
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
                 this.saveUIState();
@@ -4590,7 +4779,14 @@
         }
 
         bindEvents() {
-            this.textarea.addEventListener('input', SA_Utils.debounce(() => this.analyze(this.getText()), 250));
+            this.textarea.addEventListener('input', SA_Utils.debounce(() => {
+                this.analyze(this.getText());
+                if (this.searchInput && this.searchInput.value.trim()) {
+                    this.applySearchHighlights(this.searchInput.value);
+                } else {
+                    this.clearSearchHighlights();
+                }
+            }, 250));
             this.root.addEventListener('input', (e) => {
                 const slider = e.target.closest('[data-action="wpm-slider"]');
                 if (slider) {
@@ -4610,6 +4806,32 @@
                     this.analyze(this.getText());
                 }
             });
+            if (this.searchInput) {
+                this.searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value || '';
+                    if (this.state.search) this.state.search.query = query;
+                    this.applySearchHighlights(query);
+                });
+            }
+            if (this.searchPrevBtn) {
+                this.searchPrevBtn.addEventListener('click', () => {
+                    if (!this.state.search || !this.state.search.matches.length) return;
+                    this.focusSearchMatch(this.state.search.index - 1);
+                });
+            }
+            if (this.searchNextBtn) {
+                this.searchNextBtn.addEventListener('click', () => {
+                    if (!this.state.search || !this.state.search.matches.length) return;
+                    this.focusSearchMatch(this.state.search.index + 1);
+                });
+            }
+            if (this.searchClearBtn) {
+                this.searchClearBtn.addEventListener('click', () => {
+                    if (this.searchInput) this.searchInput.value = '';
+                    if (this.state.search) this.state.search.query = '';
+                    this.clearSearchHighlights();
+                });
+            }
             window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
             this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
                 const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
@@ -4888,7 +5110,7 @@
 
                 if(act === 'confirm-reset') {
                     this.setText(''); 
-                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
+                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
                     this.state.savedVersion=''; 
                     SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                     this.state.hiddenCards.clear(); 
@@ -5200,6 +5422,11 @@
                 pacing: 'Premium: Sprech-Pacing freischalten.',
                 marker: 'Premium: Marker-Tool freischalten.'
             };
+            const toolCtaLabels = {
+                teleprompter: 'Teleprompter starten',
+                pacing: 'Jetzt Timing verbessern',
+                marker: 'Bring mehr Struktur rein'
+            };
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
             this.toolsGrid.innerHTML = toolIds.map((id) => {
                 const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id] || id);
@@ -5216,7 +5443,7 @@
                             ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
                         </div>
                         <p>${description}</p>
-                        <span class="ska-tool-tile-cta">Werkzeug öffnen</span>
+                        <span class="ska-tool-tile-cta">${toolCtaLabels[id] || 'Werkzeug öffnen'}</span>
                         ${hint}
                     </button>
                 `;
@@ -5953,7 +6180,7 @@
             const h = `
                 <div style="display:flex; flex-direction:column; gap:0.8rem;">
                     <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
-                    <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter öffnen</button>
+                    <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter starten</button>
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
             this.updateCard('teleprompter', h, targetGrid, '', '', true);
@@ -6658,7 +6885,7 @@
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
-                    ${benchmarkFlesch}
+                    <div style="margin-top:0.6rem;">${benchmarkFlesch}</div>
                     <div style="width:100%; height:8px; background:#e2e8f0; border-radius:4px; margin-top:0.8rem; overflow:hidden;">
                         <div style="width:${r.score}%; height:100%; background:linear-gradient(90deg, #f1f5f9, ${col}); transition:width 0.5s;"></div>
                     </div>
@@ -7187,13 +7414,14 @@
         renderMarkerCard(s, active) {
             const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
             if(!active) return this.updateCard('marker', this.renderDisabledState(), targetGrid, '', '', true);
-            
+            const markers = this.state.markerData || [];
             let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <p style="font-size:0.85rem; color:#64748b; margin:0;">Struktur-Vorschlag:</p>
                         <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
                             <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-json">📍 Export .json</button>
                             <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-csv">📍 Export .csv</button>
                             <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-edl">📍 Export .edl</button>
+                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="copy-marker-list">📋 Liste kopieren</button>
                         </div>
                      </div>`;
             
@@ -7201,6 +7429,22 @@
                 h += '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text.</p>';
             } else {
                 h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
+            }
+            if (markers.length) {
+                const preview = markers.slice(0, 6)
+                    .map((marker) => `<div style="display:flex; justify-content:space-between; gap:0.75rem; padding:6px 0; border-bottom:1px dashed #e2e8f0;">
+                        <span style="font-weight:600; color:#1d4ed8;">${marker.time}</span>
+                        <span style="flex:1; color:#475569;">${SA_Utils.escapeHtml(marker.label || '')}</span>
+                    </div>`)
+                    .join('');
+                h += `
+                    <div style="margin-top:1rem;">
+                        <div style="font-size:0.8rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Marker-Liste (Vorschau)</div>
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.8rem;">
+                            ${preview}
+                            ${markers.length > 6 ? `<div style="font-size:0.75rem; color:#94a3b8; margin-top:0.4rem;">...und ${markers.length - 6} weitere Marker</div>` : ''}
+                        </div>
+                    </div>`;
             }
             h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert der Marker', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
             this.updateCard('marker', h, targetGrid);
@@ -7390,6 +7634,7 @@
                 manualWpm: 0,
                 commaPause: 0.2,
                 periodPause: 0.5,
+                paragraphPause: 1,
                 audienceTarget: '',
                 focusKeywords: '',
                 complianceText: ''
