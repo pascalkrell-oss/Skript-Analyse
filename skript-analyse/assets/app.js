@@ -210,12 +210,12 @@
         ],
         PROFILE_CARDS: {
             sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
-            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'marker', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
+            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'word_sprint'],
+            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
             agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
         },
-        TOOL_CARDS: ['teleprompter', 'pacing', 'marker'],
+        TOOL_CARDS: ['teleprompter', 'pacing', 'word_sprint'],
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
             news: { label: 'Abendnachrichten', minScore: 55, maxSentence: 20 },
@@ -234,7 +234,7 @@
             nominal_chain: '⛓️ Nominal-Ketten', 
             anglicism: '🇬🇧 Denglisch-Detektor', 
             coach: '💡 Regie-Anweisung', 
-            marker: '🖍️ Struktur & Marker', 
+            immersion: 'Immersion & "Show, don\'t tell"',
             cta: '📣 Call to Action', 
             compare: '⚖️ Versions-Vergleich', 
             adjective: '🌸 Adjektiv-Dichte',
@@ -255,6 +255,7 @@
             easy_language: '🧩 Leichte Sprache',
             teleprompter: '🪄 Teleprompter',
             pacing: '⏱️ Sprech-Pacing',
+            word_sprint: '✍️ Schreib-Sprint & Fokus',
             bullshit: '🧨 Buzzword-Check',
             metaphor: '🪞 Metaphern & Phrasen',
             audience: '🎯 Zielgruppen-Filter',
@@ -277,7 +278,7 @@
             nominal_chain: 'Findet ganze Passagen mit hoher Dichte an "Behördensprache".',
             anglicism: 'Findet englische Begriffe im deutschen Text.',
             coach: 'Deine persönliche Regie-Assistenz für Tempo, Dynamik und Haltung.',
-            marker: 'Hilft dir, den Text visuell zu strukturieren und Audio-Marker zu exportieren.',
+            immersion: 'Vermeide "Filter-Wörter". Statt "Er sah, wie der Bus kam" schreibe lieber "Der Bus kam". Das zieht den Leser tiefer in die Geschichte.',
             cta: 'Prüft, ob am Ende eine klare Handlungsaufforderung steht (Conversion-Fokus).',
             compare: 'Vergleich mit der gespeicherten Version.',
             adjective: 'Prüft, ob der Text durch zu viele Adjektive (Endungen wie -ig, -lich) überladen wirkt.',
@@ -298,6 +299,7 @@
             easy_language: 'Prüft Verständlichkeit nach Leichte-Sprache-Kriterien.',
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
             pacing: 'Visualisiert den Soll-Fortschritt fürs Timing-Training.',
+            word_sprint: 'Motiviert dich mit Fokus-Timer, Wortziel und Countdown für deinen Schreib-Sprint.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
             metaphor: 'Zählt bekannte Redewendungen, um Klischees sichtbar zu machen.',
             audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
@@ -308,12 +310,13 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'marker', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter'],
+        CARD_ORDER: ['char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'word_sprint'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
             'plosive',
             'redundancy',
+            'immersion',
             'depth_check',
             'sentiment_intensity',
             'teleprompter',
@@ -321,6 +324,7 @@
             'chapter_calc',
             'role_dist',
             'bpm',
+            'word_sprint',
             'compliance_check',
             'keyword_focus',
             'audience',
@@ -335,21 +339,20 @@
             'anglicism',
             'breath',
             'stumble',
-            'marker',
             'pronunciation'
         ],
         PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
-            werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter'],
-            imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'pronunciation', 'plosive', 'compliance_check', 'dialog'],
-            erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary'],
-            hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
-            podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance'],
-            ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog'],
-            elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog'],
-            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'adverb', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance'],
-            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance']
+            werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'word_sprint'],
+            imagefilm: ['char', 'coach', 'rhythm', 'syllable_entropy', 'breath', 'pacing', 'teleprompter', 'bpm', 'vocabulary', 'metaphor', 'immersion', 'pronunciation', 'plosive', 'compliance_check', 'dialog', 'word_sprint'],
+            erklaer: ['char', 'coach', 'rhythm', 'syllable_entropy', 'verb_balance', 'easy_language', 'depth_check', 'audience', 'keyword_focus', 'pronunciation', 'stumble', 'pacing', 'compliance_check', 'sentiment_intensity', 'dialog', 'teleprompter', 'bpm', 'vocabulary', 'immersion', 'word_sprint'],
+            hoerbuch: ['char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'breath', 'pacing', 'teleprompter', 'pronunciation', 'plosive', 'stumble', 'dialog', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'immersion', 'word_sprint'],
+            podcast: ['char', 'coach', 'rhythm', 'syllable_entropy', 'dialog', 'pacing', 'teleprompter', 'breath', 'bpm', 'vocabulary', 'pronunciation', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'immersion', 'word_sprint'],
+            ansage: ['char', 'coach', 'rhythm', 'syllable_entropy', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'breath', 'bpm', 'vocabulary', 'compliance_check', 'sentiment_intensity', 'verb_balance', 'dialog', 'immersion', 'word_sprint'],
+            elearning: ['char', 'coach', 'rhythm', 'syllable_entropy', 'easy_language', 'audience', 'verb_balance', 'pacing', 'teleprompter', 'pronunciation', 'stumble', 'compliance_check', 'sentiment_intensity', 'bpm', 'vocabulary', 'dialog', 'immersion', 'word_sprint'],
+            social: ['char', 'coach', 'cta', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'adjective', 'adverb', 'echo', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'sentiment_intensity', 'verb_balance', 'word_sprint'],
+            buch: ['char', 'rhythm', 'syllable_entropy', 'dialog', 'vocabulary', 'metaphor', 'immersion', 'depth_check', 'sentiment_intensity', 'redundancy', 'pacing', 'start_var', 'compliance_check', 'teleprompter', 'bpm', 'verb_balance', 'word_sprint']
         },
         
         FILLER_DB: {
@@ -1148,6 +1151,90 @@
             const lix = wc > 0 ? avgS + (longWordCount * 100 / wc) : 0;
 
             return { score: Math.max(0, Math.min(100, score)), avgSentence: avgS, syllablesPerWord: avgW, wordCount: wc, speakingWordCount, words, sentences, cleanedText: clean, paragraphs, maxSentenceWords, totalSyllables, longWordCount, lix };
+        },
+        getImmersionRegex: () => {
+            if (SA_Logic._immersionRegex) return SA_Logic._immersionRegex;
+            const patterns = [
+                'seh(?:e|st|t|en)',
+                'sah(?:e|st|t|en)?',
+                'sieht',
+                'gesehen',
+                'hör(?:e|st|t|en)',
+                'hörte(?:st|t|n)?',
+                'hörtet',
+                'gehört',
+                'riech(?:e|st|t|en)',
+                'roch(?:e|st|t|en)?',
+                'gerochen',
+                'spür(?:e|st|t|en)',
+                'spürte(?:st|t|n)?',
+                'spürtet',
+                'gespürt',
+                'fühl(?:e|st|t|en)',
+                'fühlte(?:st|t|n)?',
+                'fühltet',
+                'gefühlt',
+                'bemerk(?:e|st|t|en)',
+                'bemerkte(?:st|t|n)?',
+                'bemerkt',
+                'denk(?:e|st|t|en)',
+                'dachte(?:st|t|n)?',
+                'dachtet',
+                'gedacht',
+                'wiss(?:e|t|en)',
+                'wusste(?:st|t|n)?',
+                'wusstet',
+                'gewusst',
+                'realisier(?:e|st|t|en)',
+                'realisierte(?:st|t|n)?',
+                'realisiert',
+                'frag(?:e|st|t|en)',
+                'fragte(?:st|t|n)?',
+                'fragtet',
+                'gefragt'
+            ];
+            SA_Logic._immersionRegex = new RegExp(`\\b(?:${patterns.join('|')})\\b`, 'gi');
+            return SA_Logic._immersionRegex;
+        },
+        splitSentences: (text) => {
+            let tempText = String(text || '');
+            const abbrevs = ['z.B.', 'ca.', 'bzw.', 'vgl.', 'inkl.', 'max.', 'min.', 'Dr.', 'Prof.', 'Hr.', 'Fr.', 'Nr.'];
+            abbrevs.forEach(abbr => { tempText = tempText.split(abbr).join(abbr.replace('.', '@@')); });
+            return tempText
+                .split(/[.!?]+(?=\s|$)/)
+                .filter(s => s.trim().length > 0)
+                .map(s => s.replace(/@@/g, '.').trim());
+        },
+        analyzeImmersion: (text) => {
+            const clean = SA_Utils.cleanTextForCounting(text).trim();
+            const words = clean.split(/\s+/).filter(Boolean);
+            const totalWords = words.length;
+            if (!totalWords) {
+                return { totalWords: 0, hits: 0, density: 0, sentences: [], topWords: [] };
+            }
+            const regex = SA_Logic.getImmersionRegex();
+            const sentences = SA_Logic.splitSentences(text);
+            const wordCounts = {};
+            const hitSentences = [];
+            let hits = 0;
+
+            sentences.forEach((sentence) => {
+                regex.lastIndex = 0;
+                const matches = sentence.match(regex);
+                if (!matches || !matches.length) return;
+                hitSentences.push(sentence);
+                hits += matches.length;
+                matches.forEach((match) => {
+                    const key = String(match).toLowerCase();
+                    wordCounts[key] = (wordCounts[key] || 0) + 1;
+                });
+            });
+
+            const topWords = Object.entries(wordCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([word, count]) => ({ word, count }));
+            const density = totalWords > 0 ? (hits / totalWords) * 100 : 0;
+            return { totalWords, hits, density, sentences: hitSentences, topWords };
         },
         analyzeStyleDimensions: (read, raw = '') => {
             const clamp = (value) => Math.max(0, Math.min(100, value));
@@ -2029,70 +2116,6 @@
             const allMatches = [...new Set((text.match(regex)||[]).map(s=>s.toLowerCase()))];
             return { end: endMatches, all: allMatches };
         },
-        generateMarkerData: (text, settings) => {
-            const parts = text.split(/\n\s*\n/);
-            let currentTime = 0;
-            const markers = [];
-            const wpm = SA_Logic.getWpm(settings);
-            const sps = SA_Logic.getSps(settings);
-            const isSps = settings.timeMode === 'sps';
-
-            parts.forEach((p, i) => {
-                if(!p.trim()) return;
-                const h = Math.floor(currentTime / 3600);
-                const m = Math.floor((currentTime % 3600) / 60);
-                const s = (currentTime % 60).toFixed(2);
-                const timeStr = `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
-                markers.push({ 
-                    id: i + 1, 
-                    time: timeStr, 
-                    seconds: Number(currentTime.toFixed(2)),
-                    label: SA_Utils.normalizeWhitespace(p).substring(0, 30) + '...' 
-                });
-                const read = SA_Logic.analyzeReadability(p, settings);
-                const pause = SA_Utils.getPausenTime(p, settings);
-                let dur = 0;
-                if (isSps) dur = (read.totalSyllables / sps) + pause;
-                else dur = (read.speakingWordCount / wpm * 60) + pause;
-                currentTime += dur;
-            });
-            return markers;
-        },
-        formatMarkerCsv: (markers = []) => {
-            const header = ['Marker', 'Timecode', 'Seconds', 'Label'];
-            const rows = markers.map((marker) => ([
-                marker.id != null ? marker.id : '',
-                marker.time != null ? marker.time : '',
-                (marker.seconds != null ? marker.seconds : '').toString(),
-                marker.label != null ? marker.label : ''
-            ]));
-            const allRows = [header, ...rows];
-            return allRows
-                .map((row) => row.map(SA_Utils.escapeCsvValue).join(','))
-                .join('\r\n');
-        },
-        formatEdlTimecode: (seconds, fps = 25) => {
-            const total = Math.max(0, Number(seconds) || 0);
-            const hours = Math.floor(total / 3600);
-            const minutes = Math.floor((total % 3600) / 60);
-            const secs = Math.floor(total % 60);
-            const frames = Math.floor((total - Math.floor(total)) * fps);
-            const pad = (val) => String(val).padStart(2, '0');
-            return `${pad(hours)}:${pad(minutes)}:${pad(secs)}:${pad(frames)}`;
-        },
-        formatMarkerEdl: (markers = [], options = {}) => {
-            const fps = options.fps || 25;
-            const title = options.title || 'Skript Marker Export';
-            const lines = [`TITLE: ${title}`, 'FCM: NON-DROP FRAME'];
-            markers.forEach((marker, idx) => {
-                const tc = SA_Logic.formatEdlTimecode(marker.seconds, fps);
-                const number = String(idx + 1).padStart(3, '0');
-                lines.push(`${number}  001      V     C        ${tc} ${tc} ${tc} ${tc}`);
-                lines.push(`* LOC: ${tc}`);
-                lines.push(`* COMMENT: ${marker.label || `Marker ${marker.id || idx + 1}`}`);
-            });
-            return lines.join('\r\n');
-        },
         analyzeTone: (text) => {
             const l = text.toLowerCase();
             const qs = (text.match(/\?/g) || []).length;
@@ -2833,13 +2856,13 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
+                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
                 readabilityCache: [],
                 limitReached: false,
                 premiumUpgradeDismissed: false,
-                markerData: [],
                 nominalChains: [],
                 search: { query: '', matches: [], index: -1 }
             };
@@ -2858,7 +2881,6 @@
 
             this.loadUIState();
             this.updatePlanUI();
-            this.initMarkerDropdown();
             this.renderSettingsModal();
             this.renderBenchmarkModal();
             this.renderTeleprompterModal();
@@ -3988,6 +4010,109 @@
             this.stopClickTrack();
         }
 
+        getWordCountForSprint() {
+            const text = this.getText();
+            const clean = SA_Utils.cleanTextForCounting(text);
+            if (!clean) return 0;
+            return clean.split(/\s+/).filter(Boolean).length;
+        }
+
+        startWordSprint(durationMinutes, targetWords) {
+            const minutes = Math.max(1, parseInt(durationMinutes, 10) || 1);
+            const goal = Math.max(1, parseInt(targetWords, 10) || 1);
+            const totalWords = this.getWordCountForSprint();
+            const now = Date.now();
+            const durationSec = minutes * 60;
+            if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
+            this.state.wordSprint = {
+                ...this.state.wordSprint,
+                phase: 'active',
+                durationMinutes: minutes,
+                targetWords: goal,
+                startCount: totalWords,
+                startTime: now,
+                endTime: now + durationSec * 1000,
+                remainingSec: durationSec,
+                sessionWords: 0,
+                lastResult: null
+            };
+            this.renderWordSprintCard(true);
+            this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
+            this.tickWordSprint();
+        }
+
+        tickWordSprint() {
+            if (this.state.wordSprint.phase !== 'active') return;
+            const now = Date.now();
+            const remainingSec = Math.max(0, Math.ceil((this.state.wordSprint.endTime - now) / 1000));
+            const totalWords = this.getWordCountForSprint();
+            const sessionWords = Math.max(0, totalWords - this.state.wordSprint.startCount);
+            this.state.wordSprint.remainingSec = remainingSec;
+            this.state.wordSprint.sessionWords = sessionWords;
+            this.updateWordSprintUI();
+            if (remainingSec <= 0 || sessionWords >= this.state.wordSprint.targetWords) {
+                this.finishWordSprint();
+            }
+        }
+
+        finishWordSprint() {
+            if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
+            this.state.wordSprint.timerId = null;
+            const totalWords = this.getWordCountForSprint();
+            const sessionWords = Math.max(0, totalWords - this.state.wordSprint.startCount);
+            const elapsedSec = Math.max(1, Math.round((Date.now() - this.state.wordSprint.startTime) / 1000));
+            this.state.wordSprint.phase = 'result';
+            this.state.wordSprint.sessionWords = sessionWords;
+            this.state.wordSprint.lastResult = {
+                words: sessionWords,
+                minutes: Math.max(1, Math.round(elapsedSec / 60))
+            };
+            this.renderWordSprintCard(true);
+        }
+
+        stopWordSprint() {
+            this.finishWordSprint();
+        }
+
+        resetWordSprint() {
+            if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
+            this.state.wordSprint = {
+                ...this.state.wordSprint,
+                phase: 'setup',
+                startCount: 0,
+                startTime: 0,
+                endTime: 0,
+                remainingSec: 0,
+                sessionWords: 0,
+                timerId: null,
+                lastResult: null
+            };
+            this.renderWordSprintCard(true);
+        }
+
+        updateWordSprintUI() {
+            const containers = [];
+            const toolCard = this.toolsModalStore ? this.toolsModalStore.querySelector('[data-card-id="word_sprint"]') : null;
+            if (toolCard) containers.push(toolCard);
+            const modalBody = document.querySelector('#ska-tool-card-modal [data-role="tool-modal-body"][data-card-id="word_sprint"]');
+            if (modalBody) containers.push(modalBody);
+            if (!containers.length) return;
+            const timeLabel = SA_Utils.formatMin(this.state.wordSprint.remainingSec);
+            containers.forEach((container) => {
+                const timerEl = container.querySelector('[data-role="word-sprint-timer"]');
+                if (timerEl) timerEl.textContent = timeLabel;
+                const progressEl = container.querySelector('[data-role="word-sprint-progress"]');
+                if (progressEl) {
+                    progressEl.max = String(this.state.wordSprint.targetWords || 1);
+                    progressEl.value = String(this.state.wordSprint.sessionWords || 0);
+                }
+                const sessionEl = container.querySelector('[data-role="word-sprint-session"]');
+                if (sessionEl) {
+                    sessionEl.textContent = `Geschrieben: +${this.state.wordSprint.sessionWords || 0} Wörter`;
+                }
+            });
+        }
+
         ensureClickTrackContext() {
             if (this.state.clickTrack.context) return this.state.clickTrack.context;
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -4440,14 +4565,27 @@
                 return true;
             }
 
-            if (act === 'copy-marker-list') {
-                const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
-                const list = markers.map(marker => `${marker.time} - ${marker.label || ''}`.trim()).join('\n');
-                const originalText = btn.textContent;
-                SA_Utils.copyToClipboard(list).then((success) => {
-                    btn.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
-                    setTimeout(() => { btn.textContent = originalText; }, 1200);
-                });
+            if (act === 'word-sprint-start') {
+                if (!this.isCardUnlocked('word_sprint')) {
+                    this.showPremiumNotice('Der Schreib-Sprint ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                const container = btn.closest('.ska-word-sprint');
+                const minutesInput = container ? container.querySelector('[data-role="word-sprint-minutes"]') : null;
+                const targetInput = container ? container.querySelector('[data-role="word-sprint-target"]') : null;
+                const minutes = minutesInput ? minutesInput.value : this.state.wordSprint.durationMinutes;
+                const target = targetInput ? targetInput.value : this.state.wordSprint.targetWords;
+                this.state.wordSprint.durationMinutes = parseInt(minutes, 10) || this.state.wordSprint.durationMinutes;
+                this.state.wordSprint.targetWords = parseInt(target, 10) || this.state.wordSprint.targetWords;
+                this.startWordSprint(this.state.wordSprint.durationMinutes, this.state.wordSprint.targetWords);
+                return true;
+            }
+            if (act === 'word-sprint-stop') {
+                this.stopWordSprint();
+                return true;
+            }
+            if (act === 'word-sprint-reset') {
+                this.resetWordSprint();
                 return true;
             }
 
@@ -4727,32 +4865,6 @@
             alert(message);
         }
 
-        initMarkerDropdown() {
-            const container = this.root.querySelector('.ska-formatting-actions') || this.root.querySelector('.skriptanalyse-input-actions');
-            if (!container) return;
-            const wrap = document.createElement('div'); wrap.style.position = 'relative'; wrap.style.display = 'inline-block';
-            const btn = document.createElement('button'); btn.className = 'ska-tool-btn'; 
-            
-            btn.innerHTML = `<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:4px; transform:translateY(1px)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg> Marker <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-left:6px; opacity:0.6;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" /></svg>`;
-            
-            btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); menu.classList.toggle('is-open'); };
-            const menu = document.createElement('div'); menu.className = 'skriptanalyse-dropdown-menu';
-            SA_CONFIG.MARKERS.forEach(m => {
-                const item = document.createElement('button'); item.className = 'skriptanalyse-dropdown-item';
-                item.innerHTML = `<strong>${m.label.split(' ')[0]}</strong>`;
-                item.setAttribute('data-tooltip', m.desc);
-                item.onclick = (e) => {
-                    e.preventDefault();
-                    SA_Utils.insertMarkerAtCursor(this.textarea, m.val);
-                    this.analyze(this.getText());
-                    menu.classList.remove('is-open');
-                };
-                menu.appendChild(item);
-            });
-            document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) menu.classList.remove('is-open'); });
-            wrap.appendChild(btn); wrap.appendChild(menu); container.appendChild(wrap);
-        }
-
         bindEvents() {
             this.textarea.addEventListener('input', SA_Utils.debounce(() => {
                 this.analyze(this.getText());
@@ -4998,25 +5110,6 @@
                     }, 150);
                 }
 
-                if(act === 'export-marker-json') {
-                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
-                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'json');
-                    SA_Utils.downloadJSON(markers, filename);
-                }
-
-                if(act === 'export-marker-csv') {
-                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
-                    const csv = SA_Logic.formatMarkerCsv(markers);
-                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'csv');
-                    SA_Utils.downloadText(csv, filename, { bom: true, mime: 'text/csv;charset=utf-8' });
-                }
-
-                if(act === 'export-marker-edl') {
-                    const markers = this.state.markerData || SA_Logic.generateMarkerData(this.getText(), this.getEffectiveSettings());
-                    const edl = SA_Logic.formatMarkerEdl(markers, { title: 'Skript Marker Export' });
-                    const filename = SA_Utils.buildExportFilename('skript-marker-export', 'edl');
-                    SA_Utils.downloadText(edl, filename, { bom: true, mime: 'text/plain;charset=utf-8' });
-                }
             });
 
             document.body.addEventListener('change', (e) => {
@@ -5407,17 +5500,17 @@
             const toolIcons = {
                 teleprompter: '🪄',
                 pacing: '⏱️',
-                marker: '📍'
+                word_sprint: '✍️'
             };
             const toolHints = {
                 teleprompter: 'Premium: Teleprompter freischalten.',
                 pacing: 'Premium: Sprech-Pacing freischalten.',
-                marker: 'Premium: Marker-Tool freischalten.'
+                word_sprint: 'Premium: Schreib-Sprint freischalten.'
             };
             const toolCtaLabels = {
                 teleprompter: 'Teleprompter starten',
                 pacing: 'Jetzt Timing verbessern',
-                marker: 'Bring mehr Struktur rein'
+                word_sprint: 'Sprint starten'
             };
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
             this.toolsGrid.innerHTML = toolIds.map((id) => {
@@ -5601,7 +5694,6 @@
             }
 
             this.state.currentData = { duration: SA_Utils.formatMin(dur), wordCount: read.wordCount, wpm, score: read.score.toFixed(0), mode: this.getEffectiveTimeMode() === 'sps' ? `${sps} SPS` : `${wpm} WPM` };
-            this.state.markerData = raw.trim() ? SA_Logic.generateMarkerData(raw, effectiveSettings) : [];
             this.renderOverview(dur, read.wordCount, charC, wpm, pause, read);
 
             if (read.wordCount === 0) {
@@ -5651,6 +5743,14 @@
                     const existing = container.querySelector(`[data-card-id="${id}"]`);
                     if (existing) existing.remove();
                 });
+                SA_CONFIG.CARD_ORDER.forEach((id) => {
+                    if (!isToolCard(id)) return;
+                    if (allowed.has(id)) return;
+                    const container = getCardContainer(id);
+                    if (!container) return;
+                    const existing = container.querySelector(`[data-card-id="${id}"]`);
+                    if (existing) existing.remove();
+                });
             }
             if (!this.isPremiumActive()) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
@@ -5662,7 +5762,12 @@
                 });
             }
             const analysisCards = availableCards.filter((id) => !isToolCard(id));
-            const toolsToRender = availableCards.filter((id) => isToolCard(id));
+            const toolsToRender = availableCards.filter((id) => {
+                if (!isToolCard(id)) return false;
+                if (id === 'word_sprint' && !this.isAuthorProfile()) return false;
+                if (!allowed) return true;
+                return allowed.has(id);
+            });
             analysisCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
                 if (allowed && !allowed.has(id) && !this.state.selectedExtraCards.has(id) && id !== 'overview') return;
@@ -5680,7 +5785,6 @@
                     case 'breath': this.renderBreathCard(SA_Logic.findBreathKillers(read.sentences), active); break;
                     case 'echo': this.renderEchoCard(SA_Logic.findWordEchoes(read.cleanedText), active); break;
                     case 'passive': this.renderPassiveCard(SA_Logic.findPassive(read.cleanedText), read.wordCount, active); break;
-                    case 'marker': this.renderMarkerCard(read.sentences, active); break;
                     case 'cta': this.renderCtaCard(analysisText, active); break;
                     case 'adjective': this.renderAdjectiveCard(SA_Logic.findAdjectives(read.cleanedText), read.wordCount, active); break;
                     case 'adverb': this.renderAdverbCard(SA_Logic.findAdverbs(read.cleanedText), read.wordCount, active); break;
@@ -5740,6 +5844,27 @@
                     case 'easy_language': this.renderEasyLanguageCard(SA_Logic.analyzeEasyLanguage(read.cleanedText, read.sentences), active); break;
                     case 'bullshit': this.renderBullshitCard(SA_Logic.analyzeBullshitIndex(read.cleanedText, this.parseBullshitList()), active); break;
                     case 'metaphor': this.renderMetaphorCard(SA_Logic.analyzeMetaphorPhrases(analysisText), active); break;
+                    case 'immersion':
+                        if (!active) {
+                            this.updateCard('immersion', this.renderDisabledState(), this.bottomGrid, '', '', true);
+                            break;
+                        }
+                        if (!this.isAuthorProfile()) {
+                            this.updateCard('immersion', '<p style="color:#64748b; font-size:0.9rem;">Nur im Autor:innen-Profil verfügbar.</p>');
+                            break;
+                        }
+                        if (useWorker) {
+                            this.updateCard('immersion', this.renderLoadingState('Immersions-Scanner wird berechnet...'), this.bottomGrid, '', '', true);
+                            this.requestWorkerTask('immersion', { text: raw })
+                                .then((result) => {
+                                    if (token !== this.state.analysisToken || !isActive('immersion') || !this.isAuthorProfile()) return;
+                                    const fallback = SA_Logic.analyzeImmersion(raw);
+                                    this.renderImmersionCard(result || fallback, true);
+                                });
+                            break;
+                        }
+                        this.renderImmersionCard(SA_Logic.analyzeImmersion(raw), true);
+                        break;
                     case 'audience': this.renderAudienceCard(SA_Logic.evaluateAudienceTarget(read, this.settings.audienceTarget), active); break;
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(analysisText, read.sentences), active); break;
@@ -5757,7 +5882,7 @@
                 switch(id) {
                     case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
-                    case 'marker': this.renderMarkerCard(read.sentences, active); break;
+                    case 'word_sprint': this.renderWordSprintCard(active); break;
                 }
                 const c = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${id}"]`) : null;
                 if (c) c.style.order = idx;
@@ -5999,6 +6124,89 @@
             this.updateCard('metaphor', h);
         }
 
+        renderImmersionCard(data, active) {
+            if(!active) return this.updateCard('immersion', this.renderDisabledState(), this.bottomGrid, '', '', true);
+            const totalWords = data.totalWords || 0;
+            const hits = data.hits || 0;
+            const density = Number.isFinite(data.density) ? data.density : 0;
+            const topWords = data.topWords || [];
+            const sentences = data.sentences || [];
+            const densityLabel = density.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+            const status = density < 1.5
+                ? { label: 'Sehr direkt', color: SA_CONFIG.COLORS.success }
+                : density <= 3
+                    ? { label: 'Okay', color: SA_CONFIG.COLORS.warn }
+                    : { label: 'Zu viel Distanz', color: SA_CONFIG.COLORS.error };
+
+            const regex = SA_Logic.getImmersionRegex();
+            const highlightSentence = (sentence) => {
+                const localRegex = new RegExp(regex.source, 'gi');
+                const matches = sentence.matchAll(localRegex);
+                let lastIndex = 0;
+                const parts = [];
+                for (const match of matches) {
+                    const index = match.index != null ? match.index : 0;
+                    parts.push(SA_Utils.escapeHtml(sentence.slice(lastIndex, index)));
+                    parts.push(`<mark class="ska-immersion-hit">${SA_Utils.escapeHtml(match[0])}</mark>`);
+                    lastIndex = index + match[0].length;
+                }
+                parts.push(SA_Utils.escapeHtml(sentence.slice(lastIndex)));
+                return parts.join('');
+            };
+
+            let h = `
+                <div class="ska-immersion-score">
+                    <div class="ska-immersion-score-value">${densityLabel}% Filter-Dichte</div>
+                    <div class="ska-immersion-score-status" style="color:${status.color};">${status.label}</div>
+                </div>
+                <div class="ska-immersion-stats">
+                    <div><span>Treffer</span><strong>${hits}</strong></div>
+                    <div><span>Wörter</span><strong>${totalWords}</strong></div>
+                </div>
+                <div class="ska-immersion-bar">
+                    <div class="ska-immersion-bar-fill" style="width:${Math.min(100, density * 12)}%; background:${status.color};"></div>
+                </div>
+            `;
+
+            if (!hits) {
+                h += `<div class="ska-immersion-empty">✨ Keine Filter-Wörter gefunden.</div>`;
+                this.updateCard('immersion', h);
+                return;
+            }
+
+            if (topWords.length) {
+                const topList = topWords.slice(0, 4);
+                const topLabels = topList.map(item => `<strong>${SA_Utils.escapeHtml(item.word)}</strong>`);
+                let usageLine = '';
+                if (topLabels.length === 1) usageLine = topLabels[0];
+                else if (topLabels.length === 2) usageLine = `${topLabels[0]} und ${topLabels[1]}`;
+                else usageLine = `${topLabels.slice(0, -1).join(', ')} und ${topLabels[topLabels.length - 1]}`;
+                h += `
+                    <div class="ska-immersion-top">
+                        <div class="ska-section-title">Top-Filter-Wörter</div>
+                        <div class="ska-immersion-badges">
+                            ${topList.map(item => `<span class="skriptanalyse-badge ska-immersion-badge">${SA_Utils.escapeHtml(item.word)} (${item.count}x)</span>`).join('')}
+                        </div>
+                        <div class="ska-immersion-note">Du nutzt oft ${usageLine}.</div>
+                    </div>
+                `;
+            }
+
+            if (sentences.length) {
+                h += `
+                    <div class="ska-immersion-sentences">
+                        <div class="ska-section-title">Gefundene Sätze</div>
+                        <div class="ska-problem-list">
+                            ${sentences.slice(0, 4).map(sentence => `<div class="ska-problem-item">${highlightSentence(sentence)}</div>`).join('')}
+                        </div>
+                        ${sentences.length > 4 ? `<div class="ska-immersion-more">...und ${sentences.length - 4} weitere</div>` : ''}
+                    </div>
+                `;
+            }
+
+            this.updateCard('immersion', h);
+        }
+
         renderAudienceCard(result, active) {
             if(!active) return this.updateCard('audience', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
@@ -6159,6 +6367,50 @@
                 </div>`;
             h += this.renderTipSection('sentiment_intensity', true);
             this.updateCard('sentiment_intensity', h);
+        }
+
+        renderWordSprintCard(active) {
+            const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
+            if(!active) return this.updateCard('word_sprint', this.renderDisabledState(), targetGrid, '', '', true);
+
+            const sprint = this.state.wordSprint;
+            const isUnlocked = this.isCardUnlocked('word_sprint');
+            let content = '';
+            if (sprint.phase === 'active') {
+                content = `
+                    <div class="ska-word-sprint-active">
+                        <div class="ska-word-sprint-timer" data-role="word-sprint-timer">${SA_Utils.formatMin(sprint.remainingSec)}</div>
+                        <progress class="ska-word-sprint-progress" data-role="word-sprint-progress" max="${sprint.targetWords}" value="${sprint.sessionWords}"></progress>
+                        <div class="ska-word-sprint-session" data-role="word-sprint-session">Geschrieben: +${sprint.sessionWords} Wörter</div>
+                        <button class="ska-btn ska-btn--secondary" data-action="word-sprint-stop">Stop / Abbruch</button>
+                    </div>`;
+            } else if (sprint.phase === 'result') {
+                const result = sprint.lastResult || { words: 0, minutes: sprint.durationMinutes };
+                content = `
+                    <div class="ska-word-sprint-result">
+                        <div class="ska-word-sprint-result-title">Sprint beendet! 🎉</div>
+                        <div class="ska-word-sprint-result-summary">Du hast ${result.words} Wörter in ${result.minutes} Minuten geschrieben.</div>
+                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-reset">Neuer Sprint</button>
+                    </div>`;
+            } else {
+                content = `
+                    <div class="ska-word-sprint-setup">
+                        <div class="ska-word-sprint-inputs">
+                            <label>
+                                <span>⏱️ Zeit (Minuten)</span>
+                                <input type="number" min="1" value="${sprint.durationMinutes}" data-role="word-sprint-minutes">
+                            </label>
+                            <label>
+                                <span>🎯 Ziel (Wörter)</span>
+                                <input type="number" min="1" value="${sprint.targetWords}" data-role="word-sprint-target">
+                            </label>
+                        </div>
+                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-start" ${isUnlocked ? '' : 'disabled'}>Sprint Starten 🚀</button>
+                    </div>`;
+            }
+
+            const h = `<div class="ska-word-sprint" data-phase="${sprint.phase}">${content}</div>`;
+            this.updateCard('word_sprint', h, targetGrid, '', '', true);
         }
 
         renderTeleprompterCard(read, active) {
@@ -7403,45 +7655,6 @@
             this.updateCard('cta', h);
         }
 
-        renderMarkerCard(s, active) {
-            const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
-            if(!active) return this.updateCard('marker', this.renderDisabledState(), targetGrid, '', '', true);
-            const markers = this.state.markerData || [];
-            let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <p style="font-size:0.85rem; color:#64748b; margin:0;">Struktur-Vorschlag:</p>
-                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
-                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-json">📍 Export .json</button>
-                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-csv">📍 Export .csv</button>
-                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="export-marker-edl">📍 Export .edl</button>
-                            <button class="ska-tool-btn" style="font-size:0.75rem; padding:4px 8px; display:inline-flex; align-items:center; justify-content:center; line-height:1;" data-action="copy-marker-list">📋 Liste kopieren</button>
-                        </div>
-                     </div>`;
-            
-            if(s.length < 2) {
-                h += '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text.</p>';
-            } else {
-                h += `<div style="font-family:monospace; background:#f8fafc; padding:0.8rem; border-radius:6px; font-size:0.85rem; color:#334155; border:1px solid #e2e8f0;">${s[0].replace(/[,]/g,', | ').replace(/ und /g,' und | ')} ...</div>`;
-            }
-            if (markers.length) {
-                const preview = markers.slice(0, 6)
-                    .map((marker) => `<div style="display:flex; justify-content:space-between; gap:0.75rem; padding:6px 0; border-bottom:1px dashed #e2e8f0;">
-                        <span style="font-weight:600; color:#1d4ed8;">${marker.time}</span>
-                        <span style="flex:1; color:#475569;">${SA_Utils.escapeHtml(marker.label || '')}</span>
-                    </div>`)
-                    .join('');
-                h += `
-                    <div style="margin-top:1rem;">
-                        <div style="font-size:0.8rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.4rem;">Marker-Liste (Vorschau)</div>
-                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.8rem;">
-                            ${preview}
-                            ${markers.length > 6 ? `<div style="font-size:0.75rem; color:#94a3b8; margin-top:0.4rem;">...und ${markers.length - 6} weitere Marker</div>` : ''}
-                        </div>
-                    </div>`;
-            }
-            h += `<div class="ska-card-footer">${this.renderFooterInfo('So funktioniert der Marker', 'Wir erkennen sinnvolle Schnittpunkte an Satzenden und Absätzen. Exportiere die Marker direkt für DAWs oder schnelles Editing.')}</div>`;
-            this.updateCard('marker', h, targetGrid);
-        }
-
         renderRhythmCard(sentences, maxW, active) {
             if(!active) return this.updateCard('rhythm', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!sentences || sentences.length < 3) return this.updateCard('rhythm', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Sätze für eine Analyse.</p>');
@@ -7631,6 +7844,10 @@
                 focusKeywords: '',
                 complianceText: ''
             };
+        }
+
+        isAuthorProfile() {
+            return this.settings.role === 'autor' || this.settings.role === 'author';
         }
 
         isPremiumCard(id) {
@@ -7878,10 +8095,12 @@
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--premium" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
-                            <span class="ska-premium-upgrade-price-currency">EUR</span>
-                            <span class="ska-premium-upgrade-tax">
-                                <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
-                                <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
+                            <span class="ska-premium-upgrade-price-meta">
+                                <span class="ska-premium-upgrade-price-currency">EUR</span>
+                                <span class="ska-premium-upgrade-tax">
+                                    <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
+                                    <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
+                                </span>
                             </span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
