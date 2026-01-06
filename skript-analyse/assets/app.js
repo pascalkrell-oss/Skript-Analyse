@@ -3946,6 +3946,16 @@
                 this.showPremiumNotice('Mehr Informationen zu Premium folgen in Kürze.');
                 return true;
             }
+            if (act === 'toggle-premium-analysis') {
+                const section = btn.closest('.ska-premium-upgrade-section--analysis');
+                if (section) {
+                    const expanded = !section.classList.contains('is-expanded');
+                    section.classList.toggle('is-expanded', expanded);
+                    btn.textContent = expanded ? 'Weniger anzeigen' : 'Mehr Boxen anzeigen';
+                    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                }
+                return true;
+            }
             if (act === 'toggle-premium-cards') {
                 this.state.showPremiumCards = !this.state.showPremiumCards;
                 this.renderUpgradePanel();
@@ -7515,6 +7525,8 @@
             const premiumCards = lockedCardIds
                 .map(id => SA_CONFIG.CARD_TITLES[id])
                 .filter(Boolean);
+            const premiumCardsPreview = premiumCards.slice(0, 10);
+            const premiumCardsExtra = premiumCards.slice(10);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
@@ -7553,6 +7565,12 @@
                     </span>
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
+            const renderExtraAnalysis = premiumCardsExtra.length ? `
+                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid ska-premium-upgrade-listing--extra">
+                                ${renderList(premiumCardsExtra, { stripIcons: true })}
+                            </ul>
+                            <button class="ska-premium-upgrade-more" type="button" data-action="toggle-premium-analysis" aria-expanded="false">Mehr Boxen anzeigen</button>
+                        ` : '';
             const html = `
                 <div class="ska-premium-upgrade-ribbon">UPGRADE!</div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -7618,8 +7636,9 @@
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumCards, { stripIcons: true })}
+                                ${renderList(premiumCardsPreview, { stripIcons: true })}
                             </ul>
+                            ${renderExtraAnalysis}
                         </div>
                         <div class="ska-premium-upgrade-cta">
                             <a class="ska-btn ska-btn--primary" href="#ska-premium-upgrade">Jetzt Premium freischalten</a>
@@ -7637,6 +7656,8 @@
                 card.innerHTML = html;
                 container.insertBefore(card, this.legendContainer);
             }
+            const grid = container.querySelector('.ska-premium-upgrade-grid');
+            this.setupPremiumUpgradeScroll(grid);
         }
 
         renderPremiumTeaserNote() {
@@ -7645,28 +7666,34 @@
             if (!container) return;
             const existing = container.querySelector('.ska-premium-teaser-note');
             if (existing) existing.remove();
-            if (this.isPremiumActive()) return;
-            const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const profile = this.settings.role;
-            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const showAll = profile ? this.state.showAllCards : true;
-            const filteredItems = new Set(SA_CONFIG.CARD_ORDER.filter((id) => {
-                if (!allowed || showAll) return true;
-                return allowed.has(id);
-            }));
-            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
-            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
-            const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
-            if (!remainingCount) return;
-            const note = document.createElement('div');
-            note.className = 'ska-premium-teaser-note';
-            note.textContent = `+ ${remainingCount} weitere Analyseboxen`;
-            const upgradeCard = container.querySelector('.ska-premium-upgrade-card');
-            if (upgradeCard) {
-                container.insertBefore(note, upgradeCard);
-            } else {
-                container.insertBefore(note, this.legendContainer);
-            }
+        }
+
+        setupPremiumUpgradeScroll(grid) {
+            if (!grid || grid.dataset.scrollBound) return;
+            grid.dataset.scrollBound = 'true';
+            const update = () => {
+                if (!grid.isConnected) return;
+                const freeCol = grid.querySelector('.ska-premium-upgrade-col.is-free');
+                const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
+                const maxScroll = grid.scrollWidth - grid.clientWidth;
+                const hasHint = maxScroll > 8 && grid.scrollLeft < maxScroll - 8;
+                grid.classList.toggle('has-scroll-hint', hasHint);
+                if (!freeCol || !premiumCol) return;
+                const gridRect = grid.getBoundingClientRect();
+                const premiumRect = premiumCol.getBoundingClientRect();
+                const isFocused = premiumRect.left <= gridRect.left + 24;
+                grid.classList.toggle('is-premium-focused', isFocused);
+                if (!isFocused) {
+                    premiumCol.style.maxHeight = `${freeCol.offsetHeight}px`;
+                    premiumCol.style.overflow = 'hidden';
+                } else {
+                    premiumCol.style.maxHeight = '';
+                    premiumCol.style.overflow = '';
+                }
+            };
+            grid.addEventListener('scroll', () => window.requestAnimationFrame(update), { passive: true });
+            window.addEventListener('resize', () => window.requestAnimationFrame(update));
+            window.requestAnimationFrame(update);
         }
 
         renderComparison(sec, w, sc) {

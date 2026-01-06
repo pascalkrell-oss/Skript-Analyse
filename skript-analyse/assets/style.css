@@ -157,7 +157,7 @@ body.ska-modal-open { overflow: hidden !important; }
     padding: 0.45rem 0;
 }
 .ska-filterbar-header > span { text-align: left; font-family: "Rubik", sans-serif; font-size: 14.4px; font-weight: 700; line-height: 21.6px; color: rgb(100, 116, 139); text-transform: none; letter-spacing: normal; }
-.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; margin-left: auto; justify-content: flex-end; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
@@ -355,6 +355,10 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-section--analysis { margin-top: 1.6rem; margin-bottom: 20px; border-top: none; padding-top: 0; }
 .ska-premium-upgrade-subtitle { font-size: 0.75rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
 .ska-premium-upgrade-listing { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; font-size: 0.82rem; }
+.ska-premium-upgrade-listing--extra { display: none; margin-top: 0.6rem; }
+.ska-premium-upgrade-section--analysis.is-expanded .ska-premium-upgrade-listing--extra { display: grid; }
+.ska-premium-upgrade-more { border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
+.ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; }
@@ -381,6 +385,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-list.is-expanded { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ska-premium-upgrade-list strong { display: block; margin-bottom: 0.4rem; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: #0f172a; }
 .ska-premium-upgrade-list ul { margin: 0; padding-left: 1rem; display: grid; gap: 0.35rem; color: #475569; font-size: 0.8rem; }
+.ska-premium-teaser-note { display: none !important; }
 
 .ska-filterbar-premium-cta { width: 100%; display: flex; justify-content: center; margin: 0.35rem 0 0.4rem; }
 
@@ -1073,7 +1078,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-footer-actions { display: flex; gap: 1rem; align-items: stretch; flex-direction: row; }
 .ska-footer-actions > * { flex: 1 1 0; }
 .ska-footer-actions .ska-tool-wrapper { width: 100%; }
-.ska-footer-actions .ska-btn { width: 100%; justify-content: center; }
+.ska-footer-actions .ska-btn { width: 100%; justify-content: center; min-height: 48px; }
 
 /* =========================================
    MODAL SYSTEM (FIXED & PORTAL READY)
@@ -1372,14 +1377,37 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         padding-bottom: 0.6rem;
+        padding-right: 1.2rem;
         -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+    .ska-premium-upgrade-grid.has-scroll-hint::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 60px;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(244, 248, 255, 0), rgba(244, 248, 255, 0.95));
+        pointer-events: none;
+    }
+    .ska-premium-upgrade-grid.has-scroll-hint::before {
+        content: '⇢';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1.4rem;
+        font-weight: 700;
+        pointer-events: none;
     }
     .ska-premium-upgrade-col {
         flex: 0 0 85%;
         min-width: 280px;
         scroll-snap-align: start;
     }
-    .ska-premium-upgrade-col.is-premium { transform: none; }
+    .ska-premium-upgrade-col.is-premium { transform: none; transition: max-height 0.35s ease; }
     .ska-premium-upgrade-col.is-free { margin-top: 0; }
     .ska-premium-upgrade-list { grid-template-columns: 1fr; }
 }
@@ -1419,8 +1447,8 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-settings-btn-inline svg { width: 24px; height: 24px; }
     .ska-panel-header { flex-direction: column; align-items: flex-start; gap: 0.6rem; }
     .ska-editor-tools { flex-wrap: wrap; width: 100%; justify-content: flex-start; }
-    .ska-editor-panel { min-height: 420px; height: 420px; max-height: 420px; }
-    .skriptanalyse-textarea { min-height: 320px; }
+    .ska-editor-panel { min-height: 480px; height: 480px; max-height: 480px; }
+    .skriptanalyse-textarea { min-height: 360px; }
     .skriptanalyse-card { width: 100%; }
     .ska-overview-stats { grid-template-columns: 1fr; }
     .ska-genre-grid-layout { grid-template-columns: 1fr; }
@@ -1456,14 +1484,14 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-input { height: 40px; }
     .ska-header-content h2 { font-size: 1.35rem; }
     .ska-editor-panel {
-        min-height: 380px;
+        min-height: 420px;
         height: auto;
         max-height: none;
     }
-    .skriptanalyse-textarea { min-height: 260px; }
+    .skriptanalyse-textarea { min-height: 300px; }
     .ska-analysis-filterbar { padding: 0.75rem 0.85rem; }
     .ska-filter-pill { width: 100%; justify-content: flex-start; }
-    .ska-filterbar-actions { width: 100%; justify-content: space-between; }
+    .ska-filterbar-actions { width: 100%; justify-content: flex-end; }
     .ska-premium-upgrade-card { padding: 1.6rem 1.2rem; }
     .ska-premium-upgrade-col { padding: 1.4rem; }
     .ska-premium-upgrade-title { font-size: 1.4rem; }
@@ -1479,8 +1507,8 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     }
     .ska-toolbar { gap: 0.75rem; }
     .ska-header-content h2 { font-size: 1.2rem; }
-    .ska-editor-panel { min-height: 340px; }
-    .skriptanalyse-textarea { min-height: 230px; font-size: 0.98rem; }
+    .ska-editor-panel { min-height: 380px; }
+    .skriptanalyse-textarea { min-height: 260px; font-size: 0.98rem; }
     .ska-panel-header { padding: 0.75rem 1rem; }
     .ska-editor-formatting { padding: 0.6rem 1rem; }
     .ska-textarea-wrapper { padding: 1rem; }
@@ -1496,8 +1524,9 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-filterbar-header { align-items: center; justify-content: space-between; }
 .ska-filterbar-header > span { display: flex; align-items: center; text-align: left; font-family: "Rubik", sans-serif; font-size: 14.4px; font-weight: 700; line-height: 21.6px; color: rgb(100, 116, 139); text-transform: none; letter-spacing: normal;
 }
-.ska-filterbar-actions { align-items: center; }
+.ska-filterbar-actions { align-items: center; margin-left: auto; justify-content: flex-end; }
 .ska-filterbar-toggle { line-height: 1; }
+.ska-filterbar-collapse { margin-left: auto; }
 .ska-filterbar-body { transition: max-height 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.55s ease, padding 0.55s ease, margin 0.55s ease; will-change: max-height, opacity; overflow: hidden; }
 .ska-analysis-filterbar.is-expanded .ska-filterbar-body { max-height: 1000px; opacity: 1; }
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-body { max-height: 0; opacity: 0; padding: 0; margin: 0; overflow: hidden; }
@@ -1543,6 +1572,8 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-filterbar-actions {
     display: inline-flex;
     align-items: center;
+    margin-left: auto;
+    justify-content: flex-end;
 }
 
 .ska-filterbar-body {
