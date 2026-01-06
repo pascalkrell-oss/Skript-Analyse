@@ -3772,32 +3772,42 @@
         }
 
         updatePacingUI(progress = null) {
-            const card = this.bottomGrid ? this.bottomGrid.querySelector('[data-card-id="pacing"]') : null;
-            if (!card) return;
-            const fill = card.querySelector('[data-role="pacing-fill"]');
-            const marker = card.querySelector('[data-role="pacing-marker"]');
-            const timeLabel = card.querySelector('[data-role="pacing-time"]');
-            const targetLabel = card.querySelector('[data-role="pacing-target"]');
-            const preview = card.querySelector('[data-role="pacing-preview"]');
+            const cards = this.root ? this.root.querySelectorAll('[data-card-id="pacing"]') : [];
+            if (!cards.length) return;
             const duration = this.state.pacing.duration || 0;
             const currentProgress = progress === null ? (duration > 0 ? this.state.pacing.elapsed / duration : 0) : progress;
             const clamped = Math.max(0, Math.min(1, currentProgress));
 
-            if (fill) fill.style.width = `${clamped * 100}%`;
-            if (marker) marker.style.left = `${clamped * 100}%`;
+            cards.forEach((card) => {
+                const fill = card.querySelector('[data-role="pacing-fill"]');
+                const marker = card.querySelector('[data-role="pacing-marker"]');
+                const timeLabel = card.querySelector('[data-role="pacing-time"]');
+                const targetLabel = card.querySelector('[data-role="pacing-target"]');
+                const preview = card.querySelector('[data-role="pacing-preview"]');
 
-            if (timeLabel) {
-                const elapsedSec = Math.round((duration * clamped) / 1000);
-                timeLabel.textContent = `${SA_Utils.formatMin(elapsedSec)} / ${SA_Utils.formatMin(duration / 1000)}`;
-            }
-            if (targetLabel) {
-                const targetPct = Math.round(clamped * 100);
-                targetLabel.textContent = `${targetPct}% Soll-Position`;
-            }
-            if (preview) {
-                const maxScroll = Math.max(0, preview.scrollHeight - preview.clientHeight);
-                preview.scrollTop = maxScroll * clamped;
-            }
+                if (fill) fill.style.width = `${clamped * 100}%`;
+                if (marker) marker.style.left = `${clamped * 100}%`;
+
+                if (timeLabel) {
+                    const elapsedSec = Math.round((duration * clamped) / 1000);
+                    timeLabel.textContent = `${SA_Utils.formatMin(elapsedSec)} / ${SA_Utils.formatMin(duration / 1000)}`;
+                }
+                if (targetLabel) {
+                    const targetPct = Math.round(clamped * 100);
+                    targetLabel.textContent = `${targetPct}% Soll-Position`;
+                }
+                if (preview) {
+                    const maxScroll = Math.max(0, preview.scrollHeight - preview.clientHeight);
+                    preview.scrollTop = maxScroll * clamped;
+                }
+            });
+        }
+
+        updatePacingButtons(label) {
+            if (!this.root) return;
+            this.root.querySelectorAll('[data-action="pacing-toggle"]').forEach((button) => {
+                button.textContent = label;
+            });
         }
 
         startPacing(durationSec) {
@@ -3815,6 +3825,7 @@
                     this.state.pacing.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.pacing.playing = false;
+                    this.updatePacingButtons('Start');
                 }
             };
             if (this.state.pacing.rafId) cancelAnimationFrame(this.state.pacing.rafId);
@@ -3918,6 +3929,28 @@
         handleAction(act, btn) {
             if (act.startsWith('format-')) {
                 this.applyFormatting(act);
+                return true;
+            }
+            if (act === 'next-tip') {
+                const card = btn.closest('.skriptanalyse-card');
+                if (card) {
+                    const id = card.dataset.cardId;
+                    const tips = SA_CONFIG.TIPS[id];
+                    if (tips && tips.length > 0) {
+                        const tipP = card.querySelector('.ska-tip-content');
+                        const badge = card.querySelector('.ska-tip-badge span');
+                        if (tipP) {
+                            tipP.classList.add('is-changing');
+                            setTimeout(() => {
+                                if (typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
+                                this.state.tipIndices[id] = (this.state.tipIndices[id] + 1) % tips.length;
+                                tipP.textContent = tips[this.state.tipIndices[id]];
+                                if (badge) badge.textContent = `${this.state.tipIndices[id] + 1}/${tips.length}`;
+                                tipP.classList.remove('is-changing');
+                            }, 300);
+                        }
+                    }
+                }
                 return true;
             }
             if (act === 'toggle-plan') {
@@ -4219,14 +4252,13 @@
                     this.showPremiumNotice('Das Sprech-Pacing ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                const btnLabel = btn;
                 if (this.state.pacing.playing) {
                     this.pausePacing();
-                    if (btnLabel) btnLabel.textContent = 'Start';
+                    this.updatePacingButtons('Start');
                 } else {
                     const durationSec = parseFloat(btn.dataset.duration || '0');
                     const started = this.startPacing(durationSec);
-                    if (btnLabel) btnLabel.textContent = started ? 'Pause' : 'Start';
+                    this.updatePacingButtons(started ? 'Pause' : 'Start');
                 }
                 return true;
             }
@@ -4251,8 +4283,7 @@
 
             if (act === 'pacing-reset') {
                 this.resetPacing();
-                const startBtn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-toggle"]') : null;
-                if (startBtn) startBtn.textContent = 'Start';
+                this.updatePacingButtons('Start');
                 return true;
             }
 
@@ -4704,31 +4735,6 @@
                 }
 
                 if (this.handleAction(act, btn)) return;
-
-                if(act === 'next-tip') {
-                    const card = btn.closest('.skriptanalyse-card');
-                    if(card) {
-                        const id = card.dataset.cardId;
-                        const tips = SA_CONFIG.TIPS[id];
-                        if(tips && tips.length > 0) {
-                            const tipP = card.querySelector('.ska-tip-content');
-                            const badge = card.querySelector('.ska-tip-badge span'); 
-                            
-                            if(tipP) {
-                                tipP.classList.add('is-changing');
-                                setTimeout(() => {
-                                    if(typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
-                                    this.state.tipIndices[id] = (this.state.tipIndices[id] + 1) % tips.length;
-                                    tipP.textContent = tips[this.state.tipIndices[id]];
-                                    if(badge) badge.textContent = `${this.state.tipIndices[id] + 1}/${tips.length}`;
-                                    tipP.classList.remove('is-changing');
-                                }, 300);
-                            }
-                        }
-                    }
-                    e.preventDefault();
-                    return; 
-                }
 
             if(act === 'toggle-breath-more') {
                  if (!this.isPremiumActive()) {
