@@ -340,6 +340,8 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-price-label { font-size: 17px; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; }
 .ska-premium-upgrade-price-value { font-size: 30px; font-weight: 800; color: #0284c7; }
 .ska-premium-upgrade-price--free { color: #0f172a; }
+.ska-premium-upgrade-base-header { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.6rem; }
+.ska-premium-upgrade-base-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 0.2rem 0.55rem; }
 .ska-premium-upgrade-price-note { font-size: 0.95rem; color: #475569; margin-top: -0.2rem; margin-bottom: 0.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 1.6rem; line-height: 1.4; animation: ska-fade-in 0.25s ease both; }
 .ska-premium-upgrade-savings { font-size: 0.78rem; color: #0f172a; font-weight: 700; background: #dcfce7; border: 1px solid #bbf7d0; padding: 0.2rem 0.5rem; border-radius: 999px; display: inline-flex; white-space: nowrap; animation: ska-fade-in 0.25s ease both; transition: opacity 0.25s ease, transform 0.25s ease; line-height: 1; }
 .ska-premium-upgrade-savings.is-hidden { opacity: 0; visibility: hidden; transform: none; }
@@ -355,9 +357,9 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-section--analysis { margin-top: 1.6rem; margin-bottom: 20px; border-top: none; padding-top: 0; }
 .ska-premium-upgrade-subtitle { font-size: 0.75rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
 .ska-premium-upgrade-listing { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.4rem; font-size: 0.82rem; }
-.ska-premium-upgrade-listing--extra { display: none; margin-top: 0.6rem; }
+.ska-premium-upgrade-listing--extra { display: grid; margin-top: 0.6rem; }
 .ska-premium-upgrade-section--analysis.is-expanded .ska-premium-upgrade-listing--extra { display: grid; }
-.ska-premium-upgrade-more { border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
+.ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1110,7 +1112,21 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
-.ska-premium-upgrade-tax { font-size: 0.75rem; color: #64748b; font-weight: 600; }
+.ska-premium-upgrade-tax { font-size: 0.7rem; color: #94a3b8; font-weight: 600; display: inline-flex; flex-direction: column; line-height: 1.05; text-transform: uppercase; letter-spacing: 0.04em; }
+.ska-premium-upgrade-tax-prefix { font-size: 0.65rem; color: #94a3b8; }
+
+.ska-flesch-summary { margin-top: 0.75rem; }
+
+.ska-search-box { position: relative; display: inline-flex; align-items: center; }
+.ska-search-toggle { background: #e2e8f0; color: #1f2937; border: 1px solid #cbd5f5; border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+.ska-search-toggle:hover { background: #dbeafe; border-color: #93c5fd; color: #0f172a; }
+.ska-search-panel { position: absolute; bottom: calc(100% + 8px); right: 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.6rem 0.75rem; box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.35); display: none; flex-direction: column; gap: 0.5rem; min-width: 240px; z-index: 40; }
+.ska-search-box.is-open .ska-search-panel { display: flex; }
+.ska-search-panel .ska-search-input { width: 100%; height: 34px; border-radius: 8px; border: 1px solid #cbd5f5; padding: 0.3rem 0.5rem; font-size: 0.85rem; }
+.ska-search-controls { display: flex; align-items: center; gap: 0.35rem; }
+.ska-search-controls .ska-search-count { font-size: 0.75rem; font-weight: 700; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 0.15rem 0.5rem; min-width: 34px; text-align: center; }
+.ska-search-controls .ska-search-btn { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 8px; padding: 0.2rem 0.45rem; font-size: 0.75rem; cursor: pointer; color: #475569; }
+.ska-search-controls .ska-search-btn:hover { border-color: #cbd5f5; color: #0f172a; }
 .ska-teleprompter-btn {
     display: inline-flex;
     align-items: center;
@@ -1410,6 +1426,9 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-premium-upgrade-col.is-premium { transform: none; transition: max-height 0.35s ease; }
     .ska-premium-upgrade-col.is-free { margin-top: 0; }
     .ska-premium-upgrade-list { grid-template-columns: 1fr; }
+    .ska-premium-upgrade-listing--extra { display: none; }
+    .ska-premium-upgrade-section--analysis.is-expanded .ska-premium-upgrade-listing--extra { display: grid; }
+    .ska-premium-upgrade-more { display: inline-flex; }
 }
 
 @media (max-width: 640px) {
