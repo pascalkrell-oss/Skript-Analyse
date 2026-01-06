@@ -244,11 +244,11 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
-.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: visible; }
+.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
     top: 18px;
-    left: -52px;
+    right: -52px;
     width: 160px;
     height: 34px;
     background: #1a93ee;
@@ -264,8 +264,8 @@ body.ska-modal-open { overflow: hidden !important; }
     justify-content: center;
     line-height: 1;
     transform-origin: center;
-    transform: rotate(-45deg);
-    box-shadow: 0 14px 26px -18px rgba(15, 23, 42, 0.45);
+    transform: rotate(45deg);
+    box-shadow: 0 14px 26px -18px rgba(15, 23, 42, 0.4);
     z-index: 3;
     border-radius: 6px;
 }
@@ -277,17 +277,17 @@ body.ska-modal-open { overflow: hidden !important; }
     height: 0;
 }
 .ska-premium-upgrade-ribbon::before {
-    left: 8px;
+    right: 8px;
     bottom: -10px;
     border-top: 10px solid #0b5fa0;
-    border-right: 10px solid transparent;
+    border-left: 10px solid transparent;
     z-index: -1;
 }
 .ska-premium-upgrade-ribbon::after {
-    left: 12px;
+    right: 12px;
     top: 100%;
     border-top: 6px solid rgba(15, 23, 42, 0.2);
-    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
     filter: blur(0.2px);
 }
 .ska-premium-upgrade-close {
