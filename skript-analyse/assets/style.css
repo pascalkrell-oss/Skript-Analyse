@@ -244,51 +244,28 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-problem-item.is-hidden-premium { display: none; }
-.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden; }
+.ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, #f4f8ff 0%, #ffffff 78%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 28px 56px -34px rgba(15, 23, 42, 0.25); text-align: center; position: relative; overflow: hidden !important; }
 .ska-premium-upgrade-ribbon {
     position: absolute;
-    top: 18px;
-    right: -52px;
-    width: 160px;
-    height: 34px;
-    background: #1a93ee;
-    color: #f8fafc;
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0;
+    top: 25px;
+    left: -45px;
+    width: 180px;
+    background: linear-gradient(90deg, #1a93ee, #0066b3);
+    color: #fff;
     text-align: center;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 0;
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
+    transform: rotate(-45deg);
     transform-origin: center;
-    transform: rotate(45deg);
-    box-shadow: 0 14px 26px -18px rgba(15, 23, 42, 0.4);
-    z-index: 3;
-    border-radius: 6px;
-}
-.ska-premium-upgrade-ribbon::before,
-.ska-premium-upgrade-ribbon::after {
-    content: "";
-    position: absolute;
-    width: 0;
-    height: 0;
-}
-.ska-premium-upgrade-ribbon::before {
-    right: 8px;
-    bottom: -10px;
-    border-top: 10px solid #0b5fa0;
-    border-left: 10px solid transparent;
-    z-index: -1;
-}
-.ska-premium-upgrade-ribbon::after {
-    right: 12px;
-    top: 100%;
-    border-top: 6px solid rgba(15, 23, 42, 0.2);
-    border-left: 6px solid transparent;
-    filter: blur(0.2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 20;
 }
 .ska-premium-upgrade-close {
     position: absolute;
