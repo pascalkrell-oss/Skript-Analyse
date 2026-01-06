@@ -2946,13 +2946,19 @@
                 const searchWrap = document.createElement('div');
                 searchWrap.className = 'ska-search-box';
                 searchWrap.innerHTML = `
-                    <input type="search" class="ska-search-input" placeholder="Suchen..." aria-label="Skript durchsuchen">
-                    <span class="ska-search-count">0</span>
-                    <button class="ska-search-btn" type="button" data-action="search-prev">◀</button>
-                    <button class="ska-search-btn" type="button" data-action="search-next">▶</button>
-                    <button class="ska-search-btn" type="button" data-action="search-clear">✕</button>
+                    <button class="ska-search-toggle" type="button" data-action="toggle-search" aria-expanded="false">Suchen..</button>
+                    <div class="ska-search-panel" role="group" aria-label="Skript durchsuchen">
+                        <input type="search" class="ska-search-input" placeholder="Suchen..." aria-label="Skript durchsuchen">
+                        <div class="ska-search-controls">
+                            <span class="ska-search-count">0</span>
+                            <button class="ska-search-btn" type="button" data-action="search-prev">◀</button>
+                            <button class="ska-search-btn" type="button" data-action="search-next">▶</button>
+                            <button class="ska-search-btn" type="button" data-action="search-clear">✕</button>
+                        </div>
+                    </div>
                 `;
                 headerActions.appendChild(searchWrap);
+                this.searchBox = searchWrap;
                 this.searchInput = searchWrap.querySelector('.ska-search-input');
                 this.searchCount = searchWrap.querySelector('.ska-search-count');
                 this.searchPrevBtn = searchWrap.querySelector('[data-action="search-prev"]');
@@ -4155,6 +4161,17 @@
             }
             if (act === 'premium-info') {
                 this.showPremiumNotice('Mehr Informationen zu Premium folgen in Kürze.');
+                return true;
+            }
+            if (act === 'toggle-search') {
+                const wrapper = btn.closest('.ska-search-box');
+                if (wrapper) {
+                    const isOpen = wrapper.classList.toggle('is-open');
+                    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    if (isOpen && this.searchInput) {
+                        this.searchInput.focus();
+                    }
+                }
                 return true;
             }
             if (act === 'toggle-premium-analysis') {
@@ -5403,6 +5420,23 @@
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
                 this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
+                const container = this.legendContainer.parentElement;
+                if (container) {
+                    const existingRating = container.querySelector('.ska-rating-box');
+                    if (existingRating) existingRating.remove();
+                    if (isPremium) {
+                        const ratingBox = document.createElement('div');
+                        ratingBox.className = 'ska-rating-box';
+                        ratingBox.innerHTML = `
+                            <div class="ska-card-header">
+                                <h3>Analyse-System bewerten</h3>
+                            </div>
+                            <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
+                            <div class="ska-rating-form">[fluentform id="7"]</div>
+                        `;
+                        container.insertBefore(ratingBox, this.legendContainer.nextSibling);
+                    }
+                }
             }
         }
 
@@ -6881,7 +6915,7 @@
             const tempPct = Math.min(100, Math.max(0, (sentiment.temp + 100) / 2));
             
             const h = `
-                <div style="margin-bottom:1.5rem; text-align:center;">
+                <div class="ska-flesch-summary" style="margin-bottom:1.5rem; text-align:center;">
                     <div style="font-size:0.75rem; color:#64748b; margin-bottom:0.3rem;">VERSTÄNDLICHKEIT (Flesch)</div>
                     <div style="font-weight:700; color:${col}; font-size:1.4rem;">${txt}</div>
                     <div style="font-size:0.8rem; opacity:0.7;">Score: ${r.score.toFixed(0)} / 100</div>
@@ -7714,9 +7748,9 @@
 
         getPremiumPlans() {
             return [
-                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
-                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
-                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
+                { id: 'flex', label: 'Monatlich', price: '24,00 EUR', priceLabel: 'pro Monat', note: 'Volle Flexibilität, monatlich kündbar', savings: '' },
+                { id: 'pro', label: 'Jährlich', price: '144,00 EUR', priceLabel: 'pro Jahr', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
+                { id: 'studio', label: 'Lifetime', price: '399,00 EUR', priceLabel: 'einmalig', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
             ];
         }
 
@@ -7726,7 +7760,7 @@
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
             const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
@@ -7785,7 +7819,7 @@
                 'Wort- & Satzstatistik',
                 'Lesbarkeits-Score',
                 'Füllwort-Analyse (Basis)',
-                'Autosave (lokal)',
+                'Autosave (lokal in Deinem Browser)',
                 'PDF-Export (Basis)'
             ].concat(freeToolTitles);
             const premiumFunctions = [
@@ -7800,7 +7834,7 @@
             ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
-            const priceLabel = selectedPlan.id === 'studio' ? 'einmalig' : 'Abo ab';
+            const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'einmalig' : 'pro Monat');
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -7837,13 +7871,16 @@
                                 <path d="M13 2L3 14h7l-1 8 12-14h-7l1-6z"></path>
                             </svg>
                         </span>
-                        <strong>Erhalte Premium Zugriff</strong>
+                        <strong>Erhalte Zugriff auf alle Analysen & Funktionen</strong>
                     </div>
                     <span>Mehr Analysen, Reports, praktische Werkzeuge & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                     <div class="ska-premium-upgrade-col is-free">
-                        <div class="ska-premium-upgrade-title">Basis</div>
+                        <div class="ska-premium-upgrade-base-header">
+                            <div class="ska-premium-upgrade-title">Basis</div>
+                            <span class="ska-premium-upgrade-base-tag">kostenlos</span>
+                        </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">0,00 EUR</div>
                         <div class="ska-premium-upgrade-price-note">für immer</div>
                         <div class="ska-premium-upgrade-section">
@@ -7867,7 +7904,10 @@
                         <div class="ska-premium-upgrade-price" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
-                            <span class="ska-premium-upgrade-tax">inkl. 19% MwSt.</span>
+                            <span class="ska-premium-upgrade-tax">
+                                <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
+                                <span>19% MwSt.</span>
+                            </span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
