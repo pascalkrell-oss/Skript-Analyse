@@ -3772,32 +3772,42 @@
         }
 
         updatePacingUI(progress = null) {
-            const card = this.bottomGrid ? this.bottomGrid.querySelector('[data-card-id="pacing"]') : null;
-            if (!card) return;
-            const fill = card.querySelector('[data-role="pacing-fill"]');
-            const marker = card.querySelector('[data-role="pacing-marker"]');
-            const timeLabel = card.querySelector('[data-role="pacing-time"]');
-            const targetLabel = card.querySelector('[data-role="pacing-target"]');
-            const preview = card.querySelector('[data-role="pacing-preview"]');
+            const cards = this.root ? this.root.querySelectorAll('[data-card-id="pacing"]') : [];
+            if (!cards.length) return;
             const duration = this.state.pacing.duration || 0;
             const currentProgress = progress === null ? (duration > 0 ? this.state.pacing.elapsed / duration : 0) : progress;
             const clamped = Math.max(0, Math.min(1, currentProgress));
 
-            if (fill) fill.style.width = `${clamped * 100}%`;
-            if (marker) marker.style.left = `${clamped * 100}%`;
+            cards.forEach((card) => {
+                const fill = card.querySelector('[data-role="pacing-fill"]');
+                const marker = card.querySelector('[data-role="pacing-marker"]');
+                const timeLabel = card.querySelector('[data-role="pacing-time"]');
+                const targetLabel = card.querySelector('[data-role="pacing-target"]');
+                const preview = card.querySelector('[data-role="pacing-preview"]');
 
-            if (timeLabel) {
-                const elapsedSec = Math.round((duration * clamped) / 1000);
-                timeLabel.textContent = `${SA_Utils.formatMin(elapsedSec)} / ${SA_Utils.formatMin(duration / 1000)}`;
-            }
-            if (targetLabel) {
-                const targetPct = Math.round(clamped * 100);
-                targetLabel.textContent = `${targetPct}% Soll-Position`;
-            }
-            if (preview) {
-                const maxScroll = Math.max(0, preview.scrollHeight - preview.clientHeight);
-                preview.scrollTop = maxScroll * clamped;
-            }
+                if (fill) fill.style.width = `${clamped * 100}%`;
+                if (marker) marker.style.left = `${clamped * 100}%`;
+
+                if (timeLabel) {
+                    const elapsedSec = Math.round((duration * clamped) / 1000);
+                    timeLabel.textContent = `${SA_Utils.formatMin(elapsedSec)} / ${SA_Utils.formatMin(duration / 1000)}`;
+                }
+                if (targetLabel) {
+                    const targetPct = Math.round(clamped * 100);
+                    targetLabel.textContent = `${targetPct}% Soll-Position`;
+                }
+                if (preview) {
+                    const maxScroll = Math.max(0, preview.scrollHeight - preview.clientHeight);
+                    preview.scrollTop = maxScroll * clamped;
+                }
+            });
+        }
+
+        updatePacingButtons(label) {
+            if (!this.root) return;
+            this.root.querySelectorAll('[data-action="pacing-toggle"]').forEach((button) => {
+                button.textContent = label;
+            });
         }
 
         startPacing(durationSec) {
@@ -3815,6 +3825,7 @@
                     this.state.pacing.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.pacing.playing = false;
+                    this.updatePacingButtons('Start');
                 }
             };
             if (this.state.pacing.rafId) cancelAnimationFrame(this.state.pacing.rafId);
@@ -3920,6 +3931,28 @@
                 this.applyFormatting(act);
                 return true;
             }
+            if (act === 'next-tip') {
+                const card = btn.closest('.skriptanalyse-card');
+                if (card) {
+                    const id = card.dataset.cardId;
+                    const tips = SA_CONFIG.TIPS[id];
+                    if (tips && tips.length > 0) {
+                        const tipP = card.querySelector('.ska-tip-content');
+                        const badge = card.querySelector('.ska-tip-badge span');
+                        if (tipP) {
+                            tipP.classList.add('is-changing');
+                            setTimeout(() => {
+                                if (typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
+                                this.state.tipIndices[id] = (this.state.tipIndices[id] + 1) % tips.length;
+                                tipP.textContent = tips[this.state.tipIndices[id]];
+                                if (badge) badge.textContent = `${this.state.tipIndices[id] + 1}/${tips.length}`;
+                                tipP.classList.remove('is-changing');
+                            }, 300);
+                        }
+                    }
+                }
+                return true;
+            }
             if (act === 'toggle-plan') {
                 if (!SA_CONFIG.IS_ADMIN) return true;
                 const isPremium = btn.checked;
@@ -3944,6 +3977,16 @@
             }
             if (act === 'premium-info') {
                 this.showPremiumNotice('Mehr Informationen zu Premium folgen in Kürze.');
+                return true;
+            }
+            if (act === 'toggle-premium-analysis') {
+                const section = btn.closest('.ska-premium-upgrade-section--analysis');
+                if (section) {
+                    const expanded = !section.classList.contains('is-expanded');
+                    section.classList.toggle('is-expanded', expanded);
+                    btn.textContent = expanded ? 'Weniger anzeigen' : 'Mehr Boxen anzeigen';
+                    btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+                }
                 return true;
             }
             if (act === 'toggle-premium-cards') {
@@ -4209,14 +4252,13 @@
                     this.showPremiumNotice('Das Sprech-Pacing ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                const btnLabel = btn;
                 if (this.state.pacing.playing) {
                     this.pausePacing();
-                    if (btnLabel) btnLabel.textContent = 'Start';
+                    this.updatePacingButtons('Start');
                 } else {
                     const durationSec = parseFloat(btn.dataset.duration || '0');
                     const started = this.startPacing(durationSec);
-                    if (btnLabel) btnLabel.textContent = started ? 'Pause' : 'Start';
+                    this.updatePacingButtons(started ? 'Pause' : 'Start');
                 }
                 return true;
             }
@@ -4241,8 +4283,7 @@
 
             if (act === 'pacing-reset') {
                 this.resetPacing();
-                const startBtn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-toggle"]') : null;
-                if (startBtn) startBtn.textContent = 'Start';
+                this.updatePacingButtons('Start');
                 return true;
             }
 
@@ -4694,31 +4735,6 @@
                 }
 
                 if (this.handleAction(act, btn)) return;
-
-                if(act === 'next-tip') {
-                    const card = btn.closest('.skriptanalyse-card');
-                    if(card) {
-                        const id = card.dataset.cardId;
-                        const tips = SA_CONFIG.TIPS[id];
-                        if(tips && tips.length > 0) {
-                            const tipP = card.querySelector('.ska-tip-content');
-                            const badge = card.querySelector('.ska-tip-badge span'); 
-                            
-                            if(tipP) {
-                                tipP.classList.add('is-changing');
-                                setTimeout(() => {
-                                    if(typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
-                                    this.state.tipIndices[id] = (this.state.tipIndices[id] + 1) % tips.length;
-                                    tipP.textContent = tips[this.state.tipIndices[id]];
-                                    if(badge) badge.textContent = `${this.state.tipIndices[id] + 1}/${tips.length}`;
-                                    tipP.classList.remove('is-changing');
-                                }, 300);
-                            }
-                        }
-                    }
-                    e.preventDefault();
-                    return; 
-                }
 
             if(act === 'toggle-breath-more') {
                  if (!this.isPremiumActive()) {
@@ -7515,6 +7531,8 @@
             const premiumCards = lockedCardIds
                 .map(id => SA_CONFIG.CARD_TITLES[id])
                 .filter(Boolean);
+            const premiumCardsPreview = premiumCards.slice(0, 10);
+            const premiumCardsExtra = premiumCards.slice(10);
             const freeFunctions = [
                 'WPM-Modus',
                 'Genre-Presets',
@@ -7553,6 +7571,12 @@
                     </span>
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
+            const renderExtraAnalysis = premiumCardsExtra.length ? `
+                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid ska-premium-upgrade-listing--extra">
+                                ${renderList(premiumCardsExtra, { stripIcons: true })}
+                            </ul>
+                            <button class="ska-premium-upgrade-more" type="button" data-action="toggle-premium-analysis" aria-expanded="false">Mehr Boxen anzeigen</button>
+                        ` : '';
             const html = `
                 <div class="ska-premium-upgrade-ribbon">UPGRADE!</div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -7618,8 +7642,9 @@
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
                             <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
                             <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumCards, { stripIcons: true })}
+                                ${renderList(premiumCardsPreview, { stripIcons: true })}
                             </ul>
+                            ${renderExtraAnalysis}
                         </div>
                         <div class="ska-premium-upgrade-cta">
                             <a class="ska-btn ska-btn--primary" href="#ska-premium-upgrade">Jetzt Premium freischalten</a>
@@ -7637,6 +7662,8 @@
                 card.innerHTML = html;
                 container.insertBefore(card, this.legendContainer);
             }
+            const grid = container.querySelector('.ska-premium-upgrade-grid');
+            this.setupPremiumUpgradeScroll(grid);
         }
 
         renderPremiumTeaserNote() {
@@ -7645,28 +7672,34 @@
             if (!container) return;
             const existing = container.querySelector('.ska-premium-teaser-note');
             if (existing) existing.remove();
-            if (this.isPremiumActive()) return;
-            const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const profile = this.settings.role;
-            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const showAll = profile ? this.state.showAllCards : true;
-            const filteredItems = new Set(SA_CONFIG.CARD_ORDER.filter((id) => {
-                if (!allowed || showAll) return true;
-                return allowed.has(id);
-            }));
-            const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
-            const availablePremiumCards = SA_CONFIG.PREMIUM_CARDS.filter((id) => !toolCards.includes(id) && this.isCardAvailable(id) && filteredItems.has(id));
-            const remainingCount = availablePremiumCards.filter((id) => !teaserCards.includes(id)).length;
-            if (!remainingCount) return;
-            const note = document.createElement('div');
-            note.className = 'ska-premium-teaser-note';
-            note.textContent = `+ ${remainingCount} weitere Analyseboxen`;
-            const upgradeCard = container.querySelector('.ska-premium-upgrade-card');
-            if (upgradeCard) {
-                container.insertBefore(note, upgradeCard);
-            } else {
-                container.insertBefore(note, this.legendContainer);
-            }
+        }
+
+        setupPremiumUpgradeScroll(grid) {
+            if (!grid || grid.dataset.scrollBound) return;
+            grid.dataset.scrollBound = 'true';
+            const update = () => {
+                if (!grid.isConnected) return;
+                const freeCol = grid.querySelector('.ska-premium-upgrade-col.is-free');
+                const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
+                const maxScroll = grid.scrollWidth - grid.clientWidth;
+                const hasHint = maxScroll > 8 && grid.scrollLeft < maxScroll - 8;
+                grid.classList.toggle('has-scroll-hint', hasHint);
+                if (!freeCol || !premiumCol) return;
+                const gridRect = grid.getBoundingClientRect();
+                const premiumRect = premiumCol.getBoundingClientRect();
+                const isFocused = premiumRect.left <= gridRect.left + 24;
+                grid.classList.toggle('is-premium-focused', isFocused);
+                if (!isFocused) {
+                    premiumCol.style.maxHeight = `${freeCol.offsetHeight}px`;
+                    premiumCol.style.overflow = 'hidden';
+                } else {
+                    premiumCol.style.maxHeight = '';
+                    premiumCol.style.overflow = '';
+                }
+            };
+            grid.addEventListener('scroll', () => window.requestAnimationFrame(update), { passive: true });
+            window.addEventListener('resize', () => window.requestAnimationFrame(update));
+            window.requestAnimationFrame(update);
         }
 
         renderComparison(sec, w, sc) {
