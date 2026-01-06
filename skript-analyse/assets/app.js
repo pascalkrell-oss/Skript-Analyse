@@ -3519,6 +3519,7 @@
             if (titleEl) titleEl.textContent = title;
             const bodyEl = modal.querySelector('[data-role="tool-modal-body"]');
             if (bodyEl) {
+                bodyEl.dataset.cardId = toolId;
                 bodyEl.innerHTML = `
                     ${description ? `<p class="ska-tool-modal-intro">${description}</p>` : ''}
                     ${bodyHtml}
@@ -3772,7 +3773,14 @@
         }
 
         updatePacingUI(progress = null) {
-            const cards = this.root ? this.root.querySelectorAll('[data-card-id="pacing"]') : [];
+            const cards = [];
+            if (this.root) {
+                cards.push(...this.root.querySelectorAll('[data-card-id="pacing"]'));
+            }
+            const toolModal = document.getElementById('ska-tool-card-modal');
+            if (toolModal) {
+                cards.push(...toolModal.querySelectorAll('[data-card-id="pacing"]'));
+            }
             if (!cards.length) return;
             const duration = this.state.pacing.duration || 0;
             const currentProgress = progress === null ? (duration > 0 ? this.state.pacing.elapsed / duration : 0) : progress;
@@ -3804,8 +3812,16 @@
         }
 
         updatePacingButtons(label) {
-            if (!this.root) return;
-            this.root.querySelectorAll('[data-action="pacing-toggle"]').forEach((button) => {
+            const buttons = [];
+            if (this.root) {
+                buttons.push(...this.root.querySelectorAll('[data-action="pacing-toggle"]'));
+            }
+            const toolModal = document.getElementById('ska-tool-card-modal');
+            if (toolModal) {
+                buttons.push(...toolModal.querySelectorAll('[data-action="pacing-toggle"]'));
+            }
+            if (!buttons.length) return;
+            buttons.forEach((button) => {
                 button.textContent = label;
             });
         }
@@ -3932,7 +3948,7 @@
                 return true;
             }
             if (act === 'next-tip') {
-                const card = btn.closest('.skriptanalyse-card');
+                const card = btn.closest('.skriptanalyse-card') || btn.closest('[data-card-id]');
                 if (card) {
                     const id = card.dataset.cardId;
                     const tips = SA_CONFIG.TIPS[id];
