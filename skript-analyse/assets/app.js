@@ -7706,9 +7706,9 @@
 
         getPremiumPlans() {
             return [
-                { id: 'flex', label: 'Monatlich', price: '25,00', priceLabel: 'Pro Monat', note: 'Volle Flexibilität, <strong>monatlich kündbar</strong>!', savings: '' },
-                { id: 'pro', label: 'Jährlich', price: '144,00', priceLabel: 'Pro Jahr', note: 'Volles Studio-Setup für <strong>nur 12 €</strong> im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
-                { id: 'studio', label: 'Lifetime', price: '399,00', priceLabel: 'Einmalig', note: 'Einmal zahlen, für immer nutzen <strong>(inkl. Updates)</strong>', savings: '', badge: 'Limitierter Deal' }
+                { id: 'flex', label: 'Monatlich', price: '25,00', priceLabel: 'Pro Monat', note: 'Volle Flexibilität, monatlich kündbar!', savings: '' },
+                { id: 'pro', label: 'Jährlich', price: '144,00', priceLabel: 'Pro Jahr', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
+                { id: 'studio', label: 'Lifetime', price: '399,00', priceLabel: 'Einmalig', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
             ];
         }
 
@@ -7844,7 +7844,6 @@
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
                             <span class="ska-premium-upgrade-price-value">${freePrice}</span>
                             <span class="ska-premium-upgrade-price-currency">EUR</span>
-                            <span class="ska-premium-upgrade-price-suffix">Für immer!</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
