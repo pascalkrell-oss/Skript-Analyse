@@ -7801,8 +7801,19 @@
                 </span>`;
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
+            const cardInfoByTitle = Object.keys(SA_CONFIG.CARD_TITLES).reduce((acc, id) => {
+                const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id]);
+                if (SA_CONFIG.CARD_DESCRIPTIONS && SA_CONFIG.CARD_DESCRIPTIONS[id]) {
+                    acc[title] = SA_CONFIG.CARD_DESCRIPTIONS[id];
+                }
+                return acc;
+            }, {});
+            const getListInfo = (label, stripIcons) => {
+                const baseLabel = stripIcons ? stripBoxIcon(label) : label;
+                return cardInfoByTitle[baseLabel] || 'TEST BESCHREIBUNG';
+            };
             const renderList = (items, options = {}) => items.map(item => `
-                <li data-info="${options.stripIcons ? stripBoxIcon(item) : item}">
+                <li data-info="${getListInfo(item, options.stripIcons)}">
                     <span class="ska-upgrade-check">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17l-5-5"></path>
@@ -7864,7 +7875,7 @@
                             <div class="ska-premium-upgrade-title">Premium</div>
                             <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
                         </div>
-                        <div class="ska-premium-upgrade-price" data-role="premium-price">
+                        <div class="ska-premium-upgrade-price ska-premium-upgrade-price--premium" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
                             <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
                             <span class="ska-premium-upgrade-price-currency">EUR</span>
