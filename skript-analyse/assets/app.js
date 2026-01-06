@@ -7717,6 +7717,7 @@
             const card = this.legendContainer.parentElement ? this.legendContainer.parentElement.querySelector('.ska-premium-upgrade-card') : null;
             if (!card) return;
             const premiumPlans = this.getPremiumPlans();
+            const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const priceValueEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-value');
@@ -7882,6 +7883,7 @@
                                 <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
                                 <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
                             </span>
+                            <span class="ska-premium-upgrade-price-currency">EUR</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
