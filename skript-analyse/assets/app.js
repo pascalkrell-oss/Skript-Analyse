@@ -7964,6 +7964,15 @@
             grid.dataset.scrollBound = 'true';
             const update = () => {
                 if (!grid.isConnected) return;
+                if (!window.matchMedia('(max-width: 900px)').matches) {
+                    const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
+                    if (premiumCol) {
+                        premiumCol.style.maxHeight = '';
+                        premiumCol.style.overflow = '';
+                    }
+                    grid.classList.remove('has-scroll-hint', 'is-premium-focused');
+                    return;
+                }
                 const freeCol = grid.querySelector('.ska-premium-upgrade-col.is-free');
                 const premiumCol = grid.querySelector('.ska-premium-upgrade-col.is-premium');
                 const maxScroll = grid.scrollWidth - grid.clientWidth;

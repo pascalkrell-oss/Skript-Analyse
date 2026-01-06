@@ -198,6 +198,15 @@ function ska_shortcode() {
             <div class="skriptanalyse-analysis-bottom-grid"></div>
             <div class="skriptanalyse-hidden-panel"></div>
             <div class="skriptanalyse-legend-container"></div>
+            <div class="ska-rating-box">
+                <div class="ska-card-header">
+                    <h3>Analyse-System bewerten</h3>
+                </div>
+                <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
+                <div class="ska-rating-form">
+                    <?php echo do_shortcode('[fluentform id="7"]'); ?>
+                </div>
+            </div>
         </div>
 
         <div class="ska-footer">
