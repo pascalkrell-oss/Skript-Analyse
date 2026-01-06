@@ -325,7 +325,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-price-prefix { font-size: 0.78rem; font-weight: 700; color: #64748b; letter-spacing: 0.01em; text-transform: uppercase; }
 .ska-premium-upgrade-price-label { font-size: 0.82rem; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; line-height: 1.1; }
 .ska-premium-upgrade-price-value { font-size: 34px; font-weight: 800; color: #0284c7; }
-.ska-premium-upgrade-price-currency { font-size: 0.8rem; font-weight: 700; color: #0284c7; letter-spacing: 0.02em; text-transform: uppercase; }
+.ska-premium-upgrade-price-currency { font-size: inherit; font-weight: 800; color: #0284c7; letter-spacing: 0.02em; text-transform: uppercase; }
 .ska-premium-upgrade-price-suffix { font-size: 0.75rem; font-weight: 700; color: #64748b; }
 .ska-premium-upgrade-price--free { color: #0f172a; }
 .ska-premium-upgrade-price--free .ska-premium-upgrade-price-value,

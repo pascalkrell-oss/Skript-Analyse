@@ -6,6 +6,14 @@
 (function () {
     'use strict';
 
+    window.addEventListener('unhandledrejection', (event) => {
+        const reason = event && event.reason;
+        const message = typeof reason === 'object' && reason !== null && 'message' in reason ? String(reason.message) : String(reason || '');
+        if (message.includes('A listener indicated an asynchronous response by returning true')) {
+            event.preventDefault();
+        }
+    });
+
     // CONFIG
     const SA_CONFIG = {
         STORAGE_KEY: 'skriptanalyse_autosave_v4_99', 
@@ -7712,11 +7720,11 @@
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
-            const priceValueEl = card.querySelector('.ska-premium-upgrade-price-value');
+            const priceValueEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-value');
             if (priceValueEl) {
                 priceValueEl.textContent = selectedPlan.price;
             }
-            const priceLabelEl = card.querySelector('.ska-premium-upgrade-price-label');
+            const priceLabelEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-label');
             if (priceLabelEl) {
                 priceLabelEl.textContent = priceLabel;
             }
