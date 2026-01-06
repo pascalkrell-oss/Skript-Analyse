@@ -7784,6 +7784,7 @@
                 'Cloud-Speicher (sofern verfügbar)'
             ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
+            const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const renderSavingsBadge = (plan) => `
