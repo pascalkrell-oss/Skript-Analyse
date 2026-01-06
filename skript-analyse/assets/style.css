@@ -280,7 +280,7 @@ body.ska-modal-open { overflow: hidden !important; }
     .ska-premium-upgrade-ribbon {
         width: 260px;       /* Deutlich breiteres Band */
         height: 40px;       /* Höher */
-        font-size: 13px;    /* Große, lesbare Schrift */
+        font-size: 18px;    /* Große, lesbare Schrift */
 
         /* Angepasste Position für die neue Größe */
         top: 35px;         /* Tiefer setzen */
