@@ -7802,7 +7802,7 @@
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
             const renderList = (items, options = {}) => items.map(item => `
-                <li>
+                <li data-info="${options.stripIcons ? stripBoxIcon(item) : item}">
                     <span class="ska-upgrade-check">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17l-5-5"></path>
@@ -7872,6 +7872,7 @@
                                 <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
                                 <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
                             </span>
+                            <span class="ska-premium-upgrade-price-currency">EUR</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note" data-role="premium-note">${renderPlanNote(selectedPlan)}</div>
                         <div class="ska-premium-upgrade-switch">
