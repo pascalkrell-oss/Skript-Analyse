@@ -154,6 +154,100 @@ const analyzeKeywordClusters = sharedUtils?.analyzeKeywordClusters;
 const findStumbles = sharedUtils?.findStumbles;
 const analyzeRedundancy = sharedUtils?.analyzeRedundancy;
 
+const getImmersionRegex = (() => {
+    let cached = null;
+    return () => {
+        if (cached) return cached;
+        const patterns = [
+            'seh(?:e|st|t|en)',
+            'sah(?:e|st|t|en)?',
+            'sieht',
+            'gesehen',
+            'hör(?:e|st|t|en)',
+            'hörte(?:st|t|n)?',
+            'hörtet',
+            'gehört',
+            'riech(?:e|st|t|en)',
+            'roch(?:e|st|t|en)?',
+            'gerochen',
+            'spür(?:e|st|t|en)',
+            'spürte(?:st|t|n)?',
+            'spürtet',
+            'gespürt',
+            'fühl(?:e|st|t|en)',
+            'fühlte(?:st|t|n)?',
+            'fühltet',
+            'gefühlt',
+            'bemerk(?:e|st|t|en)',
+            'bemerkte(?:st|t|n)?',
+            'bemerkt',
+            'denk(?:e|st|t|en)',
+            'dachte(?:st|t|n)?',
+            'dachtet',
+            'gedacht',
+            'wiss(?:e|t|en)',
+            'wusste(?:st|t|n)?',
+            'wusstet',
+            'gewusst',
+            'realisier(?:e|st|t|en)',
+            'realisierte(?:st|t|n)?',
+            'realisiert',
+            'frag(?:e|st|t|en)',
+            'fragte(?:st|t|n)?',
+            'fragtet',
+            'gefragt'
+        ];
+        cached = new RegExp(`\\b(?:${patterns.join('|')})\\b`, 'gi');
+        return cached;
+    };
+})();
+
+const splitSentences = (text) => {
+    if (!text) return [];
+    let tempText = String(text);
+    const abbrevs = ['z.B.', 'ca.', 'bzw.', 'vgl.', 'inkl.', 'max.', 'min.', 'Dr.', 'Prof.', 'Hr.', 'Fr.', 'Nr.'];
+    abbrevs.forEach((abbr) => {
+        tempText = tempText.split(abbr).join(abbr.replace('.', '@@'));
+    });
+    return tempText
+        .split(/[.!?]+(?=\s|$)/)
+        .filter((s) => s.trim().length > 0)
+        .map((s) => s.replace(/@@/g, '.').trim());
+};
+
+const analyzeImmersion = (text) => {
+    const clean = cleanTextForCounting(text || '');
+    const words = clean.split(/\s+/).filter(Boolean);
+    const totalWords = words.length;
+    if (!totalWords) {
+        return { totalWords: 0, hits: 0, density: 0, sentences: [], topWords: [] };
+    }
+    const regex = getImmersionRegex();
+    const sentences = splitSentences(text || '');
+    let hits = 0;
+    const hitSentences = [];
+    const wordCounts = {};
+
+    sentences.forEach((sentence) => {
+        regex.lastIndex = 0;
+        const matches = sentence.match(regex);
+        if (!matches || !matches.length) return;
+        hitSentences.push(sentence);
+        hits += matches.length;
+        matches.forEach((match) => {
+            const key = String(match).toLowerCase();
+            wordCounts[key] = (wordCounts[key] || 0) + 1;
+        });
+    });
+
+    const topWords = Object.entries(wordCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([word, count]) => ({ word, count }));
+
+    const density = totalWords > 0 ? (hits / totalWords) * 100 : 0;
+    return { totalWords, hits, density, sentences: hitSentences, topWords };
+};
+
 self.onmessage = (event) => {
     const { id, type, payload } = event.data || {};
     if (!id || !type) return;
@@ -185,6 +279,12 @@ self.onmessage = (event) => {
     if (type === 'redundancy') {
         const { sentences } = payload || {};
         const result = analyzeRedundancy ? analyzeRedundancy(sentences || []) : [];
+        self.postMessage({ id, type, result });
+        return;
+    }
+    if (type === 'immersion') {
+        const { text } = payload || {};
+        const result = analyzeImmersion(text || '');
         self.postMessage({ id, type, result });
     }
 };
