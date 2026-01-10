@@ -224,6 +224,7 @@
             agency: ['overview', 'char', 'chapter_calc', 'sentiment_intensity', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'compliance_check', 'keyword_focus'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'sentiment_intensity', 'easy_language', 'rhythm']
         },
+        TOOLS_ALWAYS_VISIBLE: ['teleprompter', 'word_sprint', 'pacing'],
         TOOL_CARDS: ['teleprompter', 'pacing', 'word_sprint'],
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -3742,13 +3743,14 @@
                     </div>
                     <div class="ska-sprint-success" data-role="sprint-success">
                         <div class="ska-sprint-success-title">Sprint abgeschlossen! 🎉</div>
-                        <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
-                        <div class="ska-sprint-success-confetti">✨🎊✨</div>
-                        <div class="ska-sprint-success-actions">
-                            <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
-                        </div>
+                    <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
+                    <div class="ska-sprint-success-confetti">✨🎊✨</div>
+                    <div class="ska-sprint-success-actions">
+                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
+                        <button class="ska-btn ska-btn--secondary" data-action="word-sprint-copy" disabled>📋 Text kopieren</button>
                     </div>
-                </div>`;
+                </div>
+            </div>`;
             document.body.appendChild(m);
 
             const editor = m.querySelector('[data-role="sprint-editor"]');
@@ -4251,6 +4253,7 @@
             const statsEl = modal.querySelector('[data-role="sprint-stats"]');
             const successEl = modal.querySelector('[data-role="sprint-success"]');
             const transferBtn = modal.querySelector('[data-action="word-sprint-apply"]');
+            const copyBtn = modal.querySelector('[data-action="word-sprint-copy"]');
             const timeLabel = SA_Utils.formatMin(this.state.wordSprint.remainingSec);
             if (countdownEl) countdownEl.textContent = timeLabel;
             const timeProgress = this.state.wordSprint.durationMinutes > 0
@@ -4267,6 +4270,7 @@
             const showSuccess = this.state.wordSprint.completed && !forceIdle;
             if (successEl) successEl.classList.toggle('is-visible', showSuccess);
             if (transferBtn) transferBtn.disabled = !showSuccess;
+            if (copyBtn) copyBtn.disabled = !showSuccess;
             modal.classList.toggle('is-complete', showSuccess);
         }
 
@@ -4751,6 +4755,10 @@
                 this.stopWordSprint();
                 return true;
             }
+            if (act === 'word-sprint-copy') {
+                this.copySprintToClipboard(btn);
+                return true;
+            }
 
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
@@ -4850,23 +4858,42 @@
         }
 
         applySprintToMainEditor() {
-            if (!this.textarea) return;
+            const mainInput = document.querySelector('#ska-input') || this.textarea;
+            if (!mainInput) return;
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (!modal) return;
             const editor = modal.querySelector('[data-role="sprint-editor"]');
             if (!editor) return;
             const contentText = editor.textContent.trim();
             if (!contentText) return;
-            if (this.textarea.isContentEditable) {
-                const current = this.textarea.innerHTML.trim();
+            if (mainInput.isContentEditable) {
+                const current = mainInput.innerHTML.trim();
                 const spacer = current ? '<br><br>' : '';
-                this.textarea.innerHTML = `${current}${spacer}${editor.innerHTML}`;
+                const safeContent = SA_Utils.escapeHtml(contentText).replace(/\n/g, '<br>');
+                mainInput.innerHTML = `${current}${spacer}${safeContent}`;
             } else {
-                const current = this.textarea.value.trim();
+                const current = mainInput.value.trim();
                 const spacer = current ? '\n\n' : '';
-                this.textarea.value = `${current}${spacer}${contentText}`;
+                mainInput.value = `${current}${spacer}${contentText}`;
             }
             this.analyze(this.getText());
+        }
+
+        copySprintToClipboard(button) {
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            const editor = modal.querySelector('[data-role="sprint-editor"]');
+            if (!editor) return;
+            const contentText = editor.textContent.trim();
+            if (!contentText) return;
+            const targetBtn = button || modal.querySelector('[data-action="word-sprint-copy"]');
+            const originalText = targetBtn ? targetBtn.textContent : '';
+            SA_Utils.copyToClipboard(contentText).then((success) => {
+                if (targetBtn) {
+                    targetBtn.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
+                    setTimeout(() => { targetBtn.textContent = originalText; }, 1200);
+                }
+            });
         }
 
 
@@ -5693,18 +5720,6 @@
                 if (container) {
                     const existingRating = container.querySelector('.ska-rating-box');
                     if (existingRating) existingRating.remove();
-                    if (isPremium) {
-                        const ratingBox = document.createElement('div');
-                        ratingBox.className = 'ska-rating-box';
-                        ratingBox.innerHTML = `
-                            <div class="ska-card-header">
-                                <h3>Analyse-System bewerten</h3>
-                            </div>
-                            <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
-                            <div class="ska-rating-form">[fluentform id="7"]</div>
-                        `;
-                        container.insertBefore(ratingBox, this.legendContainer.nextSibling);
-                    }
                 }
             }
         }
@@ -5839,24 +5854,27 @@
                         </select>
                     </div>
                 </div>`;
-            const filterToggle = `
-                <label class="ska-filterbar-profile-toggle">
-                    <input type="checkbox" data-action="toggle-profile-filter" ${filterByProfile ? 'checked' : ''}>
-                    <span>Nach Profil filtern</span>
-                </label>`;
+            const profileLabel = SA_CONFIG.PROFILE_DEFAULTS[profile] ? SA_CONFIG.PROFILE_DEFAULTS[profile].label : 'Profil';
+            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : `Nur ${profileLabel} anzeigen`;
+            const profileFilterLink = `
+                <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
+                    ${profileFilterLabel}
+                </button>`;
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
                         ${profileSelect}
-                        ${filterToggle}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
                     <div class="ska-filterbar-bulk">
-                        <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
-                        <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
+                        <div class="ska-filterbar-bulk-actions">
+                            <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
+                            <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
+                        </div>
+                        ${profileFilterLink}
                     </div>
                     ${freeItems.map(id => {
                         const locked = !this.isCardUnlocked(id);
@@ -5880,7 +5898,8 @@
             const allowed = allowedList ? new Set(allowedList) : null;
             const filterByProfile = Boolean(this.state.filterByProfile && allowed);
             const toolCards = new Set(SA_CONFIG.TOOL_CARDS || []);
-            const isPlanVisible = (id) => this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
+            const alwaysVisible = new Set(SA_CONFIG.TOOLS_ALWAYS_VISIBLE || []);
+            const isPlanVisible = (id) => alwaysVisible.has(id) || this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
             const applyVisibility = (card) => {
                 const id = card.dataset.cardId;
                 if (!id) return;
@@ -5888,6 +5907,27 @@
                 const hideByPlan = !isPlanVisible(id);
                 card.classList.toggle('is-hidden-profile', hideByProfile);
                 card.classList.toggle('is-hidden-plan', hideByPlan);
+                const shouldLock = !SA_CONFIG.PRO_MODE && toolCards.has(id);
+                card.classList.toggle('ska-premium-locked', shouldLock);
+                if (shouldLock) {
+                    let overlay = card.querySelector('.ska-premium-lock-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('div');
+                        overlay.className = 'ska-premium-lock-overlay';
+                        overlay.innerHTML = `
+                            <div class="ska-premium-lock-content">
+                                <div class="ska-premium-lock-icon">🔒</div>
+                                <div class="ska-premium-lock-title">Premium-Werkzeug</div>
+                                <div class="ska-premium-lock-sub">Upgrade, um dieses Tool freizuschalten.</div>
+                                <a class="ska-btn ska-btn--primary ska-premium-lock-cta" href="#ska-premium-upgrade">Upgrade starten</a>
+                            </div>
+                        `;
+                        card.appendChild(overlay);
+                    }
+                } else {
+                    const overlay = card.querySelector('.ska-premium-lock-overlay');
+                    if (overlay) overlay.remove();
+                }
             };
             this.bottomGrid.querySelectorAll('[data-card-id]').forEach(applyVisibility);
             if (this.toolsModalStore) {
@@ -7255,7 +7295,7 @@
             genreList += '</div></div>';
 
             const gLbl = this.settings.usecase !== 'auto' ? (SA_CONFIG.GENRE_LABELS[this.settings.usecase] || this.settings.usecase).toUpperCase() : 'AUTO-DETECT';
-            const pauseText = pause > 0 ? ` &bull; ${pause.toFixed(1)}s Pause` : '';
+            const pauseText = pause > 0 ? ` &bull; ${(Number(pause) || 0).toFixed(1)}s Pause` : '';
             const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
             const genreNote = genreContext ? `<div class="ska-genre-context">${genreContext.overviewNote}</div>` : '';
 
@@ -7308,8 +7348,8 @@
                     <div class="ska-stat-item"><span>Sätze</span><strong>${r ? r.sentences.length : 0}</strong></div>
                     <div class="ska-stat-item"><span>Silben</span><strong>${r ? r.totalSyllables : 0}</strong></div>
                     <div class="ska-stat-item"><span>Längster Satz</span><strong style="color:${maxSCol}">${maxSVal} W</strong></div>
-                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${r ? r.score.toFixed(0) : 0}</strong></div>
-                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${r ? r.lix.toFixed(0) : 0}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${(Number(r ? r.score : 0) || 0).toFixed(0)}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${(Number(r ? r.lix : 0) || 0).toFixed(0)}</strong></div>
                 </div>
                 ${sectionPacingHtml}
                 ${genreList}</div>`;
