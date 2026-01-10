@@ -5921,7 +5921,7 @@
                     }).join('')}
                 </div>` : '';
             const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil-Boxen anzeigen';
-            const profileFilterLink = `
+            const profileFilterLink = isGeneralProfile ? '' : `
                 <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
                     ${profileFilterLabel}
                 </button>`;
@@ -5957,7 +5957,7 @@
             this.filterBar.innerHTML = html;
             const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
             if (profileLinkEl) {
-                profileLinkEl.style.display = isGeneralProfile ? 'none' : 'inline-block';
+                profileLinkEl.style.display = 'inline-block';
             }
         }
 
@@ -8574,13 +8574,8 @@
                 const baseLabel = stripIcons ? stripBoxIcon(label) : label;
                 return cardInfoByTitle[baseLabel] || 'TEST BESCHREIBUNG';
             };
-            const renderList = (items, options = {}) => items.map(item => `
+            const renderList = (items, options = {}) => items.filter(Boolean).map(item => `
                 <li data-info="${getListInfo(item, options.stripIcons)}">
-                    <span class="ska-upgrade-check">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6L9 17l-5-5"></path>
-                        </svg>
-                    </span>
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const renderExtraAnalysis = premiumCardsExtra.length ? `
