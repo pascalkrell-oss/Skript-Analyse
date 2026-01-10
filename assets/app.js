@@ -3831,7 +3831,7 @@
             m.ariaHidden = 'true';
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-sprint-editor"></div>
-                <div class="ska-sprint-editor-shell ska-modal-narrow">
+                <div class="ska-sprint-editor-shell">
                     <div class="ska-sprint-editor-header">
                         <div class="ska-sprint-countdown" data-role="sprint-countdown">${SA_Utils.formatMin(this.state.wordSprint.remainingSec)}</div>
                         <div class="ska-sprint-progress">
@@ -3878,11 +3878,8 @@
             this.renderSprintEditorModal();
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (!modal) return;
-            const shell = modal.querySelector('.ska-sprint-editor-shell');
-            if (shell) {
-                shell.classList.add('ska-modal-narrow');
-                shell.classList.remove('ska-modal-wide');
-            }
+            modal.classList.add('ska-modal-tiny');
+            modal.classList.remove('ska-modal-wide');
             const editor = modal.querySelector('[data-role="sprint-editor"]');
             if (editor) editor.innerHTML = '';
             this.updateWordSprintUI();
@@ -4304,11 +4301,8 @@
             this.openSprintEditorModal();
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (modal) {
-                const shell = modal.querySelector('.ska-sprint-editor-shell');
-                if (shell) {
-                    shell.classList.add('ska-modal-wide');
-                    shell.classList.remove('ska-modal-narrow');
-                }
+                modal.classList.add('ska-modal-wide');
+                modal.classList.remove('ska-modal-tiny');
             }
             this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
             this.tickWordSprint();
@@ -4352,11 +4346,8 @@
             this.updateWordSprintUI(true);
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (modal) {
-                const shell = modal.querySelector('.ska-sprint-editor-shell');
-                if (shell) {
-                    shell.classList.add('ska-modal-narrow');
-                    shell.classList.remove('ska-modal-wide');
-                }
+                modal.classList.add('ska-modal-tiny');
+                modal.classList.remove('ska-modal-wide');
             }
         }
 
@@ -8556,7 +8547,7 @@
                         window.location.reload();
                     }
                 };
-                iframe.setAttribute('src', '/kasse/?checkout=1');
+                iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
             }
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
