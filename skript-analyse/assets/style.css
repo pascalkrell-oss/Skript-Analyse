@@ -388,7 +388,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
-.ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ska-premium-upgrade-listing--grid { grid-template-columns: 1fr 1fr; }
 /* =========================================
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
@@ -400,10 +400,28 @@ body.ska-modal-open { overflow: hidden !important; }
     list-style-type: none !important;
     list-style-image: none !important;
     margin-left: 0 !important;
-    padding-left: 26px !important; /* Platz für unser Icon reservieren */
     background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
     border: none !important;
-    position: relative;
+    text-align: left;
+}
+
+.ska-premium-upgrade-listing {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.5rem !important;
+    row-gap: 0 !important;
+    grid-auto-flow: row dense !important;
+    align-items: start !important;
+}
+
+.ska-premium-upgrade-listing li {
+    position: relative !important;
+    padding-left: 32px !important;
+    margin-bottom: 0.6rem !important;
+    text-indent: 0 !important;
+    line-height: 1.4 !important;
+    display: flex !important;
+    align-items: flex-start !important;
 }
 
 /* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
@@ -423,8 +441,8 @@ body.ska-modal-open { overflow: hidden !important; }
     position: absolute !important;
     left: 0 !important;
     top: 3px !important; /* Feinjustierung der Höhe */
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
 
     /* Reset möglicher Theme-Styles auf ::before */
     border: none !important;
@@ -444,6 +462,17 @@ body.ska-modal-open { overflow: hidden !important; }
     background-color: currentColor !important;
 }
 
+.ska-premium-upgrade-listing li.is-hidden,
+.ska-premium-upgrade-listing li[style*="display: none"] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .ska-premium-upgrade-listing {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 /* 4. FARB-ZUWEISUNG */
 
 /* Basis Box: Dunkel (rgb 15, 23, 42) */
@@ -455,8 +484,6 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
     background-color: #1a93ee !important;
 }
-.ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-.ska-premium-upgrade-col.is-premium .ska-upgrade-check { background: #e0f2fe; color: #0284c7; }
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
 .ska-premium-upgrade-hover-label { cursor: default; }
 .ska-premium-upgrade-hover-badge { display: none; position: absolute; left: 0; top: calc(100% + 10px); background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.8rem; box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.3); width: 240px; z-index: 30; color: #475569; }
@@ -1799,6 +1826,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-premium-upgrade-titleline { flex-wrap: wrap; }
     .ska-premium-upgrade-switch { grid-template-columns: 1fr; }
     .ska-premium-upgrade-listing--grid { grid-template-columns: 1fr; }
+    .ska-premium-upgrade-listing { grid-template-columns: 1fr !important; }
     .ska-premium-upgrade-cta { flex-direction: column; align-items: stretch; }
     .ska-premium-upgrade-cta .ska-btn { width: 100%; }
     .ska-premium-upgrade-header span { line-height: 1.6; }
