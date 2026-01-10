@@ -3808,7 +3808,10 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
                     <div class="ska-modal-header">
-                        <h3>Checkout</h3>
+                        <div class="ska-ssl-badge">🔒 Sichere SSL-Verbindung</div>
+                        <h3>Skript-Analyse Tool - Premium freischalten</h3>
+                        <p class="ska-modal-subtitle">Volle Funktion und tiefe Analyse Deiner Texte.</p>
+                        <div class="ska-checkout-payment-hint">Visa · Mastercard · PayPal</div>
                     </div>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-loading" data-role="checkout-loading">
@@ -5543,6 +5546,7 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
+                            this.emptyCheckoutCart();
                         }
                     });
                     return;
@@ -5564,6 +5568,7 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
+                            this.emptyCheckoutCart();
                         }
                     });
                     e.preventDefault(); 
@@ -8508,15 +8513,27 @@
             return productMap[planId] || productMap.flex;
         }
 
+        formatPriceValue(priceRaw) {
+            if (priceRaw === null || typeof priceRaw === 'undefined') return '';
+            return String(priceRaw).replace(/,00\b/g, '');
+        }
+
         async startCheckoutFlow() {
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
             const addToCartUrl = `/?add-to-cart=${productId}`;
             try {
+                await this.emptyCheckoutCart();
                 await fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' });
             } catch (error) {
                 // continue to checkout modal even if add-to-cart fails
             }
             this.openCheckoutModal();
+        }
+
+        emptyCheckoutCart() {
+            return fetch('/?empty_cart=1', { method: 'GET' })
+                .then(() => console.log('Warenkorb bereinigt'))
+                .catch((err) => console.error(err));
         }
 
         openCheckoutModal() {
@@ -8561,9 +8578,10 @@
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
+            const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
             const priceValueEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-value');
             if (priceValueEl) {
-                priceValueEl.textContent = selectedPlan.price;
+                priceValueEl.textContent = formattedPremiumPrice;
             }
             const priceLabelEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-label');
             if (priceLabelEl) {
@@ -8601,6 +8619,8 @@
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
+            const formattedFreePrice = this.formatPriceValue(freePrice);
+            const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -8608,13 +8628,46 @@
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
             const renderFeatureList = (items, isPremium) => {
                 const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium' : 'ska-premium-upgrade-listing is-free';
-                const listItems = items.map(item => `
-                    <li data-tooltip="${item.desc}">
+                const visibleCount = 5;
+                const hasMore = items.length > visibleCount;
+                const listItems = items.map((item, index) => {
+                    const isHidden = index >= visibleCount;
+                    const hiddenClass = isHidden ? 'ska-hidden-feature' : '';
+                    const styleAttr = isHidden ? 'style="display:none"' : '';
+                    return `
+                    <li class="${hiddenClass}" ${styleAttr} data-tooltip="${item.desc}">
                         <span>${item.name}</span>
-                    </li>
-                `).join('');
-                return `<ul class="${listClass}">${listItems}</ul>`;
+                    </li>`;
+                }).join('');
+                const buttonHTML = hasMore ? `
+                    <div class="ska-list-toggle-wrapper">
+                        <button class="ska-list-show-more-btn" onclick="toggleFeatureList(this)">Alle ${items.length} Funktionen anzeigen ⬇️</button>
+                    </div>` : '';
+                return `<ul class="${listClass}">${listItems}</ul>${buttonHTML}`;
             };
+            if (!window.toggleFeatureList) {
+                window.toggleFeatureList = (btn) => {
+                    const wrapper = btn.closest('.ska-list-toggle-wrapper');
+                    const ul = wrapper ? wrapper.previousElementSibling : null;
+                    if (!ul) return;
+                    const hiddenItems = ul.querySelectorAll('.ska-hidden-feature');
+                    const isExpanded = btn.classList.contains('is-expanded');
+                    if (!isExpanded) {
+                        hiddenItems.forEach(item => {
+                            item.style.display = 'flex';
+                        });
+                        btn.innerHTML = 'Weniger anzeigen ⬆️';
+                        btn.classList.add('is-expanded');
+                    } else {
+                        hiddenItems.forEach(item => {
+                            item.style.display = 'none';
+                        });
+                        const total = ul.querySelectorAll('li').length;
+                        btn.innerHTML = `Alle ${total} Funktionen anzeigen ⬇️`;
+                        btn.classList.remove('is-expanded');
+                    }
+                };
+            }
             const html = `
                 <div class="ska-premium-upgrade-ribbon ska-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -8641,8 +8694,8 @@
                             <span class="ska-premium-upgrade-badge ska-premium-upgrade-badge--free">Kostenlos</span>
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
-                            <span class="ska-premium-upgrade-price-value">${freePrice}</span>
-                            <span class="ska-premium-upgrade-price-currency">EUR</span>
+                            <span class="ska-premium-upgrade-price-value">${formattedFreePrice}</span>
+                            <span class="ska-premium-upgrade-price-currency">€</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
@@ -8661,9 +8714,9 @@
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--premium" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
-                            <span class="ska-premium-upgrade-price-value">${selectedPlan.price}</span>
+                            <span class="ska-premium-upgrade-price-value">${formattedPremiumPrice}</span>
                             <span class="ska-premium-upgrade-price-meta">
-                                <span class="ska-premium-upgrade-price-currency">EUR</span>
+                                <span class="ska-premium-upgrade-price-currency">€</span>
                                 <span class="ska-premium-upgrade-tax">
                                     <span class="ska-premium-upgrade-tax-prefix">inkl.</span>
                                     <span class="ska-premium-upgrade-tax-value">19% MwSt.</span>
