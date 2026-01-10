@@ -489,70 +489,70 @@
     const UPGRADE_CONTENT = {
         basic: {
             tools: [
-                { name: 'WPM-Modus', desc: 'Berechnet deine Lesegeschwindigkeit.' },
-                { name: 'Genre-Presets', desc: 'Voreinstellungen für verschiedene Textarten.' },
-                { name: 'Zeichen-Zählung', desc: 'Zählt Zeichen mit und ohne Leerzeichen.' },
-                { name: 'Wort- & Satzstatistik', desc: 'Analysiert Wortanzahl und Satzlängen.' },
-                { name: 'Lesbarkeits-Score', desc: 'Zeigt, wie leicht dein Text verständlich ist.' },
-                { name: 'Füllwort-Analyse (Basis)', desc: 'Findet grundlegende überflüssige Wörter.' },
-                { name: 'Autosave', desc: 'Speichert deinen Text lokal im Browser.' },
-                { name: 'PDF-Export (Basis)', desc: 'Einfacher PDF-Download deines Skripts.' }
+                { name: "WPM-Modus", desc: "Berechnet deine Lesegeschwindigkeit." },
+                { name: "Genre-Presets", desc: "Voreinstellungen für verschiedene Textarten." },
+                { name: "Zeichen-Zählung", desc: "Zählt Zeichen inkl. & exkl. Leerzeichen." },
+                { name: "Wort- & Satzstatistik", desc: "Analysiert Wortanzahl und Satzlängen." },
+                { name: "Lesbarkeits-Score", desc: "Flesch-Index für Verständlichkeit." },
+                { name: "Füllwort-Analyse (Basis)", desc: "Findet grundlegende Füllwörter." },
+                { name: "Autosave", desc: "Speichert lokal im Browser." },
+                { name: "PDF-Export (Basis)", desc: "Einfacher PDF-Download." }
             ],
             analysis: [
-                { name: 'Schnell-Überblick', desc: 'Die wichtigsten Metriken auf einen Blick.' },
-                { name: 'Tonalität & Stil', desc: 'Prüft die emotionale Wirkung des Textes.' },
-                { name: 'Füllwörter', desc: 'Markiert Wörter, die den Text aufblähen.' },
-                { name: 'Denglisch-Detektor', desc: 'Findet unnötige Anglizismen.' },
-                { name: 'Auffällige Sätze', desc: 'Markiert extrem lange oder kurze Sätze.' },
-                { name: 'Stolpersteine & Phonetik', desc: 'Findet schwer sprechbare Wortfolgen.' },
-                { name: 'Aussprache-Check', desc: 'Prüft Zahlen und Abkürzungen auf Sprechbarkeit.' }
+                { name: "Schnell-Überblick", desc: "Wichtigste Metriken sofort sehen." },
+                { name: "Tonalität & Stil", desc: "Emotionale Wirkung des Textes." },
+                { name: "Füllwörter", desc: "Unnötige Wörter markieren." },
+                { name: "Denglisch-Detektor", desc: "Findet Anglizismen." },
+                { name: "Auffällige Sätze", desc: "Zu lange oder zu kurze Sätze." },
+                { name: "Stolpersteine & Phonetik", desc: "Zungenbrecher finden." },
+                { name: "Aussprache-Check", desc: "Zahlen und Abkürzungen prüfen." }
             ]
         },
         premium: {
             tools: [
-                { name: 'Alles aus der Basis-Version', desc: 'Alle Funktionen des Free-Plans inklusive.' },
-                { name: 'SPS-Modus', desc: 'Silben pro Sekunde Analyse für Profis.' },
-                { name: 'Pausen-Automatik', desc: 'Berechnet natürliche Sprechpausen automatisch.' },
-                { name: 'WPM-Kalibrierung', desc: 'Miss deine persönliche Sprechgeschwindigkeit.' },
-                { name: 'Pro-PDF-Report', desc: 'Detaillierter Export für Regie und Kunden.' },
-                { name: 'Textvergleich', desc: 'Vergleiche verschiedene Versionen deines Skripts.' },
-                { name: 'Premium-Analyseboxen', desc: 'Zugriff auf alle KI-gestützten Analysen.' },
-                { name: 'Cloud-Speicher', desc: 'Speichere Projekte sicher & verschlüsselt online.' },
-                { name: 'Teleprompter', desc: 'Professioneller Prompter mit Sprachsteuerung.' },
-                { name: 'Schreib-Sprint & Fokus', desc: 'Ablenkungsfreier Modus mit Zielen.' },
-                { name: 'Sprech-Pacing', desc: 'Visualisiertes Timing-Training.' }
+                { name: "Alles aus der Basis-Version", desc: "Alle Free-Features inklusive." },
+                { name: "SPS-Modus", desc: "Silben pro Sekunde Analyse." },
+                { name: "Pausen-Automatik", desc: "Berechnet Sprechpausen." },
+                { name: "WPM-Kalibrierung", desc: "Miss dein eigenes Tempo." },
+                { name: "Pro-PDF-Report", desc: "Detaillierter Regie-Report." },
+                { name: "Textvergleich (Versionen)", desc: "Unterschiede hervorheben." },
+                { name: "Premium-Analyseboxen", desc: "Vollzugriff auf KI-Analysen." },
+                { name: "Cloud-Speicher", desc: "Verschlüsselt online speichern." },
+                { name: "Teleprompter", desc: "Scrollender Text mit Sprachsteuerung." },
+                { name: "Schreib-Sprint & Fokus", desc: "Ablenkungsfreies Schreiben." },
+                { name: "Sprech-Pacing", desc: "Visuelles Timing-Training." }
             ],
             analysis: [
-                { name: 'Regie-Anweisung', desc: 'Erkennt und formatiert Regie-Hinweise.' },
-                { name: 'Satz-Rhythmus', desc: 'Visualisiert den Fluss deiner Satzlängen.' },
-                { name: 'Hörbuch-Kapitel-Kalkulator', desc: 'Berechnet Timings für ganze Kapitel.' },
-                { name: 'Silben-Entropie', desc: 'Misst die Informationsdichte pro Silbe.' },
-                { name: 'Rollen-Verteilung', desc: 'Analysiert Sprechanteile verschiedener Rollen.' },
-                { name: 'Keyword-Fokus', desc: 'Prüft SEO-Keywords und Dichte.' },
-                { name: 'Plosiv-Check', desc: 'Warnt vor harten P/T/K Lauten (Popp-Geräusche).' },
-                { name: 'Leichte Sprache', desc: 'Prüft auf Barrierefreiheit (B1/B2 Level).' },
-                { name: 'Semantische Redundanz', desc: 'Findet inhaltliche Wiederholungen.' },
-                { name: 'Buzzword-Check', desc: 'Findet abgedroschene Phrasen.' },
-                { name: 'Metaphern & Phrasen', desc: 'Analysiert bildhafte Sprache.' },
-                { name: "Immersion & Show, don't tell", desc: 'Prüft auf distanzierende Filter-Wörter.' },
-                { name: 'Zielgruppen-Filter', desc: 'Passt Analyse auf deine Hörer an.' },
-                { name: 'Rhetorische Fragen', desc: 'Zählt und bewertet Fragen im Text.' },
-                { name: 'Satz-Verschachtelung', desc: 'Warnt vor zu komplexen Schachtelsätzen.' },
-                { name: 'Satzanfang-Varianz', desc: 'Prüft auf repetitive Satzstarts.' },
-                { name: 'Pflichttext-Check', desc: 'Validiert rechtliche Disclaimer.' },
-                { name: 'Gender-Neutralität', desc: 'Prüft auf inklusive Sprache.' },
-                { name: 'Wort-Echos', desc: 'Findet Wortwiederholungen auf engem Raum.' },
-                { name: 'Adjektiv-Dichte', desc: 'Warnt vor übermäßigem Adjektiv-Gebrauch.' },
-                { name: 'Adverbien-Check', desc: 'Findet schwache Verben-Modifikatoren.' },
-                { name: 'Passiv-Indikator', desc: 'Markiert passive Formulierungen.' },
-                { name: 'Bürokratie-Filter', desc: 'Findet Beamtendeutsch und Nominalstil.' },
-                { name: 'Nominal-Ketten', desc: 'Warnt vor aneinandergereihten Substantiven.' },
-                { name: 'Stimmungs-Intensität', desc: 'Misst die emotionale Stärke.' },
-                { name: 'Call to Action', desc: 'Prüft, ob eine Handlungsaufforderung existiert.' },
-                { name: 'Verb-Fokus', desc: 'Analysiert die Stärke deiner Verben.' },
-                { name: 'Audio-BPM-Matching', desc: 'Hilft, Text auf Musik-Takt zu schreiben.' },
-                { name: 'Wortschatz-Reichtum', desc: 'Misst die Diversität deines Vokabulars.' },
-                { name: 'Dialog-Balance', desc: 'Prüft das Verhältnis von Dialog zu Erzählung.' }
+                { name: "Regie-Anweisung", desc: "Formatiert Regie-Notes." },
+                { name: "Satz-Rhythmus", desc: "Visualisiert den Flow." },
+                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Timings für Kapitel." },
+                { name: "Silben-Entropie", desc: "Informationsdichte messen." },
+                { name: "Rollen-Verteilung", desc: "Sprechanteile analysieren." },
+                { name: "Keyword-Fokus", desc: "SEO-Optimierung prüfen." },
+                { name: "Plosiv-Check", desc: "Harte Laute (P/T/K) finden." },
+                { name: "Leichte Sprache", desc: "Barrierefreiheit prüfen." },
+                { name: "Semantische Redundanz", desc: "Wiederholungen finden." },
+                { name: "Buzzword-Check", desc: "Phrasen dreschen vermeiden." },
+                { name: "Metaphern & Phrasen", desc: "Bildhafte Sprache checken." },
+                { name: "Immersion & Show, don't tell", desc: "Filterwörter vermeiden." },
+                { name: "Zielgruppen-Filter", desc: "Ansprache optimieren." },
+                { name: "Rhetorische Fragen", desc: "Fragen im Text bewerten." },
+                { name: "Satz-Verschachtelung", desc: "Komplexe Sätze finden." },
+                { name: "Satzanfang-Varianz", desc: "Repetitive Starts vermeiden." },
+                { name: "Pflichttext-Check", desc: "Disclaimer prüfen." },
+                { name: "Gender-Neutralität", desc: "Inklusive Sprache." },
+                { name: "Wort-Echos", desc: "Wiederholungen auf engem Raum." },
+                { name: "Adjektiv-Dichte", desc: "Zu viele Beschreibungen?" },
+                { name: "Adverbien-Check", desc: "Schwache Verben stärken." },
+                { name: "Passiv-Indikator", desc: "Aktiv schreiben." },
+                { name: "Bürokratie-Filter", desc: "Beamtendeutsch finden." },
+                { name: "Nominal-Ketten", desc: "Substantiv-Reihen aufbrechen." },
+                { name: "Stimmungs-Intensität", desc: "Emotionale Stärke." },
+                { name: "Call to Action", desc: "Handlungsaufforderung." },
+                { name: "Verb-Fokus", desc: "Starke Verben nutzen." },
+                { name: "Audio-BPM-Matching", desc: "Text auf Takt schreiben." },
+                { name: "Wortschatz-Reichtum", desc: "Vokabular-Vielfalt." },
+                { name: "Dialog-Balance", desc: "Erzähler vs. Dialog." }
             ]
         }
     };
@@ -8597,8 +8597,8 @@
             const renderFeatureList = (items, isPremium) => {
                 const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium' : 'ska-premium-upgrade-listing is-free';
                 const listItems = items.map(item => `
-                    <li data-tooltip="${SA_Utils.escapeHtml(item.desc)}">
-                        <span>${SA_Utils.escapeHtml(item.name)}</span>
+                    <li data-tooltip="${item.desc}">
+                        <span>${item.name}</span>
                     </li>
                 `).join('');
                 return `<ul class="${listClass}">${listItems}</ul>`;
