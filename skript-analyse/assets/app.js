@@ -217,7 +217,7 @@
             marketing: { label: 'Marketing', wpm: 200, numberMode: 'digit', commaPause: 0.15, periodPause: 0.4, paragraphPause: 0.8, sentenceWarningLimit: 16, criticalSentenceLimit: 20, hardSegmentLimit: 18, sentimentTarget: 'positive', powerWordsCheck: true, features: { keywordFocus: true, phonetics: false } }
         },
         PROFILE_CARDS: {
-            general: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'keyword_focus', 'passive', 'vocabulary', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'adjective', 'dialog', 'role_dist', 'sentiment_intensity', 'gender', 'echo', 'nominal', 'nominal_chain', 'cta', 'anglicism', 'verb_balance', 'start_var', 'compliance_check', 'word_sprint'],
+            general: ['overview', 'char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'word_sprint', 'pacing'],
             author: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'word_sprint', 'start_var', 'gender', 'echo', 'nominal', 'nominal_chain'],
             speaker: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'dialog', 'role_dist'],
             director: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy', 'sentiment_intensity', 'rhythm'],
@@ -5196,8 +5196,21 @@
                         this.root.querySelectorAll('[data-role-select]').forEach((el) => {
                             if (el !== select) el.value = this.settings.role;
                         });
+                        const profileDefaults = SA_CONFIG.PROFILE_CARDS[this.settings.role] || SA_CONFIG.CARD_ORDER;
+                        const toolCards = new Set(SA_CONFIG.TOOL_CARDS || []);
+                        this.state.hiddenCards = new Set();
+                        SA_CONFIG.CARD_ORDER.forEach((id) => {
+                            if (id === 'overview' || toolCards.has(id)) return;
+                            if (!profileDefaults.includes(id)) {
+                                this.state.hiddenCards.add(id);
+                            }
+                        });
                         this.state.filterByProfile = false;
                         this.state.selectedExtraCards.clear();
+                        this.saveUIState();
+                        this.renderHiddenPanel();
+                        this.renderFilterBar();
+                        this.updateGridVisibility();
                     } else {
                         this.settings[k] = select.value;
                     }
@@ -5875,11 +5888,13 @@
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
-                        ${profileFilterLink}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
+                    <div class="ska-filterbar-profile-row">
+                        ${profileFilterLink}
+                    </div>
                     <div class="ska-filterbar-bulk">
                         <div class="ska-filterbar-bulk-actions">
                             <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
@@ -5914,9 +5929,16 @@
             const applyVisibility = (card) => {
                 const id = card.dataset.cardId;
                 if (!id) return;
-                const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id);
+                const isChecked = (() => {
+                    if (toolCards.has(id)) return true;
+                    if (!allowed) return !this.state.hiddenCards.has(id);
+                    if (allowed.has(id)) return !this.state.hiddenCards.has(id);
+                    return this.state.selectedExtraCards.has(id);
+                })();
+                const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id) && !isChecked;
+                const hideBySelection = !isChecked;
                 const hideByPlan = !isPlanVisible(id);
-                card.classList.toggle('is-hidden-profile', hideByProfile);
+                card.classList.toggle('is-hidden-profile', hideByProfile || hideBySelection);
                 card.classList.toggle('is-hidden-plan', hideByPlan);
                 const shouldLock = !SA_CONFIG.PRO_MODE && toolCards.has(id);
                 card.classList.toggle('ska-premium-locked', shouldLock);
