@@ -289,13 +289,13 @@ self.onmessage = (event) => {
         const { text, phonetics, profile } = payload || {};
         const profileConfig = resolveProfileConfig(profile);
         if (profileConfig.features && profileConfig.features.phonetics === false) {
-            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0, numberCount: 0, numberHint: '' };
             self.postMessage({ id, type, result });
             return;
         }
         const result = findStumbles
             ? findStumbles(text || '', phonetics || [])
-            : { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+            : { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0, numberCount: 0, numberHint: '' };
         self.postMessage({ id, type, result });
         return;
     }
