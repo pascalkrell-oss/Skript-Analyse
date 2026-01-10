@@ -153,6 +153,12 @@ const analyzeReadability = sharedUtils?.analyzeReadability || ((text, settings =
 const analyzeKeywordClusters = sharedUtils?.analyzeKeywordClusters;
 const findStumbles = sharedUtils?.findStumbles;
 const analyzeRedundancy = sharedUtils?.analyzeRedundancy;
+const PROFILE_CONFIG = sharedUtils?.PROFILE_CONFIG || {};
+
+const resolveProfileConfig = (profile) => {
+    if (!profile) return PROFILE_CONFIG.general || {};
+    return PROFILE_CONFIG[profile] || PROFILE_CONFIG.general || {};
+};
 
 const getImmersionRegex = (() => {
     let cached = null;
@@ -252,16 +258,27 @@ self.onmessage = (event) => {
     const { id, type, payload } = event.data || {};
     if (!id || !type) return;
     if (type === 'paragraphs') {
-        const { paragraphs, settings } = payload || {};
+        const { paragraphs, settings, profile } = payload || {};
+        const profileConfig = resolveProfileConfig(profile || settings?.profile || settings?.role);
+        const mergedSettings = {
+            ...(settings || {}),
+            numberMode: settings?.numberMode || profileConfig.numberMode
+        };
         const result = (paragraphs || []).map((entry) => {
-            const analysis = analyzeReadability(entry.text || '', settings || {});
+            const analysis = analyzeReadability(entry.text || '', mergedSettings);
             return { index: entry.index, text: entry.text || '', result: analysis };
         });
         self.postMessage({ id, type, result });
         return;
     }
     if (type === 'keyword_focus') {
-        const { text, settings, stopwords } = payload || {};
+        const { text, settings, stopwords, profile } = payload || {};
+        const profileConfig = resolveProfileConfig(profile || settings?.profile || settings?.role);
+        if (profileConfig.features && profileConfig.features.keywordFocus === false) {
+            const result = { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
+            self.postMessage({ id, type, result });
+            return;
+        }
         const result = analyzeKeywordClusters
             ? analyzeKeywordClusters(text || '', settings || {}, stopwords || [])
             : { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
@@ -269,7 +286,13 @@ self.onmessage = (event) => {
         return;
     }
     if (type === 'stumble') {
-        const { text, phonetics } = payload || {};
+        const { text, phonetics, profile } = payload || {};
+        const profileConfig = resolveProfileConfig(profile);
+        if (profileConfig.features && profileConfig.features.phonetics === false) {
+            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+            self.postMessage({ id, type, result });
+            return;
+        }
         const result = findStumbles
             ? findStumbles(text || '', phonetics || [])
             : { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
