@@ -390,7 +390,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; padding-left: 26px; list-style: none !important; list-style-type: none !important; background: none !important; background-image: none !important; }
+.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; padding-left: 26px !important; list-style: none !important; list-style-type: none !important; background: none !important; background-image: none !important; position: relative; }
 .ska-premium-upgrade-listing li::after {
     content: attr(data-info);
     position: absolute;
@@ -417,6 +417,7 @@ body.ska-modal-open { overflow: hidden !important; }
     transition: all 0.2s ease;
     z-index: 10;
 }
+.ska-premium-upgrade-listing li::after { display: none !important; }
 .ska-premium-upgrade-listing li::before {
     content: '' !important;
     position: absolute;
@@ -1369,14 +1370,17 @@ body.ska-modal-open { overflow: hidden !important; }
    ========================================= */
 .skriptanalyse-modal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    display: flex !important; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; pointer-events: none;
-    z-index: -1;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    display: none !important; align-items: center; justify-content: center;
+    opacity: 0;
+    z-index: -9999;
     background: transparent;
 }
-.skriptanalyse-modal.is-open,
-.skriptanalyse-modal.is-closing { opacity: 1; visibility: visible; pointer-events: auto; z-index: 2147483647 !important; }
+.skriptanalyse-modal.is-open {
+    display: flex !important;
+    opacity: 1;
+    z-index: 2147483647 !important;
+}
+.skriptanalyse-modal.is-closing { display: flex !important; opacity: 0; z-index: 2147483647 !important; }
 .skriptanalyse-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 1; transition: opacity 0.25s ease; }
 .skriptanalyse-modal.is-closing .skriptanalyse-modal-overlay { opacity: 0; }
 .skriptanalyse-modal-content {
@@ -1393,10 +1397,31 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header { padding: 1.5rem 2rem 0.5rem 2rem; flex-shrink: 0; display: block; text-align: left; background: white; border-bottom: none; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
+.ska-checkout-modal-content { width: min(960px, 94vw); max-width: 980px; }
+.ska-checkout-modal-body { padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.ska-checkout-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem 2rem 0;
+    font-size: 0.9rem;
+    color: #475569;
+}
+.ska-checkout-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(148, 163, 184, 0.4);
+    border-top-color: #1a93ee;
+    border-radius: 50%;
+    animation: ska-spin 0.9s linear infinite;
+}
+.ska-checkout-iframe { width: 100%; height: 80vh; border: none; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
 .ska-premium-upgrade-tax { color: #94a3b8; font-weight: 700; display: inline-flex; flex-direction: column; justify-content: flex-end; line-height: 0.9; text-transform: uppercase; letter-spacing: 0.04em; align-self: flex-end; font-size: inherit; margin-right: 0.2rem; }
 .ska-premium-upgrade-tax-prefix,
 .ska-premium-upgrade-tax-value { font-size: 0.3em; color: #94a3b8; line-height: 0.85; }
+@keyframes ska-spin { to { transform: rotate(360deg); } }
 
 
 .ska-flesch-summary { margin-top: 0.75rem; }
