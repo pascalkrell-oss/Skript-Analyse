@@ -2908,7 +2908,8 @@
                 limitReached: false,
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
-                search: { query: '', matches: [], index: -1 }
+                search: { query: '', matches: [], index: -1 },
+                feedbackDrawerOpen: false
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -2931,6 +2932,7 @@
             this.renderTeleprompterModal();
             this.initAnalysisWorker();
             this.bindEvents();
+            this.renderFeedbackDrawer();
             
             this.injectGlobalStyles(); // CSS Overrides
             this.initSynonymTooltip();
@@ -2971,6 +2973,7 @@
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
             this.filterBar = q('.ska-analysis-filterbar');
+            this.feedbackDrawer = q('.ska-feedback-drawer');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -4501,6 +4504,11 @@
                 this.updateGridVisibility();
                 return true;
             }
+            if (act === 'toggle-feedback-drawer') {
+                this.state.feedbackDrawerOpen = !this.state.feedbackDrawerOpen;
+                this.renderFeedbackDrawer();
+                return true;
+            }
             if (act === 'toggle-filter-collapse') {
                 this.state.filterCollapsed = !this.state.filterCollapsed;
                 if (this.filterBar) {
@@ -5722,6 +5730,32 @@
                     if (existingRating) existingRating.remove();
                 }
             }
+        }
+
+        renderFeedbackDrawer() {
+            if (!this.root) return;
+            if (!this.feedbackDrawer) {
+                const drawer = document.createElement('div');
+                drawer.className = 'ska-feedback-drawer';
+                drawer.innerHTML = `
+                    <button class="ska-feedback-tab" type="button" data-action="toggle-feedback-drawer" aria-expanded="false">
+                        ⭐ Feedback geben
+                    </button>
+                    <div class="ska-feedback-panel" role="dialog" aria-label="Feedback geben">
+                        <div class="ska-feedback-header">
+                            <strong>Feedback geben</strong>
+                            <button class="ska-feedback-close" type="button" data-action="toggle-feedback-drawer" aria-label="Feedback schließen">×</button>
+                        </div>
+                        <div class="ska-feedback-body">[fluentform id="7"]</div>
+                    </div>
+                `;
+                this.root.appendChild(drawer);
+                this.feedbackDrawer = drawer;
+            }
+            this.feedbackDrawer.classList.toggle('is-open', this.state.feedbackDrawerOpen);
+            this.feedbackDrawer.querySelectorAll('[data-action="toggle-feedback-drawer"]').forEach((btn) => {
+                btn.setAttribute('aria-expanded', this.state.feedbackDrawerOpen ? 'true' : 'false');
+            });
         }
 
         renderToolsButtons(toolIds = []) {
