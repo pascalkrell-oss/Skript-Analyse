@@ -489,8 +489,8 @@
     const UPGRADE_CONTENT = {
         basic: {
             tools: [
-                { name: "WPM-Modus", desc: "Berechnet deine Lesegeschwindigkeit basierend auf Wortanzahl und Standard-Werten." },
-                { name: "Genre-Presets", desc: "Wähle aus Voreinstellungen (z.B. Krimi, Werbung, Doku), um die Analyse anzupassen." },
+                { name: "WPM-Modus", desc: "Berechnet deine Lese- und Sprechgeschwindigkeit basierend auf Wortanzahl und Standard-Werten." },
+                { name: "Genre-Presets", desc: "Wähle aus Voreinstellungen (z.B. Werbespot, Hörbuch, Podcast, E-Learning), um die Analyse anzupassen." },
                 { name: "Zeichen-Zählung", desc: "Präzise Zählung aller Zeichen (mit und ohne Leerzeichen) für die Abrechnung." },
                 { name: "Wort- & Satzstatistik", desc: "Detaillierte Aufschlüsselung der Wortanzahl und der durchschnittlichen Satzlänge." },
                 { name: "Lesbarkeits-Score", desc: "Ermittelt den Flesch-Index, um zu prüfen, wie verständlich dein Text geschrieben ist." },
@@ -516,7 +516,7 @@
                 { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
                 { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten." },
                 { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort." },
-                { name: "Premium-Analyseboxen", desc: "Schalte die KI-gestützte Tiefenanalyse frei für maximale Textqualität." },
+                { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
                 { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
                 { name: "Teleprompter", desc: "Ein professioneller, browserbasierter Teleprompter mit Sprachsteuerung und Geschwindigkeitsregelung." },
                 { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen." },
@@ -528,7 +528,7 @@
                 { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen." },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
                 { name: "Rollen-Verteilung", desc: "Analysiert, wie viel Sprechanteil verschiedene Charaktere oder Rollen haben." },
-                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten SEO-Keywords oft genug (oder zu oft) vorkommen." },
+                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen." },
                 { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
                 { name: "Leichte Sprache", desc: "Prüft deinen Text auf Barrierefreiheit (B1/B2 Level) und Verständlichkeit." },
                 { name: "Semantische Redundanz", desc: "Findet inhaltliche Wiederholungen, bei denen das Gleiche mit anderen Worten gesagt wird." },
@@ -3831,7 +3831,7 @@
             m.ariaHidden = 'true';
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-sprint-editor"></div>
-                <div class="ska-sprint-editor-shell">
+                <div class="ska-sprint-editor-shell ska-modal-narrow">
                     <div class="ska-sprint-editor-header">
                         <div class="ska-sprint-countdown" data-role="sprint-countdown">${SA_Utils.formatMin(this.state.wordSprint.remainingSec)}</div>
                         <div class="ska-sprint-progress">
@@ -3878,6 +3878,11 @@
             this.renderSprintEditorModal();
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (!modal) return;
+            const shell = modal.querySelector('.ska-sprint-editor-shell');
+            if (shell) {
+                shell.classList.add('ska-modal-narrow');
+                shell.classList.remove('ska-modal-wide');
+            }
             const editor = modal.querySelector('[data-role="sprint-editor"]');
             if (editor) editor.innerHTML = '';
             this.updateWordSprintUI();
@@ -4297,6 +4302,14 @@
                 completed: false
             };
             this.openSprintEditorModal();
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (modal) {
+                const shell = modal.querySelector('.ska-sprint-editor-shell');
+                if (shell) {
+                    shell.classList.add('ska-modal-wide');
+                    shell.classList.remove('ska-modal-narrow');
+                }
+            }
             this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
             this.tickWordSprint();
         }
@@ -4337,6 +4350,14 @@
             this.state.wordSprint.remainingSec = 0;
             this.state.wordSprint.sessionWords = 0;
             this.updateWordSprintUI(true);
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (modal) {
+                const shell = modal.querySelector('.ska-sprint-editor-shell');
+                if (shell) {
+                    shell.classList.add('ska-modal-narrow');
+                    shell.classList.remove('ska-modal-wide');
+                }
+            }
         }
 
         resetWordSprint() {

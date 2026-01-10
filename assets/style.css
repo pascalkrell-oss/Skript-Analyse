@@ -1068,6 +1068,14 @@ body.ska-modal-open { overflow: hidden !important; }
     border: 1px solid #e2e8f0;
     overflow: hidden;
 }
+.ska-sprint-editor-shell.ska-modal-narrow {
+    max-width: 400px !important;
+    width: 90% !important;
+}
+.ska-sprint-editor-shell.ska-modal-wide {
+    max-width: 900px !important;
+    width: 95% !important;
+}
 .ska-sprint-editor-header {
     padding: 1.2rem 1.6rem;
     display: grid;
