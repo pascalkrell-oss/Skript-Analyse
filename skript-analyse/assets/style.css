@@ -393,94 +393,59 @@ body.ska-modal-open { overflow: hidden !important; }
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
 
-/* 1. RESET: Alles töten, was nach Standard-Liste aussieht */
-.ska-premium-upgrade-listing,
-.ska-premium-upgrade-listing li {
-    list-style: none !important;
-    list-style-type: none !important;
-    list-style-image: none !important;
-    margin-left: 0 !important;
-    background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
-    border: none !important;
-    text-align: left;
-}
-
+/* 1. LAYOUT BEIBEHALTEN (Kein Grid-Override am Container!) */
 .ska-premium-upgrade-listing {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 1.5rem !important;
-    row-gap: 0 !important;
-    grid-auto-flow: row dense !important;
-    align-items: start !important;
+    /* Wir ändern hier NICHTS am Layout, damit Spalten & Hover bleiben wie früher */
+    padding: 0;
+    margin: 0;
 }
 
+/* 2. LIST-ITEM CLEANUP (Nur Bulletpoints entfernen) */
 .ska-premium-upgrade-listing li {
-    position: relative !important;
-    padding-left: 32px !important;
-    margin-bottom: 0.6rem !important;
-    text-indent: 0 !important;
-    line-height: 1.4 !important;
-    display: flex !important;
-    align-items: flex-start !important;
+    list-style: none !important; /* Standard-Bullets weg */
+    background-image: none !important; /* Theme-Icons weg */
+    position: relative;
+    padding-left: 28px !important; /* Platz für Icon schaffen */
+    margin-bottom: 0.5rem; /* Original Abstand */
+    cursor: pointer; /* Hover-Hand behalten */
 }
 
-/* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
+/* 3. ALTE ELEMENTE VERSTECKEN */
 .ska-premium-upgrade-listing li::marker {
     content: none !important;
-    display: none !important;
 }
 .ska-premium-upgrade-listing li::after {
-    content: none !important;
     display: none !important;
 }
 
-/* 3. REBUILD: Nur DEIN Check-Icon auf ::before aufbauen */
+/* 4. NEUES ICON EINFÜGEN (Via Maske) */
 .ska-premium-upgrade-listing li::before {
-    /* Positionierung */
     content: '' !important;
     position: absolute !important;
     left: 0 !important;
-    top: 3px !important; /* Feinjustierung der Höhe */
-    width: 20px !important;
-    height: 20px !important;
-
-    /* Reset möglicher Theme-Styles auf ::before */
+    top: 4px !important; /* Optische Höhe anpassen */
+    width: 18px !important;
+    height: 18px !important;
     border: none !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    font-family: inherit !important; /* Verhindert FontAwesome o.ä. */
-    
-    /* Das Mask-Icon (Dein SVG) */
+
+    /* Dein SVG Icon */
     -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     -webkit-mask-size: contain !important;
     mask-size: contain !important;
     -webkit-mask-repeat: no-repeat !important;
     mask-repeat: no-repeat !important;
-    
-    /* Standard-Farbe (Fallback) */
+    /* Fallback Background damit es sichtbar ist */
     background-color: currentColor !important;
 }
 
-.ska-premium-upgrade-listing li.is-hidden,
-.ska-premium-upgrade-listing li[style*="display: none"] {
-    display: none !important;
-}
-
-@media (max-width: 600px) {
-    .ska-premium-upgrade-listing {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* 4. FARB-ZUWEISUNG */
-
-/* Basis Box: Dunkel (rgb 15, 23, 42) */
+/* 5. FARBEN */
+/* Basis (Free): Dunkel */
 .ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing li::before {
     background-color: rgb(15, 23, 42) !important;
 }
 
-/* Premium Box: Blau (#1a93ee) */
+/* Premium: Blau */
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
     background-color: #1a93ee !important;
 }

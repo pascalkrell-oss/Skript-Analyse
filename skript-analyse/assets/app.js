@@ -5921,7 +5921,7 @@
                     }).join('')}
                 </div>` : '';
             const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil-Boxen anzeigen';
-            const profileFilterLink = `
+            const profileFilterLink = isGeneralProfile ? '' : `
                 <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
                     ${profileFilterLabel}
                 </button>`;
@@ -5957,7 +5957,7 @@
             this.filterBar.innerHTML = html;
             const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
             if (profileLinkEl) {
-                profileLinkEl.style.display = isGeneralProfile ? 'none' : 'inline-block';
+                profileLinkEl.style.display = 'inline-block';
             }
         }
 
