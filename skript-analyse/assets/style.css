@@ -388,7 +388,12 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
-.ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ska-premium-upgrade-listing--grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 1.1rem;
+    justify-items: start;
+}
 /* =========================================
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
@@ -404,6 +409,7 @@ body.ska-modal-open { overflow: hidden !important; }
     background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
     border: none !important;
     position: relative;
+    text-align: left;
 }
 
 /* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
