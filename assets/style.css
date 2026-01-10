@@ -517,6 +517,21 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-hidden-feature {
     display: none;
 }
+/* DESKTOP (Ab 769px): Alles anzeigen, Button verstecken */
+@media (min-width: 769px) {
+    .ska-hidden-feature {
+        display: flex !important;
+    }
+    .ska-list-toggle-wrapper {
+        display: none !important;
+    }
+}
+/* MOBIL (Bis 768px): Standard-Verhalten (JS steuert display) */
+@media (max-width: 768px) {
+    .ska-list-toggle-wrapper {
+        display: block !important;
+    }
+}
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
 .ska-premium-upgrade-hover-label { cursor: default; }
 .ska-premium-upgrade-hover-badge { display: none; position: absolute; left: 0; top: calc(100% + 10px); background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.8rem; box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.3); width: 240px; z-index: 30; color: #475569; }
@@ -1491,47 +1506,152 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-modal-header { padding: 1.5rem 2rem 0.5rem 2rem; flex-shrink: 0; display: block; text-align: left; background: white; border-bottom: none; }
 .ska-modal-header h3 { margin: 0; font-size: 1.25rem; color: var(--ska-text-main); line-height: 1.2; font-weight: 700; }
 .ska-tool-modal-content { width: min(960px, 94vw); max-width: 980px; }
-.ska-checkout-modal-content { width: min(500px, 94vw); max-width: 500px !important; border-radius: 12px; overflow: hidden; }
-.ska-checkout-modal-body { padding: 0 !important; display: flex; flex-direction: column; gap: 0.75rem; }
-#ska-checkout-modal .ska-modal-header {
-    position: relative;
-    padding-top: 44px;
-    text-align: center;
+.ska-checkout-modal-content {
+    max-width: 1100px !important;
+    width: 95% !important;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 16px;
 }
-.ska-ssl-badge {
-    position: absolute;
-    top: 10px;
-    left: 15px;
-    font-size: 0.75rem;
-    color: #16a34a;
-    background: #dcfce7;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: 600;
+.ska-checkout-modal-body { padding: 0 !important; flex: 1; }
+.ska-checkout-split-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    min-height: 600px;
+}
+.ska-checkout-summary-col {
+    background: #0f172a !important;
+    color: #fff !important;
+    padding: 40px 30px;
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+}
+.ska-checkout-summary-col h4,
+.ska-checkout-item,
+.ska-item-name,
+.ska-item-price {
+    color: #fff !important;
+}
+.ska-checkout-cycle,
+.ska-checkout-benefits li,
+.ska-trust-elements {
+    color: #94a3b8 !important;
+}
+.ska-checkout-divider {
+    border-top-color: #334155 !important;
+}
+.ska-checkout-form-col {
+    padding: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.ska-checkout-form-col h3 {
+    padding: 20px 30px 10px;
+    margin: 0;
+    font-size: 1.2rem;
+}
+#ska-checkout-iframe-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.ska-checkout-product-card h4 {
+    margin-top: 15px;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+.ska-checkout-plan-switcher {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0 10px;
+}
+.ska-plan-option {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    cursor: pointer;
 }
-#ska-checkout-modal h3 {
-    font-family: 'Manrope', sans-serif;
-    font-size: 1.4rem;
-    font-weight: 800;
+.ska-plan-option input {
+    accent-color: #1a93ee;
+}
+.ska-plan-label {
+    color: inherit;
+}
+.ska-checkout-item {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
     color: #1e293b;
-    margin-top: 6px;
-    margin-bottom: 5px !important;
+    gap: 12px;
 }
-.ska-modal-subtitle {
-    font-size: 0.95rem;
+.ska-checkout-cycle {
+    font-size: 0.85rem;
     color: #64748b;
-    margin-bottom: 20px !important;
-    font-weight: 500;
+    margin-top: 5px;
 }
-.ska-checkout-payment-hint {
-    font-size: 0.8rem;
-    color: #94a3b8;
+.ska-checkout-divider {
+    border: 0;
+    border-top: 1px solid #cbd5e1;
+    margin: 20px 0;
+}
+.ska-checkout-benefits {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.ska-checkout-benefits li {
+    list-style: none !important;
+    position: relative !important;
+    padding-left: 28px !important;
+    margin-bottom: 12px !important;
+    line-height: 1.4;
+    font-size: 0.9rem;
+}
+.ska-checkout-benefits li::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 3px !important;
+    width: 18px !important;
+    height: 18px !important;
+    background-color: #1a93ee !important;
+    -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
+    mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+}
+.ska-ssl-badge-small {
+    display: inline-block;
+    background: rgba(22, 163, 74, 0.2) !important;
+    color: #4ade80 !important;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    margin-bottom: 16px;
+    border: 1px solid rgba(74, 222, 128, 0.2);
+}
+.ska-trust-elements {
+    margin-top: auto;
+    padding-top: 30px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+.ska-trust-elements p {
+    margin: 0 0 6px;
+    font-weight: 600;
+    color: #94a3b8;
+}
+.ska-payment-methods {
+    font-weight: 600;
+    color: #94a3b8;
 }
 .ska-checkout-loading {
     display: flex;
@@ -1550,7 +1670,35 @@ body.ska-modal-open { overflow: hidden !important; }
     border-radius: 50%;
     animation: ska-spin 0.9s linear infinite;
 }
-.ska-checkout-iframe { width: 100%; height: 700px; border: none; }
+.ska-checkout-iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    border: none;
+}
+.ska-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    font-size: 0.95rem;
+    color: #94a3b8;
+}
+@media (max-width: 900px) {
+    .ska-checkout-split-layout {
+        grid-template-columns: 1fr;
+    }
+    .ska-checkout-summary-col {
+        border-right: none;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 20px;
+    }
+    #ska-checkout-modal .ska-checkout-modal-content {
+        max-width: 100% !important;
+        height: 100%;
+        border-radius: 0;
+    }
+}
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
 .ska-premium-upgrade-tax {
     color: #94a3b8;
