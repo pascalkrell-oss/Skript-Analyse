@@ -4368,7 +4368,7 @@
                 .filter(Boolean);
         }
 
-        handleAction(act, btn) {
+        handleAction(act, btn, event = null) {
             if (act.startsWith('format-')) {
                 this.applyFormatting(act);
                 return true;
@@ -4419,6 +4419,14 @@
                     this.state.premiumPricePlan = plan;
                     this.updatePremiumPlanUI();
                 }
+                return true;
+            }
+            if (act === 'premium-checkout') {
+                if (event) {
+                    event.preventDefault();
+                }
+                const checkoutUrl = this.getPremiumCheckoutUrl(this.state.premiumPricePlan);
+                window.location.href = checkoutUrl;
                 return true;
             }
             if (act === 'premium-info') {
@@ -5329,7 +5337,7 @@
                     }
                 }
 
-                if (this.handleAction(act, btn)) return;
+                if (this.handleAction(act, btn, e)) return;
 
             if(act === 'toggle-breath-more') {
                  if (!this.isPremiumActive()) {
@@ -5445,7 +5453,7 @@
                     e.preventDefault(); 
                 }
 
-                if (this.handleAction(act, btn)) return;
+                if (this.handleAction(act, btn, e)) return;
 
                 if(act === 'generate-pdf-final') {
                     const isPremium = this.isPremiumActive();
@@ -5914,6 +5922,10 @@
                     ${premiumPreview}
                 </div>`;
             this.filterBar.innerHTML = html;
+            const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
+            if (profileLinkEl) {
+                profileLinkEl.style.display = isGeneralProfile ? 'none' : 'inline-block';
+            }
         }
 
         updateGridVisibility() {
@@ -8366,6 +8378,16 @@
             ];
         }
 
+        getPremiumCheckoutUrl(planId = this.state.premiumPricePlan) {
+            const productMap = {
+                flex: 3128,
+                pro: 3130,
+                studio: 3127
+            };
+            const productId = productMap[planId] || productMap.flex;
+            return `/?add-to-cart=${productId}`;
+        }
+
         updatePremiumPlanUI() {
             if (!this.legendContainer) return;
             const card = this.legendContainer.parentElement ? this.legendContainer.parentElement.querySelector('.ska-premium-upgrade-card') : null;
@@ -8386,6 +8408,10 @@
             if (noteEl) {
                 const savings = selectedPlan.savings ? `Du sparst ${selectedPlan.savings}` : '';
                 noteEl.innerHTML = `${selectedPlan.note} <span class="ska-premium-upgrade-savings${selectedPlan.savings ? '' : ' is-hidden'}">${savings}</span>`;
+            }
+            const checkoutLink = card.querySelector('[data-action="premium-checkout"]');
+            if (checkoutLink) {
+                checkoutLink.setAttribute('href', this.getPremiumCheckoutUrl(selectedPlan.id));
             }
             const planButtons = card.querySelectorAll('[data-role="premium-plan"]');
             planButtons.forEach((button) => {
@@ -8563,7 +8589,7 @@
                             ${renderExtraAnalysis}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <a class="ska-btn ska-btn--primary" href="#ska-premium-upgrade">Jetzt Premium freischalten</a>
+                            <a class="ska-btn ska-btn--primary" href="${this.getPremiumCheckoutUrl(selectedPlan.id)}" data-action="premium-checkout">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
