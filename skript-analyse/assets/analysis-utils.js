@@ -296,8 +296,9 @@ const analyzeKeywordClusters = (text, settings = {}, stopwords = []) => {
 
 const findStumbles = (text, phonetics = []) => {
     const words = String(text || '').split(/\s+/).map(x => x.replace(/[.,;!?:"()]/g, ''));
-    const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+    const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0, numberCount: 0, numberHint: '' };
     const phoneticRegex = phonetics.length ? new RegExp(`(${phonetics.join('|')})`, 'i') : null;
+    const isNumberWord = (value) => /\d/.test(value) || /(zig|ßig|hundert)$/i.test(value);
 
     const sibilants = (String(text || '').toLowerCase().match(/([szßcx]|sch)/g) || []).length;
     const density = text && text.length > 0 ? (sibilants / text.length) * 100 : 0;
@@ -307,6 +308,8 @@ const findStumbles = (text, phonetics = []) => {
     }
 
     words.forEach(w => {
+        const clean = w.toLowerCase().replace(/[^a-zäöüß0-9]/g, '');
+        if (clean && isNumberWord(clean)) result.numberCount += 1;
         if (w.length >= 16) result.long.push(w);
         if (/[a-zäöüß][A-ZÄÖÜ]/.test(w)) result.camel.push(w);
         if (phoneticRegex && phoneticRegex.test(w)) result.phonetic.push(w);
@@ -336,6 +339,9 @@ const findStumbles = (text, phonetics = []) => {
     result.camel = [...new Set(result.camel)];
     result.phonetic = [...new Set(result.phonetic)];
     result.alliter = [...new Set(result.alliter)];
+    if (result.numberCount > 5) {
+        result.numberHint = 'Tipp: Achte bei den vielen Zahlen auf die Endung -ig (wird oft wie -ich gesprochen).';
+    }
     return result;
 };
 

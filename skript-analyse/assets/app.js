@@ -225,7 +225,7 @@
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'sentiment_intensity', 'easy_language', 'rhythm']
         },
         TOOLS_ALWAYS_VISIBLE: ['teleprompter', 'word_sprint', 'pacing'],
-        TOOL_CARDS: ['teleprompter', 'pacing', 'word_sprint'],
+        TOOL_CARDS: ['teleprompter', 'word_sprint', 'pacing'],
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
             news: { label: 'Abendnachrichten', minScore: 55, maxSentence: 20 },
@@ -320,7 +320,7 @@
             compliance_check: 'Prüft, ob Pflichtpassagen exakt im Skript enthalten sind.'
         },
 
-        CARD_ORDER: ['char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'pacing', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'word_sprint'],
+        CARD_ORDER: ['char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'word_sprint', 'pacing'],
         PREMIUM_CARDS: [
             'rhythm',
             'syllable_entropy',
@@ -351,7 +351,7 @@
             'stumble',
             'pronunciation'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
+        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'word_sprint'],
@@ -1986,8 +1986,9 @@
                 return sharedUtils.findStumbles(text, SA_CONFIG.PHONETICS);
             }
             const words = text.split(/\s+/).map(x=>x.replace(/[.,;!?:"()]/g,'')); 
-            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 };
+            const result = { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0, numberCount: 0, numberHint: '' };
             const phoneticRegex = new RegExp(`(${SA_CONFIG.PHONETICS.join('|')})`, 'i');
+            const isNumberWord = (value) => /\d/.test(value) || /(zig|ßig|hundert)$/i.test(value);
             
             // Sibilant check
             const sibilants = (text.toLowerCase().match(/([szßcx]|sch)/g) || []).length;
@@ -1998,6 +1999,8 @@
             }
 
             words.forEach(w => {
+                const clean = w.toLowerCase().replace(/[^a-zäöüß0-9]/g, '');
+                if (clean && isNumberWord(clean)) result.numberCount += 1;
                 if(w.length >= 16) result.long.push(w);
                 if(/[a-zäöüß][A-ZÄÖÜ]/.test(w)) result.camel.push(w);
                 if(phoneticRegex.test(w)) result.phonetic.push(w);
@@ -2025,6 +2028,9 @@
             result.camel = [...new Set(result.camel)];
             result.phonetic = [...new Set(result.phonetic)];
             result.alliter = [...new Set(result.alliter)];
+            if (result.numberCount > 5) {
+                result.numberHint = 'Tipp: Achte bei den vielen Zahlen auf die Endung -ig (wird oft wie -ich gesprochen).';
+            }
             return result; 
         },
         analyzePronunciation: (text) => {
@@ -2033,6 +2039,8 @@
             const findings = [];
             const seen = new Set();
             const boundaryIssues = SA_Logic.analyzeWordBoundaries(text);
+            const numberSuffixRegex = /(zig|ßig|hundert)$/i;
+            let numberCount = 0;
     
             // 1. Check Dictionary
             words.forEach(w => {
@@ -2044,13 +2052,18 @@
     
             // 2. Check Rules (-ig)
             words.forEach(w => {
-                if (w.endsWith('ig') && !seen.has(w) && w.length > 3) {
+                const isNumberWord = /\d/.test(w) || numberSuffixRegex.test(w);
+                if (isNumberWord) numberCount += 1;
+                if (w.endsWith('ig') && !seen.has(w) && w.length > 3 && !numberSuffixRegex.test(w)) {
                      findings.push({ word: w, hint: w.slice(0, -2) + 'ich', audio: w });
                      seen.add(w);
                 }
             });
     
-            return { words: findings, hiatuses: boundaryIssues.hiatus };
+            const numberHint = numberCount > 5
+                ? 'Tipp: Achte bei den vielen Zahlen auf die Endung -ig (wird oft wie -ich gesprochen).'
+                : '';
+            return { words: findings, hiatuses: boundaryIssues.hiatus, numberCount, numberHint };
         },
         analyzeSentenceStarts: (sentences) => {
             if(!sentences || sentences.length < 2) return [];
@@ -2909,7 +2922,8 @@
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
                 search: { query: '', matches: [], index: -1 },
-                feedbackDrawerOpen: false
+                feedbackDrawerOpen: false,
+                projectObject: { settings: {} }
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -4935,6 +4949,8 @@
             const g = SA_Utils.storage.load(SA_CONFIG.UI_KEY_SETTINGS);
             if(g) {
                 const global = JSON.parse(g);
+                if (global.role) this.settings.role = this.normalizeProfile(global.role);
+                if (typeof global.usecase !== 'undefined') this.settings.usecase = global.usecase;
                 if(global.timeMode) this.settings.timeMode = global.timeMode;
                 if(global.charMode) this.settings.charMode = global.charMode;
                 if(global.numberMode) this.settings.numberMode = global.numberMode;
@@ -4962,16 +4978,11 @@
             }
         }
 
-        saveUIState() {
-            SA_Utils.storage.save(SA_CONFIG.UI_KEY_HIDDEN, JSON.stringify([...this.state.hiddenCards]));
-            SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
-            if (SA_CONFIG.IS_ADMIN) {
-                SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
-            }
-            const upgradeDismissed = this.isPremiumActive() ? false : this.state.premiumUpgradeDismissed;
-            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
-            SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify({ 
-                timeMode: this.settings.timeMode, 
+        saveSettings() {
+            const payload = {
+                role: this.settings.role,
+                usecase: this.settings.usecase,
+                timeMode: this.settings.timeMode,
                 lastGenre: this.settings.lastGenre,
                 charMode: this.settings.charMode,
                 numberMode: this.settings.numberMode,
@@ -4984,7 +4995,25 @@
                 keywordDensityLimit: this.settings.keywordDensityLimit,
                 complianceText: this.settings.complianceText,
                 teleprompterMirror: this.settings.teleprompterMirror
-            }));
+            };
+            if (this.isPremiumActive()) {
+                if (!this.state.projectObject) {
+                    this.state.projectObject = { settings: {} };
+                }
+                this.state.projectObject.settings = { ...payload };
+            }
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_SETTINGS, JSON.stringify(payload));
+        }
+
+        saveUIState() {
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_HIDDEN, JSON.stringify([...this.state.hiddenCards]));
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
+            if (SA_CONFIG.IS_ADMIN) {
+                SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
+            }
+            const upgradeDismissed = this.isPremiumActive() ? false : this.state.premiumUpgradeDismissed;
+            SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
+            this.saveSettings();
         }
 
         updatePlanUI() {
@@ -5871,25 +5900,7 @@
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                 </div>` : '';
-            const profileOptions = [
-                { value: 'general', label: '🧭 Allgemein' },
-                { value: 'author', label: '✍️ Autor:in' },
-                { value: 'speaker', label: '🎙️ Sprecher:in' },
-                { value: 'director', label: '🎬 Regie' },
-                { value: 'agency', label: '🏢 Agentur' },
-                { value: 'marketing', label: '📈 Marketing' }
-            ];
-            const profileSelect = `
-                <div class="ska-filterbar-profile">
-                    <label>Profil wählen</label>
-                    <div class="ska-custom-select-wrapper">
-                        <select class="ska-select" data-role-select>
-                            ${profileOptions.map(option => `<option value="${option.value}" ${option.value === profile ? 'selected' : ''}>${option.label}</option>`).join('')}
-                        </select>
-                    </div>
-                </div>`;
-            const profileLabel = SA_CONFIG.PROFILE_DEFAULTS[profile] ? SA_CONFIG.PROFILE_DEFAULTS[profile].label : 'Profil';
-            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : `Nur ${profileLabel} anzeigen`;
+            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil-Boxen anzeigen';
             const profileFilterLink = `
                 <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
                     ${profileFilterLabel}
@@ -5898,7 +5909,7 @@
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
-                        ${profileSelect}
+                        ${profileFilterLink}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
@@ -5908,7 +5919,6 @@
                             <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
                             <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
                         </div>
-                        ${profileFilterLink}
                     </div>
                     ${freeItems.map(id => {
                         const locked = !this.isCardUnlocked(id);
@@ -6307,6 +6317,7 @@
             if(!active) return this.updateCard('pronunciation', this.renderDisabledState(), this.bottomGrid, '', '', true);
             let h = '';
             const issues = data && data.words ? data.words : [];
+            const numberHint = data && data.numberHint ? data.numberHint : '';
             if((!issues || issues.length === 0)) {
                  h = `<p style="color:#64748b; font-size:0.9rem;">Keine schwierigen Aussprachen gefunden.</p>`;
             } else {
@@ -6327,7 +6338,12 @@
                      });
                      h += `</div>`;
                  }
-                 h += this.renderTipSection('pronunciation', true);
+            }
+            if (numberHint) {
+                h += `<p style="font-size:0.85rem; color:#64748b; margin-top:0.6rem;">${numberHint}</p>`;
+            }
+            if (issues && issues.length) {
+                h += this.renderTipSection('pronunciation', true);
             }
             this.updateCard('pronunciation', h);
         }
@@ -7560,10 +7576,11 @@
                         ].map(item => {
                             const summary = SA_Logic.getDimensionSummary(item.score);
                             return `
-                                <div style="border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; background:#f8fafc;">
+                                <div class="ska-dimension-item" style="border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; background:#f8fafc;">
+                                    <span class="ska-tool-tooltip">${dimensionHints[item.key]}</span>
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                                         <span style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">${item.label}</span>
-                                        <span class="ska-info-badge" style="font-size:10px; padding:2px 6px; background:${summary.color}1a; color:${summary.color};">${summary.label}<span class="ska-tool-tooltip">${dimensionHints[item.key]}</span></span>
+                                        <span class="ska-info-badge" style="font-size:10px; padding:2px 6px; background:${summary.color}1a; color:${summary.color};">${summary.label}</span>
                                     </div>
                                     <div style="display:flex; align-items:center; gap:0.5rem;">
                                         <strong style="color:${summary.color}; font-size:0.95rem;">${Math.round(item.score)}</strong>
@@ -7574,6 +7591,7 @@
                                 </div>`;
                         }).join('')}
                     </div>
+                    <small style="display:block; margin-top:0.6rem; color:#94a3b8;">(Fahre mit der Maus über die Balken für Details)</small>
                 </div>`;
             
             this.updateCard('char', h);
@@ -7943,7 +7961,9 @@
                 phonetic: Array.isArray(source.phonetic) ? source.phonetic : [],
                 alliter: Array.isArray(source.alliter) ? source.alliter : [],
                 sibilant_warning: source.sibilant_warning || false,
-                sibilant_density: source.sibilant_density || 0
+                sibilant_density: source.sibilant_density || 0,
+                numberCount: Number.isFinite(source.numberCount) ? source.numberCount : 0,
+                numberHint: source.numberHint || ''
             };
         }
 
@@ -7985,6 +8005,11 @@
                     });
                     h+='</div>'; 
                 }
+            }
+            if (normalized.numberHint) {
+                h += `<p style="font-size:0.85rem; color:#64748b; margin-top:0.5rem;">${normalized.numberHint}</p>`;
+            }
+            if (hasIssues) {
                 h += this.renderTipSection('stumble', true);
             }
             this.updateCard('stumble', h);
