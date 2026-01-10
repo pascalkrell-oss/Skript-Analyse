@@ -8515,44 +8515,6 @@
                 return;
             }
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const freeToolTitles = toolCards
-                .filter(id => SA_CONFIG.FREE_CARDS.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const premiumToolTitles = toolCards
-                .filter(id => !SA_CONFIG.FREE_CARDS.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const freeCards = SA_CONFIG.FREE_CARDS
-                .filter(id => !toolCards.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id) && !toolCards.includes(id));
-            const premiumCards = lockedCardIds
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const premiumCardsPreview = premiumCards.slice(0, 10);
-            const premiumCardsExtra = premiumCards.slice(10);
-            const freeFunctions = [
-                'WPM-Modus',
-                'Genre-Presets',
-                'Zeichen-Zählung',
-                'Wort- & Satzstatistik',
-                'Lesbarkeits-Score',
-                'Füllwort-Analyse (Basis)',
-                'Autosave (lokal in Deinem Browser)',
-                'PDF-Export (Basis)'
-            ].concat(freeToolTitles);
-            const premiumFunctions = [
-                'Alles aus der Basis-Version',
-                'SPS-Modus',
-                'Pausen-Automatik',
-                'WPM-Kalibrierung',
-                'Pro-PDF-Report',
-                'Textvergleich (Versionen)',
-                'Premium-Analyseboxen',
-                'Cloud-Speicher (sofern verfügbar)'
-            ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
@@ -8562,28 +8524,6 @@
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
                 </span>`;
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
-            const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
-            const cardInfoByTitle = Object.keys(SA_CONFIG.CARD_TITLES).reduce((acc, id) => {
-                const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id]);
-                if (SA_CONFIG.CARD_DESCRIPTIONS && SA_CONFIG.CARD_DESCRIPTIONS[id]) {
-                    acc[title] = SA_CONFIG.CARD_DESCRIPTIONS[id];
-                }
-                return acc;
-            }, {});
-            const getListInfo = (label, stripIcons) => {
-                const baseLabel = stripIcons ? stripBoxIcon(label) : label;
-                return cardInfoByTitle[baseLabel] || 'TEST BESCHREIBUNG';
-            };
-            const renderList = (items, options = {}) => items.map(item => `
-                <li data-info="${getListInfo(item, options.stripIcons)}">
-                    <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
-                </li>`).join('');
-            const renderExtraAnalysis = premiumCardsExtra.length ? `
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid ska-premium-upgrade-listing--extra">
-                                ${renderList(premiumCardsExtra, { stripIcons: true })}
-                            </ul>
-                            <button class="ska-premium-upgrade-more" type="button" data-action="toggle-premium-analysis" aria-expanded="false">Mehr Boxen anzeigen</button>
-                        ` : '';
             const html = `
                 <div class="ska-premium-upgrade-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -8614,18 +8554,6 @@
                             <span class="ska-premium-upgrade-price-currency">EUR</span>
                         </div>
                         <div class="ska-premium-upgrade-price-note"> </div>
-                        <div class="ska-premium-upgrade-section">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList([...new Set(freeFunctions)], { stripIcons: true })}
-                            </ul>
-                        </div>
-                        <div class="ska-premium-upgrade-section">
-                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList(freeCards, { stripIcons: true })}
-                            </ul>
-                        </div>
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-header-row">
@@ -8651,19 +8579,6 @@
                                     ${plan.badge ? `<em>${plan.badge}</em>` : ''}
                                 </button>
                             `).join('')}
-                        </div>
-                        <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList([...new Set(premiumFunctions)], { stripIcons: true })}
-                            </ul>
-                        </div>
-                        <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
-                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumCardsPreview, { stripIcons: true })}
-                            </ul>
-                            ${renderExtraAnalysis}
                         </div>
                         <div class="ska-premium-upgrade-cta">
                             <a class="ska-btn ska-btn--primary" href="${this.getPremiumCheckoutUrl(selectedPlan.id)}" data-action="premium-checkout">Jetzt Premium freischalten</a>
