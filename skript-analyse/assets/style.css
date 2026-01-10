@@ -887,6 +887,9 @@ body.ska-modal-open { overflow: hidden !important; }
     border: 1px solid rgba(234, 179, 8, 0.4);
     box-shadow: 0 6px 16px -12px rgba(15, 23, 42, 0.4);
 }
+.ska-recommended-tool .ska-card-header {
+    padding-right: 120px;
+}
 .skriptanalyse-analysis-bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--ska-grid-gap); align-items: stretch; margin-top: 1.5rem; position: relative; z-index: 10; }
 .ska-hide-btn, .ska-whitelist-toggle { width: 24px; height: 24px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: all 0.2s ease; border-radius: 4px; padding: 0; }
 .ska-hide-btn:hover, .ska-whitelist-toggle:hover { background: #eff6ff; opacity: 1; }
@@ -1832,8 +1835,18 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-filterbar-bulk {
     width: 100%;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 0.6rem;
+}
+
+.ska-filterbar-bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .ska-filterbar-bulk-btn {
@@ -1856,6 +1869,132 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-filterbar-bulk-btn:hover {
     border-color: var(--ska-primary);
     color: var(--ska-primary);
+}
+
+.ska-filterbar-profile-link {
+    border: none;
+    background: transparent;
+    color: var(--ska-primary);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    text-decoration: underline;
+}
+
+.ska-filterbar-profile-link.is-active {
+    color: #0f172a;
+    text-decoration: none;
+}
+
+.ska-price-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ska-price-card ul li {
+    position: relative;
+    padding-left: 1.6rem;
+}
+
+.ska-price-card ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.3rem;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    mask-image: url("https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url("https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+
+.ska-price-card--basic ul li::before {
+    background-color: #16a34a;
+}
+
+.ska-price-card--premium ul li::before {
+    background-color: var(--ska-primary);
+}
+
+.ska-feedback-drawer {
+    position: fixed;
+    bottom: 0;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.ska-feedback-drawer > * {
+    pointer-events: auto;
+}
+
+.ska-feedback-tab {
+    border: none;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1f2937;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    box-shadow: 0 10px 24px -14px rgba(15, 23, 42, 0.6);
+    cursor: pointer;
+}
+
+.ska-feedback-panel {
+    width: min(420px, 92vw);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -20px 40px -30px rgba(15, 23, 42, 0.5);
+    transform: translateY(110%);
+    transition: transform 0.35s ease;
+}
+
+.ska-feedback-drawer.is-open .ska-feedback-panel {
+    transform: translateY(0);
+}
+
+.ska-feedback-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.2rem 0.6rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ska-feedback-header strong {
+    font-size: 0.85rem;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ska-feedback-close {
+    border: none;
+    background: #f1f5f9;
+    color: #475569;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ska-feedback-body {
+    padding: 1rem 1.2rem 1.4rem;
 }
 
 .ska-chapter-summary {
