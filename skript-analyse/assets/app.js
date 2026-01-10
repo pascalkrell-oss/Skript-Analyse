@@ -8576,11 +8576,6 @@
             };
             const renderList = (items, options = {}) => items.map(item => `
                 <li data-info="${getListInfo(item, options.stripIcons)}">
-                    <span class="ska-upgrade-check">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6L9 17l-5-5"></path>
-                        </svg>
-                    </span>
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
             const renderExtraAnalysis = premiumCardsExtra.length ? `

@@ -388,7 +388,12 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
-.ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ska-premium-upgrade-listing--grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem 1.1rem;
+    justify-items: start;
+}
 /* =========================================
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
@@ -404,6 +409,7 @@ body.ska-modal-open { overflow: hidden !important; }
     background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
     border: none !important;
     position: relative;
+    text-align: left;
 }
 
 /* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
@@ -455,8 +461,6 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
     background-color: #1a93ee !important;
 }
-.ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-.ska-premium-upgrade-col.is-premium .ska-upgrade-check { background: #e0f2fe; color: #0284c7; }
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
 .ska-premium-upgrade-hover-label { cursor: default; }
 .ska-premium-upgrade-hover-badge { display: none; position: absolute; left: 0; top: calc(100% + 10px); background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.8rem; box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.3); width: 240px; z-index: 30; color: #475569; }
