@@ -247,7 +247,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .skriptanalyse-analysis-top { flex: 0 0 auto; display: flex; flex-direction: column; height: auto; }
 
 /* CARDS */
-.skriptanalyse-card { background: var(--ska-surface); border-radius: var(--ska-radius-md); box-shadow: var(--ska-shadow); border: 1px solid var(--ska-border); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: 100%; overflow: visible; position: relative; margin-bottom: 0; }
+.skriptanalyse-card { background: var(--ska-surface); border-radius: var(--ska-radius-md); box-shadow: var(--ska-shadow); border: 1px solid var(--ska-border); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: auto; overflow: visible; position: relative; margin-bottom: 0; }
 .skriptanalyse-card:hover { z-index: 200 !important; }
 .skriptanalyse-card.is-minimized { align-self: flex-start; height: auto; min-height: 0; }
 .skriptanalyse-card.is-locked .ska-card-body-content { filter: blur(8px); pointer-events: none; }
@@ -390,7 +390,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; }
+.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; padding-left: 26px; }
 .ska-premium-upgrade-listing li::after {
     content: attr(data-info);
     position: absolute;
@@ -420,25 +420,29 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-listing li::before {
     content: '';
     position: absolute;
-    bottom: 100%;
-    left: 50%;
-    margin-bottom: 2px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: rgba(15, 23, 42, 0.98) transparent transparent transparent;
-    opacity: 0;
-    transform: translateX(-50%) translateY(0);
-    transition: all 0.2s ease;
-    pointer-events: none;
-    z-index: 10;
+    left: 0;
+    top: 3px;
+    width: 18px;
+    height: 18px;
+    background-color: currentColor;
+    -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
+    mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    border: none !important;
+    transform: none !important;
 }
 .ska-premium-upgrade-listing li:hover::after {
     opacity: 1;
     transform: translateX(-50%) translateY(-4px);
 }
-.ska-premium-upgrade-listing li:hover::before {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-4px);
+.ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing li::before {
+    background-color: #16a34a;
+}
+.ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
+    background-color: #1a93ee;
 }
 .ska-premium-upgrade-listing li span { font-weight: 420; }
 .ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
@@ -1333,7 +1337,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-expand-link { background: none; border: none; padding: 0.35rem 0.5rem; color: var(--ska-text-light); font-size: 0.8rem; cursor: pointer; width: 100%; text-align: center; }
 .ska-expand-link:hover { color: var(--ska-primary); }
 .ska-hidden-content { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 0.8rem; }
-.ska-hidden-content.is-expanded { max-height: 1000px; opacity: 1; margin-top: 0; }
+.ska-hidden-content.is-expanded { max-height: none !important; overflow: visible !important; opacity: 1; margin-top: 0; }
 .ska-hidden-content--compact.is-expanded { margin-top: 0.2rem; }
 .ska-problem-list + .ska-hidden-content--compact { margin-top: -0.5rem; }
 .ska-hidden-content--compact .ska-problem-list { margin-bottom: 0; }
@@ -1394,13 +1398,6 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-tax-prefix,
 .ska-premium-upgrade-tax-value { font-size: 0.3em; color: #94a3b8; line-height: 0.85; }
 
-.ska-rating-box { background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0; border-radius: 18px; padding: 1.8rem; margin: 1.6rem auto 2.4rem; max-width: 1120px; box-shadow: 0 16px 32px -24px rgba(15, 23, 42, 0.18); display: none; }
-body.ska-plan-premium .ska-rating-box { display: block; }
-.ska-rating-box .ska-card-header { border: none; padding: 0; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
-.ska-rating-box h3 { margin: 0; font-size: 1.1rem; }
-.ska-rating-box p { margin: 0 0 1rem; color: #64748b; font-size: 0.9rem; }
-.ska-rating-box .ska-rating-form { background: #ffffff; border: 1px dashed #cbd5f5; border-radius: 12px; padding: 1rem; }
-.ska-rating-box .ska-rating-fallback { font-size: 0.85rem; color: #64748b; }
 
 .ska-flesch-summary { margin-top: 0.75rem; }
 

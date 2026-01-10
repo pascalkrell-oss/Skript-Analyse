@@ -2922,7 +2922,6 @@
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
                 search: { query: '', matches: [], index: -1 },
-                feedbackDrawerOpen: false,
                 projectObject: { settings: {} }
             };
             this.synonymCache = new Map();
@@ -2946,7 +2945,6 @@
             this.renderTeleprompterModal();
             this.initAnalysisWorker();
             this.bindEvents();
-            this.renderFeedbackDrawer();
             
             this.injectGlobalStyles(); // CSS Overrides
             this.initSynonymTooltip();
@@ -2987,7 +2985,6 @@
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
             this.filterBar = q('.ska-analysis-filterbar');
-            this.feedbackDrawer = q('.ska-feedback-drawer');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -4502,7 +4499,8 @@
                         return true;
                     }
                     const profile = this.normalizeProfile(this.settings.role);
-                    const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                    const isGeneralProfile = profile === 'general';
+                    const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
                     if (allowed && !allowed.has(id)) {
                         if (btn.checked) this.state.selectedExtraCards.add(id);
                         else this.state.selectedExtraCards.delete(id);
@@ -4518,11 +4516,6 @@
                 this.updateGridVisibility();
                 return true;
             }
-            if (act === 'toggle-feedback-drawer') {
-                this.state.feedbackDrawerOpen = !this.state.feedbackDrawerOpen;
-                this.renderFeedbackDrawer();
-                return true;
-            }
             if (act === 'toggle-filter-collapse') {
                 this.state.filterCollapsed = !this.state.filterCollapsed;
                 if (this.filterBar) {
@@ -4535,8 +4528,9 @@
             }
             if (act === 'filter-select-all') {
                 const profile = this.normalizeProfile(this.settings.role);
-                const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-                const filterByProfile = profile ? this.state.filterByProfile : false;
+                const isGeneralProfile = profile === 'general';
+                const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
                     if (!this.isCardUnlocked(id)) return;
@@ -4552,8 +4546,9 @@
             }
             if (act === 'filter-deselect-all') {
                 const profile = this.normalizeProfile(this.settings.role);
-                const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-                const filterByProfile = profile ? this.state.filterByProfile : false;
+                const isGeneralProfile = profile === 'general';
+                const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+                const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
                     if (!this.isCardUnlocked(id)) return;
@@ -5710,8 +5705,9 @@
         renderHiddenPanel() {
             this.hiddenPanel.innerHTML = '';
             const profile = this.normalizeProfile(this.settings.role);
-            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const filterByProfile = profile ? this.state.filterByProfile : false;
+            const isGeneralProfile = profile === 'general';
+            const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
                 if (toolCards.includes(id)) return false;
@@ -5753,38 +5749,7 @@
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
                 this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
-                const container = this.legendContainer.parentElement;
-                if (container) {
-                    const existingRating = container.querySelector('.ska-rating-box');
-                    if (existingRating) existingRating.remove();
-                }
             }
-        }
-
-        renderFeedbackDrawer() {
-            if (!this.root) return;
-            if (!this.feedbackDrawer) {
-                const drawer = document.createElement('div');
-                drawer.className = 'ska-feedback-drawer';
-                drawer.innerHTML = `
-                    <button class="ska-feedback-tab" type="button" data-action="toggle-feedback-drawer" aria-expanded="false">
-                        ⭐ Feedback geben
-                    </button>
-                    <div class="ska-feedback-panel" role="dialog" aria-label="Feedback geben">
-                        <div class="ska-feedback-header">
-                            <strong>Feedback geben</strong>
-                            <button class="ska-feedback-close" type="button" data-action="toggle-feedback-drawer" aria-label="Feedback schließen">×</button>
-                        </div>
-                        <div class="ska-feedback-body">[fluentform id="7"]</div>
-                    </div>
-                `;
-                this.root.appendChild(drawer);
-                this.feedbackDrawer = drawer;
-            }
-            this.feedbackDrawer.classList.toggle('is-open', this.state.feedbackDrawerOpen);
-            this.feedbackDrawer.querySelectorAll('[data-action="toggle-feedback-drawer"]').forEach((btn) => {
-                btn.setAttribute('aria-expanded', this.state.feedbackDrawerOpen ? 'true' : 'false');
-            });
         }
 
         renderToolsButtons(toolIds = []) {
@@ -5873,10 +5838,11 @@
         renderFilterBar() {
             if (!this.filterBar) return;
             const profile = this.normalizeProfile(this.settings.role);
-            const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const isGeneralProfile = profile === 'general';
+            const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
-            const filterByProfile = profile ? this.state.filterByProfile : false;
+            const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
             const title = 'Analyseboxen auswählen';
             const isExpanded = !this.state.filterCollapsed;
             this.filterBar.classList.toggle('is-expanded', isExpanded);
@@ -5939,8 +5905,9 @@
             if (!this.bottomGrid) return;
             const profile = this.normalizeProfile(this.settings.role);
             const allowedList = profile && SA_CONFIG.PROFILE_CARDS[profile] ? SA_CONFIG.PROFILE_CARDS[profile] : null;
-            const allowed = allowedList ? new Set(allowedList) : null;
-            const filterByProfile = Boolean(this.state.filterByProfile && allowed);
+            const isGeneralProfile = profile === 'general';
+            const allowed = !isGeneralProfile && allowedList ? new Set(allowedList) : null;
+            const filterByProfile = Boolean(this.state.filterByProfile && allowed && !isGeneralProfile);
             const toolCards = new Set(SA_CONFIG.TOOL_CARDS || []);
             const alwaysVisible = new Set(SA_CONFIG.TOOLS_ALWAYS_VISIBLE || []);
             const isPlanVisible = (id) => alwaysVisible.has(id) || this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
@@ -8606,10 +8573,10 @@
             const hiddenPremium = relevant.filter((id) => !this.isCardUnlocked(id) && !this.isCardTeaser(id));
             const hiddenCount = hiddenPremium.length;
             if (!hiddenCount) return;
-            const profileLabel = this.getProfileLabel(profile);
+            const profileName = this.getProfileLabel(profile);
             const bar = document.createElement('div');
             bar.className = 'ska-profile-upsell-bar';
-            bar.innerHTML = `<span>+ ${hiddenCount} weitere Analyseboxen und Profi-Funktionen für <strong>${profileLabel}</strong> im Premium-Plan verfügbar.</span>`;
+            bar.innerHTML = `<span>+ ${hiddenCount} weitere Analyseboxen und Profi-Funktionen für <span style="color: var(--ska-primary); font-weight: 700;">${profileName}</span> im Premium-Plan verfügbar.</span>`;
             this.bottomGrid.insertAdjacentElement('afterend', bar);
         }
 
