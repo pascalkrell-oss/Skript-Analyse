@@ -157,7 +157,7 @@ body.ska-modal-open { overflow: hidden !important; }
     padding: 0.45rem 0;
 }
 .ska-filterbar-header > span { text-align: left; font-family: "Rubik", sans-serif; font-size: 14.4px; font-weight: 700; line-height: 21.6px; color: rgb(100, 116, 139); text-transform: none; letter-spacing: normal; }
-.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; margin-left: auto; justify-content: flex-end; }
+.ska-filterbar-actions { display: inline-flex; gap: 0.6rem; align-items: center; margin-left: auto; justify-content: flex-end; flex-wrap: wrap; }
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
@@ -170,6 +170,20 @@ body.ska-modal-open { overflow: hidden !important; }
     line-height: 20.4px;
     color: rgb(148, 163, 184);
 }
+.ska-filterbar-profile { display: flex; flex-direction: column; gap: 0.35rem; }
+.ska-filterbar-profile label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
+.ska-filterbar-profile-toggle { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: #475569; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; }
+.ska-filterbar-profile-toggle input { margin: 0; accent-color: #1d4ed8; }
+.skriptanalyse-card.is-hidden-profile,
+.skriptanalyse-card.is-hidden-plan { display: none; }
+.ska-profile-upsell-bar { margin: 0.9rem 0 1.4rem; background: linear-gradient(135deg, #f8fafc, #eef2ff); border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.8rem 1rem; font-size: 0.85rem; color: #0f172a; font-weight: 600; text-align: center; }
+.ska-profile-upsell-bar strong { color: #1d4ed8; }
+.ska-problem-meta.is-critical { color: #dc2626; font-weight: 700; }
+.ska-sentiment-target { margin-top: 0.8rem; padding: 0.7rem 0.9rem; border-radius: 10px; display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; border: 1px solid #e2e8f0; background: #f8fafc; }
+.ska-sentiment-target.is-alert { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+.ska-sentiment-target.is-ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+.ska-sentiment-power { margin-top: 0.8rem; padding: 0.6rem 0.9rem; border-radius: 10px; border: 1px dashed #cbd5f5; background: #eef2ff; font-size: 0.82rem; color: #1e293b; display: flex; flex-direction: column; gap: 0.4rem; }
+.ska-sentiment-power .skriptanalyse-badge { margin-right: 0.25rem; }
 
 .ska-tool-wrapper { position: relative; display: inline-flex; align-items: center; }
 .ska-tool-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 32px; line-height: 1.1; }

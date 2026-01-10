@@ -64,6 +64,87 @@ const expandNumbersForAudio = (text) => {
     return text.replace(/(\d{1,3}(?:\.\d{3})+|\d+)([.,]\d+)?%?/g, (m) => normalize(m));
 };
 
+const PROFILE_CONFIG = {
+    general: {
+        label: 'Allgemein',
+        wpm: 180,
+        numberMode: 'digit',
+        commaPause: 0.2,
+        periodPause: 0.5,
+        paragraphPause: 1,
+        sentenceWarningLimit: 25,
+        hardSegmentLimit: 20,
+        features: { keywordFocus: true, phonetics: true }
+    },
+    author: {
+        label: 'Autor:in',
+        wpm: 230,
+        numberMode: 'digit',
+        ignorePauseMarkers: true,
+        commaPause: 0,
+        periodPause: 0,
+        paragraphPause: 0.5,
+        sentenceWarningLimit: 25,
+        criticalSentenceLimit: 30,
+        hardSegmentLimit: 24,
+        features: { keywordFocus: true, phonetics: false, immersion: true }
+    },
+    speaker: {
+        label: 'Sprecher:in',
+        wpm: 145,
+        numberMode: 'word',
+        commaPause: 0.35,
+        periodPause: 0.7,
+        paragraphPause: 1,
+        sentenceWarningLimit: 22,
+        hardSegmentLimit: 18,
+        breathLabel: 'Keine Atempunkte',
+        features: { keywordFocus: false, phonetics: true }
+    },
+    director: {
+        label: 'Regie',
+        wpm: 140,
+        numberMode: 'word',
+        commaPause: 0.3,
+        periodPause: 0.6,
+        paragraphPause: 1,
+        pauseUnit: 'ms',
+        sentenceWarningLimit: 25,
+        hardSegmentLimit: 18,
+        features: { keywordFocus: false, phonetics: true }
+    },
+    agency: {
+        label: 'Agentur',
+        wpm: 160,
+        numberMode: 'digit',
+        commaPause: 0.2,
+        periodPause: 0.5,
+        paragraphPause: 1,
+        sentenceWarningLimit: 25,
+        hardSegmentLimit: 20,
+        features: { keywordFocus: false, phonetics: false }
+    },
+    marketing: {
+        label: 'Marketing',
+        wpm: 200,
+        numberMode: 'digit',
+        commaPause: 0.15,
+        periodPause: 0.4,
+        paragraphPause: 0.8,
+        sentenceWarningLimit: 16,
+        criticalSentenceLimit: 20,
+        hardSegmentLimit: 18,
+        sentimentTarget: 'positive',
+        powerWordsCheck: true,
+        features: { keywordFocus: true, phonetics: false }
+    }
+};
+
+const resolveProfileConfig = (settings = {}) => {
+    const profile = settings.profile || settings.role || settings.currentProfile || 'general';
+    return PROFILE_CONFIG[profile] || PROFILE_CONFIG.general;
+};
+
 const analyzeReadability = (text, settings = {}) => {
     let clean = cleanTextForCounting(text).trim();
     if (settings.numberMode === 'word') {
@@ -314,21 +395,37 @@ const getPausenTime = (text, settings = {}) => {
     let total = 0;
     const safeText = text || '';
     const cleaned = cleanTextForCounting(safeText);
-    const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
-    total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
-    const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
-    total += newFormat.reduce((acc, m) => {
-        const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
-        return acc + (val ? parseFloat(val[1]) : 0);
-    }, 0);
-    total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
-    const commaPause = parseFloat(settings.commaPause ?? 0);
-    const periodPause = parseFloat(settings.periodPause ?? 0);
+    const profileConfig = resolveProfileConfig(settings);
+    const ignoreMarkers = Boolean(profileConfig.ignorePauseMarkers || settings.ignorePauseMarkers);
+    const pauseUnit = profileConfig.pauseUnit || 's';
+    if (!ignoreMarkers) {
+        const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
+        total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
+        const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:ms|s)?\]/gi) || [];
+        total += newFormat.reduce((acc, m) => {
+            const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
+            if (!val) return acc;
+            const rawVal = parseFloat(val[1]);
+            if (Number.isNaN(rawVal)) return acc;
+            const hasMs = /ms/i.test(m);
+            const hasSec = /s/i.test(m);
+            const seconds = hasMs ? rawVal / 1000 : (pauseUnit === 'ms' && !hasSec ? rawVal / 1000 : rawVal);
+            return acc + seconds;
+        }, 0);
+        total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+    }
+    const commaPause = parseFloat(settings.commaPause ?? profileConfig.commaPause ?? 0);
+    const periodPause = parseFloat(settings.periodPause ?? profileConfig.periodPause ?? 0);
+    const paragraphPause = parseFloat(settings.paragraphPause ?? profileConfig.paragraphPause ?? 0);
     if (commaPause > 0) {
         total += (cleaned.match(/,/g) || []).length * commaPause;
     }
     if (periodPause > 0) {
         total += (cleaned.match(/[.!?]/g) || []).length * periodPause;
+    }
+    if (paragraphPause > 0) {
+        const paragraphBreaks = safeText.split(/\n\s*\n+/).length - 1;
+        if (paragraphBreaks > 0) total += paragraphBreaks * paragraphPause;
     }
     return total;
 };
@@ -342,7 +439,8 @@ const SA_ANALYSIS_UTILS = {
     escapeRegex,
     expandNumbersForAudio,
     findStumbles,
-    getPausenTime
+    getPausenTime,
+    PROFILE_CONFIG
 };
 
 if (typeof module !== 'undefined' && module.exports) {

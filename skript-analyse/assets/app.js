@@ -208,12 +208,21 @@
             'zeitung', 'kleidung', 'meinung', 'wohnung', 'nutzung', 'rechnung', 'bedienung', 'förderung', 'lösung', 'beziehung',
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
+        PROFILE_DEFAULTS: {
+            general: { label: 'Allgemein', wpm: 180, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { keywordFocus: true, phonetics: true } },
+            author: { label: 'Autor:in', wpm: 230, numberMode: 'digit', ignorePauseMarkers: true, commaPause: 0, periodPause: 0, paragraphPause: 0.5, sentenceWarningLimit: 25, criticalSentenceLimit: 30, hardSegmentLimit: 24, features: { keywordFocus: true, phonetics: false, immersion: true } },
+            speaker: { label: 'Sprecher:in', wpm: 145, numberMode: 'word', commaPause: 0.35, periodPause: 0.7, paragraphPause: 1, sentenceWarningLimit: 22, hardSegmentLimit: 18, breathLabel: 'Keine Atempunkte', features: { keywordFocus: false, phonetics: true } },
+            director: { label: 'Regie', wpm: 140, numberMode: 'word', commaPause: 0.3, periodPause: 0.6, paragraphPause: 1, pauseUnit: 'ms', sentenceWarningLimit: 25, hardSegmentLimit: 18, features: { keywordFocus: false, phonetics: true } },
+            agency: { label: 'Agentur', wpm: 160, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { keywordFocus: false, phonetics: false } },
+            marketing: { label: 'Marketing', wpm: 200, numberMode: 'digit', commaPause: 0.15, periodPause: 0.4, paragraphPause: 0.8, sentenceWarningLimit: 16, criticalSentenceLimit: 20, hardSegmentLimit: 18, sentimentTarget: 'positive', powerWordsCheck: true, features: { keywordFocus: true, phonetics: false } }
+        },
         PROFILE_CARDS: {
-            sprecher: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions'],
-            autor: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'word_sprint'],
-            regie: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy'],
-            agentur: ['overview', 'char', 'keyword_focus', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'chapter_calc', 'syllable_entropy', 'compliance_check'],
-            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check']
+            general: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'keyword_focus', 'passive', 'vocabulary', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'adjective', 'dialog', 'role_dist', 'sentiment_intensity', 'gender', 'echo', 'nominal', 'nominal_chain', 'cta', 'anglicism', 'verb_balance', 'start_var', 'compliance_check', 'word_sprint'],
+            author: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'word_sprint', 'start_var', 'gender', 'echo', 'nominal', 'nominal_chain'],
+            speaker: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'dialog', 'role_dist'],
+            director: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy', 'sentiment_intensity', 'rhythm'],
+            agency: ['overview', 'char', 'chapter_calc', 'sentiment_intensity', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'compliance_check', 'keyword_focus'],
+            marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'sentiment_intensity', 'easy_language', 'rhythm']
         },
         TOOL_CARDS: ['teleprompter', 'pacing', 'word_sprint'],
         AUDIENCE_TARGETS: {
@@ -613,17 +622,28 @@
             let total = 0;
             const safeText = text || '';
             const cleaned = SA_Utils.cleanTextForCounting(safeText);
-            const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
-            total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
-            const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:s)?\]/gi) || [];
-            total += newFormat.reduce((acc, m) => {
-                const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
-                return acc + (val ? parseFloat(val[1]) : 0);
-            }, 0);
-            total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
-            const commaPause = parseFloat(settings.commaPause != null ? settings.commaPause : 0);
-            const periodPause = parseFloat(settings.periodPause != null ? settings.periodPause : 0);
-            const paragraphPause = parseFloat(settings.paragraphPause != null ? settings.paragraphPause : 1);
+            const profileConfig = settings.profileConfig || {};
+            const ignoreMarkers = Boolean(profileConfig.ignorePauseMarkers || settings.ignorePauseMarkers);
+            const pauseUnit = profileConfig.pauseUnit || 's';
+            if (!ignoreMarkers) {
+                const legacy = safeText.match(/\|([0-9\.]+)S?\|/g) || [];
+                total += legacy.reduce((acc, m) => acc + (parseFloat(m.replace(/[^0-9.]/g, '')) || 0), 0);
+                const newFormat = safeText.match(/\[PAUSE\s*:\s*([0-9]+(?:\.[0-9]+)?)(?:ms|s)?\]/gi) || [];
+                total += newFormat.reduce((acc, m) => {
+                    const val = m.match(/([0-9]+(?:\.[0-9]+)?)/);
+                    if (!val) return acc;
+                    const rawVal = parseFloat(val[1]);
+                    if (Number.isNaN(rawVal)) return acc;
+                    const hasMs = /ms/i.test(m);
+                    const hasSec = /s/i.test(m);
+                    const seconds = hasMs ? rawVal / 1000 : (pauseUnit === 'ms' && !hasSec ? rawVal / 1000 : rawVal);
+                    return acc + seconds;
+                }, 0);
+                total += ((safeText.match(/\|/g) || []).length - legacy.length * 2) * 0.5;
+            }
+            const commaPause = parseFloat(settings.commaPause != null ? settings.commaPause : (profileConfig.commaPause ?? 0));
+            const periodPause = parseFloat(settings.periodPause != null ? settings.periodPause : (profileConfig.periodPause ?? 0));
+            const paragraphPause = parseFloat(settings.paragraphPause != null ? settings.paragraphPause : (profileConfig.paragraphPause ?? 1));
             if (commaPause > 0) {
                 total += (cleaned.match(/,/g) || []).length * commaPause;
             }
@@ -1515,6 +1535,10 @@
         },
         getWpm: (s) => {
             if (s.manualWpm && s.manualWpm > 0) return s.manualWpm;
+            if (s.profileConfig && s.profileConfig.wpm) return s.profileConfig.wpm;
+            const sharedProfile = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS?.PROFILE_CONFIG : null;
+            const profileKey = s.profile || s.role;
+            if (sharedProfile && profileKey && sharedProfile[profileKey]?.wpm) return sharedProfile[profileKey].wpm;
             return (SA_CONFIG.WPM[s.usecase] || 150);
         },
         getSps: (s) => (SA_CONFIG.SPS[s.usecase] || 3.8),
@@ -1751,14 +1775,17 @@
             });
             return matches;
         },
-        findBreathKillers: (sentences) => {
+        findBreathKillers: (sentences, settings = {}) => {
             const killers = [];
+            const profileConfig = settings.profileConfig || {};
+            const wordLimit = Number.isFinite(profileConfig.sentenceWarningLimit) ? profileConfig.sentenceWarningLimit : 25;
+            const hardSegmentLimit = Number.isFinite(profileConfig.hardSegmentLimit) ? profileConfig.hardSegmentLimit : 20;
             sentences.forEach(s => {
                 const commas = (s.match(/,/g) || []).length;
                 const words = s.split(/\s+/).length;
-                const hardSegment = (words > 20 && commas === 0);
-                if(commas >= 4 || words > 25 || hardSegment) {
-                    killers.push({ text: s, commas: commas, words: words, hardSegment: hardSegment });
+                const hardSegment = (words > hardSegmentLimit && commas === 0);
+                if(commas >= 4 || words > wordLimit || hardSegment) {
+                    killers.push({ text: s, commas: commas, words: words, hardSegment: hardSegment, wordLimit });
                 }
             });
             return killers.sort((a,b) => (b.words + b.commas*2) - (a.words + a.commas*2));
@@ -2264,6 +2291,16 @@
                 return { sentence: sentence.trim(), depth, isDeep: depth > 3 };
             });
         },
+        findPowerWords: (text) => {
+            const source = String(text || '').toLowerCase();
+            const list = SA_CONFIG.AROUSAL && Array.isArray(SA_CONFIG.AROUSAL.high) ? SA_CONFIG.AROUSAL.high : [];
+            if (!source || !list.length) return [];
+            const pattern = list.map(SA_Utils.escapeRegex).join('|');
+            if (!pattern) return [];
+            const regex = new RegExp(`\\b(${pattern})\\b`, 'gi');
+            const matches = source.match(regex) || [];
+            return [...new Set(matches)];
+        },
         analyzeSentimentIntensity: (sentences) => {
             if (!sentences || sentences.length === 0) return [];
             const pos = SA_CONFIG.SENTIMENT_INTENSITY.positive;
@@ -2488,8 +2525,11 @@
                     doc.text("Erstellt am: " + new Date().toLocaleDateString() + " um " + new Date().toLocaleTimeString(), margin + 2, y);
                     y += 16;
 
+                    const profileConfig = settings.profileConfig || this.getProfileConfig(settings.role);
                     const read = SA_Logic.analyzeReadability(text, settings);
-                    const stumbles = SA_Logic.findStumbles(text);
+                    const stumbles = profileConfig.features && profileConfig.features.phonetics === false
+                        ? { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 }
+                        : SA_Logic.findStumbles(text);
                     const fillers = SA_Logic.findFillers(read.cleanedText);
                     const passive = SA_Logic.findPassive(read.cleanedText);
                     const nominal = SA_Logic.findNominalStyle(read.cleanedText);
@@ -2497,7 +2537,7 @@
                     const adverbs = SA_Logic.findAdverbs(read.cleanedText);
                     const anglicisms = SA_Logic.findAnglicisms(read.cleanedText);
                     const echoes = SA_Logic.findWordEchoes(read.cleanedText);
-                    const breath = SA_Logic.findBreathKillers(read.sentences);
+                    const breath = SA_Logic.findBreathKillers(read.sentences, settings);
                     const sentiment = SA_Logic.analyzeSentiment(text);
                     const tone = SA_Logic.analyzeTone(text);
                     const variance = SA_Logic.calculateVariance(read.sentences);
@@ -2508,7 +2548,9 @@
                     const nominalChains = SA_Logic.findNominalChains(read.cleanedText);
                     const vocab = SA_Logic.analyzeVocabulary(read.words);
                     const pronunc = SA_Logic.analyzePronunciation(read.cleanedText);
-                    const keywordFocus = SA_Logic.analyzeKeywordClusters(text, settings);
+                    const keywordFocus = profileConfig.features && profileConfig.features.keywordFocus === false
+                        ? { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }
+                        : SA_Logic.analyzeKeywordClusters(text, settings);
                     const spreadIndex = SA_Logic.calculateVariance(read.sentences);
                     const plosiveClusters = SA_Logic.findPlosiveClusters(text);
                     const redundancy = SA_Logic.analyzeRedundancy(read.sentences);
@@ -2836,7 +2878,7 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: '', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
             const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
             const initialPlanMode = SA_CONFIG.PRO_MODE
@@ -2851,6 +2893,7 @@
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
+                filterByProfile: false,
                 planMode: initialPlanMode,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
@@ -2880,6 +2923,7 @@
             this.overviewResizeObserver = null;
 
             this.loadUIState();
+            this.syncProfileSelectOptions();
             this.updatePlanUI();
             this.renderSettingsModal();
             this.renderBenchmarkModal();
@@ -2959,6 +3003,29 @@
                 this.toolsModalStore = document.createElement('div');
                 this.toolsModalStore.className = 'ska-tools-modal-store';
                 this.toolsPanel.appendChild(this.toolsModalStore);
+            }
+        }
+
+        syncProfileSelectOptions() {
+            if (!this.roleSelect) return;
+            const profileOptions = [
+                { value: 'general', label: '🧭 Allgemein' },
+                { value: 'author', label: '✍️ Autor:in' },
+                { value: 'speaker', label: '🎙️ Sprecher:in' },
+                { value: 'director', label: '🎬 Regie' },
+                { value: 'agency', label: '🏢 Agentur' },
+                { value: 'marketing', label: '📈 Marketing' }
+            ];
+            this.roleSelect.innerHTML = profileOptions
+                .map(option => `<option value="${option.value}">${option.label}</option>`)
+                .join('');
+            const normalized = this.normalizeProfile(this.settings.role || this.roleSelect.value);
+            this.settings.role = normalized;
+            this.roleSelect.value = normalized;
+            const wrapper = this.roleSelect.closest('.ska-select-wrapper');
+            if (wrapper) {
+                const label = wrapper.querySelector('label');
+                if (label) label.textContent = 'Profil wählen';
             }
         }
         
@@ -3399,7 +3466,7 @@
             const modal = document.getElementById('ska-settings-modal');
             if (!modal) return;
             const isManualWpm = this.settings.manualWpm && this.settings.manualWpm > 0;
-            const wpm = SA_Logic.getWpm(this.settings);
+            const wpm = SA_Logic.getWpm(this.getEffectiveSettings());
             const sliderValue = isManualWpm ? this.settings.manualWpm : wpm;
             const manualLabel = isManualWpm ? `${this.settings.manualWpm} WPM` : 'Auto';
             const label = modal.querySelector('.ska-wpm-header strong');
@@ -3463,19 +3530,21 @@
                     resolve(null);
                 }, 2500);
                 this.workerRequests.set(id, { resolve, timeoutId });
+                const profile = this.normalizeProfile(this.settings.role);
                 this.analysisWorker.postMessage({
                     id,
                     type,
-                    payload
+                    payload: { ...(payload || {}), profile }
                 });
             });
         }
 
-        requestWorkerReadability(paragraphs) {
+        requestWorkerReadability(paragraphs, settings = this.getEffectiveSettings()) {
             if (!this.analysisWorker) return Promise.resolve([]);
             return this.requestWorkerTask('paragraphs', {
                 paragraphs,
-                settings: { numberMode: this.settings.numberMode }
+                settings: { numberMode: settings.numberMode, profile: settings.profile },
+                profile: settings.profile
             }).then((result) => result || []);
         }
 
@@ -3521,7 +3590,7 @@
             };
         }
 
-        getReadabilityWithDiff(text) {
+        getReadabilityWithDiff(text, settings = this.getEffectiveSettings()) {
             const parts = text.split(/\n\s*\n/);
             const cache = this.state.readabilityCache;
             const updates = [];
@@ -3539,7 +3608,7 @@
                 return Promise.resolve(this.buildReadabilityFromCache(cache));
             }
 
-            return this.requestWorkerReadability(updates).then((results) => {
+            return this.requestWorkerReadability(updates, settings).then((results) => {
                 results.forEach((item) => {
                     cache[item.index] = { text: item.text, result: item.result };
                 });
@@ -4394,7 +4463,7 @@
                     SA_Utils.openModal(modal);
                     document.body.classList.add('ska-modal-open');
                     this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
-                    this.updateTeleprompterMeta(SA_Logic.analyzeReadability(this.getText(), this.settings));
+                    this.updateTeleprompterMeta(SA_Logic.analyzeReadability(this.getText(), this.getEffectiveSettings()));
                     this.resetTeleprompter();
                 }
                 return true;
@@ -4411,7 +4480,7 @@
                         btn.checked = false;
                         return true;
                     }
-                    const profile = this.settings.role;
+                    const profile = this.normalizeProfile(this.settings.role);
                     const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
                     if (allowed && !allowed.has(id)) {
                         if (btn.checked) this.state.selectedExtraCards.add(id);
@@ -4422,11 +4491,10 @@
                 }
                 return true;
             }
-            if (act === 'toggle-filter-view') {
-                if (this.settings.role) {
-                    this.state.showAllCards = !this.state.showAllCards;
-                    this.renderFilterBar();
-                }
+            if (act === 'toggle-profile-filter') {
+                this.state.filterByProfile = !this.state.filterByProfile;
+                this.renderFilterBar();
+                this.updateGridVisibility();
                 return true;
             }
             if (act === 'toggle-filter-collapse') {
@@ -4440,15 +4508,15 @@
                 return true;
             }
             if (act === 'filter-select-all') {
-                const profile = this.settings.role;
+                const profile = this.normalizeProfile(this.settings.role);
                 const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-                const showAll = profile ? this.state.showAllCards : true;
+                const filterByProfile = profile ? this.state.filterByProfile : false;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
                     if (!this.isCardUnlocked(id)) return;
-                    if (allowed && !showAll && !allowed.has(id)) return;
+                    if (allowed && filterByProfile && !allowed.has(id)) return;
                     if (this.state.hiddenCards.has(id)) this.state.hiddenCards.delete(id);
-                    if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.add(id);
+                    if (allowed && !filterByProfile && !allowed.has(id)) this.state.selectedExtraCards.add(id);
                 });
                 this.saveUIState();
                 this.renderHiddenPanel();
@@ -4457,15 +4525,15 @@
                 return true;
             }
             if (act === 'filter-deselect-all') {
-                const profile = this.settings.role;
+                const profile = this.normalizeProfile(this.settings.role);
                 const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-                const showAll = profile ? this.state.showAllCards : true;
+                const filterByProfile = profile ? this.state.filterByProfile : false;
                 SA_CONFIG.CARD_ORDER.forEach(id => {
                     if (id === 'overview') return;
                     if (!this.isCardUnlocked(id)) return;
-                    if (allowed && !showAll && !allowed.has(id)) return;
+                    if (allowed && filterByProfile && !allowed.has(id)) return;
                     if (!this.state.hiddenCards.has(id)) this.state.hiddenCards.add(id);
-                    if (allowed && showAll && !allowed.has(id)) this.state.selectedExtraCards.delete(id);
+                    if (allowed && !filterByProfile && !allowed.has(id)) this.state.selectedExtraCards.delete(id);
                 });
                 if (this.bottomGrid) {
                     this.bottomGrid.querySelectorAll('.skriptanalyse-card').forEach(c => {
@@ -4568,7 +4636,7 @@
                     this.pauseTeleprompter();
                     btn.textContent = 'Start';
                 } else {
-                    const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
+                    const read = SA_Logic.analyzeReadability(this.getText(), this.getEffectiveSettings());
                     const started = this.startTeleprompter(read);
                     btn.textContent = started ? 'Pause' : 'Start';
                 }
@@ -4607,7 +4675,7 @@
                 }
                 const text = this.getText();
                 if (!text.trim()) return true;
-                const exportData = SA_Logic.generateTeleprompterExport(text, this.settings);
+                const exportData = SA_Logic.generateTeleprompterExport(text, this.getEffectiveSettings());
                 if (act === 'teleprompter-export-txt') {
                     const lines = exportData.map(item => `[${item.time}] ${item.text}`);
                     SA_Utils.downloadText(lines.join('\n\n'), 'teleprompter-export.txt');
@@ -5058,21 +5126,29 @@
                 });
             }
             window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
-            this.root.querySelectorAll('select').forEach(s => s.addEventListener('change', (e) => {
-                const k = e.target.dataset.filter || (e.target.hasAttribute('data-role-select') ? 'role' : null);
-                if(k) {
-                    this.settings[k] = e.target.value;
-                    if (k === 'usecase' && e.target.value !== 'auto') {
-                        this.settings.lastGenre = e.target.value;
-                        this.saveUIState();
-                    }
+            this.root.addEventListener('change', (e) => {
+                const select = e.target.closest('select');
+                if (!select) return;
+                const k = select.dataset.filter || (select.hasAttribute('data-role-select') ? 'role' : null);
+                if (k) {
                     if (k === 'role') {
-                        this.state.showAllCards = false;
+                        this.settings.role = this.normalizeProfile(select.value);
+                        select.value = this.settings.role;
+                        this.root.querySelectorAll('[data-role-select]').forEach((el) => {
+                            if (el !== select) el.value = this.settings.role;
+                        });
+                        this.state.filterByProfile = false;
                         this.state.selectedExtraCards.clear();
+                    } else {
+                        this.settings[k] = select.value;
+                    }
+                    if (k === 'usecase' && select.value !== 'auto') {
+                        this.settings.lastGenre = select.value;
+                        this.saveUIState();
                     }
                 }
                 this.analyze(this.getText());
-            }));
+            });
             if(this.targetInput) this.targetInput.addEventListener('input', (e) => {
                 const v = e.target.value.trim().split(':');
                 this.settings.targetSec = v.length > 1 ? (parseInt(v[0]||0)*60)+parseInt(v[1]||0) : parseInt(v[0]||0);
@@ -5151,7 +5227,7 @@
                                 SA_Utils.openModal(newM);
                                 document.body.classList.add('ska-modal-open');
                                 this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
-                                const read = SA_Logic.analyzeReadability(this.getText(), this.settings);
+                                const read = SA_Logic.analyzeReadability(this.getText(), this.getEffectiveSettings());
                                 this.updateTeleprompterMeta(read);
                                 this.resetTeleprompter();
                             }
@@ -5318,7 +5394,7 @@
 
                 if(act === 'confirm-reset') {
                     this.setText(''); 
-                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
+                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
                     this.state.savedVersion=''; 
                     SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                     this.state.hiddenCards.clear(); 
@@ -5569,13 +5645,15 @@
 
         renderHiddenPanel() {
             this.hiddenPanel.innerHTML = '';
-            const profile = this.settings.role;
+            const profile = this.normalizeProfile(this.settings.role);
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
+            const filterByProfile = profile ? this.state.filterByProfile : false;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
                 if (toolCards.includes(id)) return false;
                 if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id) || !this.isCardUnlocked(id)) return false;
                 if (!allowed) return true;
+                if (filterByProfile) return allowed.has(id);
                 return allowed.has(id) || this.state.selectedExtraCards.has(id);
             });
             if(sorted.length) {
@@ -5599,8 +5677,8 @@
                     { title: 'Buzzword-Check', text: 'Markiert Phrasen aus der Blacklist.', premium: true },
                     { title: 'Verb-Fokus', text: 'Warnt bei nominalem Stil.', premium: true },
                     { title: 'Teleprompter', text: 'Scrollt im Tempo der Analyse.', premium: true },
-                    { title: 'Profilansicht', text: 'Zeigt nur die Boxen des ausgewählten Profils.' },
-                    { title: 'Alle Boxen', text: 'Ermöglicht zusätzliche Boxen im Profil.' },
+                    { title: 'Nach Profil filtern', text: 'Blendet nur die Boxen des gewählten Profils ein.' },
+                    { title: 'Profil wählen', text: 'Wechselt das Analyse-Setup (Timing, Warnungen, SEO, Phonetik).' },
                     { title: 'Ausklappen/Einklappen', text: 'Blendet die Auswahl kompakt ein oder aus.' },
                     { title: 'Export', text: 'Teleprompter als .txt/.json exportieren für Cutter & Sprecher.', premium: true }
                 ];
@@ -5684,17 +5762,26 @@
             allCards.forEach(card => card.classList.remove('ska-recommended-tool'));
             allTiles.forEach(tile => tile.classList.remove('ska-recommended-tool'));
 
-            const profile = this.settings.role;
+            const profile = this.normalizeProfile(this.settings.role);
             const recommended = new Set();
-            if (profile === 'author' || profile === 'autor') {
+            if (profile === 'author') {
                 recommended.add('word_sprint');
                 recommended.add('keyword_focus');
                 recommended.add('immersion');
             }
-            if (profile === 'speaker' || profile === 'sprecher') {
+            if (profile === 'speaker') {
                 recommended.add('teleprompter');
                 recommended.add('pacing');
                 recommended.add('stumble');
+            }
+            if (profile === 'director') {
+                recommended.add('pacing');
+                recommended.add('chapter_calc');
+                recommended.add('sentiment_intensity');
+            }
+            if (profile === 'marketing') {
+                recommended.add('keyword_focus');
+                recommended.add('sentiment_intensity');
             }
             if (!recommended.size) return;
 
@@ -5707,11 +5794,11 @@
 
         renderFilterBar() {
             if (!this.filterBar) return;
-            const profile = this.settings.role;
+            const profile = this.normalizeProfile(this.settings.role);
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
             const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
-            const showAll = profile ? this.state.showAllCards : true;
+            const filterByProfile = profile ? this.state.filterByProfile : false;
             const title = 'Analyseboxen auswählen';
             const isExpanded = !this.state.filterCollapsed;
             this.filterBar.classList.toggle('is-expanded', isExpanded);
@@ -5719,7 +5806,7 @@
             const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
             const filteredItems = items.filter((id) => {
                 if (!allowed) return true;
-                if (showAll) return true;
+                if (!filterByProfile) return true;
                 return allowed.has(id);
             });
             const isPremium = this.isPremiumActive();
@@ -5735,13 +5822,35 @@
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                 </div>` : '';
-            const viewToggle = profile ? `<button class="ska-filterbar-toggle ska-filterbar-toggle-view" data-action="toggle-filter-view">${showAll ? 'Profilansicht' : 'Alle Boxen'}</button>` : '';
+            const profileOptions = [
+                { value: 'general', label: '🧭 Allgemein' },
+                { value: 'author', label: '✍️ Autor:in' },
+                { value: 'speaker', label: '🎙️ Sprecher:in' },
+                { value: 'director', label: '🎬 Regie' },
+                { value: 'agency', label: '🏢 Agentur' },
+                { value: 'marketing', label: '📈 Marketing' }
+            ];
+            const profileSelect = `
+                <div class="ska-filterbar-profile">
+                    <label>Profil wählen</label>
+                    <div class="ska-custom-select-wrapper">
+                        <select class="ska-select" data-role-select>
+                            ${profileOptions.map(option => `<option value="${option.value}" ${option.value === profile ? 'selected' : ''}>${option.label}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>`;
+            const filterToggle = `
+                <label class="ska-filterbar-profile-toggle">
+                    <input type="checkbox" data-action="toggle-profile-filter" ${filterByProfile ? 'checked' : ''}>
+                    <span>Nach Profil filtern</span>
+                </label>`;
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
+                        ${profileSelect}
+                        ${filterToggle}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
-                        ${viewToggle}
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
@@ -5764,12 +5873,35 @@
             this.filterBar.innerHTML = html;
         }
 
+        updateGridVisibility() {
+            if (!this.bottomGrid) return;
+            const profile = this.normalizeProfile(this.settings.role);
+            const allowedList = profile && SA_CONFIG.PROFILE_CARDS[profile] ? SA_CONFIG.PROFILE_CARDS[profile] : null;
+            const allowed = allowedList ? new Set(allowedList) : null;
+            const filterByProfile = Boolean(this.state.filterByProfile && allowed);
+            const toolCards = new Set(SA_CONFIG.TOOL_CARDS || []);
+            const isPlanVisible = (id) => this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
+            const applyVisibility = (card) => {
+                const id = card.dataset.cardId;
+                if (!id) return;
+                const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id);
+                const hideByPlan = !isPlanVisible(id);
+                card.classList.toggle('is-hidden-profile', hideByProfile);
+                card.classList.toggle('is-hidden-plan', hideByPlan);
+            };
+            this.bottomGrid.querySelectorAll('[data-card-id]').forEach(applyVisibility);
+            if (this.toolsModalStore) {
+                this.toolsModalStore.querySelectorAll('[data-card-id]').forEach(applyVisibility);
+            }
+        }
+
         analyze(text) {
             const raw = text || '';
             const analysisRaw = SA_Utils.cleanTextForCounting(raw);
             this.enforceFreeSettings();
             this.state.analysisToken += 1;
             const token = this.state.analysisToken;
+            const effectiveSettings = this.getEffectiveSettings();
             if (!this.isPremiumActive() && analysisRaw.length > SA_CONFIG.FREE_TEXT_LIMIT) {
                 if (!this.state.limitReached) {
                     this.showPremiumNotice('Free-Version: Bitte kürzere Texte analysieren oder Premium freischalten.');
@@ -5779,22 +5911,23 @@
             }
             this.state.limitReached = false;
             if (this.analysisWorker && analysisRaw.length >= SA_CONFIG.WORKER_TEXT_THRESHOLD) {
-                this.getReadabilityWithDiff(analysisRaw).then((read) => {
+                this.getReadabilityWithDiff(analysisRaw, effectiveSettings).then((read) => {
                     if (token !== this.state.analysisToken) return;
-                    this.performAnalysis(raw, read, analysisRaw);
+                    this.performAnalysis(raw, read, analysisRaw, effectiveSettings);
                 });
                 return;
             }
-            this.performAnalysis(raw, SA_Logic.analyzeReadability(analysisRaw, this.settings), analysisRaw);
+            this.performAnalysis(raw, SA_Logic.analyzeReadability(analysisRaw, effectiveSettings), analysisRaw, effectiveSettings);
         }
 
-        performAnalysis(raw, read, analysisRaw = null) {
+        performAnalysis(raw, read, analysisRaw = null, effectiveSettings = this.getEffectiveSettings()) {
             const token = this.state.analysisToken;
             SA_Utils.storage.save(SA_CONFIG.STORAGE_KEY, raw);
-            const effectiveSettings = this.getEffectiveSettings();
             const wpm = SA_Logic.getWpm(effectiveSettings);
             const sps = SA_Logic.getSps(effectiveSettings);
             const analysisText = analysisRaw != null ? analysisRaw : SA_Utils.cleanTextForCounting(raw);
+            const profile = effectiveSettings.profile || this.normalizeProfile(this.settings.role);
+            const profileConfig = effectiveSettings.profileConfig || this.getProfileConfig(profile);
             
             const pause = SA_Utils.getPausenTime(raw, effectiveSettings);
             const timeMode = this.getEffectiveTimeMode();
@@ -5814,7 +5947,7 @@
             
             // CHAR COUNT LOGIC
             let countText = raw;
-            if (this.settings.numberMode === 'word') {
+            if (effectiveSettings.numberMode === 'word') {
                 // Expand numbers roughly to text length equivalent
                 // Heuristic: multiply number length by 4 (e.g. 12 -> 2 digits * 4 = 8 chars ~ "zwölf")
                 // A bit more precise: 0-12 map, else factor 4.5
@@ -5827,7 +5960,7 @@
             }
             countText = SA_Utils.cleanTextForCounting(countText);
             
-            if (this.settings.charMode === 'no-spaces') {
+            if (effectiveSettings.charMode === 'no-spaces') {
                 countText = countText.replace(/\s/g, '');
             }
             
@@ -5854,7 +5987,7 @@
                 }
             }
 
-            const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, this.settings);
+            const bpmSuggestion = SA_Logic.analyzeBpmSuggestion(read, effectiveSettings);
             const previousBpm = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
             this.state.clickTrack.bpm = bpmSuggestion.bpm;
             if (!this.isPremiumActive() && this.state.clickTrack.playing) {
@@ -5889,7 +6022,6 @@
             const isToolCard = (id) => toolCards.includes(id);
             const getCardContainer = (id) => (isToolCard(id) ? this.toolsModalStore : this.bottomGrid);
 
-            const profile = this.settings.role;
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             let availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
             if (!this.isPremiumActive()) {
@@ -5923,12 +6055,22 @@
                 switch(id) {
                     case 'char': this.renderCharCard(read, raw, active); break;
                     case 'coach': this.renderCoachCard(dur, read, analysisText, read.sentences, active, sectionStats, syllableStretches); break;
-                    case 'stumble': this.renderStumbleCard(SA_Logic.findStumbles(analysisText), active); break;
+                    case 'stumble':
+                        if (!active) {
+                            this.updateCard('stumble', this.renderDisabledState(), this.bottomGrid, '', '', true);
+                            break;
+                        }
+                        if (profileConfig.features && profileConfig.features.phonetics === false) {
+                            this.updateCard('stumble', '<p style="color:#64748b; font-size:0.9rem;">Phonetik-Check nur im Sprecher- oder Regie-Profil.</p>');
+                            break;
+                        }
+                        this.renderStumbleCard(SA_Logic.findStumbles(analysisText), active);
+                        break;
                     case 'fillers': this.renderFillerCard(SA_Logic.findFillers(read.cleanedText), active); break;
                     case 'nominal': this.renderNominalCard(SA_Logic.findNominalStyle(read.cleanedText), active); break;
                     case 'nominal_chain': this.renderNominalChainCard(SA_Logic.findNominalChains(read.cleanedText), active); break;
                     case 'anglicism': this.renderAnglicismCard(SA_Logic.findAnglicisms(read.cleanedText), active); break;
-                    case 'breath': this.renderBreathCard(SA_Logic.findBreathKillers(read.sentences), active); break;
+                    case 'breath': this.renderBreathCard(SA_Logic.findBreathKillers(read.sentences, effectiveSettings), active, profileConfig); break;
                     case 'echo': this.renderEchoCard(SA_Logic.findWordEchoes(read.cleanedText), active); break;
                     case 'passive': this.renderPassiveCard(SA_Logic.findPassive(read.cleanedText), read.wordCount, active); break;
                     case 'cta': this.renderCtaCard(analysisText, active); break;
@@ -5948,15 +6090,21 @@
                             this.renderKeywordFocusCard(null, false);
                             break;
                         }
+                        if (profileConfig.features && profileConfig.features.keywordFocus === false) {
+                            this.updateCard('keyword_focus', '<p style="color:#64748b; font-size:0.9rem;">Keyword-Fokus ist nur im Autor:innen- oder Marketing-Profil aktiv.</p>');
+                            break;
+                        }
                         if (useWorker) {
                             this.updateCard('keyword_focus', this.renderLoadingState('Keyword-Fokus wird berechnet...'), this.bottomGrid, '', '', true);
                             this.requestWorkerTask('keyword_focus', {
                                 text: analysisText,
                                 settings: {
                                     focusKeywords: this.settings.focusKeywords,
-                                    keywordDensityLimit: this.settings.keywordDensityLimit
+                                    keywordDensityLimit: this.settings.keywordDensityLimit,
+                                    profile
                                 },
-                                stopwords: SA_CONFIG.STOPWORDS
+                                stopwords: SA_CONFIG.STOPWORDS,
+                                profile
                             }).then((result) => {
                                 if (token !== this.state.analysisToken || !isActive('keyword_focus')) return;
                                 if (!result) {
@@ -6015,7 +6163,7 @@
                     case 'verb_balance': this.renderVerbBalanceCard(SA_Logic.analyzeVerbNounBalance(read.cleanedText, read.sentences), active); break;
                     case 'rhet_questions': this.renderRhetoricalQuestionsCard(SA_Logic.analyzeRhetoricalQuestions(analysisText, read.sentences), active); break;
                     case 'depth_check': this.renderDepthCheckCard(SA_Logic.analyzeDepthCheck(read.sentences), active); break;
-                    case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active); break;
+                    case 'sentiment_intensity': this.renderSentimentIntensityCard(SA_Logic.analyzeSentimentIntensity(read.sentences), active, profileConfig, analysisText); break;
                     case 'pacing': this.renderPacingCard(dur, raw, active, sectionStats); break;
                     case 'teleprompter': this.renderTeleprompterCard(read, active); break;
                     case 'compliance_check': this.renderComplianceCard(analysisText, active); break;
@@ -6039,6 +6187,7 @@
             this.renderUpgradePanel();
             this.renderHiddenPanel();
             this.renderFilterBar();
+            this.updateGridVisibility();
             this.renderPremiumTeaserNote();
             if (this.state.savedVersion && this.isPremiumActive()) {
                 this.renderComparison(dur, read.wordCount, read.score);
@@ -6465,7 +6614,7 @@
             this.updateCard('depth_check', h);
         }
 
-        renderSentimentIntensityCard(data, active) {
+        renderSentimentIntensityCard(data, active, profileConfig = {}, analysisText = '') {
             if(!active) return this.updateCard('sentiment_intensity', this.renderDisabledState(), this.bottomGrid, '', '', true);
             if(!data || data.length === 0) return this.updateCard('sentiment_intensity', '<p style="color:#94a3b8; font-size:0.9rem;">Zu wenig Text für einen Vibe-Check.</p>');
 
@@ -6512,6 +6661,24 @@
                     <span class="ska-intensity-chip is-negative">Kritisch</span>
                     <span class="ska-intensity-note">Tipp: Schwankungen zeigen Stimmungswechsel in den Sätzen.</span>
                 </div>`;
+            if (profileConfig.sentimentTarget === 'positive') {
+                const isPositiveEnough = avgScore >= 0.15;
+                h += `
+                    <div class="ska-sentiment-target ${isPositiveEnough ? 'is-ok' : 'is-alert'}">
+                        <strong>${isPositiveEnough ? 'Positiver Grundton bestätigt.' : 'Achtung: Sentiment wirkt zu neutral/kritisch.'}</strong>
+                        <span>${isPositiveEnough ? 'Der Text wirkt aktiv und positiv.' : 'Für Marketing bitte mehr positive/aktive Formulierungen einbauen.'}</span>
+                    </div>`;
+            }
+            if (profileConfig.powerWordsCheck) {
+                const powerWords = SA_Logic.findPowerWords(analysisText);
+                h += `
+                    <div class="ska-sentiment-power">
+                        <strong>Power-Words</strong>
+                        ${powerWords.length
+                            ? `<span>${powerWords.length} Treffer: ${powerWords.slice(0, 6).map(word => `<span class="skriptanalyse-badge skriptanalyse-badge--keyword">${word}</span>`).join(' ')}</span>`
+                            : `<span>Keine Power-Words gefunden. Ergänze stärkende Begriffe.</span>`}
+                    </div>`;
+            }
             h += this.renderTipSection('sentiment_intensity', true);
             this.updateCard('sentiment_intensity', h);
         }
@@ -7639,21 +7806,25 @@
             this.updateCard('anglicism', h);
         }
 
-        renderBreathCard(killers, active) {
+        renderBreathCard(killers, active, profileConfig = {}) {
             if(!active) return this.updateCard('breath', this.renderDisabledState(), this.bottomGrid, '', '', true);
 
             let h = '';
             const isPremium = this.isPremiumActive();
+            const wordLimit = Number.isFinite(profileConfig.sentenceWarningLimit) ? profileConfig.sentenceWarningLimit : 25;
+            const criticalLimit = Number.isFinite(profileConfig.criticalSentenceLimit) ? profileConfig.criticalSentenceLimit : wordLimit + 5;
+            const breathLabel = profileConfig.breathLabel || 'Keine Pause / Atemdruck';
             if(!killers || killers.length === 0) {
                  h = `<div style="text-align:center; padding:1rem; color:${SA_CONFIG.COLORS.success}; background:#f0fdf4; border-radius:8px;">🫁 Alles flüssig!</div>`;
             } else {
                 h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.8rem;">Gefundene Stellen: <strong>${killers.length}</strong></div><div class="ska-problem-list">`;
                 const renderItem = (k) => {
                     let reasons = [];
-                    if(k.words > 25) reasons.push(`${k.words} Wörter`);
+                    if(k.words > wordLimit) reasons.push(`${k.words} Wörter`);
                     if(k.commas >= 4) reasons.push(`${k.commas} Kommas`);
-                    if(k.hardSegment) reasons.push(`Keine Pause / Atemdruck`);
-                    return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
+                    if(k.hardSegment) reasons.push(breathLabel);
+                    const isCritical = k.words > criticalLimit;
+                    return `<div class="ska-problem-item">${k.text.replace(/(\r\n|\n|\r)/gm, " ")}<div class="ska-problem-meta ${isCritical ? 'is-critical' : ''}">⚠️ ${reasons.join(' &bull; ')}</div></div>`;
                 };
                 if (isPremium) {
                     killers.slice(0, 3).forEach(k => { h += renderItem(k); });
@@ -7923,7 +8094,7 @@
             return chapters
                 .map((chapter) => {
                     const content = chapter.lines.join('\n').trim();
-                    const read = SA_Logic.analyzeReadability(content, this.settings);
+                    const read = SA_Logic.analyzeReadability(content, this.getEffectiveSettings());
                     return {
                         title: chapter.title,
                         content,
@@ -7956,23 +8127,76 @@
             return this.isPremiumActive() && this.settings.timeMode === 'sps' ? 'sps' : 'wpm';
         }
 
+        normalizeProfile(profile) {
+            const value = profile || '';
+            const mapping = {
+                autor: 'author',
+                author: 'author',
+                sprecher: 'speaker',
+                speaker: 'speaker',
+                regie: 'director',
+                director: 'director',
+                agentur: 'agency',
+                agency: 'agency',
+                marketing: 'marketing',
+                general: 'general',
+                allgemein: 'general'
+            };
+            return mapping[value] || 'general';
+        }
+
+        getProfileConfig(profile = this.settings.role) {
+            const normalized = this.normalizeProfile(profile);
+            const shared = typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS?.PROFILE_CONFIG : null;
+            if (shared && shared[normalized]) return shared[normalized];
+            if (SA_CONFIG.PROFILE_DEFAULTS[normalized]) return SA_CONFIG.PROFILE_DEFAULTS[normalized];
+            return SA_CONFIG.PROFILE_DEFAULTS.general || {};
+        }
+
+        getProfileLabel(profile = this.settings.role) {
+            const config = this.getProfileConfig(profile);
+            return config.label || 'Allgemein';
+        }
+
         getEffectiveSettings() {
-            if (this.isPremiumActive()) return this.settings;
+            const normalizedProfile = this.normalizeProfile(this.settings.role);
+            const baseSettings = this.isPremiumActive()
+                ? { ...this.settings }
+                : {
+                    ...this.settings,
+                    timeMode: 'wpm',
+                    manualWpm: 0,
+                    commaPause: 0.2,
+                    periodPause: 0.5,
+                    paragraphPause: 1,
+                    audienceTarget: '',
+                    focusKeywords: '',
+                    complianceText: ''
+                };
+            const profileConfig = this.getProfileConfig(normalizedProfile);
             return {
-                ...this.settings,
-                timeMode: 'wpm',
-                manualWpm: 0,
-                commaPause: 0.2,
-                periodPause: 0.5,
-                paragraphPause: 1,
-                audienceTarget: '',
-                focusKeywords: '',
-                complianceText: ''
+                ...baseSettings,
+                role: normalizedProfile,
+                profile: normalizedProfile,
+                profileConfig,
+                numberMode: profileConfig.numberMode || baseSettings.numberMode,
+                commaPause: typeof profileConfig.commaPause === 'number' ? profileConfig.commaPause : baseSettings.commaPause,
+                periodPause: typeof profileConfig.periodPause === 'number' ? profileConfig.periodPause : baseSettings.periodPause,
+                paragraphPause: typeof profileConfig.paragraphPause === 'number' ? profileConfig.paragraphPause : baseSettings.paragraphPause,
+                ignorePauseMarkers: profileConfig.ignorePauseMarkers || baseSettings.ignorePauseMarkers
             };
         }
 
         isAuthorProfile() {
-            return this.settings.role === 'autor' || this.settings.role === 'author';
+            return this.normalizeProfile(this.settings.role) === 'author';
+        }
+
+        isSpeakerProfile() {
+            return this.normalizeProfile(this.settings.role) === 'speaker';
+        }
+
+        isDirectorProfile() {
+            return this.normalizeProfile(this.settings.role) === 'director';
         }
 
         isPremiumCard(id) {
@@ -8271,11 +8495,23 @@
         }
 
         renderPremiumTeaserNote() {
-            if (!this.legendContainer) return;
-            const container = this.legendContainer.parentElement;
+            if (!this.bottomGrid) return;
+            const container = this.bottomGrid.parentElement;
             if (!container) return;
-            const existing = container.querySelector('.ska-premium-teaser-note');
+            const existing = container.querySelector('.ska-profile-upsell-bar');
             if (existing) existing.remove();
+            if (this.isPremiumActive()) return;
+            const profile = this.normalizeProfile(this.settings.role);
+            const allowedList = SA_CONFIG.PROFILE_CARDS[profile] || SA_CONFIG.CARD_ORDER;
+            const relevant = allowedList.filter((id) => this.isCardAvailable(id));
+            const hiddenPremium = relevant.filter((id) => !this.isCardUnlocked(id) && !this.isCardTeaser(id));
+            const hiddenCount = hiddenPremium.length;
+            if (!hiddenCount) return;
+            const profileLabel = this.getProfileLabel(profile);
+            const bar = document.createElement('div');
+            bar.className = 'ska-profile-upsell-bar';
+            bar.innerHTML = `<span>+ ${hiddenCount} weitere Analyseboxen und Profi-Funktionen für <strong>${profileLabel}</strong> im Premium-Plan verfügbar.</span>`;
+            this.bottomGrid.insertAdjacentElement('afterend', bar);
         }
 
         setupPremiumUpgradeScroll(grid) {
