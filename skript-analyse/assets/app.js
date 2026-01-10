@@ -224,6 +224,7 @@
             agency: ['overview', 'char', 'chapter_calc', 'sentiment_intensity', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'compliance_check', 'keyword_focus'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'sentiment_intensity', 'easy_language', 'rhythm']
         },
+        TOOLS_ALWAYS_VISIBLE: ['teleprompter', 'word_sprint', 'pacing'],
         TOOL_CARDS: ['teleprompter', 'pacing', 'word_sprint'],
         AUDIENCE_TARGETS: {
             kinder: { label: 'Kindersendung', minScore: 70, maxSentence: 14 },
@@ -2907,7 +2908,8 @@
                 limitReached: false,
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
-                search: { query: '', matches: [], index: -1 }
+                search: { query: '', matches: [], index: -1 },
+                feedbackDrawerOpen: false
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -2930,6 +2932,7 @@
             this.renderTeleprompterModal();
             this.initAnalysisWorker();
             this.bindEvents();
+            this.renderFeedbackDrawer();
             
             this.injectGlobalStyles(); // CSS Overrides
             this.initSynonymTooltip();
@@ -2970,6 +2973,7 @@
             this.roleSelect = q('[data-role-select]');
             this.targetInput = q('[data-target-input]');
             this.filterBar = q('.ska-analysis-filterbar');
+            this.feedbackDrawer = q('.ska-feedback-drawer');
             
             // Add settings button if missing
             const headerActions = this.root.querySelector('.skriptanalyse-input-actions');
@@ -4497,6 +4501,11 @@
                 this.updateGridVisibility();
                 return true;
             }
+            if (act === 'toggle-feedback-drawer') {
+                this.state.feedbackDrawerOpen = !this.state.feedbackDrawerOpen;
+                this.renderFeedbackDrawer();
+                return true;
+            }
             if (act === 'toggle-filter-collapse') {
                 this.state.filterCollapsed = !this.state.filterCollapsed;
                 if (this.filterBar) {
@@ -5693,20 +5702,34 @@
                 if (container) {
                     const existingRating = container.querySelector('.ska-rating-box');
                     if (existingRating) existingRating.remove();
-                    if (isPremium) {
-                        const ratingBox = document.createElement('div');
-                        ratingBox.className = 'ska-rating-box';
-                        ratingBox.innerHTML = `
-                            <div class="ska-card-header">
-                                <h3>Analyse-System bewerten</h3>
-                            </div>
-                            <p>Wie hilfreich sind die Auswertungen? Dein Feedback hilft, die Analyse weiter zu verbessern.</p>
-                            <div class="ska-rating-form">[fluentform id="7"]</div>
-                        `;
-                        container.insertBefore(ratingBox, this.legendContainer.nextSibling);
-                    }
                 }
             }
+        }
+
+        renderFeedbackDrawer() {
+            if (!this.root) return;
+            if (!this.feedbackDrawer) {
+                const drawer = document.createElement('div');
+                drawer.className = 'ska-feedback-drawer';
+                drawer.innerHTML = `
+                    <button class="ska-feedback-tab" type="button" data-action="toggle-feedback-drawer" aria-expanded="false">
+                        ⭐ Feedback geben
+                    </button>
+                    <div class="ska-feedback-panel" role="dialog" aria-label="Feedback geben">
+                        <div class="ska-feedback-header">
+                            <strong>Feedback geben</strong>
+                            <button class="ska-feedback-close" type="button" data-action="toggle-feedback-drawer" aria-label="Feedback schließen">×</button>
+                        </div>
+                        <div class="ska-feedback-body">[fluentform id="7"]</div>
+                    </div>
+                `;
+                this.root.appendChild(drawer);
+                this.feedbackDrawer = drawer;
+            }
+            this.feedbackDrawer.classList.toggle('is-open', this.state.feedbackDrawerOpen);
+            this.feedbackDrawer.querySelectorAll('[data-action="toggle-feedback-drawer"]').forEach((btn) => {
+                btn.setAttribute('aria-expanded', this.state.feedbackDrawerOpen ? 'true' : 'false');
+            });
         }
 
         renderToolsButtons(toolIds = []) {
@@ -5839,24 +5862,27 @@
                         </select>
                     </div>
                 </div>`;
-            const filterToggle = `
-                <label class="ska-filterbar-profile-toggle">
-                    <input type="checkbox" data-action="toggle-profile-filter" ${filterByProfile ? 'checked' : ''}>
-                    <span>Nach Profil filtern</span>
-                </label>`;
+            const profileLabel = SA_CONFIG.PROFILE_DEFAULTS[profile] ? SA_CONFIG.PROFILE_DEFAULTS[profile].label : 'Profil';
+            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : `Nur ${profileLabel} anzeigen`;
+            const profileFilterLink = `
+                <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
+                    ${profileFilterLabel}
+                </button>`;
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
                         ${profileSelect}
-                        ${filterToggle}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
                 <div class="ska-filterbar-body">
                     <div class="ska-filterbar-bulk">
-                        <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
-                        <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
+                        <div class="ska-filterbar-bulk-actions">
+                            <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
+                            <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
+                        </div>
+                        ${profileFilterLink}
                     </div>
                     ${freeItems.map(id => {
                         const locked = !this.isCardUnlocked(id);
@@ -5880,7 +5906,8 @@
             const allowed = allowedList ? new Set(allowedList) : null;
             const filterByProfile = Boolean(this.state.filterByProfile && allowed);
             const toolCards = new Set(SA_CONFIG.TOOL_CARDS || []);
-            const isPlanVisible = (id) => this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
+            const alwaysVisible = new Set(SA_CONFIG.TOOLS_ALWAYS_VISIBLE || []);
+            const isPlanVisible = (id) => alwaysVisible.has(id) || this.isPremiumActive() || this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview';
             const applyVisibility = (card) => {
                 const id = card.dataset.cardId;
                 if (!id) return;
