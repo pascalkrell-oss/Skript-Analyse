@@ -383,69 +383,78 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-section--plans { margin-top: 2rem; }
 .ska-premium-upgrade-section--analysis { margin-top: 1.6rem; margin-bottom: 20px; border-top: none; padding-top: 0; }
 .ska-premium-upgrade-subtitle { font-size: 0.75rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
-.ska-premium-upgrade-listing { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.55rem; font-size: 0.82rem; }
 .ska-premium-upgrade-listing--extra { display: grid; margin-top: 0.6rem; }
 .ska-premium-upgrade-section--analysis.is-expanded .ska-premium-upgrade-listing--extra { display: grid; }
 .ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
 .ska-premium-upgrade-listing--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.ska-premium-upgrade-listing li { display: flex; align-items: flex-start; gap: 0.45rem; position: relative; cursor: pointer; padding-left: 26px !important; list-style: none !important; list-style-type: none !important; background: none !important; background-image: none !important; position: relative; }
-.ska-premium-upgrade-listing li::after {
-    content: attr(data-info);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(0);
-    margin-bottom: 10px;
-    width: max-content;
-    max-width: 280px;
-    white-space: normal;
-    word-break: break-word;
-    background: linear-gradient(140deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
-    color: #f8fafc;
-    font-size: 0.78rem;
-    font-weight: 500;
-    padding: 0.75rem 0.95rem;
-    border-radius: 10px;
-    text-align: center;
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    box-shadow: 0 16px 28px -18px rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(6px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s ease;
-    z-index: 10;
-}
-.ska-premium-upgrade-listing li::after { display: none !important; }
-.ska-premium-upgrade-listing li::before {
-    content: '' !important;
-    position: absolute;
-    left: 0;
-    top: 3px;
-    width: 18px;
-    height: 18px;
-    background-color: currentColor;
-    -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
-    mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
+/* =========================================
+   LIST-ICON RESET & CUSTOM CHECK FIX
+   ========================================= */
+
+/* 1. RESET: Alles töten, was nach Standard-Liste aussieht */
+.ska-premium-upgrade-listing,
+.ska-premium-upgrade-listing li {
+    list-style: none !important;
+    list-style-type: none !important;
+    list-style-image: none !important;
+    margin-left: 0 !important;
+    padding-left: 26px !important; /* Platz für unser Icon reservieren */
+    background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
     border: none !important;
-    transform: none !important;
+    position: relative;
 }
-.ska-premium-upgrade-listing li:hover::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-4px);
+
+/* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
+.ska-premium-upgrade-listing li::marker {
+    content: none !important;
+    display: none !important;
 }
+.ska-premium-upgrade-listing li::after {
+    content: none !important;
+    display: none !important;
+}
+
+/* 3. REBUILD: Nur DEIN Check-Icon auf ::before aufbauen */
+.ska-premium-upgrade-listing li::before {
+    /* Positionierung */
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 3px !important; /* Feinjustierung der Höhe */
+    width: 18px !important;
+    height: 18px !important;
+
+    /* Reset möglicher Theme-Styles auf ::before */
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-family: inherit !important; /* Verhindert FontAwesome o.ä. */
+    
+    /* Das Mask-Icon (Dein SVG) */
+    -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
+    mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
+    -webkit-mask-size: contain !important;
+    mask-size: contain !important;
+    -webkit-mask-repeat: no-repeat !important;
+    mask-repeat: no-repeat !important;
+    
+    /* Standard-Farbe (Fallback) */
+    background-color: currentColor !important;
+}
+
+/* 4. FARB-ZUWEISUNG */
+
+/* Basis Box: Dunkel (rgb 15, 23, 42) */
 .ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing li::before {
-    background-color: rgb(15, 23, 42);
+    background-color: rgb(15, 23, 42) !important;
 }
+
+/* Premium Box: Blau (#1a93ee) */
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
-    background-color: #1a93ee;
+    background-color: #1a93ee !important;
 }
-.ska-premium-upgrade-listing li span { font-weight: 420; }
 .ska-upgrade-check { width: 20px; height: 20px; border-radius: 999px; background: #dcfce7; color: #16a34a; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
 .ska-premium-upgrade-col.is-premium .ska-upgrade-check { background: #e0f2fe; color: #0284c7; }
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
