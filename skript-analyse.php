@@ -33,6 +33,34 @@ function ska_register_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
+/* * CLEAN CHECKOUT FOR IFRAME 
+ * Blendet Header/Footer aus, wenn ?embedded_checkout=1 in der URL ist.
+ */
+add_action( 'wp', function() {
+    if ( isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1' ) {
+        // Entfernt Header und Footer in den meisten Themes
+        add_filter( 'show_admin_bar', '__return_false' );
+
+        // CSS ausgeben, um Header/Footer hart auszublenden (Theme-abhängig)
+        add_action( 'wp_head', function() {
+            echo '<style>
+                header, footer, #masthead, #colophon, .site-header, .site-footer, .elementor-location-header, .elementor-location-footer {
+                    display: none !important;
+                }
+                body {
+                    background: #fff !important;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    overflow-x: hidden;
+                }
+                .woocommerce { padding: 20px; }
+                /* Entfernt oft störende Breadcrumbs */
+                .woocommerce-breadcrumb, nav { display: none !important; }
+            </style>';
+        } );
+    }
+} );
+
 function ska_shortcode() {
     wp_enqueue_style( 'skript-analyse-css' );
     wp_enqueue_script( 'skript-analyse-js' );
