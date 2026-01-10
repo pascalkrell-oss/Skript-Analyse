@@ -362,15 +362,32 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-header-row .ska-premium-upgrade-title { margin-bottom: 0; }
 .ska-premium-upgrade-badge { background: #0f172a; color: #f8fafc; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; justify-content: center; text-align: center; animation: ska-fade-in 0.25s ease both; white-space: nowrap; min-width: 130px; line-height: 1; }
 .ska-premium-upgrade-badge--free { background: #dcfce7; color: #16a34a; }
-.ska-premium-upgrade-price { font-size: 40px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex; align-items: baseline; gap: 0.45rem; line-height: 1; }
+.ska-premium-upgrade-price { font-size: 40px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex !important; align-items: baseline !important; justify-content: flex-start !important; text-align: left !important; flex-wrap: wrap; gap: 0.45rem; line-height: 1; }
 .ska-premium-upgrade-price-prefix { font-size: 0.78rem; font-weight: 700; color: #64748b; letter-spacing: 0.01em; text-transform: uppercase; }
 .ska-premium-upgrade-price-label { font-size: 0.82rem; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; line-height: 1.1; }
 .ska-premium-upgrade-price-value { font-size: 40px; font-weight: 800; color: #0284c7; }
-.ska-premium-upgrade-price-meta { display: flex; align-items: flex-end; gap: 0.35rem; line-height: 1; }
-.ska-premium-upgrade-price-currency { font-size: inherit; font-weight: 800; color: #0284c7; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1; }
-.ska-premium-upgrade-tax { display: flex; flex-direction: column; align-items: flex-start; padding-bottom: 0; margin-bottom: 0; line-height: 1; }
-.ska-premium-upgrade-tax-value { line-height: 1; }
-.ska-premium-upgrade-price-suffix { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-top: 0; transform: none; align-self: baseline; }
+.ska-premium-upgrade-price-meta { display: inline-flex; align-items: baseline; gap: 0.35rem; line-height: 1; }
+.ska-premium-upgrade-price-currency { font-size: 2rem !important; font-weight: 800; color: #0284c7; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1; margin-right: 6px; }
+.ska-premium-upgrade-tax,
+.ska-premium-upgrade-price-suffix {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    font-size: 0.75rem !important;
+    font-weight: 600;
+    color: #94a3b8;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    line-height: 1;
+    text-transform: none !important;
+}
+.ska-premium-upgrade-tax-prefix,
+.ska-premium-upgrade-tax-value {
+    font-size: inherit;
+    color: inherit;
+    line-height: 1;
+}
 .ska-premium-upgrade-price--free { color: #0f172a; }
 .ska-premium-upgrade-price--free .ska-premium-upgrade-price-value { color: #0284c7; }
 .ska-premium-upgrade-price--free .ska-premium-upgrade-price-currency { color: #0284c7; }
@@ -392,12 +409,12 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-section--analysis { margin-top: 1.6rem; margin-bottom: 20px; border-top: none; padding-top: 0; }
 .ska-premium-upgrade-subtitle { font-size: 0.75rem; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
 .ska-premium-upgrade-section h5 {
-    font-size: 0.75rem;
+    font-size: 13.8px !important;
     font-weight: 700;
     color: #0f172a;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.8rem !important;
 }
 .ska-premium-upgrade-listing--extra { display: grid; margin-top: 0.6rem; }
 .ska-premium-upgrade-section--analysis.is-expanded .ska-premium-upgrade-listing--extra { display: grid; }
@@ -427,8 +444,8 @@ body.ska-modal-open { overflow: hidden !important; }
     align-items: flex-start !important; /* Icon oben bündig mit Textzeile */
     justify-content: flex-start !important; /* TEXT LINKSBÜNDIG */
     text-align: left !important;
-    font-size: 0.95rem;
-    line-height: 1.4;
+    font-size: 12.5px !important;
+    line-height: 1.4 !important;
     cursor: help; /* Zeigt Maus-Interaktion an */
 }
 /* Das Icon (via Mask) */
@@ -1451,9 +1468,25 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .ska-checkout-iframe { width: 100%; height: 80vh; border: none; }
 .ska-tool-modal-intro { margin: 0 0 1.2rem 0; color: #64748b; font-size: 0.92rem; line-height: 1.6; }
-.ska-premium-upgrade-tax { color: #94a3b8; font-weight: 700; display: inline-flex; flex-direction: column; justify-content: flex-end; line-height: 0.9; text-transform: uppercase; letter-spacing: 0.04em; align-self: flex-end; font-size: inherit; margin-right: 0.2rem; }
+.ska-premium-upgrade-tax {
+    color: #94a3b8;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    margin: 0;
+    padding: 0;
+}
 .ska-premium-upgrade-tax-prefix,
-.ska-premium-upgrade-tax-value { font-size: 0.3em; color: #94a3b8; line-height: 0.85; }
+.ska-premium-upgrade-tax-value {
+    font-size: inherit;
+    color: inherit;
+    line-height: 1;
+}
 @keyframes ska-spin { to { transform: rotate(360deg); } }
 
 
@@ -2027,6 +2060,12 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 
 .ska-price-card--premium ul li::before {
     background-color: var(--ska-primary);
+}
+
+.ska-price-card--basic h3,
+.ska-price-card--basic .ska-price-row {
+    justify-content: flex-start !important;
+    text-align: left !important;
 }
 
 
