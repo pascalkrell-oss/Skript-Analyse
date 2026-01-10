@@ -393,28 +393,56 @@ body.ska-modal-open { overflow: hidden !important; }
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
 
-/* 1. LAYOUT BEIBEHALTEN (Kein Grid-Override am Container!) */
-.ska-premium-upgrade-listing {
-    /* Wir ändern hier NICHTS am Layout, damit Spalten & Hover bleiben wie früher */
-    padding: 0;
-    margin: 0;
+/* 1. GRID-SYSTEM (Nur Premium-Spalte) */
+.ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    column-gap: 2rem !important;
+    row-gap: 0.8rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* BASIS Spalte: Bleibt 1-spaltig */
+.ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.8rem !important;
 }
 
 /* 2. LIST-ITEM CLEANUP (Nur Bulletpoints entfernen) */
 .ska-premium-upgrade-listing li {
-    list-style: none !important; /* Standard-Bullets weg */
-    background-image: none !important; /* Theme-Icons weg */
-    position: relative;
-    padding-left: 28px !important; /* Platz für Icon schaffen */
-    margin-bottom: 0.5rem; /* Original Abstand */
-    cursor: pointer; /* Hover-Hand behalten */
+    list-style: none !important;
+    background-image: none !important;
+    position: relative !important;
+    padding-left: 28px !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    cursor: pointer;
+}
+
+/* KILLER-FIX für Lücken */
+.ska-premium-upgrade-listing li.is-hidden,
+.ska-premium-upgrade-listing li[style="display: none"] {
+    display: none !important;
+    position: absolute !important;
+    visibility: hidden !important;
 }
 
 /* 3. ALTE ELEMENTE VERSTECKEN */
 .ska-premium-upgrade-listing li::marker {
     content: none !important;
 }
-.ska-premium-upgrade-listing li::after {
+.ska-premium-upgrade-listing li:not([data-tooltip]):not([data-info])::after {
     display: none !important;
 }
 
@@ -423,31 +451,69 @@ body.ska-modal-open { overflow: hidden !important; }
     content: '' !important;
     position: absolute !important;
     left: 0 !important;
-    top: 4px !important; /* Optische Höhe anpassen */
+    top: 4px !important;
     width: 18px !important;
     height: 18px !important;
     border: none !important;
 
-    /* Dein SVG Icon */
     -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     -webkit-mask-size: contain !important;
     mask-size: contain !important;
     -webkit-mask-repeat: no-repeat !important;
     mask-repeat: no-repeat !important;
-    /* Fallback Background damit es sichtbar ist */
     background-color: currentColor !important;
 }
 
 /* 5. FARBEN */
-/* Basis (Free): Dunkel */
 .ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing li::before {
     background-color: rgb(15, 23, 42) !important;
 }
-
-/* Premium: Blau */
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing li::before {
     background-color: #1a93ee !important;
+}
+
+/* Hover-Tooltip Fix */
+.ska-premium-upgrade-card,
+.ska-premium-upgrade-col {
+    overflow: visible !important;
+    z-index: 1;
+}
+
+.ska-premium-upgrade-listing li .ska-info-badge,
+.ska-premium-upgrade-listing li[data-tooltip]::after,
+.ska-premium-upgrade-listing li[data-info]::after {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: #333;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 9999 !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.ska-premium-upgrade-listing li[data-tooltip]::after {
+    content: attr(data-tooltip);
+}
+
+.ska-premium-upgrade-listing li[data-info]::after {
+    content: attr(data-info);
+}
+
+.ska-premium-upgrade-listing li:hover .ska-info-badge,
+.ska-premium-upgrade-listing li:hover::after {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(-5px);
 }
 .ska-premium-upgrade-hover { position: relative; display: inline-flex; align-items: center; margin-top: 0.6rem; color: #0284c7; font-weight: 700; font-size: 0.8rem; }
 .ska-premium-upgrade-hover-label { cursor: default; }
