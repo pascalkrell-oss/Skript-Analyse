@@ -388,12 +388,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-more { display: none; border: none; background: transparent; color: #0284c7; font-weight: 700; font-size: 0.78rem; margin-top: 0.6rem; cursor: pointer; padding: 0; text-align: left; }
 .ska-premium-upgrade-more:hover { text-decoration: underline; }
 .ska-premium-upgrade-section + .ska-premium-upgrade-section { margin-top: 1.6rem; }
-.ska-premium-upgrade-listing--grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.35rem 1.1rem;
-    justify-items: start;
-}
+.ska-premium-upgrade-listing--grid { grid-template-columns: 1fr 1fr; }
 /* =========================================
    LIST-ICON RESET & CUSTOM CHECK FIX
    ========================================= */
@@ -405,11 +400,28 @@ body.ska-modal-open { overflow: hidden !important; }
     list-style-type: none !important;
     list-style-image: none !important;
     margin-left: 0 !important;
-    padding-left: 26px !important; /* Platz für unser Icon reservieren */
     background: none !important;     /* Entfernt Hintergrundbilder vom Theme */
     border: none !important;
-    position: relative;
     text-align: left;
+}
+
+.ska-premium-upgrade-listing {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.5rem !important;
+    row-gap: 0 !important;
+    grid-auto-flow: row dense !important;
+    align-items: start !important;
+}
+
+.ska-premium-upgrade-listing li {
+    position: relative !important;
+    padding-left: 32px !important;
+    margin-bottom: 0.6rem !important;
+    text-indent: 0 !important;
+    line-height: 1.4 !important;
+    display: flex !important;
+    align-items: flex-start !important;
 }
 
 /* 2. KILLER: Verstecke Theme-Elemente (Marker & After-Elemente) */
@@ -429,8 +441,8 @@ body.ska-modal-open { overflow: hidden !important; }
     position: absolute !important;
     left: 0 !important;
     top: 3px !important; /* Feinjustierung der Höhe */
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px !important;
+    height: 20px !important;
 
     /* Reset möglicher Theme-Styles auf ::before */
     border: none !important;
@@ -448,6 +460,17 @@ body.ska-modal-open { overflow: hidden !important; }
     
     /* Standard-Farbe (Fallback) */
     background-color: currentColor !important;
+}
+
+.ska-premium-upgrade-listing li.is-hidden,
+.ska-premium-upgrade-listing li[style*="display: none"] {
+    display: none !important;
+}
+
+@media (max-width: 600px) {
+    .ska-premium-upgrade-listing {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* 4. FARB-ZUWEISUNG */
@@ -1803,6 +1826,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-premium-upgrade-titleline { flex-wrap: wrap; }
     .ska-premium-upgrade-switch { grid-template-columns: 1fr; }
     .ska-premium-upgrade-listing--grid { grid-template-columns: 1fr; }
+    .ska-premium-upgrade-listing { grid-template-columns: 1fr !important; }
     .ska-premium-upgrade-cta { flex-direction: column; align-items: stretch; }
     .ska-premium-upgrade-cta .ska-btn { width: 100%; }
     .ska-premium-upgrade-header span { line-height: 1.6; }

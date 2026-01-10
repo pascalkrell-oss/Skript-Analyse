@@ -8574,7 +8574,7 @@
                 const baseLabel = stripIcons ? stripBoxIcon(label) : label;
                 return cardInfoByTitle[baseLabel] || 'TEST BESCHREIBUNG';
             };
-            const renderList = (items, options = {}) => items.map(item => `
+            const renderList = (items, options = {}) => items.filter(Boolean).map(item => `
                 <li data-info="${getListInfo(item, options.stripIcons)}">
                     <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
                 </li>`).join('');
