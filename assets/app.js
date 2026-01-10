@@ -486,6 +486,77 @@
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
     };
 
+    const UPGRADE_CONTENT = {
+        basic: {
+            tools: [
+                { name: 'WPM-Modus', desc: 'Berechnet deine Lesegeschwindigkeit.' },
+                { name: 'Genre-Presets', desc: 'Voreinstellungen für verschiedene Textarten.' },
+                { name: 'Zeichen-Zählung', desc: 'Zählt Zeichen mit und ohne Leerzeichen.' },
+                { name: 'Wort- & Satzstatistik', desc: 'Analysiert Wortanzahl und Satzlängen.' },
+                { name: 'Lesbarkeits-Score', desc: 'Zeigt, wie leicht dein Text verständlich ist.' },
+                { name: 'Füllwort-Analyse (Basis)', desc: 'Findet grundlegende überflüssige Wörter.' },
+                { name: 'Autosave', desc: 'Speichert deinen Text lokal im Browser.' },
+                { name: 'PDF-Export (Basis)', desc: 'Einfacher PDF-Download deines Skripts.' }
+            ],
+            analysis: [
+                { name: 'Schnell-Überblick', desc: 'Die wichtigsten Metriken auf einen Blick.' },
+                { name: 'Tonalität & Stil', desc: 'Prüft die emotionale Wirkung des Textes.' },
+                { name: 'Füllwörter', desc: 'Markiert Wörter, die den Text aufblähen.' },
+                { name: 'Denglisch-Detektor', desc: 'Findet unnötige Anglizismen.' },
+                { name: 'Auffällige Sätze', desc: 'Markiert extrem lange oder kurze Sätze.' },
+                { name: 'Stolpersteine & Phonetik', desc: 'Findet schwer sprechbare Wortfolgen.' },
+                { name: 'Aussprache-Check', desc: 'Prüft Zahlen und Abkürzungen auf Sprechbarkeit.' }
+            ]
+        },
+        premium: {
+            tools: [
+                { name: 'Alles aus der Basis-Version', desc: 'Alle Funktionen des Free-Plans inklusive.' },
+                { name: 'SPS-Modus', desc: 'Silben pro Sekunde Analyse für Profis.' },
+                { name: 'Pausen-Automatik', desc: 'Berechnet natürliche Sprechpausen automatisch.' },
+                { name: 'WPM-Kalibrierung', desc: 'Miss deine persönliche Sprechgeschwindigkeit.' },
+                { name: 'Pro-PDF-Report', desc: 'Detaillierter Export für Regie und Kunden.' },
+                { name: 'Textvergleich', desc: 'Vergleiche verschiedene Versionen deines Skripts.' },
+                { name: 'Premium-Analyseboxen', desc: 'Zugriff auf alle KI-gestützten Analysen.' },
+                { name: 'Cloud-Speicher', desc: 'Speichere Projekte sicher & verschlüsselt online.' },
+                { name: 'Teleprompter', desc: 'Professioneller Prompter mit Sprachsteuerung.' },
+                { name: 'Schreib-Sprint & Fokus', desc: 'Ablenkungsfreier Modus mit Zielen.' },
+                { name: 'Sprech-Pacing', desc: 'Visualisiertes Timing-Training.' }
+            ],
+            analysis: [
+                { name: 'Regie-Anweisung', desc: 'Erkennt und formatiert Regie-Hinweise.' },
+                { name: 'Satz-Rhythmus', desc: 'Visualisiert den Fluss deiner Satzlängen.' },
+                { name: 'Hörbuch-Kapitel-Kalkulator', desc: 'Berechnet Timings für ganze Kapitel.' },
+                { name: 'Silben-Entropie', desc: 'Misst die Informationsdichte pro Silbe.' },
+                { name: 'Rollen-Verteilung', desc: 'Analysiert Sprechanteile verschiedener Rollen.' },
+                { name: 'Keyword-Fokus', desc: 'Prüft SEO-Keywords und Dichte.' },
+                { name: 'Plosiv-Check', desc: 'Warnt vor harten P/T/K Lauten (Popp-Geräusche).' },
+                { name: 'Leichte Sprache', desc: 'Prüft auf Barrierefreiheit (B1/B2 Level).' },
+                { name: 'Semantische Redundanz', desc: 'Findet inhaltliche Wiederholungen.' },
+                { name: 'Buzzword-Check', desc: 'Findet abgedroschene Phrasen.' },
+                { name: 'Metaphern & Phrasen', desc: 'Analysiert bildhafte Sprache.' },
+                { name: "Immersion & Show, don't tell", desc: 'Prüft auf distanzierende Filter-Wörter.' },
+                { name: 'Zielgruppen-Filter', desc: 'Passt Analyse auf deine Hörer an.' },
+                { name: 'Rhetorische Fragen', desc: 'Zählt und bewertet Fragen im Text.' },
+                { name: 'Satz-Verschachtelung', desc: 'Warnt vor zu komplexen Schachtelsätzen.' },
+                { name: 'Satzanfang-Varianz', desc: 'Prüft auf repetitive Satzstarts.' },
+                { name: 'Pflichttext-Check', desc: 'Validiert rechtliche Disclaimer.' },
+                { name: 'Gender-Neutralität', desc: 'Prüft auf inklusive Sprache.' },
+                { name: 'Wort-Echos', desc: 'Findet Wortwiederholungen auf engem Raum.' },
+                { name: 'Adjektiv-Dichte', desc: 'Warnt vor übermäßigem Adjektiv-Gebrauch.' },
+                { name: 'Adverbien-Check', desc: 'Findet schwache Verben-Modifikatoren.' },
+                { name: 'Passiv-Indikator', desc: 'Markiert passive Formulierungen.' },
+                { name: 'Bürokratie-Filter', desc: 'Findet Beamtendeutsch und Nominalstil.' },
+                { name: 'Nominal-Ketten', desc: 'Warnt vor aneinandergereihten Substantiven.' },
+                { name: 'Stimmungs-Intensität', desc: 'Misst die emotionale Stärke.' },
+                { name: 'Call to Action', desc: 'Prüft, ob eine Handlungsaufforderung existiert.' },
+                { name: 'Verb-Fokus', desc: 'Analysiert die Stärke deiner Verben.' },
+                { name: 'Audio-BPM-Matching', desc: 'Hilft, Text auf Musik-Takt zu schreiben.' },
+                { name: 'Wortschatz-Reichtum', desc: 'Misst die Diversität deines Vokabulars.' },
+                { name: 'Dialog-Balance', desc: 'Prüft das Verhältnis von Dialog zu Erzählung.' }
+            ]
+        }
+    };
+
     const SA_Utils = {
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
@@ -8514,45 +8585,6 @@
                 if (existing) existing.remove();
                 return;
             }
-            const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const freeToolTitles = toolCards
-                .filter(id => SA_CONFIG.FREE_CARDS.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const premiumToolTitles = toolCards
-                .filter(id => !SA_CONFIG.FREE_CARDS.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const freeCards = SA_CONFIG.FREE_CARDS
-                .filter(id => !toolCards.includes(id))
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const lockedCardIds = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id) && !this.isCardUnlocked(id) && !toolCards.includes(id));
-            const premiumCards = lockedCardIds
-                .map(id => SA_CONFIG.CARD_TITLES[id])
-                .filter(Boolean);
-            const premiumCardsPreview = premiumCards.slice(0, 10);
-            const premiumCardsExtra = premiumCards.slice(10);
-            const freeFunctions = [
-                'WPM-Modus',
-                'Genre-Presets',
-                'Zeichen-Zählung',
-                'Wort- & Satzstatistik',
-                'Lesbarkeits-Score',
-                'Füllwort-Analyse (Basis)',
-                'Autosave (lokal in Deinem Browser)',
-                'PDF-Export (Basis)'
-            ].concat(freeToolTitles);
-            const premiumFunctions = [
-                'Alles aus der Basis-Version',
-                'SPS-Modus',
-                'Pausen-Automatik',
-                'WPM-Kalibrierung',
-                'Pro-PDF-Report',
-                'Textvergleich (Versionen)',
-                'Premium-Analyseboxen',
-                'Cloud-Speicher (sofern verfügbar)'
-            ].concat(premiumToolTitles);
             const premiumPlans = this.getPremiumPlans();
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
@@ -8562,30 +8594,17 @@
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
                 </span>`;
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
-            const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
-            const cardInfoByTitle = Object.keys(SA_CONFIG.CARD_TITLES).reduce((acc, id) => {
-                const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id]);
-                if (SA_CONFIG.CARD_DESCRIPTIONS && SA_CONFIG.CARD_DESCRIPTIONS[id]) {
-                    acc[title] = SA_CONFIG.CARD_DESCRIPTIONS[id];
-                }
-                return acc;
-            }, {});
-            const getListInfo = (label, stripIcons) => {
-                const baseLabel = stripIcons ? stripBoxIcon(label) : label;
-                return cardInfoByTitle[baseLabel] || 'TEST BESCHREIBUNG';
+            const renderFeatureList = (items, isPremium) => {
+                const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium' : 'ska-premium-upgrade-listing is-free';
+                const listItems = items.map(item => `
+                    <li data-tooltip="${SA_Utils.escapeHtml(item.desc)}">
+                        <span>${SA_Utils.escapeHtml(item.name)}</span>
+                    </li>
+                `).join('');
+                return `<ul class="${listClass}">${listItems}</ul>`;
             };
-            const renderList = (items, options = {}) => items.map(item => `
-                <li data-info="${getListInfo(item, options.stripIcons)}">
-                    <span>${options.stripIcons ? stripBoxIcon(item) : item}</span>
-                </li>`).join('');
-            const renderExtraAnalysis = premiumCardsExtra.length ? `
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid ska-premium-upgrade-listing--extra">
-                                ${renderList(premiumCardsExtra, { stripIcons: true })}
-                            </ul>
-                            <button class="ska-premium-upgrade-more" type="button" data-action="toggle-premium-analysis" aria-expanded="false">Mehr Boxen anzeigen</button>
-                        ` : '';
             const html = `
-                <div class="ska-premium-upgrade-ribbon"><span>UPGRADE!</span></div>
+                <div class="ska-premium-upgrade-ribbon ska-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 6L6 18"></path>
@@ -8615,16 +8634,12 @@
                         </div>
                         <div class="ska-premium-upgrade-price-note"> </div>
                         <div class="ska-premium-upgrade-section">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList([...new Set(freeFunctions)], { stripIcons: true })}
-                            </ul>
+                            <h5>FUNKTIONEN & WERKZEUGE</h5>
+                            ${renderFeatureList(UPGRADE_CONTENT.basic.tools, false)}
                         </div>
                         <div class="ska-premium-upgrade-section">
-                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing">
-                                ${renderList(freeCards, { stripIcons: true })}
-                            </ul>
+                            <h5>ANALYSEBOXEN</h5>
+                            ${renderFeatureList(UPGRADE_CONTENT.basic.analysis, false)}
                         </div>
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
@@ -8653,17 +8668,12 @@
                             `).join('')}
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--plans">
-                            <div class="ska-premium-upgrade-subtitle">Funktionen & Werkzeuge</div>
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList([...new Set(premiumFunctions)], { stripIcons: true })}
-                            </ul>
+                            <h5>FUNKTIONEN & WERKZEUGE</h5>
+                            ${renderFeatureList(UPGRADE_CONTENT.premium.tools, true)}
                         </div>
                         <div class="ska-premium-upgrade-section ska-premium-upgrade-section--analysis">
-                            <div class="ska-premium-upgrade-subtitle">Analyseboxen</div>
-                            <ul class="ska-premium-upgrade-listing ska-premium-upgrade-listing--grid">
-                                ${renderList(premiumCardsPreview, { stripIcons: true })}
-                            </ul>
-                            ${renderExtraAnalysis}
+                            <h5>ANALYSEBOXEN</h5>
+                            ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
                             <a class="ska-btn ska-btn--primary" href="${this.getPremiumCheckoutUrl(selectedPlan.id)}" data-action="premium-checkout">Jetzt Premium freischalten</a>
