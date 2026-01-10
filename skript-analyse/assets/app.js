@@ -2856,7 +2856,7 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
-                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null },
+                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
@@ -3640,6 +3640,78 @@
             this.applyTeleprompterMirror(m);
         }
 
+        renderSprintEditorModal() {
+            let m = document.getElementById('ska-sprint-editor-modal');
+            if (m) m.remove();
+
+            m = document.createElement('div');
+            m.className = 'skriptanalyse-modal ska-sprint-editor-modal';
+            m.id = 'ska-sprint-editor-modal';
+            m.ariaHidden = 'true';
+            m.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-sprint-editor"></div>
+                <div class="ska-sprint-editor-shell">
+                    <div class="ska-sprint-editor-header">
+                        <div class="ska-sprint-countdown" data-role="sprint-countdown">${SA_Utils.formatMin(this.state.wordSprint.remainingSec)}</div>
+                        <div class="ska-sprint-progress">
+                            <div class="ska-sprint-progress-fill" data-role="sprint-progress-fill"></div>
+                        </div>
+                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="word-sprint-cancel">Abbrechen</button>
+                    </div>
+                    <div class="ska-sprint-editor-toolbar">
+                        <button class="ska-sprint-tool-btn" data-action="sprint-format-bold"><strong>B</strong></button>
+                        <button class="ska-sprint-tool-btn" data-action="sprint-format-italic"><em>I</em></button>
+                        <button class="ska-sprint-tool-btn" data-action="sprint-format-h1">H1</button>
+                        <button class="ska-sprint-tool-btn" data-action="sprint-format-h2">H2</button>
+                        <button class="ska-sprint-tool-btn" data-action="sprint-format-list">• Liste</button>
+                    </div>
+                    <div class="ska-sprint-editor-body">
+                        <div class="ska-sprint-editor-field" contenteditable="true" data-role="sprint-editor" spellcheck="true"></div>
+                    </div>
+                    <div class="ska-sprint-editor-footer">
+                        <div class="ska-sprint-editor-stats" data-role="sprint-stats">Wörter in dieser Session: 0</div>
+                    </div>
+                    <div class="ska-sprint-success" data-role="sprint-success">
+                        <div class="ska-sprint-success-title">Sprint abgeschlossen! 🎉</div>
+                        <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
+                        <div class="ska-sprint-success-confetti">✨🎊✨</div>
+                        <div class="ska-sprint-success-actions">
+                            <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(m);
+
+            const editor = m.querySelector('[data-role="sprint-editor"]');
+            if (editor) {
+                editor.addEventListener('input', () => {
+                    if (this.state.wordSprint.phase !== 'active') return;
+                    this.state.wordSprint.sessionWords = this.getWordCountForSprint();
+                    this.updateWordSprintUI();
+                });
+            }
+        }
+
+        openSprintEditorModal() {
+            this.renderSprintEditorModal();
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            const editor = modal.querySelector('[data-role="sprint-editor"]');
+            if (editor) editor.innerHTML = '';
+            this.updateWordSprintUI();
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
+            if (editor) editor.focus();
+        }
+
+        closeSprintEditorModal() {
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            SA_Utils.closeModal(modal, () => {
+                document.body.classList.remove('ska-modal-open');
+            });
+        }
+
         openToolModal(toolId) {
             if (!toolId) return;
             if (!this.isCardUnlocked(toolId)) return;
@@ -3675,6 +3747,7 @@
             }
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
+            this.highlightProfileTools();
         }
 
         applyTeleprompterMirror(modal = null) {
@@ -4011,8 +4084,13 @@
         }
 
         getWordCountForSprint() {
-            const text = this.getText();
-            const clean = SA_Utils.cleanTextForCounting(text);
+            const editor = document.querySelector('[data-role="sprint-editor"]');
+            const text = editor ? editor.textContent || '' : '';
+            return this.getWordCountFromText(text);
+        }
+
+        getWordCountFromText(text) {
+            const clean = SA_Utils.cleanTextForCounting(text || '');
             if (!clean) return 0;
             return clean.split(/\s+/).filter(Boolean).length;
         }
@@ -4020,7 +4098,6 @@
         startWordSprint(durationMinutes, targetWords) {
             const minutes = Math.max(1, parseInt(durationMinutes, 10) || 1);
             const goal = Math.max(1, parseInt(targetWords, 10) || 1);
-            const totalWords = this.getWordCountForSprint();
             const now = Date.now();
             const durationSec = minutes * 60;
             if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
@@ -4029,14 +4106,15 @@
                 phase: 'active',
                 durationMinutes: minutes,
                 targetWords: goal,
-                startCount: totalWords,
+                startCount: 0,
                 startTime: now,
                 endTime: now + durationSec * 1000,
                 remainingSec: durationSec,
                 sessionWords: 0,
-                lastResult: null
+                lastResult: null,
+                completed: false
             };
-            this.renderWordSprintCard(true);
+            this.openSprintEditorModal();
             this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
             this.tickWordSprint();
         }
@@ -4045,8 +4123,7 @@
             if (this.state.wordSprint.phase !== 'active') return;
             const now = Date.now();
             const remainingSec = Math.max(0, Math.ceil((this.state.wordSprint.endTime - now) / 1000));
-            const totalWords = this.getWordCountForSprint();
-            const sessionWords = Math.max(0, totalWords - this.state.wordSprint.startCount);
+            const sessionWords = this.getWordCountForSprint();
             this.state.wordSprint.remainingSec = remainingSec;
             this.state.wordSprint.sessionWords = sessionWords;
             this.updateWordSprintUI();
@@ -4058,8 +4135,7 @@
         finishWordSprint() {
             if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
             this.state.wordSprint.timerId = null;
-            const totalWords = this.getWordCountForSprint();
-            const sessionWords = Math.max(0, totalWords - this.state.wordSprint.startCount);
+            const sessionWords = this.getWordCountForSprint();
             const elapsedSec = Math.max(1, Math.round((Date.now() - this.state.wordSprint.startTime) / 1000));
             this.state.wordSprint.phase = 'result';
             this.state.wordSprint.sessionWords = sessionWords;
@@ -4067,11 +4143,18 @@
                 words: sessionWords,
                 minutes: Math.max(1, Math.round(elapsedSec / 60))
             };
-            this.renderWordSprintCard(true);
+            this.state.wordSprint.completed = true;
+            this.updateWordSprintUI();
         }
 
         stopWordSprint() {
-            this.finishWordSprint();
+            if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
+            this.state.wordSprint.timerId = null;
+            this.state.wordSprint.phase = 'setup';
+            this.state.wordSprint.completed = false;
+            this.state.wordSprint.remainingSec = 0;
+            this.state.wordSprint.sessionWords = 0;
+            this.updateWordSprintUI(true);
         }
 
         resetWordSprint() {
@@ -4085,32 +4168,37 @@
                 remainingSec: 0,
                 sessionWords: 0,
                 timerId: null,
-                lastResult: null
+                lastResult: null,
+                completed: false
             };
-            this.renderWordSprintCard(true);
+            this.updateWordSprintUI(true);
         }
 
-        updateWordSprintUI() {
-            const containers = [];
-            const toolCard = this.toolsModalStore ? this.toolsModalStore.querySelector('[data-card-id="word_sprint"]') : null;
-            if (toolCard) containers.push(toolCard);
-            const modalBody = document.querySelector('#ska-tool-card-modal [data-role="tool-modal-body"][data-card-id="word_sprint"]');
-            if (modalBody) containers.push(modalBody);
-            if (!containers.length) return;
+        updateWordSprintUI(forceIdle = false) {
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            const countdownEl = modal.querySelector('[data-role="sprint-countdown"]');
+            const progressFill = modal.querySelector('[data-role="sprint-progress-fill"]');
+            const statsEl = modal.querySelector('[data-role="sprint-stats"]');
+            const successEl = modal.querySelector('[data-role="sprint-success"]');
+            const transferBtn = modal.querySelector('[data-action="word-sprint-apply"]');
             const timeLabel = SA_Utils.formatMin(this.state.wordSprint.remainingSec);
-            containers.forEach((container) => {
-                const timerEl = container.querySelector('[data-role="word-sprint-timer"]');
-                if (timerEl) timerEl.textContent = timeLabel;
-                const progressEl = container.querySelector('[data-role="word-sprint-progress"]');
-                if (progressEl) {
-                    progressEl.max = String(this.state.wordSprint.targetWords || 1);
-                    progressEl.value = String(this.state.wordSprint.sessionWords || 0);
-                }
-                const sessionEl = container.querySelector('[data-role="word-sprint-session"]');
-                if (sessionEl) {
-                    sessionEl.textContent = `Geschrieben: +${this.state.wordSprint.sessionWords || 0} Wörter`;
-                }
-            });
+            if (countdownEl) countdownEl.textContent = timeLabel;
+            const timeProgress = this.state.wordSprint.durationMinutes > 0
+                ? 1 - (this.state.wordSprint.remainingSec / (this.state.wordSprint.durationMinutes * 60))
+                : 0;
+            const wordProgress = this.state.wordSprint.targetWords > 0
+                ? this.state.wordSprint.sessionWords / this.state.wordSprint.targetWords
+                : 0;
+            const progress = Math.min(1, Math.max(timeProgress, wordProgress));
+            if (progressFill) progressFill.style.width = `${Math.max(0, Math.min(100, progress * 100))}%`;
+            if (statsEl) {
+                statsEl.textContent = `Wörter in dieser Session: ${this.state.wordSprint.sessionWords || 0}`;
+            }
+            const showSuccess = this.state.wordSprint.completed && !forceIdle;
+            if (successEl) successEl.classList.toggle('is-visible', showSuccess);
+            if (transferBtn) transferBtn.disabled = !showSuccess;
+            modal.classList.toggle('is-complete', showSuccess);
         }
 
         ensureClickTrackContext() {
@@ -4196,6 +4284,10 @@
         handleAction(act, btn) {
             if (act.startsWith('format-')) {
                 this.applyFormatting(act);
+                return true;
+            }
+            if (act.startsWith('sprint-format-')) {
+                this.applySprintFormatting(act);
                 return true;
             }
             if (act === 'next-tip') {
@@ -4580,12 +4672,15 @@
                 this.startWordSprint(this.state.wordSprint.durationMinutes, this.state.wordSprint.targetWords);
                 return true;
             }
-            if (act === 'word-sprint-stop') {
+            if (act === 'word-sprint-cancel' || act === 'close-sprint-editor') {
                 this.stopWordSprint();
+                this.closeSprintEditorModal();
                 return true;
             }
-            if (act === 'word-sprint-reset') {
-                this.resetWordSprint();
+            if (act === 'word-sprint-apply') {
+                this.applySprintToMainEditor();
+                this.closeSprintEditorModal();
+                this.stopWordSprint();
                 return true;
             }
 
@@ -4660,6 +4755,49 @@
                     break;
             }
             textarea.focus();
+            this.analyze(this.getText());
+        }
+
+        applySprintFormatting(action) {
+            const editor = document.querySelector('[data-role="sprint-editor"]');
+            if (!editor) return;
+            editor.focus();
+            switch (action) {
+                case 'sprint-format-bold':
+                    document.execCommand('bold');
+                    break;
+                case 'sprint-format-italic':
+                    document.execCommand('italic');
+                    break;
+                case 'sprint-format-h1':
+                    document.execCommand('formatBlock', false, 'h1');
+                    break;
+                case 'sprint-format-h2':
+                    document.execCommand('formatBlock', false, 'h2');
+                    break;
+                case 'sprint-format-list':
+                    document.execCommand('insertUnorderedList');
+                    break;
+            }
+        }
+
+        applySprintToMainEditor() {
+            if (!this.textarea) return;
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            const editor = modal.querySelector('[data-role="sprint-editor"]');
+            if (!editor) return;
+            const contentText = editor.textContent.trim();
+            if (!contentText) return;
+            if (this.textarea.isContentEditable) {
+                const current = this.textarea.innerHTML.trim();
+                const spacer = current ? '<br><br>' : '';
+                this.textarea.innerHTML = `${current}${spacer}${editor.innerHTML}`;
+            } else {
+                const current = this.textarea.value.trim();
+                const spacer = current ? '\n\n' : '';
+                this.textarea.value = `${current}${spacer}${contentText}`;
+            }
             this.analyze(this.getText());
         }
 
@@ -5137,6 +5275,7 @@
                             this.state.benchmark.timerId = null;
                             this.state.benchmark.running = false;
                         }
+                        if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                     });
                     return;
                 }
@@ -5153,6 +5292,7 @@
                             this.state.benchmark.timerId = null;
                             this.state.benchmark.running = false;
                         }
+                        if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                     });
                     e.preventDefault(); 
                 }
@@ -5519,7 +5659,7 @@
                 const locked = !this.isCardUnlocked(id);
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
                 const action = id === 'teleprompter' ? 'open-teleprompter' : 'open-tool-modal';
-                const toolAttr = action === 'open-tool-modal' ? `data-tool-id="${id}"` : '';
+                const toolAttr = `data-tool-id="${id}"`;
                 const hint = locked ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
                 return `
                     <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
@@ -5533,6 +5673,36 @@
                     </button>
                 `;
             }).join('');
+        }
+
+        highlightProfileTools() {
+            const allCards = [
+                ...this.root.querySelectorAll('[data-card-id]'),
+                ...document.querySelectorAll('#ska-tool-card-modal [data-card-id]')
+            ];
+            const allTiles = Array.from(this.root.querySelectorAll('.ska-tool-tile'));
+            allCards.forEach(card => card.classList.remove('ska-recommended-tool'));
+            allTiles.forEach(tile => tile.classList.remove('ska-recommended-tool'));
+
+            const profile = this.settings.role;
+            const recommended = new Set();
+            if (profile === 'author' || profile === 'autor') {
+                recommended.add('word_sprint');
+                recommended.add('keyword_focus');
+                recommended.add('immersion');
+            }
+            if (profile === 'speaker' || profile === 'sprecher') {
+                recommended.add('teleprompter');
+                recommended.add('pacing');
+                recommended.add('stumble');
+            }
+            if (!recommended.size) return;
+
+            recommended.forEach((id) => {
+                this.root.querySelectorAll(`[data-card-id="${id}"]`).forEach(card => card.classList.add('ska-recommended-tool'));
+                document.querySelectorAll(`#ska-tool-card-modal [data-card-id="${id}"]`).forEach(card => card.classList.add('ska-recommended-tool'));
+                this.root.querySelectorAll(`.ska-tool-tile[data-tool-id="${id}"]`).forEach(tile => tile.classList.add('ska-recommended-tool'));
+            });
         }
 
         renderFilterBar() {
@@ -5734,24 +5904,6 @@
                 const existing = container.querySelector(`[data-card-id="${id}"]`);
                 if (existing) existing.remove();
             });
-            if (allowed) {
-                SA_CONFIG.CARD_ORDER.forEach((id) => {
-                    if (isToolCard(id)) return;
-                    if (allowed.has(id) || this.state.selectedExtraCards.has(id) || id === 'overview') return;
-                    const container = getCardContainer(id);
-                    if (!container) return;
-                    const existing = container.querySelector(`[data-card-id="${id}"]`);
-                    if (existing) existing.remove();
-                });
-                SA_CONFIG.CARD_ORDER.forEach((id) => {
-                    if (!isToolCard(id)) return;
-                    if (allowed.has(id)) return;
-                    const container = getCardContainer(id);
-                    if (!container) return;
-                    const existing = container.querySelector(`[data-card-id="${id}"]`);
-                    if (existing) existing.remove();
-                });
-            }
             if (!this.isPremiumActive()) {
                 SA_CONFIG.CARD_ORDER.forEach((id) => {
                     if (this.isCardUnlocked(id) || this.isCardTeaser(id) || id === 'overview') return;
@@ -5762,15 +5914,9 @@
                 });
             }
             const analysisCards = availableCards.filter((id) => !isToolCard(id));
-            const toolsToRender = availableCards.filter((id) => {
-                if (!isToolCard(id)) return false;
-                if (id === 'word_sprint' && !this.isAuthorProfile()) return false;
-                if (!allowed) return true;
-                return allowed.has(id);
-            });
+            const toolsToRender = availableCards.filter((id) => isToolCard(id));
             analysisCards.forEach((id, idx) => {
                 if(this.state.hiddenCards.has(id)) return;
-                if (allowed && !allowed.has(id) && !this.state.selectedExtraCards.has(id) && id !== 'overview') return;
                 if (!this.isCardUnlocked(id) && !this.isCardTeaser(id)) return;
                 const active = isActive(id);
 
@@ -5888,6 +6034,7 @@
                 if (c) c.style.order = idx;
             });
             this.renderToolsButtons(toolsToRender);
+            this.highlightProfileTools();
 
             this.renderUpgradePanel();
             this.renderHiddenPanel();
@@ -6372,44 +6519,22 @@
         renderWordSprintCard(active) {
             const targetGrid = this.toolsModalStore || this.toolsGrid || this.bottomGrid;
             if(!active) return this.updateCard('word_sprint', this.renderDisabledState(), targetGrid, '', '', true);
-
-            const sprint = this.state.wordSprint;
             const isUnlocked = this.isCardUnlocked('word_sprint');
-            let content = '';
-            if (sprint.phase === 'active') {
-                content = `
-                    <div class="ska-word-sprint-active">
-                        <div class="ska-word-sprint-timer" data-role="word-sprint-timer">${SA_Utils.formatMin(sprint.remainingSec)}</div>
-                        <progress class="ska-word-sprint-progress" data-role="word-sprint-progress" max="${sprint.targetWords}" value="${sprint.sessionWords}"></progress>
-                        <div class="ska-word-sprint-session" data-role="word-sprint-session">Geschrieben: +${sprint.sessionWords} Wörter</div>
-                        <button class="ska-btn ska-btn--secondary" data-action="word-sprint-stop">Stop / Abbruch</button>
-                    </div>`;
-            } else if (sprint.phase === 'result') {
-                const result = sprint.lastResult || { words: 0, minutes: sprint.durationMinutes };
-                content = `
-                    <div class="ska-word-sprint-result">
-                        <div class="ska-word-sprint-result-title">Sprint beendet! 🎉</div>
-                        <div class="ska-word-sprint-result-summary">Du hast ${result.words} Wörter in ${result.minutes} Minuten geschrieben.</div>
-                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-reset">Neuer Sprint</button>
-                    </div>`;
-            } else {
-                content = `
-                    <div class="ska-word-sprint-setup">
-                        <div class="ska-word-sprint-inputs">
-                            <label>
-                                <span>⏱️ Zeit (Minuten)</span>
-                                <input type="number" min="1" value="${sprint.durationMinutes}" data-role="word-sprint-minutes">
-                            </label>
-                            <label>
-                                <span>🎯 Ziel (Wörter)</span>
-                                <input type="number" min="1" value="${sprint.targetWords}" data-role="word-sprint-target">
-                            </label>
-                        </div>
-                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-start" ${isUnlocked ? '' : 'disabled'}>Sprint Starten 🚀</button>
-                    </div>`;
-            }
+            const content = `
+                <div class="ska-word-sprint-inputs">
+                    <label>
+                        <span>⏱️ Zeit (Minuten)</span>
+                        <input type="number" min="1" value="${this.state.wordSprint.durationMinutes}" data-role="word-sprint-minutes">
+                    </label>
+                    <label>
+                        <span>🎯 Ziel (Wörter)</span>
+                        <input type="number" min="1" value="${this.state.wordSprint.targetWords}" data-role="word-sprint-target">
+                    </label>
+                </div>
+                <button class="ska-btn ska-btn--primary ska-word-sprint-launch" data-action="word-sprint-start" ${isUnlocked ? '' : 'disabled'}>Fokus-Modus starten 🚀</button>
+            `;
 
-            const h = `<div class="ska-word-sprint" data-phase="${sprint.phase}">${content}</div>`;
+            const h = `<div class="ska-word-sprint" data-phase="setup">${content}</div>`;
             this.updateCard('word_sprint', h, targetGrid, '', '', true);
         }
 
