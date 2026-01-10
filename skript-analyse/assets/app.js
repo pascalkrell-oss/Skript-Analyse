@@ -3746,13 +3746,14 @@
                     </div>
                     <div class="ska-sprint-success" data-role="sprint-success">
                         <div class="ska-sprint-success-title">Sprint abgeschlossen! 🎉</div>
-                        <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
-                        <div class="ska-sprint-success-confetti">✨🎊✨</div>
-                        <div class="ska-sprint-success-actions">
-                            <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
-                        </div>
+                    <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
+                    <div class="ska-sprint-success-confetti">✨🎊✨</div>
+                    <div class="ska-sprint-success-actions">
+                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
+                        <button class="ska-btn ska-btn--secondary" data-action="word-sprint-copy" disabled>📋 Text kopieren</button>
                     </div>
-                </div>`;
+                </div>
+            </div>`;
             document.body.appendChild(m);
 
             const editor = m.querySelector('[data-role="sprint-editor"]');
@@ -4255,6 +4256,7 @@
             const statsEl = modal.querySelector('[data-role="sprint-stats"]');
             const successEl = modal.querySelector('[data-role="sprint-success"]');
             const transferBtn = modal.querySelector('[data-action="word-sprint-apply"]');
+            const copyBtn = modal.querySelector('[data-action="word-sprint-copy"]');
             const timeLabel = SA_Utils.formatMin(this.state.wordSprint.remainingSec);
             if (countdownEl) countdownEl.textContent = timeLabel;
             const timeProgress = this.state.wordSprint.durationMinutes > 0
@@ -4271,6 +4273,7 @@
             const showSuccess = this.state.wordSprint.completed && !forceIdle;
             if (successEl) successEl.classList.toggle('is-visible', showSuccess);
             if (transferBtn) transferBtn.disabled = !showSuccess;
+            if (copyBtn) copyBtn.disabled = !showSuccess;
             modal.classList.toggle('is-complete', showSuccess);
         }
 
@@ -4760,6 +4763,10 @@
                 this.stopWordSprint();
                 return true;
             }
+            if (act === 'word-sprint-copy') {
+                this.copySprintToClipboard(btn);
+                return true;
+            }
 
             if (act === 'reset-wpm') {
                 this.settings.manualWpm = 0;
@@ -4859,23 +4866,42 @@
         }
 
         applySprintToMainEditor() {
-            if (!this.textarea) return;
+            const mainInput = document.querySelector('#ska-input') || this.textarea;
+            if (!mainInput) return;
             const modal = document.getElementById('ska-sprint-editor-modal');
             if (!modal) return;
             const editor = modal.querySelector('[data-role="sprint-editor"]');
             if (!editor) return;
             const contentText = editor.textContent.trim();
             if (!contentText) return;
-            if (this.textarea.isContentEditable) {
-                const current = this.textarea.innerHTML.trim();
+            if (mainInput.isContentEditable) {
+                const current = mainInput.innerHTML.trim();
                 const spacer = current ? '<br><br>' : '';
-                this.textarea.innerHTML = `${current}${spacer}${editor.innerHTML}`;
+                const safeContent = SA_Utils.escapeHtml(contentText).replace(/\n/g, '<br>');
+                mainInput.innerHTML = `${current}${spacer}${safeContent}`;
             } else {
-                const current = this.textarea.value.trim();
+                const current = mainInput.value.trim();
                 const spacer = current ? '\n\n' : '';
-                this.textarea.value = `${current}${spacer}${contentText}`;
+                mainInput.value = `${current}${spacer}${contentText}`;
             }
             this.analyze(this.getText());
+        }
+
+        copySprintToClipboard(button) {
+            const modal = document.getElementById('ska-sprint-editor-modal');
+            if (!modal) return;
+            const editor = modal.querySelector('[data-role="sprint-editor"]');
+            if (!editor) return;
+            const contentText = editor.textContent.trim();
+            if (!contentText) return;
+            const targetBtn = button || modal.querySelector('[data-action="word-sprint-copy"]');
+            const originalText = targetBtn ? targetBtn.textContent : '';
+            SA_Utils.copyToClipboard(contentText).then((success) => {
+                if (targetBtn) {
+                    targetBtn.textContent = success ? 'Kopiert!' : 'Kopieren fehlgeschlagen';
+                    setTimeout(() => { targetBtn.textContent = originalText; }, 1200);
+                }
+            });
         }
 
 
@@ -5915,6 +5941,27 @@
                 const hideByPlan = !isPlanVisible(id);
                 card.classList.toggle('is-hidden-profile', hideByProfile);
                 card.classList.toggle('is-hidden-plan', hideByPlan);
+                const shouldLock = !SA_CONFIG.PRO_MODE && toolCards.has(id);
+                card.classList.toggle('ska-premium-locked', shouldLock);
+                if (shouldLock) {
+                    let overlay = card.querySelector('.ska-premium-lock-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('div');
+                        overlay.className = 'ska-premium-lock-overlay';
+                        overlay.innerHTML = `
+                            <div class="ska-premium-lock-content">
+                                <div class="ska-premium-lock-icon">🔒</div>
+                                <div class="ska-premium-lock-title">Premium-Werkzeug</div>
+                                <div class="ska-premium-lock-sub">Upgrade, um dieses Tool freizuschalten.</div>
+                                <a class="ska-btn ska-btn--primary ska-premium-lock-cta" href="#ska-premium-upgrade">Upgrade starten</a>
+                            </div>
+                        `;
+                        card.appendChild(overlay);
+                    }
+                } else {
+                    const overlay = card.querySelector('.ska-premium-lock-overlay');
+                    if (overlay) overlay.remove();
+                }
             };
             this.bottomGrid.querySelectorAll('[data-card-id]').forEach(applyVisibility);
             if (this.toolsModalStore) {
@@ -7282,7 +7329,7 @@
             genreList += '</div></div>';
 
             const gLbl = this.settings.usecase !== 'auto' ? (SA_CONFIG.GENRE_LABELS[this.settings.usecase] || this.settings.usecase).toUpperCase() : 'AUTO-DETECT';
-            const pauseText = pause > 0 ? ` &bull; ${pause.toFixed(1)}s Pause` : '';
+            const pauseText = pause > 0 ? ` &bull; ${(Number(pause) || 0).toFixed(1)}s Pause` : '';
             const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
             const genreNote = genreContext ? `<div class="ska-genre-context">${genreContext.overviewNote}</div>` : '';
 
@@ -7335,8 +7382,8 @@
                     <div class="ska-stat-item"><span>Sätze</span><strong>${r ? r.sentences.length : 0}</strong></div>
                     <div class="ska-stat-item"><span>Silben</span><strong>${r ? r.totalSyllables : 0}</strong></div>
                     <div class="ska-stat-item"><span>Längster Satz</span><strong style="color:${maxSCol}">${maxSVal} W</strong></div>
-                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${r ? r.score.toFixed(0) : 0}</strong></div>
-                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${r ? r.lix.toFixed(0) : 0}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>Flesch-Index</span><strong style="color:${sCol}; display:flex; align-items:center; gap:6px;">${scoreHintHtml} ${(Number(r ? r.score : 0) || 0).toFixed(0)}</strong></div>
+                    <div class="ska-stat-item" style="white-space:nowrap; align-items:center;"><span>LIX-Index</span><strong style="color:${lixSummary.color}; display:flex; align-items:center; gap:6px;">${lixHintHtml} ${(Number(r ? r.lix : 0) || 0).toFixed(0)}</strong></div>
                 </div>
                 ${sectionPacingHtml}
                 ${genreList}</div>`;
