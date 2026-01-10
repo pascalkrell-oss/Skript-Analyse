@@ -3808,7 +3808,9 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
                     <div class="ska-modal-header">
-                        <h3>Checkout</h3>
+                        <div class="ska-ssl-badge">🔒 Sichere SSL-Verbindung</div>
+                        <h3>Skript-Analyse Tool - Premium freischalten</h3>
+                        <p class="ska-modal-subtitle">Volle Funktion und tiefe Analyse Deiner Texte.</p>
                     </div>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-loading" data-role="checkout-loading">
@@ -5543,6 +5545,7 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
+                            this.emptyCheckoutCart();
                         }
                     });
                     return;
@@ -5564,6 +5567,7 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
+                            this.emptyCheckoutCart();
                         }
                     });
                     e.preventDefault(); 
@@ -8512,11 +8516,18 @@
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
             const addToCartUrl = `/?add-to-cart=${productId}`;
             try {
+                await this.emptyCheckoutCart();
                 await fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' });
             } catch (error) {
                 // continue to checkout modal even if add-to-cart fails
             }
             this.openCheckoutModal();
+        }
+
+        emptyCheckoutCart() {
+            return fetch('/?empty_cart=1', { method: 'GET' })
+                .then(() => console.log('Warenkorb bereinigt'))
+                .catch((err) => console.error(err));
         }
 
         openCheckoutModal() {
