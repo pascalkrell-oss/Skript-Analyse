@@ -3808,8 +3808,9 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
                     <div class="ska-modal-header">
-                        <h3>Jetzt Premium freischalten 🚀</h3>
-                        <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Sichere SSL-Verbindung 🔒</p>
+                        <div class="ska-ssl-badge">🔒 Sichere SSL-Verbindung</div>
+                        <h3>Skript-Analyse Tool - Premium freischalten</h3>
+                        <p class="ska-modal-subtitle">Volle Funktion und tiefe Analyse Deiner Texte.</p>
                     </div>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-loading" data-role="checkout-loading">
