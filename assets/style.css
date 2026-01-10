@@ -362,7 +362,7 @@ body.ska-modal-open { overflow: hidden !important; }
 .ska-premium-upgrade-header-row .ska-premium-upgrade-title { margin-bottom: 0; }
 .ska-premium-upgrade-badge { background: #0f172a; color: #f8fafc; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; justify-content: center; text-align: center; animation: ska-fade-in 0.25s ease both; white-space: nowrap; min-width: 130px; line-height: 1; }
 .ska-premium-upgrade-badge--free { background: #dcfce7; color: #16a34a; }
-.ska-premium-upgrade-price { font-size: 40px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex !important; align-items: baseline !important; justify-content: center; flex-wrap: wrap; gap: 0.45rem; line-height: 1; }
+.ska-premium-upgrade-price { font-size: 40px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex !important; align-items: baseline !important; justify-content: flex-start !important; text-align: left !important; flex-wrap: wrap; gap: 0.45rem; line-height: 1; }
 .ska-premium-upgrade-price-prefix { font-size: 0.78rem; font-weight: 700; color: #64748b; letter-spacing: 0.01em; text-transform: uppercase; }
 .ska-premium-upgrade-price-label { font-size: 0.82rem; font-weight: 600; color: rgb(71, 85, 105); letter-spacing: 0.01em; line-height: 1.1; }
 .ska-premium-upgrade-price-value { font-size: 40px; font-weight: 800; color: #0284c7; }
@@ -2060,6 +2060,12 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 
 .ska-price-card--premium ul li::before {
     background-color: var(--ska-primary);
+}
+
+.ska-price-card--basic h3,
+.ska-price-card--basic .ska-price-row {
+    justify-content: flex-start !important;
+    text-align: left !important;
 }
 
 
