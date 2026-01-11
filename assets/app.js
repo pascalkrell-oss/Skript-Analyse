@@ -3802,9 +3802,8 @@
             const details = this.getCheckoutDetails(productTitle, price, cycle);
             const selectedPlanId = this.resolveCheckoutPlanId(details.cycle) || this.state.premiumPricePlan;
             const selectedProductId = String(this.getPremiumCheckoutProductId(selectedPlanId));
-            const planDescription = this.getCheckoutPlanDescription();
             if (m) {
-                this.updateCheckoutModalContent(details, selectedProductId, planDescription);
+                this.updateCheckoutModalContent(details, selectedProductId);
                 return;
             }
 
@@ -3845,13 +3844,12 @@
                                         </label>
                                     </div>
                                     <div class="ska-checkout-cycle" data-role="checkout-cycle">Abrechnung: ${details.cycle}</div>
-                                    <p class="ska-checkout-plan-note" data-role="checkout-plan-note">${planDescription}</p>
 
                                     <hr class="ska-checkout-divider">
 
                                     <ul class="ska-checkout-benefits">
                                         <li>Voller Zugriff auf alle 30+ Analysen</li>
-                                        <li>Unbegrenzte Projekte</li>
+                                        <li>Unbegrenzte Projekte anlegen</li>
                                         <li>Cloud-Speicher & Export</li>
                                         <li>14-Tage Geld-zurück-Garantie</li>
                                     </ul>
@@ -3895,17 +3893,15 @@
             document.body.appendChild(m);
         }
 
-        updateCheckoutModalContent(details, selectedProductId, planDescription) {
+        updateCheckoutModalContent(details, selectedProductId) {
             const modal = document.getElementById('ska-checkout-modal');
             if (!modal) return;
             const nameEl = modal.querySelector('[data-role="checkout-product-title"]');
             const priceEl = modal.querySelector('[data-role="checkout-price"]');
             const cycleEl = modal.querySelector('[data-role="checkout-cycle"]');
-            const noteEl = modal.querySelector('[data-role="checkout-plan-note"]');
             if (nameEl) nameEl.textContent = details.productTitle;
             if (priceEl) priceEl.textContent = details.price;
             if (cycleEl) cycleEl.textContent = `Abrechnung: ${details.cycle}`;
-            if (noteEl) noteEl.textContent = planDescription;
 
             const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
             planInputs.forEach((input) => {
@@ -5246,6 +5242,10 @@
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
+            }
+            const footerNote = document.querySelector('[data-role="footer-plan-note"]');
+            if (footerNote) {
+                footerNote.textContent = this.getCheckoutPlanDescription();
             }
             this.enforceFreeSettings();
             this.syncPdfOptions();
@@ -9212,7 +9212,6 @@
                 const nameEl = document.querySelector('[data-role="checkout-product-title"]');
                 const priceEl = document.querySelector('[data-role="checkout-price"]');
                 const cycleEl = document.querySelector('[data-role="checkout-cycle"]');
-                const noteEl = document.querySelector('[data-role="checkout-plan-note"]');
                 if (nameEl) nameEl.textContent = title;
                 if (priceEl) priceEl.textContent = price;
                 if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;

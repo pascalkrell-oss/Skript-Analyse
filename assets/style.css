@@ -1653,12 +1653,6 @@ body.ska-modal-open { overflow: hidden !important; }
     font-size: 0.85rem;
     color: #94a3b8;
 }
-.ska-checkout-plan-note {
-    margin: 12px 0 0;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: #cbd5f5;
-}
 .ska-payment-icons {
     display: flex;
     gap: 0.65rem;
