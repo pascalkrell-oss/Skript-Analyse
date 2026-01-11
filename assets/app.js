@@ -9215,6 +9215,7 @@
                 if (nameEl) nameEl.textContent = title;
                 if (priceEl) priceEl.textContent = price;
                 if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;
+                if (noteEl && instances[0]) noteEl.textContent = instances[0].getCheckoutPlanDescription();
 
                 const iframeContainer = document.getElementById('ska-checkout-iframe-wrapper');
                 const loading = iframeContainer ? iframeContainer.querySelector('[data-role="checkout-loading"]') : null;
