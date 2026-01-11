@@ -1502,7 +1502,8 @@ body.ska-modal-open { overflow: hidden !important; }
     pointer-events: auto;
 }
 .skriptanalyse-modal.is-closing { opacity: 0; z-index: 2147483647 !important; visibility: visible; pointer-events: none; }
-.skriptanalyse-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 1; transition: opacity 0.25s ease; }
+.skriptanalyse-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 1; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.skriptanalyse-modal.is-open .skriptanalyse-modal-overlay { opacity: 1; pointer-events: auto; }
 .skriptanalyse-modal.is-closing .skriptanalyse-modal-overlay { opacity: 0; }
 .skriptanalyse-modal-content {
     position: relative; background: white; border-radius: var(--ska-radius-lg); width: 90%; max-width: 600px;
@@ -2803,10 +2804,10 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .feature-list li {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
 }
 .feature-list .icon-checkmark {
     flex-shrink: 0;
-    margin-right: 0.5rem;
 }
 
 /* Checkout modal overlay safety */
@@ -2817,16 +2818,19 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999;
+    z-index: 99999;
 }
-body.modal-open {
-    overflow: hidden;
+body.modal-open,
+body.ska-modal-open {
+    overflow: hidden !important;
 }
 
 /* Price display */
 .price-container {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
 }
 .price-main {
     font-size: 1.5rem;

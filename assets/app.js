@@ -800,6 +800,7 @@
             modal.classList.remove('is-open');
             modal.classList.remove('is-closing');
             modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('ska-modal-open');
             if (typeof onClosed === 'function') onClosed();
         },
         copyToClipboard: async (text) => {

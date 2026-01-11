@@ -12,8 +12,6 @@ define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
 
 function ska_register_assets() {
-    if ( is_admin() ) return;
-
     $jspdf_url = SKA_URL . 'assets/jspdf.umd.min.js';
     $pos_url = SKA_URL . 'assets/pos-tagger.js';
     $js_deps = array();
@@ -32,6 +30,16 @@ function ska_register_assets() {
     wp_register_script( 'skript-analyse-js', SKA_URL . 'assets/app.js', $js_deps, SKA_VER, true );
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
+
+function ska_register_admin_assets( $hook ) {
+    if ( $hook !== 'toplevel_page_skript-analyse-admin' ) {
+        return;
+    }
+
+    ska_register_assets();
+    ska_enqueue_app_assets();
+}
+add_action( 'admin_enqueue_scripts', 'ska_register_admin_assets' );
 
 function ska_get_user_plan_mode( $user_id ) {
     $plan = get_user_meta( $user_id, 'ska_plan', true );
@@ -123,6 +131,64 @@ function ska_enqueue_app_assets() {
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
 }
 
+function ska_render_admin_app() {
+    ?>
+    <div class="ska-admin-app">
+        <header class="ska-admin-header">
+            <div>
+                <h1>Skript-Analyse Admin</h1>
+                <p>Verwalte Benutzer, Pläne und Support-Logins.</p>
+            </div>
+            <div class="ska-admin-header-actions">
+                <button class="ska-btn ska-btn--secondary" data-action="admin-refresh">Aktualisieren</button>
+            </div>
+        </header>
+        <section class="ska-admin-panel">
+            <div class="ska-admin-panel-header">
+                <h2>Benutzer</h2>
+                <div class="ska-admin-search">
+                    <input type="search" placeholder="Suche nach Name oder E-Mail" data-action="admin-search">
+                </div>
+            </div>
+            <div class="ska-admin-table" data-role="admin-table">
+                <div class="ska-admin-table-head">
+                    <span>ID</span>
+                    <span>Name</span>
+                    <span>E-Mail</span>
+                    <span>Plan</span>
+                    <span>Registriert</span>
+                    <span>Aktionen</span>
+                </div>
+                <div class="ska-admin-table-body" data-role="admin-table-body"></div>
+            </div>
+        </section>
+    </div>
+    <?php
+}
+
+function ska_render_admin_menu_page() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    echo '<div class="wrap">';
+    ska_render_admin_app();
+    echo '</div>';
+}
+
+function ska_register_admin_menu() {
+    add_menu_page(
+        'Skript Analyse',
+        'Skript Analyse',
+        'manage_options',
+        'skript-analyse-admin',
+        'ska_render_admin_menu_page',
+        'dashicons-analytics',
+        25
+    );
+}
+add_action( 'admin_menu', 'ska_register_admin_menu' );
+
 function ska_render_admin_page() {
     if ( ! get_query_var( 'ska_admin' ) ) {
         return;
@@ -146,36 +212,7 @@ function ska_render_admin_page() {
         <?php wp_head(); ?>
     </head>
     <body <?php body_class( 'ska-admin-page' ); ?>>
-        <div class="ska-admin-app">
-            <header class="ska-admin-header">
-                <div>
-                    <h1>Skript-Analyse Admin</h1>
-                    <p>Verwalte Benutzer, Pläne und Support-Logins.</p>
-                </div>
-                <div class="ska-admin-header-actions">
-                    <button class="ska-btn ska-btn--secondary" data-action="admin-refresh">Aktualisieren</button>
-                </div>
-            </header>
-            <section class="ska-admin-panel">
-                <div class="ska-admin-panel-header">
-                    <h2>Benutzer</h2>
-                    <div class="ska-admin-search">
-                        <input type="search" placeholder="Suche nach Name oder E-Mail" data-action="admin-search">
-                    </div>
-                </div>
-                <div class="ska-admin-table" data-role="admin-table">
-                    <div class="ska-admin-table-head">
-                        <span>ID</span>
-                        <span>Name</span>
-                        <span>E-Mail</span>
-                        <span>Plan</span>
-                        <span>Registriert</span>
-                        <span>Aktionen</span>
-                    </div>
-                    <div class="ska-admin-table-body" data-role="admin-table-body"></div>
-                </div>
-            </section>
-        </div>
+        <?php ska_render_admin_app(); ?>
         <?php wp_footer(); ?>
     </body>
     </html>
