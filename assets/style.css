@@ -1636,7 +1636,7 @@ body.ska-modal-open { overflow: hidden !important; }
     gap: 0.6rem;
     padding-left: 0 !important;
     margin-bottom: 12px !important;
-    line-height: 1.4;
+    line-height: 1.2;
     font-size: 0.9rem;
 }
 .ska-checkout-benefits li::before {
@@ -1716,6 +1716,169 @@ body.ska-modal-open { overflow: hidden !important; }
     height: 100%;
     min-height: 600px;
     border: none;
+}
+.ska-masquerade-banner {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    background: #0f172a;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+}
+.ska-masquerade-banner .ska-btn {
+    min-height: auto;
+}
+
+.ska-admin-page {
+    background: #0b1120;
+    color: #e2e8f0;
+}
+.ska-admin-app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.ska-admin-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    align-items: center;
+}
+.ska-admin-header h1 {
+    margin: 0 0 0.35rem;
+    font-size: 2rem;
+    color: #f8fafc;
+}
+.ska-admin-header p {
+    margin: 0;
+    color: #94a3b8;
+}
+.ska-admin-panel {
+    background: #111827;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+}
+.ska-admin-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+.ska-admin-panel-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #f8fafc;
+}
+.ska-admin-search input {
+    background: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 999px;
+    color: #e2e8f0;
+    padding: 0.5rem 1rem;
+    min-width: 260px;
+}
+.ska-admin-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.ska-admin-table-head,
+.ska-admin-table-row {
+    display: grid;
+    grid-template-columns: 80px 1.2fr 1.5fr 120px 140px 1.6fr;
+    gap: 1rem;
+    align-items: center;
+}
+.ska-admin-table-head {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+.ska-admin-table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.ska-admin-table-row {
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: #e2e8f0;
+}
+.ska-admin-table-row.is-loading,
+.ska-admin-table-row.is-empty,
+.ska-admin-table-row.is-error {
+    grid-template-columns: 1fr;
+    text-align: center;
+    color: #94a3b8;
+}
+.ska-admin-plan-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.ska-admin-plan-premium {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+}
+.ska-admin-plan-basis {
+    background: rgba(148, 163, 184, 0.2);
+    color: #cbd5f5;
+}
+.ska-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+.ska-admin-plan-editor {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+.ska-admin-plan-editor select {
+    background: #0b1120;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 8px;
+    color: #e2e8f0;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 1024px) {
+    .ska-admin-table-head,
+    .ska-admin-table-row {
+        grid-template-columns: 70px 1fr 1fr;
+    }
+    .ska-admin-table-head span:nth-child(4),
+    .ska-admin-table-head span:nth-child(5),
+    .ska-admin-table-head span:nth-child(6),
+    .ska-admin-table-row span:nth-child(4),
+    .ska-admin-table-row span:nth-child(5),
+    .ska-admin-table-row span:nth-child(6) {
+        display: none;
+    }
 }
 .ska-spinner {
     display: flex;
@@ -2634,4 +2797,42 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     color: #16a34a;
     border-radius: 8px;
     font-weight: 600;
+}
+
+/* Feature list alignment */
+.feature-list li {
+    display: flex;
+    align-items: center;
+}
+.feature-list .icon-checkmark {
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+}
+
+/* Checkout modal overlay safety */
+.skriptanalyse-modal,
+.skriptanalyse-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+}
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Price display */
+.price-container {
+    display: flex;
+    flex-direction: column;
+}
+.price-main {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.price-tax-info {
+    font-size: 0.9rem;
+    color: #666;
 }
