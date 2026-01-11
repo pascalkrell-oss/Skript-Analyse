@@ -3263,16 +3263,24 @@ body.skript-analyse-active [class*="header"] {
     position: relative !important; /* Forces it into normal flow */
     top: auto !important;
     bottom: auto !important;
-    left: auto !important;
+    left: 0 !important;
     right: auto !important;
     transform: none !important; /* Disables GPU sticky layers */
     z-index: 1 !important;
     width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin-top: 0 !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
 }
 
 /* Disable JS-based sticky spacers if present */
-body.skript-analyse-active .elementor-sticky__spacer {
+body.skript-analyse-active .elementor-sticky__spacer,
+body.skript-analyse-active .sticky-placeholder {
     display: none !important;
+    height: 0 !important;
 }
 
 .analysis-wrapper,
