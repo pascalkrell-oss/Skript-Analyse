@@ -747,6 +747,75 @@ add_filter( 'ska_pro_mode', function( $pro_mode ) {
     return ska_get_user_plan( $user_id ) === 'premium' ? true : $pro_mode;
 } );
 
+function ska_register_admin_menu() {
+    add_menu_page(
+        'Skript Analyse',
+        'Skript Analyse',
+        'manage_options',
+        'skript-analyse-admin',
+        'render_skript_analyse_admin_page',
+        'dashicons-chart-area',
+        26
+    );
+}
+add_action( 'admin_menu', 'ska_register_admin_menu' );
+
+function render_skript_analyse_admin_page() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
+    wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
+    wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ?>
+    <div class="wrap">
+        <div id="ska-admin-app" class="ska-admin-app">
+            <div class="ska-admin-header">
+                <div>
+                    <h1>User Management &amp; Support Dashboard</h1>
+                    <p>Verwalte registrierte Nutzer, Pläne und Support-Logins.</p>
+                </div>
+            </div>
+            <div class="ska-admin-controls">
+                <label class="ska-admin-search">
+                    <span>Suche</span>
+                    <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
+                </label>
+                <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
+            </div>
+            <div class="ska-admin-table-wrapper">
+                <table class="ska-admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Plan</th>
+                            <th>Registriert</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody data-role="admin-rows">
+                        <tr class="ska-admin-placeholder">
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td class="ska-admin-actions">
+                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" disabled>Login as User</button>
+                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" disabled>Set Premium</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php
+}
+
 function ska_register_admin_route() {
     add_rewrite_rule( '^admin/?$', 'index.php?ska_admin=1', 'top' );
 }
