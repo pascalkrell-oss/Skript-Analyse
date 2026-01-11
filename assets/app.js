@@ -4028,26 +4028,36 @@
             document.body.classList.remove('ska-modal-open');
         }
 
-        toggleFocusMode() {
-            const existing = document.querySelector('.focus-mode-overlay');
-            if (existing) {
-                this.closeFocusMode();
-                return;
-            }
+        ensureFocusModeModal() {
+            let overlay = document.querySelector('.focus-mode-modal');
+            if (overlay) return overlay;
 
-            const overlay = document.createElement('div');
-            overlay.className = 'focus-mode-overlay';
+            overlay = document.createElement('div');
+            overlay.className = 'focus-mode-modal';
             overlay.innerHTML = `
-                <button type="button" class="focus-mode-exit" data-action="close-focus-mode">Exit Focus Mode</button>
-                <textarea class="focus-mode-editor" spellcheck="true"></textarea>
+                <div class="focus-toolbar">
+                    <label class="focus-field">
+                        <span>Time Limit (min)</span>
+                        <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
+                    </label>
+                    <label class="focus-field">
+                        <span>Word Goal</span>
+                        <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
+                    </label>
+                    <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start Timer</button>
+                    <div class="focus-stats">
+                        <span data-role="focus-timer">00:00</span>
+                        <span data-role="focus-words">0 / 0 Words</span>
+                    </div>
+                    <div class="focus-progress" aria-hidden="true">
+                        <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
+                        <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
+                    </div>
+                    <button type="button" class="focus-exit" data-action="close-focus-mode">Exit Focus Mode</button>
+                </div>
+                <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
             `;
             document.body.appendChild(overlay);
-            document.body.classList.add('ska-modal-open');
-
-            const focusArea = overlay.querySelector('.focus-mode-editor');
-            if (!focusArea) return;
-            focusArea.value = this.getText();
-            focusArea.focus();
 
             overlay.addEventListener('click', (event) => {
                 const btn = event.target.closest('[data-action]');
@@ -4055,24 +4065,78 @@
                 this.handleAction(btn.dataset.action, btn, event);
             });
 
+            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
+            const timeInput = overlay.querySelector('[data-role="focus-time-limit"]');
+            const goalInput = overlay.querySelector('[data-role="focus-word-goal"]');
+            const startBtn = overlay.querySelector('[data-action="focus-start-timer"]');
+
+            const updateInputs = () => {
+                const minutes = parseInt(timeInput.value, 10);
+                const target = parseInt(goalInput.value, 10);
+                this.state.wordSprint.durationMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : 0;
+                this.state.wordSprint.targetWords = Number.isFinite(target) && target > 0 ? target : 0;
+                if (startBtn) {
+                    const canStart = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.phase !== 'active';
+                    startBtn.disabled = !canStart;
+                    startBtn.classList.toggle('is-hidden', this.state.wordSprint.durationMinutes <= 0);
+                }
+                this.updateWordSprintUI(true);
+            };
+
+            if (timeInput) timeInput.addEventListener('input', updateInputs);
+            if (goalInput) goalInput.addEventListener('input', updateInputs);
+
             const syncText = SA_Utils.debounce(() => {
+                if (!focusArea) return;
                 const value = focusArea.value;
                 this.setText(value);
                 this.analyze(value);
+                this.updateWordSprintUI();
             }, 250);
 
-            focusArea.addEventListener('input', syncText);
+            if (focusArea) {
+                focusArea.addEventListener('input', syncText);
+            }
+
+            return overlay;
+        }
+
+        openFocusModeModal() {
+            const overlay = this.ensureFocusModeModal();
+            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
+            const timeInput = overlay.querySelector('[data-role="focus-time-limit"]');
+            const goalInput = overlay.querySelector('[data-role="focus-word-goal"]');
+            if (timeInput) timeInput.value = this.state.wordSprint.durationMinutes || '';
+            if (goalInput) goalInput.value = this.state.wordSprint.targetWords || '';
+            if (focusArea) {
+                focusArea.value = this.getText();
+                focusArea.focus();
+            }
+            overlay.classList.remove('is-time-up', 'is-goal-reached');
+            document.body.classList.add('ska-modal-open');
+            this.updateWordSprintUI(true);
+            return overlay;
+        }
+
+        toggleFocusMode() {
+            const existing = document.querySelector('.focus-mode-modal');
+            if (existing) {
+                this.closeFocusMode();
+                return;
+            }
+            this.openFocusModeModal();
         }
 
         closeFocusMode() {
-            const overlay = document.querySelector('.focus-mode-overlay');
+            const overlay = document.querySelector('.focus-mode-modal');
             if (!overlay) return;
-            const focusArea = overlay.querySelector('.focus-mode-editor');
+            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
             if (focusArea) {
                 const value = focusArea.value;
                 this.setText(value);
                 this.analyze(value);
             }
+            this.stopWordSprint();
             overlay.remove();
             document.body.classList.remove('ska-modal-open');
         }
@@ -4219,81 +4283,6 @@
             const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
             planInputs.forEach((input) => {
                 input.checked = input.value === selectedProductId;
-            });
-        }
-
-        renderSprintEditorModal() {
-            let m = document.getElementById('ska-sprint-editor-modal');
-            if (m) m.remove();
-
-            m = document.createElement('div');
-            m.className = 'skriptanalyse-modal ska-sprint-editor-modal';
-            m.id = 'ska-sprint-editor-modal';
-            m.ariaHidden = 'true';
-            m.innerHTML = `
-                <div class="skriptanalyse-modal-overlay" data-action="close-sprint-editor"></div>
-                <div class="ska-sprint-editor-shell">
-                    <div class="ska-sprint-editor-header">
-                        <div class="ska-sprint-countdown" data-role="sprint-countdown">${SA_Utils.formatMin(this.state.wordSprint.remainingSec)}</div>
-                        <div class="ska-sprint-progress">
-                            <div class="ska-sprint-progress-fill" data-role="sprint-progress-fill"></div>
-                        </div>
-                        <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="word-sprint-cancel">Abbrechen</button>
-                    </div>
-                    <div class="ska-sprint-editor-toolbar">
-                        <button class="ska-sprint-tool-btn" data-action="sprint-format-bold"><strong>B</strong></button>
-                        <button class="ska-sprint-tool-btn" data-action="sprint-format-italic"><em>I</em></button>
-                        <button class="ska-sprint-tool-btn" data-action="sprint-format-h1">H1</button>
-                        <button class="ska-sprint-tool-btn" data-action="sprint-format-h2">H2</button>
-                        <button class="ska-sprint-tool-btn" data-action="sprint-format-list">• Liste</button>
-                    </div>
-                    <div class="ska-sprint-editor-body">
-                        <div class="ska-sprint-editor-field" contenteditable="true" data-role="sprint-editor" spellcheck="true"></div>
-                    </div>
-                    <div class="ska-sprint-editor-footer">
-                        <div class="ska-sprint-editor-stats" data-role="sprint-stats">Wörter in dieser Session: 0</div>
-                    </div>
-                    <div class="ska-sprint-success" data-role="sprint-success">
-                        <div class="ska-sprint-success-title">Sprint abgeschlossen! 🎉</div>
-                    <div class="ska-sprint-success-sub">Zeit um oder Ziel erreicht. Stark durchgezogen!</div>
-                    <div class="ska-sprint-success-confetti">✨🎊✨</div>
-                    <div class="ska-sprint-success-actions">
-                        <button class="ska-btn ska-btn--primary" data-action="word-sprint-apply" disabled>Text in Haupt-Editor übernehmen</button>
-                        <button class="ska-btn ska-btn--secondary" data-action="word-sprint-copy" disabled>📋 Text kopieren</button>
-                    </div>
-                </div>
-            </div>`;
-            document.body.appendChild(m);
-
-            const editor = m.querySelector('[data-role="sprint-editor"]');
-            if (editor) {
-                editor.addEventListener('input', () => {
-                    if (this.state.wordSprint.phase !== 'active') return;
-                    this.state.wordSprint.sessionWords = this.getWordCountForSprint();
-                    this.updateWordSprintUI();
-                });
-            }
-        }
-
-        openSprintEditorModal() {
-            this.renderSprintEditorModal();
-            const modal = document.getElementById('ska-sprint-editor-modal');
-            if (!modal) return;
-            modal.classList.add('ska-modal-tiny');
-            modal.classList.remove('ska-modal-wide');
-            const editor = modal.querySelector('[data-role="sprint-editor"]');
-            if (editor) editor.innerHTML = '';
-            this.updateWordSprintUI();
-            SA_Utils.openModal(modal);
-            document.body.classList.add('ska-modal-open');
-            if (editor) editor.focus();
-        }
-
-        closeSprintEditorModal() {
-            const modal = document.getElementById('ska-sprint-editor-modal');
-            if (!modal) return;
-            SA_Utils.closeModal(modal, () => {
-                document.body.classList.remove('ska-modal-open');
             });
         }
 
@@ -4663,8 +4652,8 @@
         }
 
         getWordCountForSprint() {
-            const editor = document.querySelector('[data-role="sprint-editor"]');
-            const text = editor ? editor.textContent || '' : '';
+            const editor = document.querySelector('[data-role="focus-textarea"]');
+            const text = editor ? editor.value || '' : '';
             return this.getWordCountFromText(text);
         }
 
@@ -4676,7 +4665,7 @@
 
         startWordSprint(durationMinutes, targetWords) {
             const minutes = Math.max(1, parseInt(durationMinutes, 10) || 1);
-            const goal = Math.max(1, parseInt(targetWords, 10) || 1);
+            const goal = Math.max(0, parseInt(targetWords, 10) || 0);
             const now = Date.now();
             const durationSec = minutes * 60;
             if (this.state.wordSprint.timerId) clearInterval(this.state.wordSprint.timerId);
@@ -4685,7 +4674,7 @@
                 phase: 'active',
                 durationMinutes: minutes,
                 targetWords: goal,
-                startCount: 0,
+                startCount: this.getWordCountForSprint(),
                 startTime: now,
                 endTime: now + durationSec * 1000,
                 remainingSec: durationSec,
@@ -4693,12 +4682,7 @@
                 lastResult: null,
                 completed: false
             };
-            this.openSprintEditorModal();
-            const modal = document.getElementById('ska-sprint-editor-modal');
-            if (modal) {
-                modal.classList.add('ska-modal-wide');
-                modal.classList.remove('ska-modal-tiny');
-            }
+            this.openFocusModeModal();
             this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
             this.tickWordSprint();
         }
@@ -4711,7 +4695,7 @@
             this.state.wordSprint.remainingSec = remainingSec;
             this.state.wordSprint.sessionWords = sessionWords;
             this.updateWordSprintUI();
-            if (remainingSec <= 0 || sessionWords >= this.state.wordSprint.targetWords) {
+            if (remainingSec <= 0) {
                 this.finishWordSprint();
             }
         }
@@ -4736,14 +4720,9 @@
             this.state.wordSprint.timerId = null;
             this.state.wordSprint.phase = 'setup';
             this.state.wordSprint.completed = false;
-            this.state.wordSprint.remainingSec = 0;
+            this.state.wordSprint.remainingSec = Math.max(0, (this.state.wordSprint.durationMinutes || 0) * 60);
             this.state.wordSprint.sessionWords = 0;
             this.updateWordSprintUI(true);
-            const modal = document.getElementById('ska-sprint-editor-modal');
-            if (modal) {
-                modal.classList.add('ska-modal-tiny');
-                modal.classList.remove('ska-modal-wide');
-            }
         }
 
         resetWordSprint() {
@@ -4754,7 +4733,7 @@
                 startCount: 0,
                 startTime: 0,
                 endTime: 0,
-                remainingSec: 0,
+                remainingSec: Math.max(0, (this.state.wordSprint.durationMinutes || 0) * 60),
                 sessionWords: 0,
                 timerId: null,
                 lastResult: null,
@@ -4764,32 +4743,59 @@
         }
 
         updateWordSprintUI(forceIdle = false) {
-            const modal = document.getElementById('ska-sprint-editor-modal');
+            const modal = document.querySelector('.focus-mode-modal');
             if (!modal) return;
-            const countdownEl = modal.querySelector('[data-role="sprint-countdown"]');
-            const progressFill = modal.querySelector('[data-role="sprint-progress-fill"]');
-            const statsEl = modal.querySelector('[data-role="sprint-stats"]');
-            const successEl = modal.querySelector('[data-role="sprint-success"]');
-            const transferBtn = modal.querySelector('[data-action="word-sprint-apply"]');
-            const copyBtn = modal.querySelector('[data-action="word-sprint-copy"]');
-            const timeLabel = SA_Utils.formatMin(this.state.wordSprint.remainingSec);
-            if (countdownEl) countdownEl.textContent = timeLabel;
-            const timeProgress = this.state.wordSprint.durationMinutes > 0
-                ? 1 - (this.state.wordSprint.remainingSec / (this.state.wordSprint.durationMinutes * 60))
-                : 0;
-            const wordProgress = this.state.wordSprint.targetWords > 0
-                ? this.state.wordSprint.sessionWords / this.state.wordSprint.targetWords
-                : 0;
-            const progress = Math.min(1, Math.max(timeProgress, wordProgress));
-            if (progressFill) progressFill.style.width = `${Math.max(0, Math.min(100, progress * 100))}%`;
-            if (statsEl) {
-                statsEl.textContent = `Wörter in dieser Session: ${this.state.wordSprint.sessionWords || 0}`;
+            const countdownEl = modal.querySelector('[data-role="focus-timer"]');
+            const progressFill = modal.querySelector('[data-role="focus-progress-fill"]');
+            const progressCheck = modal.querySelector('[data-role="focus-progress-check"]');
+            const wordsEl = modal.querySelector('[data-role="focus-words"]');
+            const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
+            const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
+            const startBtn = modal.querySelector('[data-action="focus-start-timer"]');
+            const focusArea = modal.querySelector('[data-role="focus-textarea"]');
+
+            const sessionWords = focusArea ? this.getWordCountFromText(focusArea.value) : 0;
+            this.state.wordSprint.sessionWords = sessionWords;
+
+            if (timeInput && !forceIdle) {
+                const minutes = parseInt(timeInput.value, 10);
+                this.state.wordSprint.durationMinutes = Number.isFinite(minutes) && minutes > 0 ? minutes : 0;
             }
-            const showSuccess = this.state.wordSprint.completed && !forceIdle;
-            if (successEl) successEl.classList.toggle('is-visible', showSuccess);
-            if (transferBtn) transferBtn.disabled = !showSuccess;
-            if (copyBtn) copyBtn.disabled = !showSuccess;
-            modal.classList.toggle('is-complete', showSuccess);
+            if (goalInput && !forceIdle) {
+                const goal = parseInt(goalInput.value, 10);
+                this.state.wordSprint.targetWords = Number.isFinite(goal) && goal > 0 ? goal : 0;
+            }
+
+            const remaining = this.state.wordSprint.phase === 'active'
+                ? this.state.wordSprint.remainingSec
+                : Math.max(0, (this.state.wordSprint.durationMinutes || 0) * 60);
+            if (countdownEl) countdownEl.textContent = SA_Utils.formatMin(remaining);
+
+            if (timeInput) timeInput.disabled = this.state.wordSprint.phase === 'active';
+
+            const goal = this.state.wordSprint.targetWords || 0;
+            if (wordsEl) {
+                wordsEl.textContent = goal > 0
+                    ? `${sessionWords} / ${goal} Words`
+                    : `${sessionWords} Words`;
+            }
+
+            const wordProgress = goal > 0 ? sessionWords / goal : 0;
+            if (progressFill) {
+                progressFill.style.width = `${Math.max(0, Math.min(100, wordProgress * 100))}%`;
+            }
+            const goalReached = goal > 0 && sessionWords >= goal;
+            if (progressCheck) progressCheck.classList.toggle('is-visible', goalReached);
+            modal.classList.toggle('is-goal-reached', goalReached);
+
+            const timeUp = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.remainingSec <= 0 && this.state.wordSprint.phase !== 'setup';
+            modal.classList.toggle('is-time-up', timeUp);
+
+            if (startBtn) {
+                const canStart = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.phase !== 'active';
+                startBtn.disabled = !canStart;
+                startBtn.classList.toggle('is-hidden', this.state.wordSprint.durationMinutes <= 0);
+            }
         }
 
         ensureClickTrackContext() {
@@ -5004,6 +5010,19 @@
             }
             if (act === 'close-focus-mode') {
                 this.closeFocusMode();
+                return true;
+            }
+            if (act === 'focus-start-timer') {
+                const modal = document.querySelector('.focus-mode-modal');
+                if (!modal) return true;
+                const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
+                const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
+                const minutes = timeInput ? timeInput.value : this.state.wordSprint.durationMinutes;
+                const target = goalInput ? goalInput.value : this.state.wordSprint.targetWords;
+                if (!minutes || parseInt(minutes, 10) <= 0) return true;
+                this.state.wordSprint.durationMinutes = parseInt(minutes, 10) || 0;
+                this.state.wordSprint.targetWords = parseInt(target, 10) || 0;
+                this.startWordSprint(this.state.wordSprint.durationMinutes, this.state.wordSprint.targetWords);
                 return true;
             }
             if (act === 'show-nominal-chains') {
@@ -5273,24 +5292,9 @@
                 const targetInput = container ? container.querySelector('[data-role="word-sprint-target"]') : null;
                 const minutes = minutesInput ? minutesInput.value : this.state.wordSprint.durationMinutes;
                 const target = targetInput ? targetInput.value : this.state.wordSprint.targetWords;
-                this.state.wordSprint.durationMinutes = parseInt(minutes, 10) || this.state.wordSprint.durationMinutes;
-                this.state.wordSprint.targetWords = parseInt(target, 10) || this.state.wordSprint.targetWords;
-                this.startWordSprint(this.state.wordSprint.durationMinutes, this.state.wordSprint.targetWords);
-                return true;
-            }
-            if (act === 'word-sprint-cancel' || act === 'close-sprint-editor') {
-                this.stopWordSprint();
-                this.closeSprintEditorModal();
-                return true;
-            }
-            if (act === 'word-sprint-apply') {
-                this.applySprintToMainEditor();
-                this.closeSprintEditorModal();
-                this.stopWordSprint();
-                return true;
-            }
-            if (act === 'word-sprint-copy') {
-                this.copySprintToClipboard(btn);
+                this.state.wordSprint.durationMinutes = parseInt(minutes, 10) || 0;
+                this.state.wordSprint.targetWords = parseInt(target, 10) || 0;
+                this.openFocusModeModal();
                 return true;
             }
 
