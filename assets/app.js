@@ -3,6 +3,29 @@
  * Fixes: Rhythm Wave Sentence Preview, Optimized Audio Phrasing, Closer Label Alignment
  */
 
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    let isIframeMode = false;
+    try {
+        isIframeMode = window.self !== window.top;
+    } catch (error) {
+        isIframeMode = true;
+    }
+    if (isIframeMode) {
+        document.documentElement.classList.add('is-iframe-mode');
+        const style = document.createElement('style');
+        style.innerHTML = '.site-header, #masthead, header, footer, .site-footer { display: none !important; }';
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.head) {
+                    document.head.appendChild(style);
+                }
+            });
+        }
+    }
+}
+
 (function () {
     'use strict';
 
@@ -3043,7 +3066,10 @@
                     }, 200);
                 });
             } else {
-                this.root.querySelector('.ska-grid').classList.add('is-empty');
+                const grid = this.root.querySelector('.ska-grid');
+                if (grid) {
+                    grid.classList.add('is-empty');
+                }
             }
         }
 
@@ -5391,14 +5417,16 @@
         }
 
         bindEvents() {
-            this.textarea.addEventListener('input', SA_Utils.debounce(() => {
-                this.analyze(this.getText());
-                if (this.searchInput && this.searchInput.value.trim()) {
-                    this.applySearchHighlights(this.searchInput.value);
-                } else {
-                    this.clearSearchHighlights();
-                }
-            }, 250));
+            if (this.textarea) {
+                this.textarea.addEventListener('input', SA_Utils.debounce(() => {
+                    this.analyze(this.getText());
+                    if (this.searchInput && this.searchInput.value.trim()) {
+                        this.applySearchHighlights(this.searchInput.value);
+                    } else {
+                        this.clearSearchHighlights();
+                    }
+                }, 250));
+            }
             this.root.addEventListener('input', (e) => {
                 const slider = e.target.closest('[data-action="wpm-slider"]');
                 if (slider) {
@@ -5662,18 +5690,21 @@
 
             });
 
-            document.body.addEventListener('change', (e) => {
-                const mirrorToggle = e.target.closest('[data-action="teleprompter-mirror"]');
-                if (mirrorToggle) {
-                    this.settings.teleprompterMirror = mirrorToggle.checked;
-                    this.saveUIState();
-                    this.applyTeleprompterMirror();
-                }
-            });
+            if (document.body) {
+                document.body.addEventListener('change', (e) => {
+                    const mirrorToggle = e.target.closest('[data-action="teleprompter-mirror"]');
+                    if (mirrorToggle) {
+                        this.settings.teleprompterMirror = mirrorToggle.checked;
+                        this.saveUIState();
+                        this.applyTeleprompterMirror();
+                    }
+                });
+            }
 
-            document.body.addEventListener('click', (e) => {
-                const modal = e.target.closest('.skriptanalyse-modal');
-                if(!modal) return; 
+            if (document.body) {
+                document.body.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.skriptanalyse-modal');
+                    if(!modal) return; 
 
                 const btn = e.target.closest('[data-action]');
                 const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
@@ -5761,6 +5792,7 @@
 
         initSynonymTooltip() {
             if (this.synonymTooltip) return;
+            if (!document.body) return;
             const tooltip = document.createElement('div');
             tooltip.className = 'ska-synonym-tooltip';
             tooltip.setAttribute('aria-hidden', 'true');
@@ -8746,7 +8778,7 @@
             if (!modal) return;
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
-            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1');
+            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
         }
@@ -8762,12 +8794,12 @@
                 .then(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                 })
                 .catch(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                 });
         }
 
@@ -8776,6 +8808,7 @@
             this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
             const modal = document.getElementById('ska-checkout-modal');
             if (!modal) return;
+            modal.style.zIndex = '999999';
             const iframe = modal.querySelector('#ska-checkout-iframe');
             const loading = modal.querySelector('[data-role="checkout-loading"]');
             const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
@@ -8785,7 +8818,7 @@
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
-                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1');
+                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
                 }
             }
             SA_Utils.openModal(modal);
@@ -9832,6 +9865,7 @@
     const renderMasqueradeBanner = () => {
         const config = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.masquerade;
         if (!config || !config.active) return;
+        if (!document.body) return;
         if (document.querySelector('.ska-masquerade-banner')) return;
         const banner = document.createElement('div');
         banner.className = 'ska-masquerade-banner';
@@ -9871,16 +9905,20 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        let isIframe = false;
         if (typeof window !== 'undefined') {
-            let isIframe = false;
             try {
                 isIframe = window.self !== window.top;
             } catch (error) {
                 isIframe = true;
             }
-            if (isIframe) {
-                document.body.classList.add('iframe-mode');
-            }
+        }
+        if (isIframe && document.body) {
+            document.body.classList.add('is-iframe-mode');
+            document.body.classList.add('iframe-mode');
+        }
+        if (isIframe) {
+            document.documentElement.classList.add('is-iframe-mode');
         }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
@@ -9894,6 +9932,7 @@
                 const nameEl = document.querySelector('[data-role="checkout-product-title"]');
                 const priceEl = document.querySelector('[data-role="checkout-price"]');
                 const cycleEl = document.querySelector('[data-role="checkout-cycle"]');
+                const noteEl = document.querySelector('[data-role="checkout-plan-note"]');
                 if (nameEl) nameEl.textContent = title;
                 if (priceEl) priceEl.textContent = price;
                 if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;
@@ -9920,11 +9959,11 @@
                 fetch('/?empty_cart=1')
                     .then(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                     })
                     .catch(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                     });
             };
         }
