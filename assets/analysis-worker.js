@@ -23,14 +23,20 @@ const parseConfigNumber = (value, fallback) => {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-let MAX_SENTENCE_LENGTH = 20;
-let NOMINAL_CHAIN_THRESHOLD = 3;
-let PASSIVE_VOICE_STRICTNESS = 15;
+const DEFAULT_ALGORITHM_TUNING = {
+    longSentenceThreshold: 20,
+    nominalChainThreshold: 3,
+    passiveVoiceStrictness: 15,
+};
+
+let MAX_SENTENCE_LENGTH = DEFAULT_ALGORITHM_TUNING.longSentenceThreshold;
+let NOMINAL_CHAIN_THRESHOLD = DEFAULT_ALGORITHM_TUNING.nominalChainThreshold;
+let PASSIVE_VOICE_STRICTNESS = DEFAULT_ALGORITHM_TUNING.passiveVoiceStrictness;
 
 const applyAlgorithmConfig = (config = {}) => {
-    MAX_SENTENCE_LENGTH = parseConfigNumber(config.longSentenceThreshold, MAX_SENTENCE_LENGTH);
-    NOMINAL_CHAIN_THRESHOLD = parseConfigNumber(config.nominalChainThreshold, NOMINAL_CHAIN_THRESHOLD);
-    PASSIVE_VOICE_STRICTNESS = parseConfigNumber(config.passiveVoiceStrictness, PASSIVE_VOICE_STRICTNESS);
+    MAX_SENTENCE_LENGTH = parseConfigNumber(config.longSentenceThreshold, DEFAULT_ALGORITHM_TUNING.longSentenceThreshold);
+    NOMINAL_CHAIN_THRESHOLD = parseConfigNumber(config.nominalChainThreshold, DEFAULT_ALGORITHM_TUNING.nominalChainThreshold);
+    PASSIVE_VOICE_STRICTNESS = parseConfigNumber(config.passiveVoiceStrictness, DEFAULT_ALGORITHM_TUNING.passiveVoiceStrictness);
 };
 
 const countSyllables = sharedUtils?.countSyllables || ((word) => {

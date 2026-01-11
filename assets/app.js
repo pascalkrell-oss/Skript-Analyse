@@ -43,6 +43,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         return numberValue;
     };
 
+    const SKRIPT_ANALYSE_CONFIG = (typeof window !== 'undefined' && window.skriptAnalyseConfig)
+        ? window.skriptAnalyseConfig
+        : {};
+    const ALGORITHM_TUNING_CONFIG = SKRIPT_ANALYSE_CONFIG.algorithmTuning || {};
+
     // CONFIG
     const SA_CONFIG = {
         STORAGE_KEY: 'skriptanalyse_autosave_v4_99', 
@@ -62,9 +67,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         FREE_TEXT_LIMIT: 20000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
         ALGORITHM_TUNING: {
-            longSentenceThreshold: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.longSentenceThreshold, 20),
-            nominalChainThreshold: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.nominalChainThreshold, 3),
-            passiveVoiceStrictness: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.passiveVoiceStrictness, 15),
+            longSentenceThreshold: resolveNumericSetting(ALGORITHM_TUNING_CONFIG.longSentenceThreshold, 20),
+            nominalChainThreshold: resolveNumericSetting(ALGORITHM_TUNING_CONFIG.nominalChainThreshold, 3),
+            passiveVoiceStrictness: resolveNumericSetting(ALGORITHM_TUNING_CONFIG.passiveVoiceStrictness, 15),
         },
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
@@ -9577,6 +9582,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.root = root;
             this.users = [];
             this.filteredUsers = [];
+            this.churnUsers = [];
             this.searchQuery = '';
             this.apiBase = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.adminApiBase) ? SKA_CONFIG_PHP.adminApiBase.replace(/\/$/, '') : '';
             this.nonce = window.SKA_CONFIG_PHP ? SKA_CONFIG_PHP.adminNonce : '';
@@ -9587,74 +9593,118 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.root.innerHTML = `
                 <div class="ska-admin-header">
                     <div>
-                        <h1>Admin Dashboard</h1>
-                        <p>KPIs, Content-Updates, Feature-Nutzung und User-Verwaltung auf einen Blick.</p>
+                        <h1>Admin-Übersicht</h1>
+                        <p>KPIs, Inhalte, Feature-Nutzung und Nutzerverwaltung auf einen Blick.</p>
                     </div>
                 </div>
                 <div class="ska-admin-tabs">
-                    <button type="button" class="ska-admin-tab is-active" data-action="admin-tab" data-tab="dashboard">Dashboard</button>
-                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="algorithm">Algorithm Tuning</button>
+                    <button type="button" class="ska-admin-tab is-active" data-action="admin-tab" data-tab="algorithm">Algorithmus-Tuning</button>
+                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="churn">Churn-Radar</button>
+                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="users">Nutzer</button>
                 </div>
-                <div class="ska-admin-tab-panel is-active" data-panel="dashboard">
+                <div class="ska-admin-tab-panel is-active" data-panel="algorithm">
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <h2>Algorithmus-Tuning</h2>
+                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
+                        <div class="ska-admin-grid">
+                            <label class="ska-admin-field">
+                                <span>Grenzwert lange Sätze (Wörter)</span>
+                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
+                            </label>
+                            <label class="ska-admin-field">
+                                <span>Grenzwert Nominalketten (Nomen)</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
+                            </label>
+                            <label class="ska-admin-field">
+                                    <span>Passiv-Toleranz</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
+                            </label>
+                        </div>
+                        <div class="ska-admin-inline">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
+                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
+                        </div>
+                    </section>
+                </div>
+                <div class="ska-admin-tab-panel" data-panel="churn">
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <div class="ska-admin-inline">
+                            <div>
+                                <h2>Churn-Radar</h2>
+                                <p>Premium-Nutzer ohne Login seit mehr als 14 Tagen.</p>
+                            </div>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="admin-export-churn">CSV exportieren</button>
+                        </div>
+                        <div class="ska-admin-table-wrapper">
+                            <table class="wp-list-table widefat fixed striped ska-admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>E-Mail</th>
+                                        <th>Name</th>
+                                        <th>Tage inaktiv</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-role="churn-rows"></tbody>
+                            </table>
+                        </div>
+                    </section>
                     <div class="ska-admin-grid">
                         <section class="ska-admin-card">
-                            <h2>Business Analytics</h2>
+                            <h2>Geschäftskennzahlen</h2>
                             <div class="ska-admin-kpis">
                                 <div class="ska-admin-kpi">
-                                    <span>Unlock Klicks</span>
+                                    <span>Unlock-Klicks</span>
                                     <strong data-role="kpi-unlock">—</strong>
                                 </div>
                                 <div class="ska-admin-kpi">
-                                    <span>Payment Success</span>
+                                    <span>Erfolgreiche Zahlungen</span>
                                     <strong data-role="kpi-success">—</strong>
                                 </div>
                                 <div class="ska-admin-kpi">
-                                    <span>Drop-off Rate</span>
+                                    <span>Abbruchquote</span>
                                     <strong data-role="kpi-dropoff">—</strong>
                                 </div>
                             </div>
-                            <div class="ska-admin-subsection">
-                                <h3>Churn Monitor</h3>
-                                <ul class="ska-admin-list" data-role="churn-list"></ul>
-                            </div>
                         </section>
                         <section class="ska-admin-card">
-                            <h2>Content Management</h2>
+                            <h2>Inhalte verwalten</h2>
                             <label class="ska-admin-field">
-                                <span>Global Announcement</span>
+                                <span>Globale Mitteilung</span>
                                 <textarea rows="4" placeholder="z.B. Wartung am Sonntag" data-role="announcement-input"></textarea>
                             </label>
                             <div class="ska-admin-inline">
                                 <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-announcement">Speichern</button>
-                                <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Clear Message</button>
+                                <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Mitteilung löschen</button>
                                 <span class="ska-admin-meta" data-role="announcement-status"></span>
                             </div>
                             <div class="ska-admin-field">
-                                <span>Enable Unlock Button</span>
+                                <span>Freischalt-Button aktivieren</span>
                                 <div class="ska-admin-toggle-row">
-                                    <span>Off</span>
+                                    <span>Aus</span>
                                     <label class="ska-switch">
                                         <input type="checkbox" data-action="admin-unlock-toggle">
                                         <span class="ska-switch-slider"></span>
                                     </label>
-                                    <span>On</span>
+                                    <span>An</span>
                                 </div>
                             </div>
                         </section>
                         <section class="ska-admin-card">
-                            <h2>Feature-Usage Heatmap</h2>
+                            <h2>Feature-Nutzungsübersicht</h2>
                             <div class="ska-admin-heatmap">
                                 <div>
-                                    <h3>Most Used Features</h3>
+                                    <h3>Meistgenutzte Features</h3>
                                     <ul class="ska-admin-list" data-role="heatmap-most"></ul>
                                 </div>
                                 <div>
-                                    <h3>Least Used Features</h3>
+                                    <h3>Wenig genutzte Features</h3>
                                     <ul class="ska-admin-list" data-role="heatmap-least"></ul>
                                 </div>
                             </div>
                         </section>
                     </div>
+                </div>
+                <div class="ska-admin-tab-panel" data-panel="users">
                     <section class="ska-admin-card ska-admin-card--full">
                         <div class="ska-admin-controls">
                             <label class="ska-admin-search">
@@ -9680,30 +9730,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         </div>
                     </section>
                 </div>
-                <div class="ska-admin-tab-panel" data-panel="algorithm">
-                    <section class="ska-admin-card ska-admin-card--full">
-                        <h2>Algorithm Tuning</h2>
-                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
-                        <div class="ska-admin-grid">
-                            <label class="ska-admin-field">
-                                <span>Long Sentence Threshold (Wörter)</span>
-                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
-                            </label>
-                            <label class="ska-admin-field">
-                                <span>Nominal Chain Threshold (Nomen)</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
-                            </label>
-                            <label class="ska-admin-field">
-                                <span>Passive Voice Strictness</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
-                            </label>
-                        </div>
-                        <div class="ska-admin-inline">
-                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
-                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
-                        </div>
-                    </section>
-                </div>
             `;
 
             this.searchInput = this.root.querySelector('[data-role="admin-search"]');
@@ -9712,7 +9738,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.announcementInput = this.root.querySelector('[data-role="announcement-input"]');
             this.announcementStatus = this.root.querySelector('[data-role="announcement-status"]');
             this.unlockToggle = this.root.querySelector('[data-action="admin-unlock-toggle"]');
-            this.churnList = this.root.querySelector('[data-role="churn-list"]');
+            this.churnRows = this.root.querySelector('[data-role="churn-rows"]');
+            this.churnExportButton = this.root.querySelector('[data-action="admin-export-churn"]');
             this.heatmapMost = this.root.querySelector('[data-role="heatmap-most"]');
             this.heatmapLeast = this.root.querySelector('[data-role="heatmap-least"]');
             this.kpiUnlock = this.root.querySelector('[data-role="kpi-unlock"]');
@@ -9763,6 +9790,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 if (action === 'admin-save-algorithm') {
                     this.saveAlgorithmTuning();
                 }
+                if (action === 'admin-export-churn') {
+                    this.exportChurnCsv();
+                }
             });
 
             this.root.addEventListener('change', (event) => {
@@ -9779,6 +9809,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.fetchAnnouncement();
             this.fetchSettings();
             this.fetchAnalytics();
+            this.fetchChurnRadar();
             this.fetchFeatureUsage();
             this.fetchUsers();
         }
@@ -9889,6 +9920,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (window.SKA_CONFIG_PHP) {
                 window.SKA_CONFIG_PHP.algorithmTuning = { ...tuning };
             }
+            if (window.skriptAnalyseConfig) {
+                window.skriptAnalyseConfig.algorithmTuning = { ...tuning };
+            }
             if (SA_CONFIG.ALGORITHM_TUNING) {
                 SA_CONFIG.ALGORITHM_TUNING.longSentenceThreshold = resolveNumericSetting(tuning.longSentenceThreshold, 20);
                 SA_CONFIG.ALGORITHM_TUNING.nominalChainThreshold = resolveNumericSetting(tuning.nominalChainThreshold, 3);
@@ -9968,23 +10002,77 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     if (this.kpiUnlock) this.kpiUnlock.textContent = data?.conversion?.unlockClicks ?? '0';
                     if (this.kpiSuccess) this.kpiSuccess.textContent = data?.conversion?.paymentSuccess ?? '0';
                     if (this.kpiDropoff) this.kpiDropoff.textContent = `${data?.conversion?.dropoffRate ?? 0}%`;
-                    this.renderChurnList(Array.isArray(data.churnedUsers) ? data.churnedUsers : []);
                 })
                 .catch(() => {
                     if (this.kpiDropoff) this.kpiDropoff.textContent = '—';
                 });
         }
 
-        renderChurnList(users) {
-            if (!this.churnList) return;
-            if (!users.length) {
-                this.churnList.innerHTML = '<li class="ska-admin-empty">Keine Kündigungen gefunden.</li>';
+        fetchChurnRadar() {
+            if (!this.apiBase || !this.churnRows) return;
+            this.apiFetch('/admin/churn')
+                .then((response) => response.json())
+                .then((data) => {
+                    const users = Array.isArray(data.inactiveUsers) ? data.inactiveUsers : [];
+                    this.renderChurnRows(users);
+                })
+                .catch(() => {
+                    this.renderChurnRows([]);
+                });
+        }
+
+        renderChurnRows(users) {
+            if (!this.churnRows) return;
+            this.churnUsers = Array.isArray(users) ? users : [];
+            if (!this.churnUsers.length) {
+                this.churnRows.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="ska-admin-empty">Keine inaktiven Premium-Nutzer gefunden.</td>
+                    </tr>
+                `;
+                if (this.churnExportButton) this.churnExportButton.disabled = true;
                 return;
             }
-            this.churnList.innerHTML = users.map((user) => {
-                const date = user.cancelledAt ? ` · ${this.escapeHtml(user.cancelledAt)}` : '';
-                return `<li><strong>${this.escapeHtml(user.name)}</strong> (${this.escapeHtml(user.email)})${date}</li>`;
-            }).join('');
+            if (this.churnExportButton) this.churnExportButton.disabled = false;
+            this.churnRows.innerHTML = this.churnUsers.map((user) => `
+                <tr>
+                    <td>${this.escapeHtml(user.email)}</td>
+                    <td>${this.escapeHtml(user.name)}</td>
+                    <td>${Number(user.daysInactive || 0)}</td>
+                </tr>
+            `).join('');
+        }
+
+        exportChurnCsv() {
+            if (!this.churnUsers || !this.churnUsers.length) {
+                window.alert('Es gibt keine Daten für den Export.');
+                return;
+            }
+            const escapeCsv = (value) => {
+                const text = String(value ?? '');
+                if (/[",\n]/.test(text)) {
+                    return `"${text.replace(/"/g, '""')}"`;
+                }
+                return text;
+            };
+            const rows = [
+                ['E-Mail', 'Name', 'Tage inaktiv'],
+                ...this.churnUsers.map((user) => [
+                    user.email || '',
+                    user.name || '',
+                    Number(user.daysInactive || 0)
+                ])
+            ];
+            const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'churn-radar.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
         }
 
         fetchFeatureUsage() {
@@ -10080,7 +10168,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                             <td class="ska-admin-actions">
                                 <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">
                                     <span class="dashicons dashicons-admin-users" aria-hidden="true"></span>
-                                    Als User einloggen
+                                    Als Nutzer einloggen
                                 </button>
                                 <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" data-user-id="${user.id}" data-plan="${user.plan}">
                                     <span class="dashicons dashicons-edit" aria-hidden="true"></span>
@@ -10096,7 +10184,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
         handleMasquerade(userId) {
             if (!userId) return;
-            const confirmed = window.confirm('Als ausgewählten User einloggen?');
+            const confirmed = window.confirm('Als ausgewählten Nutzer einloggen?');
             if (!confirmed) return;
             this.apiFetch(`/admin/users/${userId}/masquerade`, { method: 'POST', body: JSON.stringify({}) })
                 .then((response) => response.json())
@@ -10179,7 +10267,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.root.innerHTML = `
                 <div class="ska-admin-header">
                     <div>
-                        <h1>User Support</h1>
+                        <h1>Nutzer-Support</h1>
                         <p>Finde Nutzer schnell und starte Support-Aktionen.</p>
                     </div>
                 </div>
@@ -10315,15 +10403,15 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 <div class="ska-support-meta">
                     <div><strong>Status:</strong> ${this.escapeHtml(data.status)}</div>
                     <div><strong>Plan:</strong> ${this.escapeHtml(data.planLabel)}</div>
-                    <div><strong>Manual Access:</strong> ${data.manualAccessUntil ? this.escapeHtml(data.manualAccessUntil) : '—'}</div>
-                    <div><strong>Quota:</strong> ${Number(quota.projects || 0)} Projekte · ${Number(quota.storage || 0)} MB</div>
-                    <div><strong>Last Login:</strong> ${lastLogin.time ? this.escapeHtml(lastLogin.time) : '—'}</div>
-                    <div><strong>Browser/OS:</strong> ${lastLogin.browser ? this.escapeHtml(lastLogin.browser) : '—'} · ${lastLogin.os ? this.escapeHtml(lastLogin.os) : '—'}</div>
+                    <div><strong>Manueller Zugriff bis:</strong> ${data.manualAccessUntil ? this.escapeHtml(data.manualAccessUntil) : '—'}</div>
+                    <div><strong>Kontingent:</strong> ${Number(quota.projects || 0)} Projekte · ${Number(quota.storage || 0)} MB</div>
+                    <div><strong>Letzter Login:</strong> ${lastLogin.time ? this.escapeHtml(lastLogin.time) : '—'}</div>
+                    <div><strong>Browser/Betriebssystem:</strong> ${lastLogin.browser ? this.escapeHtml(lastLogin.browser) : '—'} · ${lastLogin.os ? this.escapeHtml(lastLogin.os) : '—'}</div>
                 </div>
                 <div class="ska-admin-actions">
-                    <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="support-clear-cache" data-user-id="${data.id}">Clear User Cache</button>
-                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-extend-plan" data-user-id="${data.id}">Extend Plan Manually</button>
-                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-reset-password" data-user-id="${data.id}">Send Password Reset</button>
+                    <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="support-clear-cache" data-user-id="${data.id}">Nutzer-Cache löschen</button>
+                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-extend-plan" data-user-id="${data.id}">Plan manuell verlängern</button>
+                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-reset-password" data-user-id="${data.id}">Passwort-Reset senden</button>
                 </div>
             `;
         }
@@ -10378,7 +10466,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         const banner = document.createElement('div');
         banner.className = 'ska-masquerade-banner';
         banner.innerHTML = `
-            <span>Du bist eingeloggt als <strong>${config.userName || 'User'}</strong>.</span>
+            <span>Du bist eingeloggt als <strong>${config.userName || 'Nutzer'}</strong>.</span>
             <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="masquerade-exit">Zurück zum Admin</button>
         `;
         document.body.prepend(banner);
