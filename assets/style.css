@@ -46,6 +46,22 @@ body.iframe-mode .woocommerce-breadcrumb {
     display: none !important;
     opacity: 0 !important;
 }
+header.site-header,
+.site-header,
+#masthead,
+.sticky-header {
+    background-color: #ffffff !important;
+    z-index: 99999 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    transform: translateZ(0);
+}
+.analysis-results h3,
+.analysis-box-header {
+    background-color: #f0f0f0;
+    z-index: 10;
+}
 .ska-no-transition, .ska-no-transition * { transition: none !important; animation: none !important; }
 .skriptanalyse-app.is-restoring-now * { animation: none !important; transition: none !important; }
 
@@ -1545,7 +1561,7 @@ body.iframe-mode .woocommerce-breadcrumb {
 .basis-box .feature-list li,
 .checkout-modal .feature-list li {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
 }
 .basis-box .feature-list li .icon-checkmark,
@@ -1554,7 +1570,8 @@ body.iframe-mode .woocommerce-breadcrumb {
 }
 .skriptanalyse-modal .feature-list li {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    gap: 10px;
 }
 .skriptanalyse-modal .feature-list li .icon-checkmark {
     margin-right: 0.6rem;
@@ -2969,4 +2986,37 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 
 .ska-masquerade-banner strong {
     color: #fff;
+}
+.is-iframe-mode header,
+.is-iframe-mode .site-header,
+.is-iframe-mode #masthead,
+.is-iframe-mode footer,
+.is-iframe-mode .site-footer {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.is-iframe-mode body,
+body.is-iframe-mode {
+    padding-top: 0 !important;
+    background: transparent !important;
+}
+html.is-iframe-mode,
+html.is-iframe-mode body {
+    background: #ffffff !important;
+    padding-top: 0 !important;
+    overflow-x: hidden;
+}
+html.is-iframe-mode header,
+html.is-iframe-mode .site-header,
+html.is-iframe-mode #masthead,
+html.is-iframe-mode footer,
+html.is-iframe-mode .site-footer,
+html.is-iframe-mode .admin-bar {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
