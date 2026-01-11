@@ -3200,45 +3200,50 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         renderAnnouncementBanner(messageOverride = null) {
             const announcement = messageOverride !== null
                 ? String(messageOverride).trim()
-                : (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.globalAnnouncement
-                    ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
-                    : '');
-            const existingBanner = this.root.querySelector('.ska-announcement-banner');
+                : (window.skriptAnalyseConfig && window.skriptAnalyseConfig.globalAnnouncement
+                    ? String(window.skriptAnalyseConfig.globalAnnouncement).trim()
+                    : (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.globalAnnouncement
+                        ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
+                        : ''));
+            const existingToast = document.querySelector('.ska-announcement-toast');
             if (!announcement) {
-                if (existingBanner) {
-                    existingBanner.remove();
+                if (existingToast) {
+                    existingToast.remove();
                 }
                 return;
             }
             const dismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED);
             if (dismissed && dismissed === announcement) {
-                if (existingBanner) {
-                    existingBanner.remove();
+                if (existingToast) {
+                    existingToast.remove();
                 }
                 return;
             }
-            if (existingBanner) {
-                const text = existingBanner.querySelector('.ska-announcement-text');
+            if (existingToast) {
+                const text = existingToast.querySelector('.ska-announcement-toast__text');
                 if (text) text.textContent = announcement;
                 return;
             }
 
-            const banner = document.createElement('div');
-            banner.className = 'ska-announcement-banner';
-            const text = document.createElement('span');
-            text.className = 'ska-announcement-text';
+            const toast = document.createElement('div');
+            toast.className = 'ska-announcement-toast';
+            const text = document.createElement('div');
+            text.className = 'ska-announcement-toast__text';
             text.textContent = announcement;
             const close = document.createElement('button');
             close.type = 'button';
-            close.className = 'ska-btn ska-btn--ghost ska-btn--compact';
-            close.textContent = 'Schließen';
+            close.className = 'ska-announcement-toast__close';
+            close.setAttribute('aria-label', 'Mitteilung schließen');
+            close.innerHTML = '&times;';
             close.addEventListener('click', () => {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED, announcement);
-                banner.remove();
+                toast.remove();
             });
-            banner.appendChild(text);
-            banner.appendChild(close);
-            this.root.prepend(banner);
+            toast.appendChild(text);
+            toast.appendChild(close);
+            if (document.body) {
+                document.body.appendChild(toast);
+            }
         }
 
         setupGlobalControlSync() {
@@ -9598,78 +9603,16 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     </div>
                 </div>
                 <div class="ska-admin-tabs">
-                    <button type="button" class="ska-admin-tab is-active" data-action="admin-tab" data-tab="algorithm">Algorithmus-Tuning</button>
-                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="churn">Churn-Radar</button>
-                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="users">Nutzer</button>
+                    <button type="button" class="ska-admin-tab is-active" data-action="admin-tab" data-tab="dashboard">Dashboard</button>
+                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="users">User-Verwaltung</button>
+                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="settings">Einstellungen</button>
                 </div>
-                <div class="ska-admin-tab-panel is-active" data-panel="algorithm">
-                    <section class="ska-admin-card ska-admin-card--full">
-                        <h2>Algorithmus-Tuning</h2>
-                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
-                        <div class="ska-admin-grid">
-                            <label class="ska-admin-field">
-                                <span>Grenzwert lange Sätze (Wörter)</span>
-                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
-                            </label>
-                            <label class="ska-admin-field">
-                                <span>Grenzwert Nominalketten (Nomen)</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
-                            </label>
-                            <label class="ska-admin-field">
-                                    <span>Passiv-Toleranz</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
-                            </label>
-                        </div>
-                        <div class="ska-admin-inline">
-                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
-                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
-                        </div>
-                    </section>
-                </div>
-                <div class="ska-admin-tab-panel" data-panel="churn">
-                    <section class="ska-admin-card ska-admin-card--full">
-                        <div class="ska-admin-inline">
-                            <div>
-                                <h2>Churn-Radar</h2>
-                                <p>Premium-Nutzer ohne Login seit mehr als 14 Tagen.</p>
-                            </div>
-                            <button type="button" class="ska-btn ska-btn--secondary" data-action="admin-export-churn">CSV exportieren</button>
-                        </div>
-                        <div class="ska-admin-table-wrapper">
-                            <table class="wp-list-table widefat fixed striped ska-admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>E-Mail</th>
-                                        <th>Name</th>
-                                        <th>Tage inaktiv</th>
-                                    </tr>
-                                </thead>
-                                <tbody data-role="churn-rows"></tbody>
-                            </table>
-                        </div>
-                    </section>
+                <div class="ska-admin-tab-panel is-active" data-panel="dashboard">
                     <div class="ska-admin-grid">
                         <section class="ska-admin-card">
-                            <h2>Geschäftskennzahlen</h2>
-                            <div class="ska-admin-kpis">
-                                <div class="ska-admin-kpi">
-                                    <span>Unlock-Klicks</span>
-                                    <strong data-role="kpi-unlock">—</strong>
-                                </div>
-                                <div class="ska-admin-kpi">
-                                    <span>Erfolgreiche Zahlungen</span>
-                                    <strong data-role="kpi-success">—</strong>
-                                </div>
-                                <div class="ska-admin-kpi">
-                                    <span>Abbruchquote</span>
-                                    <strong data-role="kpi-dropoff">—</strong>
-                                </div>
-                            </div>
-                        </section>
-                        <section class="ska-admin-card">
-                            <h2>Inhalte verwalten</h2>
+                            <h2>Globale Mitteilung</h2>
                             <label class="ska-admin-field">
-                                <span>Globale Mitteilung</span>
+                                <span>Mitteilungstext</span>
                                 <textarea rows="4" placeholder="z.B. Wartung am Sonntag" data-role="announcement-input"></textarea>
                             </label>
                             <div class="ska-admin-inline">
@@ -9690,6 +9633,38 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                             </div>
                         </section>
                         <section class="ska-admin-card">
+                            <h2>Dashboard-Überblick</h2>
+                            <div class="ska-admin-kpis ska-admin-kpis--summary">
+                                <div class="ska-admin-kpi">
+                                    <span>Gesamtnutzer</span>
+                                    <strong data-role="summary-total-users">—</strong>
+                                </div>
+                                <div class="ska-admin-kpi">
+                                    <span>Aktive Premium</span>
+                                    <strong data-role="summary-premium-users">—</strong>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <div class="ska-admin-grid">
+                        <section class="ska-admin-card">
+                            <h2>Geschäftskennzahlen</h2>
+                            <div class="ska-admin-kpis">
+                                <div class="ska-admin-kpi">
+                                    <span>Unlock-Klicks</span>
+                                    <strong data-role="kpi-unlock">—</strong>
+                                </div>
+                                <div class="ska-admin-kpi">
+                                    <span>Erfolgreiche Zahlungen</span>
+                                    <strong data-role="kpi-success">—</strong>
+                                </div>
+                                <div class="ska-admin-kpi">
+                                    <span>Abbruchquote</span>
+                                    <strong data-role="kpi-dropoff">—</strong>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="ska-admin-card">
                             <h2>Feature-Nutzungsübersicht</h2>
                             <div class="ska-admin-heatmap">
                                 <div>
@@ -9705,6 +9680,41 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     </div>
                 </div>
                 <div class="ska-admin-tab-panel" data-panel="users">
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <div class="ska-admin-inline">
+                            <div>
+                                <h2>Churn-Radar</h2>
+                                <p>Premium-Nutzer ohne Login seit mehr als 14 Tagen.</p>
+                            </div>
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="admin-export-churn">CSV exportieren</button>
+                        </div>
+                        <div class="ska-admin-table-wrapper">
+                            <table class="wp-list-table widefat fixed striped ska-admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>E-Mail</th>
+                                        <th>Name</th>
+                                        <th>Tage inaktiv</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-role="churn-rows"></tbody>
+                            </table>
+                        </div>
+                        <div class="ska-admin-kpis ska-admin-kpis--churn">
+                            <div class="ska-admin-kpi">
+                                <span>Inaktive Premium</span>
+                                <strong data-role="churn-total">—</strong>
+                            </div>
+                            <div class="ska-admin-kpi">
+                                <span>Ø Tage inaktiv</span>
+                                <strong data-role="churn-average">—</strong>
+                            </div>
+                            <div class="ska-admin-kpi">
+                                <span>Max. Inaktivität</span>
+                                <strong data-role="churn-max">—</strong>
+                            </div>
+                        </div>
+                    </section>
                     <section class="ska-admin-card ska-admin-card--full">
                         <div class="ska-admin-controls">
                             <label class="ska-admin-search">
@@ -9730,6 +9740,30 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         </div>
                     </section>
                 </div>
+                <div class="ska-admin-tab-panel" data-panel="settings">
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <h2>Algorithmus-Tuning</h2>
+                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
+                        <div class="ska-admin-grid">
+                            <label class="ska-admin-field">
+                                <span>Grenzwert lange Sätze (Wörter)</span>
+                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
+                            </label>
+                            <label class="ska-admin-field">
+                                <span>Grenzwert Nominalketten (Nomen)</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
+                            </label>
+                            <label class="ska-admin-field">
+                                    <span>Passiv-Toleranz</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
+                            </label>
+                        </div>
+                        <div class="ska-admin-inline">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
+                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
+                        </div>
+                    </section>
+                </div>
             `;
 
             this.searchInput = this.root.querySelector('[data-role="admin-search"]');
@@ -9745,6 +9779,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.kpiUnlock = this.root.querySelector('[data-role="kpi-unlock"]');
             this.kpiSuccess = this.root.querySelector('[data-role="kpi-success"]');
             this.kpiDropoff = this.root.querySelector('[data-role="kpi-dropoff"]');
+            this.summaryTotalUsers = this.root.querySelector('[data-role="summary-total-users"]');
+            this.summaryPremiumUsers = this.root.querySelector('[data-role="summary-premium-users"]');
+            this.churnTotal = this.root.querySelector('[data-role="churn-total"]');
+            this.churnAverage = this.root.querySelector('[data-role="churn-average"]');
+            this.churnMax = this.root.querySelector('[data-role="churn-max"]');
             this.tabButtons = Array.from(this.root.querySelectorAll('[data-action="admin-tab"]'));
             this.tabPanels = Array.from(this.root.querySelectorAll('[data-panel]'));
             this.algorithmLongInput = this.root.querySelector('[data-role="algorithm-long-sentence"]');
@@ -9865,6 +9904,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     }
                     if (window.SKA_CONFIG_PHP) {
                         window.SKA_CONFIG_PHP.globalAnnouncement = savedMessage;
+                    }
+                    if (window.skriptAnalyseConfig) {
+                        window.skriptAnalyseConfig.globalAnnouncement = savedMessage;
                     }
                     try {
                         localStorage.setItem(SA_CONFIG.UI_KEY_ANNOUNCEMENT_SYNC, JSON.stringify({ message: savedMessage }));
@@ -10024,6 +10066,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         renderChurnRows(users) {
             if (!this.churnRows) return;
             this.churnUsers = Array.isArray(users) ? users : [];
+            this.updateChurnStats();
             if (!this.churnUsers.length) {
                 this.churnRows.innerHTML = `
                     <tr>
@@ -10041,6 +10084,18 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     <td>${Number(user.daysInactive || 0)}</td>
                 </tr>
             `).join('');
+        }
+
+        updateChurnStats() {
+            if (!this.churnTotal && !this.churnAverage && !this.churnMax) return;
+            const total = this.churnUsers.length;
+            const days = this.churnUsers.map((user) => Number(user.daysInactive || 0));
+            const sum = days.reduce((acc, value) => acc + value, 0);
+            const average = total ? Math.round(sum / total) : 0;
+            const max = total ? Math.max(...days) : 0;
+            if (this.churnTotal) this.churnTotal.textContent = String(total);
+            if (this.churnAverage) this.churnAverage.textContent = total ? `${average} Tage` : '0';
+            if (this.churnMax) this.churnMax.textContent = total ? `${max} Tage` : '0';
         }
 
         exportChurnCsv() {
@@ -10115,11 +10170,20 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 .then((response) => response.json())
                 .then((data) => {
                     this.users = Array.isArray(data.users) ? data.users : [];
+                    this.updateSummaryCounts();
                     this.applyFilter();
                 })
                 .catch(() => {
                     this.countLabel.textContent = 'Fehler beim Laden.';
                 });
+        }
+
+        updateSummaryCounts() {
+            if (!this.summaryTotalUsers && !this.summaryPremiumUsers) return;
+            const total = this.users.length;
+            const premium = this.users.filter((user) => user.plan === 'premium').length;
+            if (this.summaryTotalUsers) this.summaryTotalUsers.textContent = String(total);
+            if (this.summaryPremiumUsers) this.summaryPremiumUsers.textContent = String(premium);
         }
 
         applyFilter() {

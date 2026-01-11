@@ -185,6 +185,7 @@ function ska_get_algorithm_tuning_settings() {
 function ska_get_algorithm_tuning_localized_config() {
     return array(
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+        'globalAnnouncement' => ska_get_global_announcement(),
     );
 }
 
