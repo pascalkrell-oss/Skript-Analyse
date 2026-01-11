@@ -21,6 +21,18 @@
 
 /* --- GLOBAL RESETS & HELPERS --- */
 body.ska-modal-open { overflow: hidden !important; }
+body.ska-modal-open header,
+body.ska-modal-open footer,
+body.ska-modal-open #masthead,
+body.ska-modal-open #colophon,
+body.ska-modal-open .site-header,
+body.ska-modal-open .site-footer,
+body.ska-modal-open .elementor-location-header,
+body.ska-modal-open .elementor-location-footer,
+body.ska-modal-open nav,
+body.ska-modal-open .woocommerce-breadcrumb {
+    display: none !important;
+}
 .ska-no-transition, .ska-no-transition * { transition: none !important; animation: none !important; }
 .skriptanalyse-app.is-restoring-now * { animation: none !important; transition: none !important; }
 
@@ -1622,19 +1634,21 @@ body.ska-modal-open { overflow: hidden !important; }
 }
 .ska-checkout-benefits li {
     list-style: none !important;
-    position: relative !important;
-    padding-left: 28px !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 0 !important;
     margin-bottom: 12px !important;
     line-height: 1.4;
     font-size: 0.9rem;
 }
 .ska-checkout-benefits li::before {
     content: '' !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 3px !important;
+    position: static !important;
     width: 18px !important;
     height: 18px !important;
+    flex: 0 0 18px;
+    line-height: 1;
     background-color: #ffffff !important;
     -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
@@ -2625,4 +2639,124 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     color: #16a34a;
     border-radius: 8px;
     font-weight: 600;
+}
+
+
+.ska-admin-page {
+    background: #f8fafc;
+}
+
+.ska-admin-app {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+    color: var(--ska-text-main);
+}
+
+.ska-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.ska-admin-header h1 {
+    margin: 0 0 0.4rem 0;
+    font-size: 2rem;
+}
+
+.ska-admin-header p {
+    margin: 0;
+    color: var(--ska-text-muted);
+}
+
+.ska-admin-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ska-admin-search {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--ska-text-muted);
+    min-width: 240px;
+}
+
+.ska-admin-search input {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.ska-admin-meta {
+    font-size: 0.9rem;
+    color: var(--ska-text-muted);
+}
+
+.ska-admin-table-wrapper {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
+}
+
+.ska-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.ska-admin-table thead {
+    background: #f1f5f9;
+    text-align: left;
+}
+
+.ska-admin-table th,
+.ska-admin-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.ska-admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.ska-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ska-admin-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--ska-text-muted);
+}
+
+.ska-masquerade-banner {
+    position: sticky;
+    top: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 1.2rem;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 0.9rem;
+}
+
+.ska-masquerade-banner strong {
+    color: #fff;
 }
