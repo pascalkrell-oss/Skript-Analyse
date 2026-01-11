@@ -2993,7 +2993,8 @@
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
                 search: { query: '', matches: [], index: -1 },
-                projectObject: { settings: {} }
+                projectObject: { settings: {} },
+                checkoutPrefetchStarted: false
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -3016,6 +3017,7 @@
             this.renderTeleprompterModal();
             const checkoutDetails = this.getCheckoutSummaryDetails();
             this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
+            this.prefetchCheckoutData();
             this.initAnalysisWorker();
             this.bindEvents();
             
@@ -3814,6 +3816,7 @@
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
+                    <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-split-layout">
                             <div class="ska-checkout-summary-col">
@@ -3822,7 +3825,10 @@
                                     <h4>Zusammenfassung</h4>
                                     <div class="ska-checkout-item">
                                         <span class="ska-item-name" data-role="checkout-product-title">${details.productTitle}</span>
-                                        <span class="ska-item-price" data-role="checkout-price">${details.price}</span>
+                                        <span class="ska-item-price-group">
+                                            <span class="ska-item-price" data-role="checkout-price">${details.price}</span>
+                                            <span class="ska-item-tax">zzgl. MwSt.</span>
+                                        </span>
                                     </div>
                                     <div class="ska-checkout-plan-switcher">
                                         <label class="ska-plan-option">
@@ -3879,12 +3885,12 @@
                             </div>
                             <div class="ska-checkout-form-col">
                                 <h3>Skript-Analyse Tool - Premium Plan freischalten</h3>
-                                <div id="ska-checkout-iframe-wrapper">
-                                    <div class="ska-checkout-loading" data-role="checkout-loading">
-                                        <span class="ska-checkout-spinner" aria-hidden="true"></span>
-                                        <span>Zahlung wird geladen…</span>
-                                    </div>
-                                    <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
+                                    <div id="ska-checkout-iframe-wrapper">
+                                        <div class="ska-checkout-loading" data-role="checkout-loading">
+                                            <span class="ska-checkout-spinner" aria-hidden="true"></span>
+                                            <span>Zahlung wird geladen…</span>
+                                        </div>
+                                        <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
                                 </div>
                             </div>
                         </div>
@@ -8675,13 +8681,18 @@
             const checkoutDetails = details || this.getCheckoutSummaryDetails();
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
             const addToCartUrl = `/?add-to-cart=${productId}`;
+            this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
             try {
                 await this.emptyCheckoutCart();
                 await fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' });
             } catch (error) {
                 // continue to checkout modal even if add-to-cart fails
             }
-            this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
+            const modal = document.getElementById('ska-checkout-modal');
+            const iframe = modal ? modal.querySelector('#ska-checkout-iframe') : null;
+            if (iframe) {
+                iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1`);
+            }
         }
 
         emptyCheckoutCart() {
@@ -8698,14 +8709,37 @@
             const iframe = modal.querySelector('#ska-checkout-iframe');
             const loading = modal.querySelector('[data-role="checkout-loading"]');
             if (loading) {
-                loading.style.display = 'flex';
+                loading.style.display = 'none';
             }
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
-                iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+                if (!iframe.getAttribute('src')) {
+                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+                }
             }
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
+        }
+
+        prefetchCheckoutData(planId = this.state.premiumPricePlan) {
+            if (this.state.checkoutPrefetchStarted) return;
+            this.state.checkoutPrefetchStarted = true;
+            const modal = document.getElementById('ska-checkout-modal');
+            if (!modal) return;
+            const iframe = modal.querySelector('#ska-checkout-iframe');
+            const loading = modal.querySelector('[data-role="checkout-loading"]');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+            if (iframe && !iframe.dataset.prefetched) {
+                this.bindCheckoutIframe(iframe, loading, modal);
+                iframe.dataset.prefetched = 'true';
+                iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+            }
+            const productId = this.getPremiumCheckoutProductId(planId);
+            this.emptyCheckoutCart()
+                .then(() => fetch(`/?add-to-cart=${productId}`, { method: 'GET', credentials: 'same-origin' }))
+                .catch(() => {});
         }
 
         bindCheckoutIframe(iframe, loading, modal = null) {
@@ -9220,7 +9254,7 @@
                 const iframeContainer = document.getElementById('ska-checkout-iframe-wrapper');
                 const loading = iframeContainer ? iframeContainer.querySelector('[data-role="checkout-loading"]') : null;
                 const iframe = iframeContainer ? iframeContainer.querySelector('#ska-checkout-iframe') : null;
-                if (loading) loading.style.display = 'flex';
+                if (loading) loading.style.display = 'none';
 
                 const instance = instances[0];
                 if (instance) {
