@@ -33,11 +33,13 @@ function ska_register_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
-/* * CLEAN CHECKOUT FOR IFRAME 
- * Blendet Header/Footer aus, wenn ?embedded_checkout=1 in der URL ist.
+/* * CLEAN CHECKOUT FOR IFRAME
+ * Blendet Header/Footer aus, wenn ?embedded_checkout=1 oder ?is_modal=1 in der URL ist.
  */
 add_action( 'wp', function() {
-    if ( isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1' ) {
+    $is_embedded_checkout = isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1';
+    $is_modal_checkout = isset( $_GET['is_modal'] ) && $_GET['is_modal'] == '1';
+    if ( $is_embedded_checkout || $is_modal_checkout ) {
         // Entfernt Header und Footer in den meisten Themes
         add_filter( 'show_admin_bar', '__return_false' );
 
@@ -45,6 +47,10 @@ add_action( 'wp', function() {
         add_action( 'wp_head', function() {
             echo '<style>
                 header, footer, #masthead, #colophon, .site-header, .site-footer, .elementor-location-header, .elementor-location-footer {
+                    display: none !important;
+                }
+                .cart, .mini-cart, .site-main .cart, .woocommerce-cart, .woocommerce-cart-form,
+                .woocommerce-cart-form__contents, .widget_shopping_cart, .woocommerce-mini-cart {
                     display: none !important;
                 }
                 body {
@@ -55,7 +61,12 @@ add_action( 'wp', function() {
                 }
                 .woocommerce { padding: 20px; }
                 /* Entfernt oft störende Breadcrumbs */
-                .woocommerce-breadcrumb, nav { display: none !important; }
+                .woocommerce-breadcrumb, nav, .site-navigation, .main-navigation {
+                    display: none !important;
+                }
+                .site-footer, .footer, .footer-widgets, .site-info {
+                    display: none !important;
+                }
                 .woocommerce-notices-wrapper,
                 .woocommerce-message,
                 .woocommerce-info,
