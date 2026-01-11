@@ -33,6 +33,157 @@ function ska_register_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
+function ska_get_user_plan_mode( $user_id ) {
+    $plan = get_user_meta( $user_id, 'ska_plan', true );
+    return $plan === 'premium' ? 'premium' : 'basis';
+}
+
+add_filter( 'ska_pro_mode', function( $pro_mode ) {
+    if ( ! is_user_logged_in() ) {
+        return $pro_mode;
+    }
+    $plan = ska_get_user_plan_mode( get_current_user_id() );
+    if ( $plan === 'premium' ) {
+        return true;
+    }
+    if ( $plan === 'basis' ) {
+        return false;
+    }
+    return $pro_mode;
+} );
+
+function ska_register_admin_route() {
+    add_rewrite_rule( '^admin/?$', 'index.php?ska_admin=1', 'top' );
+}
+add_action( 'init', 'ska_register_admin_route' );
+
+register_activation_hook( __FILE__, function() {
+    ska_register_admin_route();
+    flush_rewrite_rules();
+} );
+
+add_filter( 'query_vars', function( $vars ) {
+    $vars[] = 'ska_admin';
+    return $vars;
+} );
+
+function ska_get_masquerade_admin_id() {
+    return isset( $_COOKIE['ska_masquerade_admin'] ) ? absint( $_COOKIE['ska_masquerade_admin'] ) : 0;
+}
+
+function ska_get_masquerade_config() {
+    $admin_id = ska_get_masquerade_admin_id();
+    $active = $admin_id && is_user_logged_in() && ! current_user_can( 'manage_options' );
+    $admin = $active ? get_user_by( 'id', $admin_id ) : null;
+
+    return array(
+        'active' => (bool) $active,
+        'adminId' => $admin_id,
+        'adminName' => $admin ? $admin->display_name : '',
+        'userName' => is_user_logged_in() ? wp_get_current_user()->display_name : '',
+        'endNonce' => wp_create_nonce( 'ska_masquerade' ),
+        'adminUrl' => home_url( '/admin/' ),
+    );
+}
+
+function ska_get_localized_config() {
+    $markers_config = [
+        ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
+        ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
+        ['label' => '2 Sekunden', 'val' => '|2S|', 'desc' => 'Feste Pause von zwei Sekunden'],
+        ['label' => '[ATMEN]', 'val' => '[ATMEN]', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
+        ['label' => '[BETONUNG]', 'val' => '[BETONUNG]', 'desc' => 'Das folgende Wort stark hervorheben'],
+        ['label' => '[SZENE]', 'val' => "\n\n[SZENE]\n", 'desc' => 'Neuer Abschnitt / Szenenwechsel'],
+        ['label' => '[LAUT]', 'val' => '[LAUT]', 'desc' => 'Dynamik steigern / Lauter werden'],
+        ['label' => '[LEISE]', 'val' => '[LEISE]', 'desc' => 'Dynamik senken / Leiser werden'],
+        ['label' => '[SCHNELL]', 'val' => '[SCHNELL]', 'desc' => 'Tempo deutlich anziehen'],
+        ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
+    ];
+
+    $pro_mode = apply_filters( 'ska_pro_mode', false );
+    $pro_mode = filter_var( $pro_mode, FILTER_VALIDATE_BOOLEAN );
+
+    return array(
+        'markers' => $markers_config,
+        'pro' => $pro_mode,
+        'isAdmin' => current_user_can( 'manage_options' ),
+        'isLoggedIn' => is_user_logged_in(),
+        'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
+        'admin' => array(
+            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+            'nonce' => wp_create_nonce( 'ska_admin' ),
+        ),
+        'masquerade' => ska_get_masquerade_config(),
+    );
+}
+
+function ska_enqueue_app_assets() {
+    wp_enqueue_style( 'skript-analyse-css' );
+    wp_enqueue_script( 'skript-analyse-js' );
+    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+}
+
+function ska_render_admin_page() {
+    if ( ! get_query_var( 'ska_admin' ) ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_redirect( home_url( '/' ) );
+        exit;
+    }
+
+    ska_enqueue_app_assets();
+    status_header( 200 );
+    nocache_headers();
+
+    ?>
+    <!doctype html>
+    <html <?php language_attributes(); ?> class="ska-admin-html">
+    <head>
+        <meta charset="<?php bloginfo( 'charset' ); ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <?php wp_head(); ?>
+    </head>
+    <body <?php body_class( 'ska-admin-page' ); ?>>
+        <div class="ska-admin-app">
+            <header class="ska-admin-header">
+                <div>
+                    <h1>Skript-Analyse Admin</h1>
+                    <p>Verwalte Benutzer, Pläne und Support-Logins.</p>
+                </div>
+                <div class="ska-admin-header-actions">
+                    <button class="ska-btn ska-btn--secondary" data-action="admin-refresh">Aktualisieren</button>
+                </div>
+            </header>
+            <section class="ska-admin-panel">
+                <div class="ska-admin-panel-header">
+                    <h2>Benutzer</h2>
+                    <div class="ska-admin-search">
+                        <input type="search" placeholder="Suche nach Name oder E-Mail" data-action="admin-search">
+                    </div>
+                </div>
+                <div class="ska-admin-table" data-role="admin-table">
+                    <div class="ska-admin-table-head">
+                        <span>ID</span>
+                        <span>Name</span>
+                        <span>E-Mail</span>
+                        <span>Plan</span>
+                        <span>Registriert</span>
+                        <span>Aktionen</span>
+                    </div>
+                    <div class="ska-admin-table-body" data-role="admin-table-body"></div>
+                </div>
+            </section>
+        </div>
+        <?php wp_footer(); ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+add_action( 'template_redirect', 'ska_render_admin_page' );
+
 /* * CLEAN CHECKOUT FOR IFRAME 
  * Blendet Header/Footer aus, wenn ?embedded_checkout=1 in der URL ist.
  */
@@ -40,6 +191,13 @@ add_action( 'wp', function() {
     if ( isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1' ) {
         // Entfernt Header und Footer in den meisten Themes
         add_filter( 'show_admin_bar', '__return_false' );
+
+        // Entfernt WooCommerce-Notices
+        remove_action( 'woocommerce_before_checkout_form', 'woocommerce_output_all_notices', 10 );
+        remove_action( 'woocommerce_before_cart', 'woocommerce_output_all_notices', 10 );
+        remove_action( 'woocommerce_before_single_product', 'woocommerce_output_all_notices', 10 );
+        add_filter( 'wc_add_to_cart_message_html', '__return_empty_string' );
+        add_filter( 'woocommerce_add_to_cart_message_html', '__return_empty_string' );
 
         // CSS ausgeben, um Header/Footer hart auszublenden (Theme-abhängig)
         add_action( 'wp_head', function() {
@@ -54,6 +212,7 @@ add_action( 'wp', function() {
                     overflow-x: hidden;
                 }
                 .woocommerce { padding: 20px; }
+                .woocommerce-notices-wrapper, .woocommerce-message, .woocommerce-error, .woocommerce-info { display: none !important; }
                 /* Entfernt oft störende Breadcrumbs */
                 .woocommerce-breadcrumb, nav { display: none !important; }
             </style>';
@@ -62,32 +221,7 @@ add_action( 'wp', function() {
 } );
 
 function ska_shortcode() {
-    wp_enqueue_style( 'skript-analyse-css' );
-    wp_enqueue_script( 'skript-analyse-js' );
-
-    $markers_config = [
-        ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
-        ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
-        ['label' => '2 Sekunden', 'val' => '|2S|', 'desc' => 'Feste Pause von zwei Sekunden'],
-        ['label' => '[ATMEN]', 'val' => '[ATMEN]', 'desc' => 'Regieanweisung: Hörbares Einatmen'],
-        ['label' => '[BETONUNG]', 'val' => '[BETONUNG]', 'desc' => 'Das folgende Wort stark hervorheben'],
-        ['label' => '[SZENE]', 'val' => "\n\n[SZENE]\n", 'desc' => 'Neuer Abschnitt / Szenenwechsel'],
-        ['label' => '[LAUT]', 'val' => '[LAUT]', 'desc' => 'Dynamik steigern / Lauter werden'],
-        ['label' => '[LEISE]', 'val' => '[LEISE]', 'desc' => 'Dynamik senken / Leiser werden'],
-        ['label' => '[SCHNELL]', 'val' => '[SCHNELL]', 'desc' => 'Tempo deutlich anziehen'],
-        ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
-    ];
-    
-    $pro_mode = apply_filters( 'ska_pro_mode', false );
-    $pro_mode = filter_var( $pro_mode, FILTER_VALIDATE_BOOLEAN );
-
-    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
-        'markers' => $markers_config,
-        'pro' => $pro_mode,
-        'isAdmin' => current_user_can( 'manage_options' ),
-        'isLoggedIn' => is_user_logged_in(),
-        'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
-    ));
+    ska_enqueue_app_assets();
 
     ob_start();
     ?>
@@ -705,4 +839,83 @@ function ska_shortcode() {
     return ob_get_clean();
 }
 add_shortcode( 'skript_analyse', 'ska_shortcode' );
+
+function ska_admin_require_permission() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'Not allowed.' ), 403 );
+    }
+}
+
+add_action( 'wp_ajax_ska_admin_users', function() {
+    check_ajax_referer( 'ska_admin', 'nonce' );
+    ska_admin_require_permission();
+
+    $users = get_users( array( 'orderby' => 'registered', 'order' => 'DESC' ) );
+    $payload = array();
+
+    foreach ( $users as $user ) {
+        $plan = ska_get_user_plan_mode( $user->ID );
+        $payload[] = array(
+            'id' => $user->ID,
+            'name' => $user->display_name,
+            'email' => $user->user_email,
+            'plan' => $plan,
+            'registered' => mysql2date( 'd.m.Y', $user->user_registered ),
+        );
+    }
+
+    wp_send_json_success( array( 'users' => $payload ) );
+} );
+
+add_action( 'wp_ajax_ska_admin_set_plan', function() {
+    check_ajax_referer( 'ska_admin', 'nonce' );
+    ska_admin_require_permission();
+
+    $user_id = isset( $_POST['userId'] ) ? absint( $_POST['userId'] ) : 0;
+    $plan = isset( $_POST['plan'] ) ? sanitize_text_field( $_POST['plan'] ) : '';
+    $plan = $plan === 'premium' ? 'premium' : 'basis';
+
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Missing user.' ), 400 );
+    }
+
+    update_user_meta( $user_id, 'ska_plan', $plan );
+    wp_send_json_success( array( 'plan' => $plan ) );
+} );
+
+add_action( 'wp_ajax_ska_admin_masquerade', function() {
+    check_ajax_referer( 'ska_admin', 'nonce' );
+    ska_admin_require_permission();
+
+    $user_id = isset( $_POST['userId'] ) ? absint( $_POST['userId'] ) : 0;
+    if ( ! $user_id ) {
+        wp_send_json_error( array( 'message' => 'Missing user.' ), 400 );
+    }
+
+    $admin_id = get_current_user_id();
+    setcookie( 'ska_masquerade_admin', (string) $admin_id, time() + DAY_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+    wp_set_current_user( $user_id );
+    wp_set_auth_cookie( $user_id, true );
+
+    wp_send_json_success( array( 'redirect' => home_url( '/' ) ) );
+} );
+
+add_action( 'wp_ajax_nopriv_ska_admin_end_masquerade', 'ska_admin_end_masquerade' );
+add_action( 'wp_ajax_ska_admin_end_masquerade', 'ska_admin_end_masquerade' );
+
+function ska_admin_end_masquerade() {
+    check_ajax_referer( 'ska_masquerade', 'nonce' );
+
+    $admin_id = ska_get_masquerade_admin_id();
+    $admin_user = $admin_id ? get_user_by( 'id', $admin_id ) : null;
+
+    if ( ! $admin_user || ! user_can( $admin_user, 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'Invalid admin.' ), 403 );
+    }
+
+    setcookie( 'ska_masquerade_admin', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+    wp_set_current_user( $admin_id );
+    wp_set_auth_cookie( $admin_id, true );
+    wp_send_json_success( array( 'redirect' => home_url( '/admin/' ) ) );
+}
 ?>
