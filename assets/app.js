@@ -3016,6 +3016,7 @@
             this.renderTeleprompterModal();
             const checkoutDetails = this.getCheckoutSummaryDetails();
             this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
+            this.preloadCheckoutIframe();
             this.initAnalysisWorker();
             this.bindEvents();
             
@@ -3814,6 +3815,7 @@
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
+                    <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-split-layout">
                             <div class="ska-checkout-summary-col">
@@ -3844,6 +3846,7 @@
                                         </label>
                                     </div>
                                     <div class="ska-checkout-cycle" data-role="checkout-cycle">Abrechnung: ${details.cycle}</div>
+                                    <div class="ska-checkout-tax">inkl. 19% MwSt.</div>
 
                                     <hr class="ska-checkout-divider">
 
@@ -8671,23 +8674,50 @@
             return false;
         }
 
-        async startCheckoutFlow(details = null) {
+        startCheckoutFlow(details = null) {
             const checkoutDetails = details || this.getCheckoutSummaryDetails();
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-            const addToCartUrl = `/?add-to-cart=${productId}`;
-            try {
-                await this.emptyCheckoutCart();
-                await fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' });
-            } catch (error) {
-                // continue to checkout modal even if add-to-cart fails
-            }
             this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
+            this.prefetchCheckoutCart(productId);
         }
 
         emptyCheckoutCart() {
             return fetch('/?empty_cart=1', { method: 'GET' })
                 .then(() => console.log('Warenkorb bereinigt'))
                 .catch((err) => console.error(err));
+        }
+
+        preloadCheckoutIframe() {
+            const modal = document.getElementById('ska-checkout-modal');
+            if (!modal) return;
+            const iframe = modal.querySelector('#ska-checkout-iframe');
+            if (!iframe || iframe.getAttribute('src')) return;
+            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+            iframe.dataset.checkoutPreloaded = 'true';
+            this.bindCheckoutIframe(iframe, null, modal);
+        }
+
+        prefetchCheckoutCart(productId, modal = null) {
+            const checkoutModal = modal || document.getElementById('ska-checkout-modal');
+            if (!checkoutModal) return;
+            const iframe = checkoutModal.querySelector('#ska-checkout-iframe');
+            const loading = checkoutModal.querySelector('[data-role="checkout-loading"]');
+            if (loading) {
+                loading.style.display = 'flex';
+            }
+            const addToCartUrl = `/?add-to-cart=${productId}`;
+            this.emptyCheckoutCart()
+                .then(() => fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' }))
+                .then(() => {
+                    if (!iframe) return;
+                    this.bindCheckoutIframe(iframe, loading, checkoutModal);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1`);
+                })
+                .catch(() => {
+                    if (!iframe) return;
+                    this.bindCheckoutIframe(iframe, loading, checkoutModal);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1`);
+                });
         }
 
         openCheckoutModal(productTitle, price, cycle) {
@@ -8697,12 +8727,15 @@
             if (!modal) return;
             const iframe = modal.querySelector('#ska-checkout-iframe');
             const loading = modal.querySelector('[data-role="checkout-loading"]');
-            if (loading) {
+            const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
+            if (loading && !iframeLoaded) {
                 loading.style.display = 'flex';
             }
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
-                iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+                if (!iframe.getAttribute('src')) {
+                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
+                }
             }
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
@@ -8715,6 +8748,7 @@
                 if (loading) {
                     loading.style.display = 'none';
                 }
+                iframe.dataset.checkoutLoaded = 'true';
                 let currentUrl = '';
                 try {
                     currentUrl = iframe.contentWindow?.location?.href || '';
