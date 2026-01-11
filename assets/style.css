@@ -2929,6 +2929,38 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     color: var(--ska-text-muted);
 }
 
+.ska-admin-tabs {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1.4rem;
+    flex-wrap: wrap;
+}
+
+.ska-admin-tab {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ska-admin-tab.is-active {
+    background: var(--ska-primary);
+    color: #ffffff;
+    border-color: var(--ska-primary);
+}
+
+.ska-admin-tab-panel {
+    display: none;
+}
+
+.ska-admin-tab-panel.is-active {
+    display: block;
+}
+
 .ska-admin-table-wrapper {
     background: #fff;
     border-radius: 16px;
