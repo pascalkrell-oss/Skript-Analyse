@@ -4021,35 +4021,67 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-split-layout">
+                            <div class="ska-checkout-form-col">
+                                <h3>Skript-Analyse Tool - Premium Plan freischalten</h3>
+                                <div class="ska-checkout-plan-switcher">
+                                    <label class="ska-plan-option">
+                                        <input type="radio" name="checkout_plan" value="3128" ${selectedProductId === '3128' ? 'checked' : ''}>
+                                        <span class="ska-plan-label">
+                                            <strong>Monatlich</strong>
+                                            <span>12 € / Monat</span>
+                                        </span>
+                                    </label>
+
+                                    <label class="ska-plan-option">
+                                        <input type="radio" name="checkout_plan" value="3130" ${selectedProductId === '3130' ? 'checked' : ''}>
+                                        <span class="ska-plan-label">
+                                            <strong>Jährlich</strong>
+                                            <span>144 € / Jahr</span>
+                                        </span>
+                                    </label>
+
+                                    <label class="ska-plan-option">
+                                        <input type="radio" name="checkout_plan" value="3127" ${selectedProductId === '3127' ? 'checked' : ''}>
+                                        <span class="ska-plan-label">
+                                            <strong>Lifetime</strong>
+                                            <span>Einmalig 399 €</span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div id="ska-checkout-iframe-wrapper">
+                                    <div class="ska-checkout-loading" data-role="checkout-loading">
+                                        <span class="ska-checkout-spinner" aria-hidden="true"></span>
+                                        <span>Zahlung wird geladen…</span>
+                                    </div>
+                                    <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
+                                </div>
+                            </div>
                             <div class="ska-checkout-summary-col">
                                 <div class="ska-checkout-product-card">
                                     <div class="ska-ssl-badge-small">🔒 SSL-Verschlüsselt</div>
-                                    <h4>Zusammenfassung</h4>
+                                    <h4>Bestellübersicht</h4>
                                     <div class="ska-checkout-item">
                                         <span class="ska-item-name" data-role="checkout-product-title">${details.productTitle}</span>
                                         <span class="ska-item-price" data-role="checkout-price">${details.price}</span>
                                     </div>
-                                    <div class="ska-checkout-plan-switcher">
-                                        <label class="ska-plan-option">
-                                            <input type="radio" name="checkout_plan" value="3128" ${selectedProductId === '3128' ? 'checked' : ''}
-                                                onchange="updateCheckoutContext(this.value, 'Premium (Monatlich)', '12 € / Monat', 'Monatlich')">
-                                            <span class="ska-plan-label">Monatlich (12€)</span>
-                                        </label>
-
-                                        <label class="ska-plan-option">
-                                            <input type="radio" name="checkout_plan" value="3130" ${selectedProductId === '3130' ? 'checked' : ''}
-                                                onchange="updateCheckoutContext(this.value, 'Premium (Jährlich)', '144 € / Jahr', 'Jährlich')">
-                                            <span class="ska-plan-label">Jährlich (144€)</span>
-                                        </label>
-
-                                        <label class="ska-plan-option">
-                                            <input type="radio" name="checkout_plan" value="3127" ${selectedProductId === '3127' ? 'checked' : ''}
-                                                onchange="updateCheckoutContext(this.value, 'Premium (Lifetime)', 'Einmalig', 'Lifetime')">
-                                            <span class="ska-plan-label">Lifetime</span>
-                                        </label>
+                                    <div class="ska-checkout-price-breakdown">
+                                        <div class="ska-checkout-line">
+                                            <span>Preis</span>
+                                            <span data-role="checkout-base-price">${details.price}</span>
+                                        </div>
+                                        <div class="ska-checkout-line">
+                                            <span>MwSt. (19%)</span>
+                                            <span class="ska-checkout-tax" data-role="checkout-vat">${details.vat}</span>
+                                        </div>
+                                        <div class="ska-checkout-total">
+                                            <span>Gesamt</span>
+                                            <strong data-role="checkout-total">${details.total}</strong>
+                                        </div>
                                     </div>
                                     <div class="ska-checkout-cycle" data-role="checkout-cycle">Abrechnung: ${details.cycle}</div>
-                                    <div class="ska-checkout-tax">inkl. 19% MwSt.</div>
+                                    <div class="ska-checkout-cta">
+                                        <a class="ska-btn ska-btn--primary" data-role="checkout-link" href="${details.checkoutUrl}" target="_blank" rel="noopener">Checkout öffnen</a>
+                                    </div>
 
                                     <hr class="ska-checkout-divider">
 
@@ -4083,20 +4115,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                                     </div>
                                 </div>
                             </div>
-                            <div class="ska-checkout-form-col">
-                                <h3>Skript-Analyse Tool - Premium Plan freischalten</h3>
-                                <div id="ska-checkout-iframe-wrapper">
-                                    <div class="ska-checkout-loading" data-role="checkout-loading">
-                                        <span class="ska-checkout-spinner" aria-hidden="true"></span>
-                                        <span>Zahlung wird geladen…</span>
-                                    </div>
-                                    <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>`;
             document.body.appendChild(m);
+            this.setupCheckoutPlanSwitch(m);
         }
 
         updateCheckoutModalContent(details, selectedProductId) {
@@ -4105,9 +4128,17 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             const nameEl = modal.querySelector('[data-role="checkout-product-title"]');
             const priceEl = modal.querySelector('[data-role="checkout-price"]');
             const cycleEl = modal.querySelector('[data-role="checkout-cycle"]');
+            const basePriceEl = modal.querySelector('[data-role="checkout-base-price"]');
+            const vatEl = modal.querySelector('[data-role="checkout-vat"]');
+            const totalEl = modal.querySelector('[data-role="checkout-total"]');
+            const checkoutLinkEl = modal.querySelector('[data-role="checkout-link"]');
             if (nameEl) nameEl.textContent = details.productTitle;
             if (priceEl) priceEl.textContent = details.price;
             if (cycleEl) cycleEl.textContent = `Abrechnung: ${details.cycle}`;
+            if (basePriceEl) basePriceEl.textContent = details.price;
+            if (vatEl) vatEl.textContent = details.vat;
+            if (totalEl) totalEl.textContent = details.total;
+            if (checkoutLinkEl) checkoutLinkEl.setAttribute('href', details.checkoutUrl);
 
             const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
             planInputs.forEach((input) => {
@@ -8832,24 +8863,71 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             return String(priceRaw).replace(/,00\b/g, '');
         }
 
+        formatCurrencyValue(value, fractionDigits = 2) {
+            const numberValue = Number(value);
+            if (!Number.isFinite(numberValue)) return '';
+            return new Intl.NumberFormat('de-DE', {
+                minimumFractionDigits: fractionDigits,
+                maximumFractionDigits: fractionDigits
+            }).format(numberValue);
+        }
+
+        getCheckoutPlanMetaByProductId(productId) {
+            const planKey = String(productId);
+            const checkoutPlans = {
+                '3128': {
+                    productId: '3128',
+                    planId: 'flex',
+                    title: 'Premium (Monatlich)',
+                    cycle: 'Monatlich',
+                    priceLabel: '12 € / Monat',
+                    priceValue: 12
+                },
+                '3130': {
+                    productId: '3130',
+                    planId: 'pro',
+                    title: 'Premium (Jährlich)',
+                    cycle: 'Jährlich',
+                    priceLabel: '144 € / Jahr',
+                    priceValue: 144
+                },
+                '3127': {
+                    productId: '3127',
+                    planId: 'studio',
+                    title: 'Premium (Lifetime)',
+                    cycle: 'Lifetime',
+                    priceLabel: '399 €',
+                    priceValue: 399
+                }
+            };
+            const plan = checkoutPlans[planKey] || checkoutPlans['3128'];
+            const vatAmount = plan.priceValue * 0.19;
+            const totalAmount = plan.priceValue + vatAmount;
+            const cycleSuffix = plan.cycle === 'Monatlich'
+                ? ' / Monat'
+                : (plan.cycle === 'Jährlich' ? ' / Jahr' : '');
+            return {
+                ...plan,
+                vatLabel: `${this.formatCurrencyValue(vatAmount)} €`,
+                totalLabel: `${this.formatCurrencyValue(totalAmount)} €${cycleSuffix}`,
+                checkoutUrl: `/kasse/?add-to-cart=${plan.productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`
+            };
+        }
+
         getCheckoutSummaryDetails(planId = this.state.premiumPricePlan) {
             const premiumPlans = this.getPremiumPlans();
             const selectedPlan = premiumPlans.find(plan => plan.id === planId) || premiumPlans[0];
             const cycle = selectedPlan.label || 'Monatlich';
-            let price = `${this.formatPriceValue(selectedPlan.price)} €`;
-            if (selectedPlan.id === 'flex') {
-                price = '12 € / Monat';
-            } else if (selectedPlan.id === 'pro') {
-                price = '144 € / Jahr';
-            } else if (selectedPlan.id === 'studio') {
-                price = `${this.formatPriceValue(selectedPlan.price)} €`;
-            }
-            const productTitle = selectedPlan.id === 'flex'
-                ? 'Premium (Monatlich)'
-                : (selectedPlan.id === 'pro'
-                    ? 'Premium (Jährlich)'
-                    : (selectedPlan.id === 'studio' ? 'Premium (Lifetime)' : `Premium (${cycle})`));
-            return { productTitle, price, cycle };
+            const productId = String(this.getPremiumCheckoutProductId(selectedPlan.id));
+            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
+            return {
+                productTitle: planMeta.title,
+                price: planMeta.priceLabel,
+                cycle: planMeta.cycle || cycle,
+                vat: planMeta.vatLabel,
+                total: planMeta.totalLabel,
+                checkoutUrl: planMeta.checkoutUrl
+            };
         }
 
         getCheckoutDetails(productTitle, price, cycle) {
@@ -8857,7 +8935,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             return {
                 productTitle: productTitle || fallback.productTitle,
                 price: price || fallback.price,
-                cycle: cycle || fallback.cycle
+                cycle: cycle || fallback.cycle,
+                vat: fallback.vat,
+                total: fallback.total,
+                checkoutUrl: fallback.checkoutUrl
             };
         }
 
@@ -8877,6 +8958,34 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (normalized.includes('jahr')) return 'pro';
             if (normalized.includes('life')) return 'studio';
             return null;
+        }
+
+        setupCheckoutPlanSwitch(modal) {
+            if (!modal || modal.dataset.checkoutPlanSwitchBound === 'true') return;
+            modal.addEventListener('change', (event) => {
+                const target = event.target;
+                if (!target || !target.matches('input[name="checkout_plan"]')) return;
+                this.handleCheckoutPlanSelection(target.value);
+            });
+            modal.dataset.checkoutPlanSwitchBound = 'true';
+        }
+
+        handleCheckoutPlanSelection(productId) {
+            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
+            if (!planMeta) return;
+            const details = {
+                productTitle: planMeta.title,
+                price: planMeta.priceLabel,
+                cycle: planMeta.cycle,
+                vat: planMeta.vatLabel,
+                total: planMeta.totalLabel,
+                checkoutUrl: planMeta.checkoutUrl
+            };
+            this.updateCheckoutModalContent(details, String(planMeta.productId));
+            if (planMeta.planId) {
+                this.state.premiumPricePlan = planMeta.planId;
+                this.updatePremiumPlanUI();
+            }
         }
 
         getCheckoutPlanDescription() {
@@ -10323,43 +10432,10 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 if (!instance) return false;
                 return instance.openCheckout(productTitle, price, cycle);
             };
-            window.updateCheckoutContext = (productId, title, price, cycle) => {
-                const nameEl = document.querySelector('[data-role="checkout-product-title"]');
-                const priceEl = document.querySelector('[data-role="checkout-price"]');
-                const cycleEl = document.querySelector('[data-role="checkout-cycle"]');
-                const noteEl = document.querySelector('[data-role="checkout-plan-note"]');
-                if (nameEl) nameEl.textContent = title;
-                if (priceEl) priceEl.textContent = price;
-                if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;
-                if (noteEl && instances[0]) noteEl.textContent = instances[0].getCheckoutPlanDescription();
-
-                const iframeContainer = document.getElementById('ska-checkout-iframe-wrapper');
-                const loading = iframeContainer ? iframeContainer.querySelector('[data-role="checkout-loading"]') : null;
-                const iframe = iframeContainer ? iframeContainer.querySelector('#ska-checkout-iframe') : null;
-                if (loading) loading.style.display = 'none';
-
+            window.updateCheckoutContext = (productId) => {
                 const instance = instances[0];
-                if (instance) {
-                    const productMap = { '3128': 'flex', '3130': 'pro', '3127': 'studio' };
-                    const planId = productMap[productId];
-                    if (planId) {
-                        instance.state.premiumPricePlan = planId;
-                        instance.updatePremiumPlanUI();
-                    }
-                    if (iframe) {
-                        instance.bindCheckoutIframe(iframe, loading);
-                    }
-                }
-
-                fetch('/?empty_cart=1')
-                    .then(() => {
-                        if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
-                    })
-                    .catch(() => {
-                        if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
-                    });
+                if (!instance) return;
+                instance.handleCheckoutPlanSelection(productId);
             };
         }
 
