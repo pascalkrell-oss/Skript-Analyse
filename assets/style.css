@@ -581,8 +581,17 @@ body.ska-modal-open { overflow: hidden !important; }
     text-align: left !important;
 }
 .ska-card-title-wrapper {
-    align-items: flex-start !important;
+    display: flex;
+    gap: 8px;
+    align-items: center !important;
     text-align: left !important;
+}
+.ska-card-header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
 }
 .ska-card-header h3 {
     text-align: left !important;
@@ -1620,7 +1629,7 @@ body.ska-modal-open { overflow: hidden !important; }
     top: 3px !important;
     width: 18px !important;
     height: 18px !important;
-    background-color: #1a93ee !important;
+    background-color: #ffffff !important;
     -webkit-mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     mask-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg') !important;
     -webkit-mask-size: contain !important;
@@ -1644,14 +1653,37 @@ body.ska-modal-open { overflow: hidden !important; }
     font-size: 0.85rem;
     color: #94a3b8;
 }
-.ska-trust-elements p {
-    margin: 0 0 6px;
-    font-weight: 600;
-    color: #94a3b8;
+.ska-checkout-plan-note {
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #cbd5f5;
 }
-.ska-payment-methods {
-    font-weight: 600;
-    color: #94a3b8;
+.ska-payment-icons {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    flex-wrap: wrap;
+    color: #e2e8f0;
+}
+.ska-payment-icon {
+    width: 64px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #e2e8f0;
+}
+.ska-payment-icon text {
+    font-size: 12px;
+    font-weight: 700;
+    fill: currentColor;
+    font-family: inherit;
+}
+.ska-payment-icon--mastercard circle {
+    fill: currentColor;
+    opacity: 0.85;
 }
 .ska-checkout-loading {
     display: flex;
