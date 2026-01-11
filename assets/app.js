@@ -3799,15 +3799,18 @@
 
         renderCheckoutModal(productTitle = '', price = '', cycle = '') {
             let m = document.getElementById('ska-checkout-modal');
-            if (m) m.remove();
+            const details = this.getCheckoutDetails(productTitle, price, cycle);
+            const selectedPlanId = this.resolveCheckoutPlanId(details.cycle) || this.state.premiumPricePlan;
+            const selectedProductId = String(this.getPremiumCheckoutProductId(selectedPlanId));
+            if (m) {
+                this.updateCheckoutModalContent(details, selectedProductId);
+                return;
+            }
 
             m = document.createElement('div');
             m.className = 'skriptanalyse-modal';
             m.id = 'ska-checkout-modal';
             m.ariaHidden = 'true';
-            const details = this.getCheckoutDetails(productTitle, price, cycle);
-            const selectedPlanId = this.resolveCheckoutPlanId(details.cycle) || this.state.premiumPricePlan;
-            const selectedProductId = String(this.getPremiumCheckoutProductId(selectedPlanId));
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
                 <div class="skriptanalyse-modal-content ska-checkout-modal-content">
@@ -3818,8 +3821,8 @@
                                     <div class="ska-ssl-badge-small">🔒 SSL-Verschlüsselt</div>
                                     <h4>Zusammenfassung</h4>
                                     <div class="ska-checkout-item">
-                                        <span class="ska-item-name">${details.productTitle}</span>
-                                        <span class="ska-item-price">${details.price}</span>
+                                        <span class="ska-item-name" data-role="checkout-product-title">${details.productTitle}</span>
+                                        <span class="ska-item-price" data-role="checkout-price">${details.price}</span>
                                     </div>
                                     <div class="ska-checkout-plan-switcher">
                                         <label class="ska-plan-option">
@@ -3840,25 +3843,42 @@
                                             <span class="ska-plan-label">Lifetime</span>
                                         </label>
                                     </div>
-                                    <div class="ska-checkout-cycle">Abrechnung: ${details.cycle}</div>
+                                    <div class="ska-checkout-cycle" data-role="checkout-cycle">Abrechnung: ${details.cycle}</div>
 
                                     <hr class="ska-checkout-divider">
 
                                     <ul class="ska-checkout-benefits">
                                         <li>Voller Zugriff auf alle 30+ Analysen</li>
-                                        <li>Unbegrenzte Projekte</li>
+                                        <li>Unbegrenzte Projekte anlegen</li>
                                         <li>Cloud-Speicher & Export</li>
                                         <li>14-Tage Geld-zurück-Garantie</li>
                                     </ul>
                                 </div>
 
                                 <div class="ska-trust-elements">
-                                    <p>Wir akzeptieren:</p>
-                                    <span class="ska-payment-methods">PayPal • Kreditkarte • SEPA</span>
+                                    <div class="ska-payment-icons" aria-label="Akzeptierte Zahlungsmethoden">
+                                        <svg class="ska-payment-icon ska-payment-icon--visa" viewBox="0 0 64 36" role="img" aria-label="Visa">
+                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
+                                            <text x="32" y="23" text-anchor="middle">VISA</text>
+                                        </svg>
+                                        <svg class="ska-payment-icon ska-payment-icon--mastercard" viewBox="0 0 64 36" role="img" aria-label="Mastercard">
+                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
+                                            <circle cx="26" cy="18" r="8"></circle>
+                                            <circle cx="38" cy="18" r="8"></circle>
+                                        </svg>
+                                        <svg class="ska-payment-icon ska-payment-icon--paypal" viewBox="0 0 64 36" role="img" aria-label="PayPal">
+                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
+                                            <text x="32" y="23" text-anchor="middle">PayPal</text>
+                                        </svg>
+                                        <svg class="ska-payment-icon ska-payment-icon--sepa" viewBox="0 0 64 36" role="img" aria-label="SEPA">
+                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
+                                            <text x="32" y="23" text-anchor="middle">SEPA</text>
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                             <div class="ska-checkout-form-col">
-                                <h3>Deine Daten</h3>
+                                <h3>Skript-Analyse Tool - Premium Plan freischalten</h3>
                                 <div id="ska-checkout-iframe-wrapper">
                                     <div class="ska-checkout-loading" data-role="checkout-loading">
                                         <span class="ska-checkout-spinner" aria-hidden="true"></span>
@@ -3871,6 +3891,22 @@
                     </div>
                 </div>`;
             document.body.appendChild(m);
+        }
+
+        updateCheckoutModalContent(details, selectedProductId) {
+            const modal = document.getElementById('ska-checkout-modal');
+            if (!modal) return;
+            const nameEl = modal.querySelector('[data-role="checkout-product-title"]');
+            const priceEl = modal.querySelector('[data-role="checkout-price"]');
+            const cycleEl = modal.querySelector('[data-role="checkout-cycle"]');
+            if (nameEl) nameEl.textContent = details.productTitle;
+            if (priceEl) priceEl.textContent = details.price;
+            if (cycleEl) cycleEl.textContent = `Abrechnung: ${details.cycle}`;
+
+            const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
+            planInputs.forEach((input) => {
+                input.checked = input.value === selectedProductId;
+            });
         }
 
         renderSprintEditorModal() {
@@ -5207,6 +5243,10 @@
             if (typeof window !== 'undefined') {
                 window.SKA_PLAN_MODE = this.state.planMode;
             }
+            const footerNote = document.querySelector('[data-role="footer-plan-note"]');
+            if (footerNote) {
+                footerNote.textContent = this.getCheckoutPlanDescription();
+            }
             this.enforceFreeSettings();
             this.syncPdfOptions();
             this.renderSettingsModal();
@@ -5939,7 +5979,7 @@
                     <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
-                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;"><h3>Legende & Hilfe</h3><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
+                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem;"><div class="ska-card-title-wrapper"><h3>Legende & Hilfe</h3></div><div class="ska-card-header-actions"><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
             }
         }
 
@@ -8614,6 +8654,12 @@
             return null;
         }
 
+        getCheckoutPlanDescription() {
+            return this.isPremiumActive()
+                ? 'Nutze die volle Power Deiner Skriptanalyse inklusive unlimitiertem PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich für die finale Umsetzung auch direkt als Sprecher für Dein Skript anfragen.'
+                : 'Exportiere Deine Auswertung als PDF. Bitte beachte: Im Basis-Plan ist der Export-Umfang limitiert. Upgrade auf den Premium Plan für die volle Export-Funktion. Für eine professionelle Umsetzung kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.';
+        }
+
         openCheckout(productTitle, price, cycle) {
             const details = this.getCheckoutDetails(productTitle, price, cycle);
             const resolvedPlan = this.resolveCheckoutPlanId(details.cycle);
@@ -8655,28 +8701,35 @@
                 loading.style.display = 'flex';
             }
             if (iframe) {
-                iframe.onload = () => {
-                    if (loading) {
-                        loading.style.display = 'none';
-                    }
-                    let currentUrl = '';
-                    try {
-                        currentUrl = iframe.contentWindow?.location?.href || '';
-                    } catch (error) {
-                        return;
-                    }
-                    if (/order-received|thank-you|danke/i.test(currentUrl)) {
-                        SA_Utils.closeModal(modal, () => {
-                            document.body.classList.remove('ska-modal-open');
-                            if (iframe) iframe.removeAttribute('src');
-                        });
-                        window.location.reload();
-                    }
-                };
+                this.bindCheckoutIframe(iframe, loading, modal);
                 iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1');
             }
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
+        }
+
+        bindCheckoutIframe(iframe, loading, modal = null) {
+            if (!iframe) return;
+            const checkoutModal = modal || document.getElementById('ska-checkout-modal');
+            iframe.onload = () => {
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+                let currentUrl = '';
+                try {
+                    currentUrl = iframe.contentWindow?.location?.href || '';
+                } catch (error) {
+                    return;
+                }
+                if (/order-received|thank-you|danke/i.test(currentUrl)) {
+                    if (!checkoutModal) return;
+                    SA_Utils.closeModal(checkoutModal, () => {
+                        document.body.classList.remove('ska-modal-open');
+                        iframe.removeAttribute('src');
+                    });
+                    window.location.reload();
+                }
+            };
         }
 
         updatePremiumPlanUI() {
@@ -8732,6 +8785,7 @@
             const formattedFreePrice = this.formatPriceValue(freePrice);
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
             const checkoutDetails = this.getCheckoutSummaryDetails(selectedPlan.id);
+            const planDescription = this.getCheckoutPlanDescription();
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -8796,7 +8850,7 @@
                         </span>
                         <strong>Erhalte Zugriff auf alle Analysen & Funktionen</strong>
                     </div>
-                    <span>Mehr Analysen, Reports, praktische Werkzeuge & Vergleich:<br>Premium lohnt sich besonders für Autoren, Sprecher, Teams und Agenturen, die tiefer optimieren wollen.</span>
+                    <span>${planDescription}</span>
                 </div>
                 <div class="ska-premium-upgrade-grid">
                         <div class="ska-premium-upgrade-col is-free">
@@ -9075,11 +9129,11 @@
                         </button>`
                     : '';
                 return `<div class="ska-card-header">
-                            <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="ska-card-title-wrapper">
                                 <h3>${SA_CONFIG.CARD_TITLES[id]}</h3>
                                 ${infoHtml}
                             </div>
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                            <div class="ska-card-header-actions">
                                 ${headerExtraHtml}${expandBtn}${lockBadge}${toggleBtnHtml}${id!=='overview' ? '<button class="ska-hide-btn" title="Ausblenden"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>' : ''}
                             </div>
                         </div>`;
@@ -9155,17 +9209,17 @@
                 return instance.openCheckout(productTitle, price, cycle);
             };
             window.updateCheckoutContext = (productId, title, price, cycle) => {
-                const nameEl = document.querySelector('.ska-item-name');
-                const priceEl = document.querySelector('.ska-item-price');
-                const cycleEl = document.querySelector('.ska-checkout-cycle');
+                const nameEl = document.querySelector('[data-role="checkout-product-title"]');
+                const priceEl = document.querySelector('[data-role="checkout-price"]');
+                const cycleEl = document.querySelector('[data-role="checkout-cycle"]');
                 if (nameEl) nameEl.textContent = title;
                 if (priceEl) priceEl.textContent = price;
                 if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;
 
                 const iframeContainer = document.getElementById('ska-checkout-iframe-wrapper');
-                if (iframeContainer) {
-                    iframeContainer.innerHTML = '<div class="ska-spinner">Lade Kasse...</div>';
-                }
+                const loading = iframeContainer ? iframeContainer.querySelector('[data-role="checkout-loading"]') : null;
+                const iframe = iframeContainer ? iframeContainer.querySelector('#ska-checkout-iframe') : null;
+                if (loading) loading.style.display = 'flex';
 
                 const instance = instances[0];
                 if (instance) {
@@ -9175,16 +9229,19 @@
                         instance.state.premiumPricePlan = planId;
                         instance.updatePremiumPlanUI();
                     }
+                    if (iframe) {
+                        instance.bindCheckoutIframe(iframe, loading);
+                    }
                 }
 
                 fetch('/?empty_cart=1')
                     .then(() => {
-                        if (!iframeContainer) return;
-                        iframeContainer.innerHTML = `<iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout" src="/kasse/?add-to-cart=${productId}&embedded_checkout=1"></iframe>`;
+                        if (!iframe) return;
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1`);
                     })
                     .catch(() => {
-                        if (!iframeContainer) return;
-                        iframeContainer.innerHTML = `<iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout" src="/kasse/?add-to-cart=${productId}&embedded_checkout=1"></iframe>`;
+                        if (!iframe) return;
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1`);
                     });
             };
         }
