@@ -2798,3 +2798,41 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     border-radius: 8px;
     font-weight: 600;
 }
+
+/* Feature list alignment */
+.feature-list li {
+    display: flex;
+    align-items: center;
+}
+.feature-list .icon-checkmark {
+    flex-shrink: 0;
+    margin-right: 0.5rem;
+}
+
+/* Checkout modal overlay safety */
+.skriptanalyse-modal,
+.skriptanalyse-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+}
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Price display */
+.price-container {
+    display: flex;
+    flex-direction: column;
+}
+.price-main {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.price-tax-info {
+    font-size: 0.9rem;
+    color: #666;
+}
