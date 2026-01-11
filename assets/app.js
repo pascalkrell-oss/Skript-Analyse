@@ -8779,7 +8779,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (!modal) return;
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
-            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
+            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal');
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
         }
@@ -8795,12 +8795,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 .then(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
                 })
                 .catch(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
                 });
         }
 
@@ -8819,7 +8819,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
-                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
+            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal');
                 }
             }
             SA_Utils.openModal(modal);
@@ -9960,11 +9960,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 fetch('/?empty_cart=1')
                     .then(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
                     })
                     .catch(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
                     });
             };
         }
