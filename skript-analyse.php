@@ -861,6 +861,20 @@ function ska_shortcode() {
 }
 add_shortcode( 'skript_analyse', 'ska_shortcode' );
 
+function ska_body_class_when_active( $classes ) {
+    if ( is_admin() ) {
+        return $classes;
+    }
+
+    global $post;
+    if ( $post instanceof WP_Post && has_shortcode( $post->post_content, 'skript_analyse' ) ) {
+        $classes[] = 'skript-analyse-active';
+    }
+
+    return $classes;
+}
+add_filter( 'body_class', 'ska_body_class_when_active' );
+
 add_filter( 'ska_pro_mode', function( $pro_mode ) {
     $user_id = get_current_user_id();
     if ( ! $user_id ) {

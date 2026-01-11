@@ -3206,3 +3206,13 @@ html.is-iframe-mode .admin-bar {
     height: 0 !important;
     overflow: hidden !important;
 }
+
+body.skript-analyse-active header,
+body.skript-analyse-active .site-header,
+body.skript-analyse-active #masthead,
+body.skript-analyse-active .elementor-location-header {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    z-index: 1 !important;
+}
