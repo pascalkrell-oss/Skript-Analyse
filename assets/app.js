@@ -3,29 +3,6 @@
  * Fixes: Rhythm Wave Sentence Preview, Optimized Audio Phrasing, Closer Label Alignment
  */
 
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    let isIframeMode = false;
-    try {
-        isIframeMode = window.self !== window.top;
-    } catch (error) {
-        isIframeMode = true;
-    }
-    if (isIframeMode) {
-        document.documentElement.classList.add('is-iframe-mode');
-        const style = document.createElement('style');
-        style.innerHTML = '.site-header, #masthead, header, footer, .site-footer { display: none !important; }';
-        if (document.head) {
-            document.head.appendChild(style);
-        } else {
-            document.addEventListener('DOMContentLoaded', () => {
-                if (document.head) {
-                    document.head.appendChild(style);
-                }
-            });
-        }
-    }
-}
-
 (function () {
     'use strict';
 
