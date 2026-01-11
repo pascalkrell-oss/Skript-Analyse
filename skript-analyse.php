@@ -78,9 +78,25 @@ add_action( 'wp', function() {
     }
 } );
 
+function ska_has_manual_access( $user_id ) {
+    $until = (int) get_user_meta( $user_id, 'ska_manual_access_until', true );
+    if ( ! $until ) {
+        return false;
+    }
+    return $until >= current_time( 'timestamp' );
+}
+
 function ska_get_user_plan( $user_id ) {
+    if ( ska_has_manual_access( $user_id ) ) {
+        return 'premium';
+    }
     $plan = get_user_meta( $user_id, 'ska_plan', true );
     return $plan === 'premium' ? 'premium' : 'free';
+}
+
+function ska_get_global_announcement() {
+    $announcement = get_option( 'ska_global_announcement', '' );
+    return is_string( $announcement ) ? $announcement : '';
 }
 
 function ska_get_localized_config() {
@@ -124,6 +140,7 @@ function ska_get_localized_config() {
         'adminApiBase' => rest_url( 'ska/v1' ),
         'adminNonce' => wp_create_nonce( 'wp_rest' ),
         'masquerade' => $masquerade,
+        'globalAnnouncement' => ska_get_global_announcement(),
     );
 }
 
@@ -768,6 +785,14 @@ function ska_register_admin_menu() {
         'dashicons-chart-area',
         26
     );
+    add_submenu_page(
+        'skript-analyse-admin',
+        'User Support',
+        'User Support',
+        'manage_options',
+        'skript-analyse-support',
+        'render_skript_analyse_support_page'
+    );
 }
 add_action( 'admin_menu', 'ska_register_admin_menu' );
 
@@ -781,48 +806,22 @@ function render_skript_analyse_admin_page() {
     wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
     ?>
     <div class="wrap">
-        <div id="ska-admin-app" class="ska-admin-app">
-            <div class="ska-admin-header">
-                <div>
-                    <h1>User Management &amp; Support Dashboard</h1>
-                    <p>Verwalte registrierte Nutzer, Pläne und Support-Logins.</p>
-                </div>
-            </div>
-            <div class="ska-admin-controls">
-                <label class="ska-admin-search">
-                    <span>Suche</span>
-                    <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
-                </label>
-                <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
-            </div>
-            <div class="ska-admin-table-wrapper">
-                <table class="ska-admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>E-Mail</th>
-                            <th>Plan</th>
-                            <th>Registriert</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody data-role="admin-rows">
-                        <tr class="ska-admin-placeholder">
-                            <td>—</td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td>—</td>
-                            <td class="ska-admin-actions">
-                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" disabled>Login as User</button>
-                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" disabled>Set Premium</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <div id="ska-admin-app" class="ska-admin-app" data-admin-view="dashboard"></div>
+    </div>
+    <?php
+}
+
+function render_skript_analyse_support_page() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
+    wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
+    wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ?>
+    <div class="wrap">
+        <div id="ska-admin-app" class="ska-admin-app" data-admin-view="support"></div>
     </div>
     <?php
 }
@@ -863,7 +862,7 @@ function ska_render_admin_page() {
         <?php wp_head(); ?>
     </head>
     <body class="ska-admin-page">
-        <div id="ska-admin-app" class="ska-admin-app"></div>
+        <div id="ska-admin-app" class="ska-admin-app" data-admin-view="dashboard"></div>
         <?php wp_footer(); ?>
     </body>
     </html>
@@ -882,6 +881,137 @@ register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
 function ska_admin_permission_check() {
     return current_user_can( 'manage_options' );
 }
+
+function ska_get_metrics() {
+    $defaults = array(
+        'unlock_clicks' => 0,
+        'payment_success' => 0,
+    );
+    $metrics = get_option( 'ska_metrics', array() );
+    if ( ! is_array( $metrics ) ) {
+        $metrics = array();
+    }
+    return array_merge( $defaults, array_map( 'intval', $metrics ) );
+}
+
+function ska_increment_metric( $key ) {
+    $metrics = ska_get_metrics();
+    if ( ! isset( $metrics[ $key ] ) ) {
+        $metrics[ $key ] = 0;
+    }
+    $metrics[ $key ] = (int) $metrics[ $key ] + 1;
+    update_option( 'ska_metrics', $metrics );
+}
+
+function ska_track_payment_success( $order_id ) {
+    if ( ! $order_id ) {
+        return;
+    }
+    if ( ! function_exists( 'wc_get_order' ) ) {
+        return;
+    }
+    $order = wc_get_order( $order_id );
+    if ( ! $order ) {
+        return;
+    }
+    if ( $order->get_meta( '_ska_payment_tracked' ) ) {
+        return;
+    }
+    $order->update_meta_data( '_ska_payment_tracked', 1 );
+    $order->save();
+    ska_increment_metric( 'payment_success' );
+}
+add_action( 'woocommerce_payment_complete', 'ska_track_payment_success' );
+add_action( 'woocommerce_order_status_completed', 'ska_track_payment_success' );
+
+function ska_get_feature_usage() {
+    $usage = get_option( 'ska_feature_usage', array() );
+    return is_array( $usage ) ? $usage : array();
+}
+
+function ska_update_feature_usage( $feature ) {
+    $usage = ska_get_feature_usage();
+    if ( ! isset( $usage[ $feature ] ) ) {
+        $usage[ $feature ] = 0;
+    }
+    $usage[ $feature ] = (int) $usage[ $feature ] + 1;
+    update_option( 'ska_feature_usage', $usage );
+}
+
+function ska_get_cancelled_subscribers() {
+    if ( ! function_exists( 'wcs_get_subscriptions' ) ) {
+        return array();
+    }
+    $subs = wcs_get_subscriptions( array(
+        'subscription_status' => 'cancelled',
+        'subscriptions_per_page' => 50,
+    ) );
+    $users = array();
+    foreach ( $subs as $subscription ) {
+        $user_id = $subscription->get_user_id();
+        if ( ! $user_id || isset( $users[ $user_id ] ) ) {
+            continue;
+        }
+        $user = get_user_by( 'id', $user_id );
+        if ( ! $user ) {
+            continue;
+        }
+        $cancelled_at = $subscription->get_date( 'cancelled' );
+        $users[ $user_id ] = array(
+            'id' => (int) $user_id,
+            'name' => $user->display_name,
+            'email' => $user->user_email,
+            'cancelledAt' => $cancelled_at ? $cancelled_at->date_i18n( 'Y-m-d H:i' ) : '',
+        );
+    }
+    return array_values( $users );
+}
+
+function ska_parse_user_agent( $ua ) {
+    $ua = (string) $ua;
+    $browser = 'Unbekannt';
+    $os = 'Unbekannt';
+
+    if ( preg_match( '/Firefox\/([0-9\.]+)/i', $ua, $match ) ) {
+        $browser = 'Firefox ' . $match[1];
+    } elseif ( preg_match( '/Edg\/([0-9\.]+)/i', $ua, $match ) ) {
+        $browser = 'Edge ' . $match[1];
+    } elseif ( preg_match( '/Chrome\/([0-9\.]+)/i', $ua, $match ) ) {
+        $browser = 'Chrome ' . $match[1];
+    } elseif ( preg_match( '/Safari\/([0-9\.]+)/i', $ua, $match ) ) {
+        $browser = 'Safari ' . $match[1];
+    }
+
+    if ( preg_match( '/Windows NT ([0-9\.]+)/i', $ua, $match ) ) {
+        $os = 'Windows ' . $match[1];
+    } elseif ( preg_match( '/Mac OS X ([0-9_]+)/i', $ua, $match ) ) {
+        $os = 'macOS ' . str_replace( '_', '.', $match[1] );
+    } elseif ( preg_match( '/Android ([0-9\.]+)/i', $ua, $match ) ) {
+        $os = 'Android ' . $match[1];
+    } elseif ( preg_match( '/iPhone OS ([0-9_]+)/i', $ua, $match ) ) {
+        $os = 'iOS ' . str_replace( '_', '.', $match[1] );
+    } elseif ( preg_match( '/Linux/i', $ua ) ) {
+        $os = 'Linux';
+    }
+
+    return array(
+        'browser' => $browser,
+        'os' => $os,
+    );
+}
+
+function ska_track_user_login( $user_login, $user ) {
+    if ( ! $user || ! isset( $user->ID ) ) {
+        return;
+    }
+    $ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
+    $parsed = ska_parse_user_agent( $ua );
+    update_user_meta( $user->ID, 'ska_last_login', current_time( 'mysql' ) );
+    update_user_meta( $user->ID, 'ska_last_login_browser', $parsed['browser'] );
+    update_user_meta( $user->ID, 'ska_last_login_os', $parsed['os'] );
+    update_user_meta( $user->ID, 'ska_last_login_ua', $ua );
+}
+add_action( 'wp_login', 'ska_track_user_login', 10, 2 );
 
 function ska_get_admin_users( WP_REST_Request $request ) {
     $search = sanitize_text_field( $request->get_param( 'search' ) );
@@ -911,6 +1041,63 @@ function ska_get_admin_users( WP_REST_Request $request ) {
     }
 
     return rest_ensure_response( array( 'users' => $users ) );
+}
+
+function ska_get_user_subscription_status( $user_id ) {
+    if ( function_exists( 'wcs_get_users_subscriptions' ) ) {
+        $subs = wcs_get_users_subscriptions( $user_id );
+        foreach ( $subs as $subscription ) {
+            if ( $subscription->has_status( array( 'active', 'on-hold', 'pending-cancel' ) ) ) {
+                return 'active';
+            }
+            if ( $subscription->has_status( 'cancelled' ) ) {
+                return 'cancelled';
+            }
+        }
+    }
+    return 'none';
+}
+
+function ska_get_user_support_summary( $user ) {
+    $plan = ska_get_user_plan( $user->ID );
+    $manual_until = (int) get_user_meta( $user->ID, 'ska_manual_access_until', true );
+    $subscription_status = ska_get_user_subscription_status( $user->ID );
+    $status = ( $plan === 'premium' || $subscription_status === 'active' ) ? 'Active' : 'Expired';
+
+    return array(
+        'id' => (int) $user->ID,
+        'name' => $user->display_name,
+        'email' => $user->user_email,
+        'status' => $status,
+        'plan' => $plan,
+        'planLabel' => $plan === 'premium' ? 'Premium' : 'Basis',
+        'manualAccessUntil' => $manual_until ? date_i18n( 'Y-m-d H:i', $manual_until ) : '',
+    );
+}
+
+function ska_get_support_user_detail( $user_id ) {
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return null;
+    }
+    $summary = ska_get_user_support_summary( $user );
+    $projects = (int) get_user_meta( $user_id, 'ska_project_count', true );
+    $storage = (float) get_user_meta( $user_id, 'ska_storage_used', true );
+    $last_login = get_user_meta( $user_id, 'ska_last_login', true );
+    $last_browser = get_user_meta( $user_id, 'ska_last_login_browser', true );
+    $last_os = get_user_meta( $user_id, 'ska_last_login_os', true );
+
+    $summary['quota'] = array(
+        'projects' => $projects,
+        'storage' => $storage,
+    );
+    $summary['lastLogin'] = array(
+        'time' => $last_login ? $last_login : '',
+        'browser' => $last_browser ? $last_browser : '',
+        'os' => $last_os ? $last_os : '',
+    );
+
+    return $summary;
 }
 
 function ska_admin_update_plan( WP_REST_Request $request ) {
@@ -978,6 +1165,135 @@ function ska_admin_exit_masquerade( WP_REST_Request $request ) {
     ) );
 }
 
+function ska_admin_get_analytics( WP_REST_Request $request ) {
+    $metrics = ska_get_metrics();
+    $unlock = (int) $metrics['unlock_clicks'];
+    $success = (int) $metrics['payment_success'];
+    $dropoff = $unlock > 0 ? round( ( ( $unlock - $success ) / $unlock ) * 100, 1 ) : 0;
+
+    return rest_ensure_response( array(
+        'conversion' => array(
+            'unlockClicks' => $unlock,
+            'paymentSuccess' => $success,
+            'dropoffRate' => $dropoff,
+        ),
+        'churnedUsers' => ska_get_cancelled_subscribers(),
+    ) );
+}
+
+function ska_admin_get_announcement( WP_REST_Request $request ) {
+    return rest_ensure_response( array(
+        'message' => ska_get_global_announcement(),
+    ) );
+}
+
+function ska_admin_update_announcement( WP_REST_Request $request ) {
+    $message = wp_kses_post( (string) $request->get_param( 'message' ) );
+    update_option( 'ska_global_announcement', $message );
+    return rest_ensure_response( array( 'message' => $message ) );
+}
+
+function ska_admin_get_feature_usage( WP_REST_Request $request ) {
+    $usage = ska_get_feature_usage();
+    arsort( $usage );
+    return rest_ensure_response( array( 'usage' => $usage ) );
+}
+
+function ska_admin_support_search( WP_REST_Request $request ) {
+    $search = sanitize_text_field( $request->get_param( 'search' ) );
+    $args = array(
+        'number' => 50,
+        'orderby' => 'registered',
+        'order' => 'DESC',
+    );
+    if ( $search ) {
+        $args['search'] = '*' . $search . '*';
+        $args['search_columns'] = array( 'user_email', 'display_name', 'user_login' );
+    }
+    $query = new WP_User_Query( $args );
+    $results = array();
+    foreach ( $query->get_results() as $user ) {
+        $results[] = ska_get_user_support_summary( $user );
+    }
+    return rest_ensure_response( array( 'users' => $results ) );
+}
+
+function ska_admin_support_detail( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $detail = ska_get_support_user_detail( $user_id );
+    if ( ! $detail ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+    return rest_ensure_response( $detail );
+}
+
+function ska_admin_support_clear_cache( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+    delete_user_meta( $user_id, 'ska_user_cache' );
+    delete_user_meta( $user_id, 'ska_cached_analysis' );
+
+    return rest_ensure_response( array( 'success' => true ) );
+}
+
+function ska_admin_support_extend_plan( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+    $days = (int) $request->get_param( 'days' );
+    if ( $days <= 0 ) {
+        $days = 30;
+    }
+    $now = current_time( 'timestamp' );
+    $current_until = (int) get_user_meta( $user_id, 'ska_manual_access_until', true );
+    $base = $current_until > $now ? $current_until : $now;
+    $new_until = $base + ( DAY_IN_SECONDS * $days );
+    update_user_meta( $user_id, 'ska_manual_access_until', $new_until );
+    update_user_meta( $user_id, 'ska_plan', 'premium' );
+
+    return rest_ensure_response( array(
+        'success' => true,
+        'manualAccessUntil' => date_i18n( 'Y-m-d H:i', $new_until ),
+    ) );
+}
+
+function ska_admin_support_password_reset( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+    $key = get_password_reset_key( $user );
+    if ( is_wp_error( $key ) ) {
+        return $key;
+    }
+    $reset_url = network_site_url( 'wp-login.php?action=rp&key=' . $key . '&login=' . rawurlencode( $user->user_login ), 'login' );
+    $message = "Hallo {$user->display_name},\n\n"
+        . "nutze den folgenden Link, um dein Passwort zurückzusetzen:\n"
+        . $reset_url . "\n\n"
+        . "Wenn du die Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.";
+    wp_mail( $user->user_email, 'Passwort zurücksetzen', $message );
+
+    return rest_ensure_response( array( 'success' => true ) );
+}
+
+function ska_track_metric( WP_REST_Request $request ) {
+    $event = sanitize_text_field( $request->get_param( 'event' ) );
+    $feature = sanitize_text_field( $request->get_param( 'feature' ) );
+    if ( $event === 'unlock_click' ) {
+        ska_increment_metric( 'unlock_clicks' );
+    }
+    if ( $event === 'feature_usage' && $feature ) {
+        ska_update_feature_usage( $feature );
+    }
+    return rest_ensure_response( array( 'success' => true ) );
+}
+
 function ska_register_admin_rest_routes() {
     register_rest_route( 'ska/v1', '/admin/users', array(
         'methods' => WP_REST_Server::READABLE,
@@ -1001,6 +1317,66 @@ function ska_register_admin_rest_routes() {
         'methods' => WP_REST_Server::CREATABLE,
         'permission_callback' => 'is_user_logged_in',
         'callback' => 'ska_admin_exit_masquerade',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/analytics', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_get_analytics',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/announcement', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_get_announcement',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/announcement', array(
+        'methods' => WP_REST_Server::EDITABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_update_announcement',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/feature-usage', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_get_feature_usage',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/support/users', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_support_search',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/support/users/(?P<id>\d+)', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_support_detail',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/support/users/(?P<id>\d+)/clear-cache', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_support_clear_cache',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/support/users/(?P<id>\d+)/extend-plan', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_support_extend_plan',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/support/users/(?P<id>\d+)/reset-password', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_support_password_reset',
+    ) );
+
+    register_rest_route( 'ska/v1', '/metrics', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => '__return_true',
+        'callback' => 'ska_track_metric',
     ) );
 }
 add_action( 'rest_api_init', 'ska_register_admin_rest_routes' );
