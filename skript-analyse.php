@@ -11,6 +11,67 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
 
+function ska_get_simulation_mode() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return '';
+    }
+
+    $mode = get_user_meta( get_current_user_id(), 'sa_simulation_mode', true );
+    if ( $mode === 'basis' || $mode === 'premium' ) {
+        return $mode;
+    }
+
+    return 'premium';
+}
+
+function ska_handle_simulation_mode_request() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    if ( ! isset( $_GET['simulated_role'] ) ) {
+        return;
+    }
+
+    $role = strtolower( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
+    if ( $role === 'basis' || $role === 'premium' ) {
+        update_user_meta( get_current_user_id(), 'sa_simulation_mode', $role );
+    }
+}
+add_action( 'init', 'ska_handle_simulation_mode_request' );
+
+function ska_add_simulation_admin_bar( $wp_admin_bar ) {
+    if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    $wp_admin_bar->add_node(
+        array(
+            'id' => 'skript-analyse-mode',
+            'title' => 'Skript-Analyse Mode',
+        )
+    );
+
+    $wp_admin_bar->add_node(
+        array(
+            'id' => 'skript-analyse-mode-basis',
+            'parent' => 'skript-analyse-mode',
+            'title' => 'View as Basis',
+            'href' => add_query_arg( 'simulated_role', 'basis' ),
+        )
+    );
+
+    $wp_admin_bar->add_node(
+        array(
+            'id' => 'skript-analyse-mode-premium',
+            'parent' => 'skript-analyse-mode',
+            'title' => 'View as Premium',
+            'href' => add_query_arg( 'simulated_role', 'premium' ),
+        )
+    );
+}
+add_action( 'admin_bar_menu', 'ska_add_simulation_admin_bar', 90 );
+
 function ska_register_assets() {
     if ( is_admin() ) return;
 
@@ -153,6 +214,12 @@ function ska_get_localized_config() {
         }
     }
 
+    $plan_mode = '';
+    if ( current_user_can( 'manage_options' ) ) {
+        $simulation_mode = ska_get_simulation_mode();
+        $plan_mode = $simulation_mode === 'premium' ? 'premium' : 'free';
+    }
+
     return array(
         'markers' => $markers_config,
         'pro' => $pro_mode,
@@ -165,6 +232,7 @@ function ska_get_localized_config() {
         'globalAnnouncement' => ska_get_global_announcement(),
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+        'planMode' => $plan_mode,
     );
 }
 
@@ -190,16 +258,6 @@ function ska_shortcode() {
             </div>
             <div class="ska-status-bar">
                  <span class="ska-status-badge"><span class="ska-dot"></span><span data-role-plan-label>100% Kostenlos & Sicher</span></span>
-                 <?php if ( current_user_can( 'manage_options' ) ) : ?>
-                    <div class="ska-admin-plan-toggle" data-role-admin-toggle>
-                        <span>Free</span>
-                        <label class="ska-switch">
-                            <input type="checkbox" data-action="toggle-plan">
-                            <span class="ska-switch-slider"></span>
-                        </label>
-                        <span>Premium</span>
-                    </div>
-                 <?php endif; ?>
             </div>
         </header>
 

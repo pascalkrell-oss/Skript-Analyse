@@ -3026,7 +3026,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
             this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
-            const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
+            const planModeFromWindow = typeof window !== 'undefined'
+                ? (window.SKA_CONFIG_PHP?.planMode || window.SKA_PLAN_MODE)
+                : null;
             const initialPlanMode = SA_CONFIG.PRO_MODE
                 ? 'premium'
                 : ((planModeFromWindow === 'premium' || planModeFromWindow === 'free') ? planModeFromWindow : 'free');
@@ -5363,12 +5365,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if(h) this.state.hiddenCards = new Set(JSON.parse(h));
             const e = SA_Utils.storage.load(SA_CONFIG.UI_KEY_EXCLUDED);
             if(e) this.state.excludedCards = new Set(JSON.parse(e));
-            const planModeFromWindow = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            if (SA_CONFIG.IS_ADMIN) {
+            const planModeFromWindow = typeof window !== 'undefined'
+                ? (window.SKA_CONFIG_PHP?.planMode || window.SKA_PLAN_MODE)
+                : null;
+            if (planModeFromWindow === 'premium' || planModeFromWindow === 'free') {
+                this.state.planMode = planModeFromWindow;
+            } else if (SA_CONFIG.IS_ADMIN) {
                 const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
                 if (p === 'premium' || p === 'free') this.state.planMode = p;
-            } else if (planModeFromWindow === 'premium' || planModeFromWindow === 'free') {
-                this.state.planMode = planModeFromWindow;
             }
             if (SA_CONFIG.PRO_MODE) {
                 this.state.planMode = 'premium';
