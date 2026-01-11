@@ -52,18 +52,7 @@ body.iframe-mode .woocommerce-breadcrumb {
     z-index: 100 !important;
 }
 
-/* 2. Disable Sticky Behavior ONLY on Analysis Page (Safe Method) */
-body.skript-analyse-active .site-header,
-body.skript-analyse-active #masthead,
-body.skript-analyse-active .elementor-sticky {
-    position: absolute !important; /* Sits at top, scrolls away naturally */
-    width: 100% !important;
-    top: 0 !important;
-    animation: none !important; /* Stop sticky animations */
-    transition: none !important;
-}
-
-/* 3. Ensure Content starts below header */
+/* 2. Ensure Content starts below header */
 body.skript-analyse-active .skript-analyse-container {
     margin-top: 20px; /* Breathing room */
     position: relative;
@@ -98,7 +87,7 @@ body.skript-analyse-active .skript-analyse-container {
 .skriptanalyse-app button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* HEADER & TOOLBAR */
-.ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 9999; background: var(--ska-bg-app); }
+.ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; position: relative !important; top: auto !important; z-index: 5; background: var(--ska-bg-app); }
 .ska-header-content { flex: 1; min-width: 300px; }
 .ska-header-content h2 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem 0; color: var(--ska-text-main); line-height: 1.2; }
 .ska-header-content p { margin: 0; color: var(--ska-text-muted); max-width: 850px; line-height: 1.6; }
