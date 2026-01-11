@@ -9233,8 +9233,199 @@
         }
     }
 
+    const renderMasqueradeBanner = () => {
+        const config = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.masquerade ? SKA_CONFIG_PHP.masquerade : null;
+        if (!config || !config.active) return;
+        if (document.querySelector('.ska-masquerade-banner')) return;
+        const banner = document.createElement('div');
+        banner.className = 'ska-masquerade-banner';
+        banner.innerHTML = `
+            <span>Eingeloggt als ${SA_Utils.escapeHtml(config.userName || 'User')}.</span>
+            <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="end-masquerade">Zurück zum Admin</button>
+        `;
+        document.body.prepend(banner);
+        banner.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-action="end-masquerade"]');
+            if (!target) return;
+            const adminConfig = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.admin ? SKA_CONFIG_PHP.admin : null;
+            if (!adminConfig) return;
+            const body = new URLSearchParams({
+                action: 'ska_admin_end_masquerade',
+                nonce: config.endNonce
+            });
+            fetch(adminConfig.ajaxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success && data.data && data.data.redirect) {
+                        window.location.href = data.data.redirect;
+                    }
+                })
+                .catch(() => {});
+        });
+    };
+
+    class SkaAdminDashboard {
+        constructor(root) {
+            this.root = root;
+            this.tableBody = root.querySelector('[data-role="admin-table-body"]');
+            this.searchInput = root.querySelector('[data-action="admin-search"]');
+            this.state = { users: [], query: '' };
+            this.adminConfig = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.admin ? SKA_CONFIG_PHP.admin : null;
+            this.bindEvents();
+            this.loadUsers();
+        }
+
+        bindEvents() {
+            if (this.searchInput) {
+                this.searchInput.addEventListener('input', (event) => {
+                    this.state.query = event.target.value.trim().toLowerCase();
+                    this.renderUsers();
+                });
+            }
+            this.root.addEventListener('click', (event) => {
+                const refreshBtn = event.target.closest('[data-action="admin-refresh"]');
+                if (refreshBtn) {
+                    this.loadUsers();
+                    return;
+                }
+                const masqueradeBtn = event.target.closest('[data-action="admin-masquerade"]');
+                if (masqueradeBtn) {
+                    const userId = parseInt(masqueradeBtn.dataset.userId || '0', 10);
+                    if (userId) this.masqueradeUser(userId);
+                    return;
+                }
+                const planBtn = event.target.closest('[data-action="admin-plan"]');
+                if (planBtn) {
+                    const row = planBtn.closest('[data-user-id]');
+                    const userId = row ? parseInt(row.dataset.userId || '0', 10) : 0;
+                    const select = row ? row.querySelector('[data-role="plan-select"]') : null;
+                    const plan = select ? select.value : 'basis';
+                    if (userId) this.updatePlan(userId, plan);
+                }
+            });
+        }
+
+        loadUsers() {
+            if (!this.adminConfig || !this.tableBody) return;
+            this.tableBody.innerHTML = '<div class="ska-admin-table-row is-loading">Lade Benutzer…</div>';
+            const body = new URLSearchParams({
+                action: 'ska_admin_users',
+                nonce: this.adminConfig.nonce
+            });
+            fetch(this.adminConfig.ajaxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    const users = data && data.success && data.data && Array.isArray(data.data.users) ? data.data.users : [];
+                    this.state.users = users;
+                    this.renderUsers();
+                })
+                .catch(() => {
+                    if (this.tableBody) {
+                        this.tableBody.innerHTML = '<div class="ska-admin-table-row is-error">Fehler beim Laden der Benutzer.</div>';
+                    }
+                });
+        }
+
+        renderUsers() {
+            if (!this.tableBody) return;
+            const query = this.state.query;
+            const filtered = this.state.users.filter((user) => {
+                if (!query) return true;
+                return user.name.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
+            });
+            if (!filtered.length) {
+                this.tableBody.innerHTML = '<div class="ska-admin-table-row is-empty">Keine Benutzer gefunden.</div>';
+                return;
+            }
+            this.tableBody.innerHTML = filtered.map(user => this.renderRow(user)).join('');
+        }
+
+        renderRow(user) {
+            const planLabel = user.plan === 'premium' ? 'Premium' : 'Basis';
+            return `
+                <div class="ska-admin-table-row" data-user-id="${user.id}">
+                    <span>${user.id}</span>
+                    <span>${SA_Utils.escapeHtml(user.name)}</span>
+                    <span>${SA_Utils.escapeHtml(user.email)}</span>
+                    <span class="ska-admin-plan-badge ska-admin-plan-${user.plan}">${planLabel}</span>
+                    <span>${user.registered}</span>
+                    <span class="ska-admin-actions">
+                        <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">Login as User</button>
+                        <div class="ska-admin-plan-editor">
+                            <select data-role="plan-select">
+                                <option value="basis" ${user.plan === 'basis' ? 'selected' : ''}>Basis</option>
+                                <option value="premium" ${user.plan === 'premium' ? 'selected' : ''}>Premium</option>
+                            </select>
+                            <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" data-user-id="${user.id}">Plan ändern</button>
+                        </div>
+                    </span>
+                </div>
+            `;
+        }
+
+        updatePlan(userId, plan) {
+            if (!this.adminConfig) return;
+            const body = new URLSearchParams({
+                action: 'ska_admin_set_plan',
+                nonce: this.adminConfig.nonce,
+                userId: String(userId),
+                plan
+            });
+            fetch(this.adminConfig.ajaxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success) {
+                        const user = this.state.users.find(item => item.id === userId);
+                        if (user) {
+                            user.plan = plan === 'premium' ? 'premium' : 'basis';
+                            this.renderUsers();
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+
+        masqueradeUser(userId) {
+            if (!this.adminConfig) return;
+            const body = new URLSearchParams({
+                action: 'ska_admin_masquerade',
+                nonce: this.adminConfig.nonce,
+                userId: String(userId)
+            });
+            fetch(this.adminConfig.ajaxUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.success && data.data && data.data.redirect) {
+                        window.location.href = data.data.redirect;
+                    }
+                })
+                .catch(() => {});
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
+        const adminRoot = document.querySelector('.ska-admin-app');
+        if (adminRoot) {
+            new SkaAdminDashboard(adminRoot);
+        }
+        renderMasqueradeBanner();
         if (typeof window !== 'undefined') {
             window.SKA_WIDGETS = instances;
             window.openCheckout = (productTitle, price, cycle) => {
