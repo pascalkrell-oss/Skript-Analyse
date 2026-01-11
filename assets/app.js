@@ -46,6 +46,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         UI_KEY_PLAN: 'skriptanalyse_plan_mode',
         UI_KEY_UPGRADE_DISMISSED: 'skriptanalyse_upgrade_dismissed',
         UI_KEY_ANNOUNCEMENT_DISMISSED: 'skriptanalyse_announcement_dismissed',
+        UI_KEY_ANNOUNCEMENT_SYNC: 'skriptanalyse_announcement_sync',
+        UI_KEY_UNLOCK_SYNC: 'skriptanalyse_unlock_sync',
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
@@ -2993,6 +2995,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             const initialPlanMode = SA_CONFIG.PRO_MODE
                 ? 'premium'
                 : ((planModeFromWindow === 'premium' || planModeFromWindow === 'free') ? planModeFromWindow : 'free');
+            const unlockButtonEnabled = typeof window !== 'undefined'
+                ? (window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true)
+                : true;
 
             this.state = { 
                 savedVersion: '', 
@@ -3004,6 +3009,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 filterCollapsed: true,
                 filterByProfile: false,
                 planMode: initialPlanMode,
+                unlockButtonEnabled: unlockButtonEnabled,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
@@ -3047,6 +3053,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.injectGlobalStyles(); // CSS Overrides
             this.initSynonymTooltip();
             this.renderAnnouncementBanner();
+            this.setupGlobalControlSync();
 
             const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
             if (savedVersion && savedVersion.trim().length > 0) {
@@ -3148,14 +3155,31 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         
         injectGlobalStyles() { SA_Utils.injectGlobalStyles(); }
 
-        renderAnnouncementBanner() {
-            const announcement = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.globalAnnouncement
-                ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
-                : '';
-            if (!announcement) return;
+        renderAnnouncementBanner(messageOverride = null) {
+            const announcement = messageOverride !== null
+                ? String(messageOverride).trim()
+                : (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.globalAnnouncement
+                    ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
+                    : '');
+            const existingBanner = this.root.querySelector('.ska-announcement-banner');
+            if (!announcement) {
+                if (existingBanner) {
+                    existingBanner.remove();
+                }
+                return;
+            }
             const dismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED);
-            if (dismissed && dismissed === announcement) return;
-            if (this.root.querySelector('.ska-announcement-banner')) return;
+            if (dismissed && dismissed === announcement) {
+                if (existingBanner) {
+                    existingBanner.remove();
+                }
+                return;
+            }
+            if (existingBanner) {
+                const text = existingBanner.querySelector('.ska-announcement-text');
+                if (text) text.textContent = announcement;
+                return;
+            }
 
             const banner = document.createElement('div');
             banner.className = 'ska-announcement-banner';
@@ -3173,6 +3197,69 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             banner.appendChild(text);
             banner.appendChild(close);
             this.root.prepend(banner);
+        }
+
+        setupGlobalControlSync() {
+            if (typeof window === 'undefined' || !window.addEventListener) return;
+            window.addEventListener('storage', (event) => {
+                if (!event || !event.key) return;
+                if (event.key === SA_CONFIG.UI_KEY_ANNOUNCEMENT_SYNC) {
+                    let message = '';
+                    try {
+                        const payload = JSON.parse(event.newValue || '{}');
+                        message = typeof payload.message === 'string' ? payload.message : '';
+                    } catch (error) {
+                        message = event.newValue || '';
+                    }
+                    if (window.SKA_CONFIG_PHP) {
+                        window.SKA_CONFIG_PHP.globalAnnouncement = message;
+                    }
+                    this.renderAnnouncementBanner(message);
+                }
+                if (event.key === SA_CONFIG.UI_KEY_UNLOCK_SYNC) {
+                    let enabled = this.state.unlockButtonEnabled;
+                    try {
+                        const payload = JSON.parse(event.newValue || '{}');
+                        enabled = Boolean(payload.enabled);
+                    } catch (error) {
+                        enabled = event.newValue === 'true';
+                    }
+                    this.state.unlockButtonEnabled = enabled;
+                    if (window.SKA_CONFIG_PHP) {
+                        window.SKA_CONFIG_PHP.unlockButtonEnabled = enabled;
+                    }
+                    this.applyUnlockButtonState();
+                }
+            });
+        }
+
+        isUnlockButtonEnabled() {
+            return Boolean(this.state.unlockButtonEnabled);
+        }
+
+        applyUnlockButtonState(container = null) {
+            const scope = container || document;
+            if (!scope) return;
+            const buttons = scope.querySelectorAll('.ska-premium-checkout-btn');
+            if (!buttons.length) return;
+            const enabled = this.isUnlockButtonEnabled();
+            buttons.forEach((button) => {
+                if (!button) return;
+                if (enabled) {
+                    button.disabled = false;
+                    button.classList.remove('is-disabled');
+                    button.removeAttribute('aria-disabled');
+                    if (!button.getAttribute('onclick')) {
+                        const details = this.getCheckoutSummaryDetails(this.state.premiumPricePlan);
+                        button.setAttribute('onclick', this.getCheckoutOnclick(details));
+                    }
+                } else {
+                    button.disabled = true;
+                    button.classList.add('is-disabled');
+                    button.setAttribute('aria-disabled', 'true');
+                    button.removeAttribute('onclick');
+                }
+            });
         }
 
         trackMetric(event, feature = '') {
@@ -4699,6 +4786,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (act === 'premium-checkout') {
                 if (event) {
                     event.preventDefault();
+                }
+                if (!this.isUnlockButtonEnabled()) {
+                    return true;
                 }
                 this.startCheckoutFlow();
                 return true;
@@ -8750,6 +8840,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
 
         openCheckout(productTitle, price, cycle) {
+            if (!this.isUnlockButtonEnabled()) {
+                return false;
+            }
             this.trackMetric('unlock_click');
             const details = this.getCheckoutDetails(productTitle, price, cycle);
             const resolvedPlan = this.resolveCheckoutPlanId(details.cycle);
@@ -8878,6 +8971,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 const checkoutDetails = this.getCheckoutSummaryDetails(selectedPlan.id);
                 checkoutButton.setAttribute('onclick', this.getCheckoutOnclick(checkoutDetails));
             }
+            this.applyUnlockButtonState(card);
             const planButtons = card.querySelectorAll('[data-role="premium-plan"]');
             planButtons.forEach((button) => {
                 button.classList.toggle('is-active', button.dataset.plan === selectedPlan.id);
@@ -9041,6 +9135,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 container.insertBefore(card, this.legendContainer);
             }
             const grid = container.querySelector('.ska-premium-upgrade-grid');
+            this.applyUnlockButtonState(container);
             this.setupPremiumUpgradeScroll(grid);
         }
 
@@ -9367,7 +9462,19 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         </label>
                         <div class="ska-admin-inline">
                             <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-announcement">Speichern</button>
+                            <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Clear Message</button>
                             <span class="ska-admin-meta" data-role="announcement-status"></span>
+                        </div>
+                        <div class="ska-admin-field">
+                            <span>Enable Unlock Button</span>
+                            <div class="ska-admin-toggle-row">
+                                <span>Off</span>
+                                <label class="ska-switch">
+                                    <input type="checkbox" data-action="admin-unlock-toggle">
+                                    <span class="ska-switch-slider"></span>
+                                </label>
+                                <span>On</span>
+                            </div>
                         </div>
                     </section>
                     <section class="ska-admin-card">
@@ -9393,7 +9500,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
                     </div>
                     <div class="ska-admin-table-wrapper">
-                        <table class="ska-admin-table">
+                        <table class="wp-list-table widefat fixed striped ska-admin-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -9415,12 +9522,18 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.rowsEl = this.root.querySelector('[data-role="admin-rows"]');
             this.announcementInput = this.root.querySelector('[data-role="announcement-input"]');
             this.announcementStatus = this.root.querySelector('[data-role="announcement-status"]');
+            this.unlockToggle = this.root.querySelector('[data-action="admin-unlock-toggle"]');
             this.churnList = this.root.querySelector('[data-role="churn-list"]');
             this.heatmapMost = this.root.querySelector('[data-role="heatmap-most"]');
             this.heatmapLeast = this.root.querySelector('[data-role="heatmap-least"]');
             this.kpiUnlock = this.root.querySelector('[data-role="kpi-unlock"]');
             this.kpiSuccess = this.root.querySelector('[data-role="kpi-success"]');
             this.kpiDropoff = this.root.querySelector('[data-role="kpi-dropoff"]');
+
+            if (this.unlockToggle) {
+                const enabled = window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true;
+                this.unlockToggle.checked = enabled;
+            }
 
             if (this.searchInput) {
                 this.searchInput.addEventListener('input', () => {
@@ -9443,9 +9556,24 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 if (action === 'admin-save-announcement') {
                     this.saveAnnouncement();
                 }
+                if (action === 'admin-clear-announcement') {
+                    this.clearAnnouncement();
+                }
+            });
+
+            this.root.addEventListener('change', (event) => {
+                const target = event.target;
+                if (!target || !target.matches) return;
+                if (target.matches('[data-action="admin-quick-toggle"]')) {
+                    this.handleQuickToggle(target);
+                }
+                if (target.matches('[data-action="admin-unlock-toggle"]')) {
+                    this.handleUnlockToggle(target);
+                }
             });
 
             this.fetchAnnouncement();
+            this.fetchSettings();
             this.fetchAnalytics();
             this.fetchFeatureUsage();
             this.fetchUsers();
@@ -9484,19 +9612,84 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 .catch(() => {});
         }
 
-        saveAnnouncement() {
-            if (!this.apiBase || !this.announcementInput) return;
+        saveAnnouncement(messageOverride = null) {
+            if (!this.apiBase) return;
+            const message = messageOverride !== null
+                ? messageOverride
+                : (this.announcementInput ? this.announcementInput.value : '');
             if (this.announcementStatus) this.announcementStatus.textContent = 'Speichern…';
             this.apiFetch('/admin/announcement', {
                 method: 'POST',
-                body: JSON.stringify({ message: this.announcementInput.value })
+                body: JSON.stringify({ message })
             })
                 .then((response) => response.json())
-                .then(() => {
+                .then((data) => {
+                    const savedMessage = typeof data.message === 'string' ? data.message : message;
+                    if (this.announcementInput) {
+                        this.announcementInput.value = savedMessage;
+                    }
+                    if (window.SKA_CONFIG_PHP) {
+                        window.SKA_CONFIG_PHP.globalAnnouncement = savedMessage;
+                    }
+                    try {
+                        localStorage.setItem(SA_CONFIG.UI_KEY_ANNOUNCEMENT_SYNC, JSON.stringify({ message: savedMessage }));
+                    } catch (error) {}
                     if (this.announcementStatus) this.announcementStatus.textContent = 'Gespeichert.';
                 })
                 .catch(() => {
                     if (this.announcementStatus) this.announcementStatus.textContent = 'Fehler beim Speichern.';
+                });
+        }
+
+        clearAnnouncement() {
+            if (this.announcementInput) {
+                this.announcementInput.value = '';
+            }
+            this.saveAnnouncement('');
+        }
+
+        fetchSettings() {
+            if (!this.apiBase) return;
+            this.apiFetch('/admin/settings')
+                .then((response) => response.json())
+                .then((data) => {
+                    if (typeof data.unlockButtonEnabled !== 'undefined') {
+                        this.setUnlockToggleState(Boolean(data.unlockButtonEnabled));
+                    }
+                })
+                .catch(() => {});
+        }
+
+        setUnlockToggleState(enabled) {
+            if (!this.unlockToggle) return;
+            this.unlockToggle.checked = Boolean(enabled);
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.unlockButtonEnabled = Boolean(enabled);
+            }
+        }
+
+        handleUnlockToggle(input) {
+            if (!this.apiBase || !input) return;
+            const nextValue = input.checked;
+            input.disabled = true;
+            this.apiFetch('/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify({ unlockButtonEnabled: nextValue })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const enabled = Boolean(data.unlockButtonEnabled);
+                    this.setUnlockToggleState(enabled);
+                    try {
+                        localStorage.setItem(SA_CONFIG.UI_KEY_UNLOCK_SYNC, JSON.stringify({ enabled }));
+                    } catch (error) {}
+                })
+                .catch(() => {
+                    input.checked = !nextValue;
+                    window.alert('Einstellung konnte nicht aktualisiert werden.');
+                })
+                .finally(() => {
+                    input.disabled = false;
                 });
         }
 
@@ -9597,16 +9790,35 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             } else {
                 this.rowsEl.innerHTML = this.filteredUsers.map((user) => {
                     const registered = user.registered ? new Date(user.registered).toLocaleDateString('de-DE') : '-';
+                    const isPremium = user.plan === 'premium';
                     return `
                         <tr data-user-id="${user.id}">
                             <td>${user.id}</td>
                             <td>${this.escapeHtml(user.name)}</td>
                             <td>${this.escapeHtml(user.email)}</td>
-                            <td>${this.escapeHtml(user.planLabel)}</td>
+                            <td>
+                                <div class="ska-admin-plan-cell">
+                                    <span class="ska-admin-plan-label">${this.escapeHtml(user.planLabel)}</span>
+                                    <div class="ska-admin-plan-toggle">
+                                        <span>Basis</span>
+                                        <label class="ska-switch">
+                                            <input type="checkbox" data-action="admin-quick-toggle" data-user-id="${user.id}" ${isPremium ? 'checked' : ''}>
+                                            <span class="ska-switch-slider"></span>
+                                        </label>
+                                        <span>Premium</span>
+                                    </div>
+                                </div>
+                            </td>
                             <td>${registered}</td>
                             <td class="ska-admin-actions">
-                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">Als User einloggen</button>
-                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" data-user-id="${user.id}" data-plan="${user.plan}">Plan bearbeiten</button>
+                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">
+                                    <span class="dashicons dashicons-admin-users" aria-hidden="true"></span>
+                                    Als User einloggen
+                                </button>
+                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" data-user-id="${user.id}" data-plan="${user.plan}">
+                                    <span class="dashicons dashicons-edit" aria-hidden="true"></span>
+                                    Plan bearbeiten
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -9654,6 +9866,34 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 })
                 .catch(() => {
                     window.alert('Plan konnte nicht aktualisiert werden.');
+                });
+        }
+
+        handleQuickToggle(input) {
+            if (!input) return;
+            const userId = input.dataset.userId;
+            if (!userId) return;
+            const nextPlan = input.checked ? 'premium' : 'free';
+            input.disabled = true;
+            this.apiFetch(`/admin/users/${userId}/plan`, {
+                method: 'POST',
+                body: JSON.stringify({ plan: nextPlan })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const index = this.users.findIndex((user) => String(user.id) === String(userId));
+                    if (index >= 0) {
+                        this.users[index].plan = data.plan || nextPlan;
+                        this.users[index].planLabel = data.planLabel || (nextPlan === 'premium' ? 'Premium' : 'Basis');
+                    }
+                    this.applyFilter();
+                })
+                .catch(() => {
+                    input.checked = !input.checked;
+                    window.alert('Plan konnte nicht aktualisiert werden.');
+                })
+                .finally(() => {
+                    input.disabled = false;
                 });
         }
     }
