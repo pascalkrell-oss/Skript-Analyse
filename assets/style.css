@@ -1502,8 +1502,8 @@ body.ska-modal-open { overflow: hidden !important; }
     pointer-events: auto;
 }
 .skriptanalyse-modal.is-closing { opacity: 0; z-index: 2147483647 !important; visibility: visible; pointer-events: none; }
-.skriptanalyse-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 1; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
-.skriptanalyse-modal.is-open .skriptanalyse-modal-overlay { opacity: 1; pointer-events: auto; }
+.skriptanalyse-modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(5px); z-index: 1; opacity: 0; pointer-events: none; display: none !important; transition: opacity 0.25s ease; }
+.skriptanalyse-modal.is-open .skriptanalyse-modal-overlay { opacity: 1; pointer-events: auto; display: block !important; }
 .skriptanalyse-modal.is-closing .skriptanalyse-modal-overlay { opacity: 0; }
 .skriptanalyse-modal-content {
     position: relative; background: white; border-radius: var(--ska-radius-lg); width: 90%; max-width: 600px;

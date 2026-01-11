@@ -9421,6 +9421,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.remove('ska-modal-open');
+        document.querySelectorAll('.skriptanalyse-modal-overlay').forEach((overlay) => {
+            overlay.style.display = 'none';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.opacity = '0';
+        });
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         const adminRoot = document.querySelector('.ska-admin-app');
         if (adminRoot) {
