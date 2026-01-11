@@ -2960,8 +2960,48 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 
 .ska-admin-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.5rem;
+    align-items: center;
+}
+
+.ska-admin-actions .dashicons {
+    margin-right: 0.35rem;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.ska-admin-plan-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ska-admin-plan-label {
+    font-weight: 600;
+}
+
+.ska-admin-plan-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--ska-text-muted);
+}
+
+.ska-admin-toggle-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.4rem;
+}
+
+.ska-premium-checkout-btn.is-disabled {
+    background: #cbd5e1;
+    border-color: #cbd5e1;
+    color: #475569;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 .ska-admin-empty {

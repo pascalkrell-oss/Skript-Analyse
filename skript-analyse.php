@@ -85,6 +85,11 @@ function ska_get_global_announcement() {
     return is_string( $announcement ) ? $announcement : '';
 }
 
+function ska_is_unlock_button_enabled() {
+    $enabled = get_option( 'ska_unlock_button_enabled', '1' );
+    return filter_var( $enabled, FILTER_VALIDATE_BOOLEAN );
+}
+
 function ska_get_localized_config() {
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
@@ -127,6 +132,7 @@ function ska_get_localized_config() {
         'adminNonce' => wp_create_nonce( 'wp_rest' ),
         'masquerade' => $masquerade,
         'globalAnnouncement' => ska_get_global_announcement(),
+        'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
     );
 }
 
@@ -787,6 +793,7 @@ function render_skript_analyse_admin_page() {
         return;
     }
 
+    wp_enqueue_style( 'dashicons' );
     wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
     wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
     wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
@@ -802,6 +809,7 @@ function render_skript_analyse_support_page() {
         return;
     }
 
+    wp_enqueue_style( 'dashicons' );
     wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
     wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
     wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
@@ -834,6 +842,7 @@ function ska_render_admin_page() {
 
     ska_register_assets();
     wp_enqueue_style( 'skript-analyse-css' );
+    wp_enqueue_style( 'dashicons' );
     wp_enqueue_script( 'skript-analyse-js' );
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
 
@@ -1179,6 +1188,21 @@ function ska_admin_update_announcement( WP_REST_Request $request ) {
     return rest_ensure_response( array( 'message' => $message ) );
 }
 
+function ska_admin_get_settings( WP_REST_Request $request ) {
+    return rest_ensure_response( array(
+        'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
+    ) );
+}
+
+function ska_admin_update_settings( WP_REST_Request $request ) {
+    $enabled = filter_var( $request->get_param( 'unlockButtonEnabled' ), FILTER_VALIDATE_BOOLEAN );
+    update_option( 'ska_unlock_button_enabled', $enabled ? '1' : '0' );
+
+    return rest_ensure_response( array(
+        'unlockButtonEnabled' => $enabled,
+    ) );
+}
+
 function ska_admin_get_feature_usage( WP_REST_Request $request ) {
     $usage = ska_get_feature_usage();
     arsort( $usage );
@@ -1321,6 +1345,18 @@ function ska_register_admin_rest_routes() {
         'methods' => WP_REST_Server::EDITABLE,
         'permission_callback' => 'ska_admin_permission_check',
         'callback' => 'ska_admin_update_announcement',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/settings', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_get_settings',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/settings', array(
+        'methods' => WP_REST_Server::EDITABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_update_settings',
     ) );
 
     register_rest_route( 'ska/v1', '/admin/feature-usage', array(
