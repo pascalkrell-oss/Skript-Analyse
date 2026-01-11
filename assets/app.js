@@ -5706,8 +5706,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     const modal = e.target.closest('.skriptanalyse-modal');
                     if(!modal) return; 
 
-                const btn = e.target.closest('[data-action]');
-                const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
+                    const btn = e.target.closest('[data-action]');
+                    const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
                 
                 if(overlay) {
                     SA_Utils.closeModal(modal, () => {
@@ -5769,25 +5769,26 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     SA_PDF.generate(this.getText(), pdfData, pdfSettings, opts, btn);
                 }
 
-                if(act === 'confirm-reset') {
-                    this.setText(''); 
-                    this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
-                    this.state.savedVersion=''; 
-                    SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
-                    this.state.hiddenCards.clear(); 
-                    this.state.excludedCards.clear();
-                    this.state.readabilityCache = [];
-                    this.state.premiumUpgradeDismissed = false;
-                    this.saveUIState();
-                    this.renderHiddenPanel();
-                    this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
-                    if(this.targetInput)this.targetInput.value='';
-                    this.analyze('');
-                    SA_Utils.closeModal(modal, () => {
-                        document.body.classList.remove('ska-modal-open');
-                    });
-                }
-            });
+                    if(act === 'confirm-reset') {
+                        this.setText(''); 
+                        this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
+                        this.state.savedVersion=''; 
+                        SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
+                        this.state.hiddenCards.clear(); 
+                        this.state.excludedCards.clear();
+                        this.state.readabilityCache = [];
+                        this.state.premiumUpgradeDismissed = false;
+                        this.saveUIState();
+                        this.renderHiddenPanel();
+                        this.root.querySelectorAll('select').forEach(s=>s.selectedIndex=0); 
+                        if(this.targetInput)this.targetInput.value='';
+                        this.analyze('');
+                        SA_Utils.closeModal(modal, () => {
+                            document.body.classList.remove('ska-modal-open');
+                        });
+                    }
+                });
+            }
         }
 
         initSynonymTooltip() {
