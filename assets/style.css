@@ -46,26 +46,29 @@ body.iframe-mode .woocommerce-breadcrumb {
     display: none !important;
     opacity: 0 !important;
 }
-/* Fix the "Transparency" issue cleanly */
-.site-header,
-#masthead {
-    z-index: 10 !important; /* Standard Header Level */
+/* 1. Ensure Header is Solid (No transparency issues) */
+.site-header, #masthead, .elementor-location-header {
+    background-color: #ffffff !important;
+    z-index: 100 !important;
 }
 
-/* Ensure the Tool Container is solid and stacks correctly */
-.analysis-wrapper,
-.skript-analyse-container,
-.main-content {
-    position: relative !important;
-    z-index: 5 !important; /* Content below header */
-    background-color: #ffffff !important; /* No see-through */
+/* 2. Disable Sticky Behavior ONLY on Analysis Page (Safe Method) */
+body.skript-analyse-active .site-header,
+body.skript-analyse-active #masthead,
+body.skript-analyse-active .elementor-sticky {
+    position: absolute !important; /* Sits at top, scrolls away naturally */
+    width: 100% !important;
+    top: 0 !important;
+    animation: none !important; /* Stop sticky animations */
+    transition: none !important;
 }
 
-/* Only if user requested static header, use specific body class WITHOUT touching width */
-body.skript-analyse-active header,
-body.skript-analyse-active .site-header {
-    position: absolute !important; /* Sits at top, scrolls away */
-    width: 100%; /* Keep native width */
+/* 3. Ensure Content starts below header */
+body.skript-analyse-active .skript-analyse-container {
+    margin-top: 20px; /* Breathing room */
+    position: relative;
+    z-index: 5;
+    background: #fff; /* content opacity */
 }
 .analysis-results h3,
 .analysis-box-header {
@@ -1538,6 +1541,28 @@ body.skript-analyse-active .site-header {
 /* =========================================
    MODAL SYSTEM (FIXED & PORTAL READY)
    ========================================= */
+/* Force Modals to Center Screen */
+.info-modal, .analysis-info-box, .modal-content { 
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999999 !important; /* Maximum priority */
+    width: 90% !important;
+    max-width: 600px !important;
+    height: auto !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5) !important;
+    display: none; /* Hidden by default */
+}
+
+/* Show when active class is added by JS */
+.info-modal.active, .info-modal.is-open, .modal-content.active {
+    display: block !important;
+}
+
 .skriptanalyse-modal {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     display: none !important; align-items: center; justify-content: center;
