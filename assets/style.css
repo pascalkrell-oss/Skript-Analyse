@@ -46,25 +46,26 @@ body.iframe-mode .woocommerce-breadcrumb {
     display: none !important;
     opacity: 0 !important;
 }
-header.site-header,
+/* Fix the "Transparency" issue cleanly */
 .site-header,
-#masthead,
-.sticky-header {
-    background-color: #ffffff !important;
-    z-index: 99999 !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 0;
-    transform: translateZ(0);
+#masthead {
+    z-index: 10 !important; /* Standard Header Level */
 }
-.main-content,
-.analysis-wrapper {
-    position: relative;
-    z-index: 1;
+
+/* Ensure the Tool Container is solid and stacks correctly */
+.analysis-wrapper,
+.skript-analyse-container,
+.main-content {
+    position: relative !important;
+    z-index: 5 !important; /* Content below header */
+    background-color: #ffffff !important; /* No see-through */
 }
-.system-box,
-.ska-system-box {
-    top: 80px;
+
+/* Only if user requested static header, use specific body class WITHOUT touching width */
+body.skript-analyse-active header,
+body.skript-analyse-active .site-header {
+    position: absolute !important; /* Sits at top, scrolls away */
+    width: 100%; /* Keep native width */
 }
 .analysis-results h3,
 .analysis-box-header {
@@ -3207,85 +3208,23 @@ html.is-iframe-mode .admin-bar {
     overflow: hidden !important;
 }
 
-body.skript-analyse-active header,
-body.skript-analyse-active .site-header,
-body.skript-analyse-active #masthead,
-body.skript-analyse-active .elementor-location-header {
-    position: relative !important;
-    top: auto !important;
-    transform: none !important;
-    z-index: 1 !important;
-}
-
-/* Target ALL analysis modals */
+/* Reset Modal to fixed viewport positioning */
 .analysis-modal,
-.modal-content,
-.info-popup-container,
-.skriptanalyse-modal-content,
-.ska-tool-modal-content {
+.info-popup-container {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    z-index: 999999 !important; /* Top of stack */
-    width: 90% !important;
-    max-width: 600px !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-    background: #ffffff !important;
-    box-shadow: 0 5px 30px rgba(0,0,0,0.3) !important;
-    display: block !important; /* Ensure it's not hidden */
-    opacity: 1 !important;
-    visibility: visible !important;
+    z-index: 2147483647 !important; /* Max Z-Index */
+    width: auto !important;
+    min-width: 300px;
+    max-width: 600px;
+    height: auto;
+    max-height: 90vh;
+    display: none; /* Default hidden */
 }
 
-/* Ensure the overlay background is dark and covers everything */
-.modal-overlay,
-.modal-backdrop,
-.skriptanalyse-modal-overlay {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.5) !important;
-    z-index: 999998 !important;
+.analysis-modal.active,
+.analysis-modal.is-open {
     display: block !important;
-}
-
-/* FORCE STATIC HEADER on Analysis Page */
-body.skript-analyse-active header,
-body.skript-analyse-active #masthead,
-body.skript-analyse-active .site-header,
-body.skript-analyse-active .elementor-location-header,
-body.skript-analyse-active .elementor-sticky,
-body.skript-analyse-active [class*="header"] {
-    position: relative !important; /* Forces it into normal flow */
-    top: auto !important;
-    bottom: auto !important;
-    left: 0 !important;
-    right: auto !important;
-    transform: none !important; /* Disables GPU sticky layers */
-    z-index: 1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    margin-top: 0 !important;
-    box-shadow: none !important;
-    background-color: #ffffff !important;
-}
-
-/* Disable JS-based sticky spacers if present */
-body.skript-analyse-active .elementor-sticky__spacer,
-body.skript-analyse-active .sticky-placeholder {
-    display: none !important;
-    height: 0 !important;
-}
-
-.analysis-wrapper,
-.skript-analyse-container {
-    background-color: #ffffff;
-    z-index: 10;
-    position: relative;
 }
