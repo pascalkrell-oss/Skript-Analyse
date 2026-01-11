@@ -33,6 +33,19 @@ body.ska-modal-open nav,
 body.ska-modal-open .woocommerce-breadcrumb {
     display: none !important;
 }
+body.iframe-mode header,
+body.iframe-mode footer,
+body.iframe-mode #masthead,
+body.iframe-mode #colophon,
+body.iframe-mode .site-header,
+body.iframe-mode .site-footer,
+body.iframe-mode .elementor-location-header,
+body.iframe-mode .elementor-location-footer,
+body.iframe-mode nav,
+body.iframe-mode .woocommerce-breadcrumb {
+    display: none !important;
+    opacity: 0 !important;
+}
 .ska-no-transition, .ska-no-transition * { transition: none !important; animation: none !important; }
 .skriptanalyse-app.is-restoring-now * { animation: none !important; transition: none !important; }
 
@@ -56,7 +69,7 @@ body.ska-modal-open .woocommerce-breadcrumb {
 .skriptanalyse-app button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* HEADER & TOOLBAR */
-.ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.ska-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; position: sticky; top: 0; z-index: 9999; background: var(--ska-bg-app); }
 .ska-header-content { flex: 1; min-width: 300px; }
 .ska-header-content h2 { font-size: 1.75rem; font-weight: 700; margin: 0 0 0.5rem 0; color: var(--ska-text-main); line-height: 1.2; }
 .ska-header-content p { margin: 0; color: var(--ska-text-muted); max-width: 850px; line-height: 1.6; }
@@ -1522,6 +1535,22 @@ body.ska-modal-open .woocommerce-breadcrumb {
     transform: translateY(12px) scale(0.92);
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
     border: 1px solid rgba(255,255,255,0.1);
+}
+.modal-content iframe body header,
+.modal-content .site-header,
+.modal-content #masthead {
+    display: none !important;
+    opacity: 0 !important;
+}
+.basis-box .feature-list li,
+.checkout-modal .feature-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.basis-box .feature-list li .icon-checkmark,
+.checkout-modal .feature-list li .icon-checkmark {
+    flex-shrink: 0;
 }
 .skriptanalyse-modal .feature-list li {
     display: flex;

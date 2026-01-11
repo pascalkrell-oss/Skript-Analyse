@@ -3858,12 +3858,12 @@
             }
 
             m = document.createElement('div');
-            m.className = 'skriptanalyse-modal';
+            m.className = 'skriptanalyse-modal checkout-modal';
             m.id = 'ska-checkout-modal';
             m.ariaHidden = 'true';
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
-                <div class="skriptanalyse-modal-content ska-checkout-modal-content">
+                <div class="skriptanalyse-modal-content ska-checkout-modal-content modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-split-layout">
@@ -9871,6 +9871,17 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        if (typeof window !== 'undefined') {
+            let isIframe = false;
+            try {
+                isIframe = window.self !== window.top;
+            } catch (error) {
+                isIframe = true;
+            }
+            if (isIframe) {
+                document.body.classList.add('iframe-mode');
+            }
+        }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
             window.SKA_WIDGETS = instances;
