@@ -48,7 +48,7 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
     $wp_admin_bar->add_node(
         array(
             'id' => 'skript-analyse-mode',
-            'title' => 'Skript-Analyse Mode',
+            'title' => 'Skript-Analyse Modus',
         )
     );
 
@@ -56,7 +56,7 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
         array(
             'id' => 'skript-analyse-mode-basis',
             'parent' => 'skript-analyse-mode',
-            'title' => 'View as Basis',
+            'title' => 'Als Basis anzeigen',
             'href' => add_query_arg( 'simulated_role', 'basis' ),
         )
     );
@@ -65,7 +65,7 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
         array(
             'id' => 'skript-analyse-mode-premium',
             'parent' => 'skript-analyse-mode',
-            'title' => 'View as Premium',
+            'title' => 'Als Premium anzeigen',
             'href' => add_query_arg( 'simulated_role', 'premium' ),
         )
     );
@@ -182,6 +182,16 @@ function ska_get_algorithm_tuning_settings() {
     );
 }
 
+function ska_get_algorithm_tuning_localized_config() {
+    return array(
+        'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+    );
+}
+
+function ska_localize_algorithm_tuning_config( $handle ) {
+    wp_localize_script( $handle, 'skriptAnalyseConfig', ska_get_algorithm_tuning_localized_config() );
+}
+
 function ska_get_localized_config() {
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
@@ -241,6 +251,7 @@ function ska_shortcode() {
     wp_enqueue_script( 'skript-analyse-js' );
 
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ska_localize_algorithm_tuning_config( 'skript-analyse-js' );
 
     ob_start();
     ?>
@@ -859,8 +870,8 @@ add_filter( 'ska_pro_mode', function( $pro_mode ) {
 
 function ska_register_admin_menu() {
     add_menu_page(
-        'Skript Analyse',
-        'Skript Analyse',
+        'Skript-Analyse',
+        'Skript-Analyse',
         'manage_options',
         'skript-analyse-admin',
         'render_skript_analyse_admin_page',
@@ -869,8 +880,8 @@ function ska_register_admin_menu() {
     );
     add_submenu_page(
         'skript-analyse-admin',
-        'User Support',
-        'User Support',
+        'Nutzer-Support',
+        'Nutzer-Support',
         'manage_options',
         'skript-analyse-support',
         'render_skript_analyse_support_page'
@@ -887,6 +898,7 @@ function render_skript_analyse_admin_page() {
     wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
     wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
     wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ska_localize_algorithm_tuning_config( 'skript-analyse-admin-js' );
     ?>
     <div class="wrap">
         <div id="ska-admin-app" class="ska-admin-app" data-admin-view="dashboard"></div>
@@ -903,6 +915,7 @@ function render_skript_analyse_support_page() {
     wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
     wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
     wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ska_localize_algorithm_tuning_config( 'skript-analyse-admin-js' );
     ?>
     <div class="wrap">
         <div id="ska-admin-app" class="ska-admin-app" data-admin-view="support"></div>
@@ -935,6 +948,7 @@ function ska_render_admin_page() {
     wp_enqueue_style( 'dashicons' );
     wp_enqueue_script( 'skript-analyse-js' );
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ska_localize_algorithm_tuning_config( 'skript-analyse-js' );
 
     status_header( 200 );
     nocache_headers();
@@ -1089,8 +1103,10 @@ function ska_track_user_login( $user_login, $user ) {
     if ( ! $user || ! isset( $user->ID ) ) {
         return;
     }
+    $timestamp = current_time( 'timestamp' );
     $ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) : '';
     $parsed = ska_parse_user_agent( $ua );
+    update_user_meta( $user->ID, 'last_login', $timestamp );
     update_user_meta( $user->ID, 'ska_last_login', current_time( 'mysql' ) );
     update_user_meta( $user->ID, 'ska_last_login_browser', $parsed['browser'] );
     update_user_meta( $user->ID, 'ska_last_login_os', $parsed['os'] );
@@ -1147,7 +1163,7 @@ function ska_get_user_support_summary( $user ) {
     $plan = ska_get_user_plan( $user->ID );
     $manual_until = (int) get_user_meta( $user->ID, 'ska_manual_access_until', true );
     $subscription_status = ska_get_user_subscription_status( $user->ID );
-    $status = ( $plan === 'premium' || $subscription_status === 'active' ) ? 'Active' : 'Expired';
+    $status = ( $plan === 'premium' || $subscription_status === 'active' ) ? 'Aktiv' : 'Abgelaufen';
 
     return array(
         'id' => (int) $user->ID,
@@ -1168,7 +1184,11 @@ function ska_get_support_user_detail( $user_id ) {
     $summary = ska_get_user_support_summary( $user );
     $projects = (int) get_user_meta( $user_id, 'ska_project_count', true );
     $storage = (float) get_user_meta( $user_id, 'ska_storage_used', true );
-    $last_login = get_user_meta( $user_id, 'ska_last_login', true );
+    $last_login_timestamp = (int) get_user_meta( $user_id, 'last_login', true );
+    $last_login = $last_login_timestamp ? date_i18n( 'Y-m-d H:i', $last_login_timestamp ) : '';
+    if ( ! $last_login ) {
+        $last_login = get_user_meta( $user_id, 'ska_last_login', true );
+    }
     $last_browser = get_user_meta( $user_id, 'ska_last_login_browser', true );
     $last_os = get_user_meta( $user_id, 'ska_last_login_os', true );
 
@@ -1263,6 +1283,63 @@ function ska_admin_get_analytics( WP_REST_Request $request ) {
             'dropoffRate' => $dropoff,
         ),
         'churnedUsers' => ska_get_cancelled_subscribers(),
+    ) );
+}
+
+function ska_get_churn_radar_users() {
+    $now = current_time( 'timestamp' );
+    $cutoff_days = 14;
+    $cutoff_timestamp = $now - ( DAY_IN_SECONDS * $cutoff_days );
+    $args = array(
+        'number' => 500,
+        'orderby' => 'registered',
+        'order' => 'DESC',
+    );
+    $query = new WP_User_Query( $args );
+    $inactive = array();
+
+    foreach ( $query->get_results() as $user ) {
+        $plan = ska_get_user_plan( $user->ID );
+        $subscription_status = ska_get_user_subscription_status( $user->ID );
+        $is_premium = ( $plan === 'premium' || $subscription_status === 'active' );
+        if ( ! $is_premium ) {
+            continue;
+        }
+
+        $last_login = get_user_meta( $user->ID, 'last_login', true );
+        $last_login_ts = 0;
+        if ( $last_login ) {
+            $last_login_ts = is_numeric( $last_login ) ? (int) $last_login : (int) strtotime( $last_login );
+        }
+        if ( ! $last_login_ts ) {
+            $fallback = $user->user_registered ? strtotime( $user->user_registered ) : 0;
+            $last_login_ts = $fallback ? $fallback : 0;
+        }
+        if ( ! $last_login_ts || $last_login_ts >= $cutoff_timestamp ) {
+            continue;
+        }
+        $days_inactive = (int) floor( ( $now - $last_login_ts ) / DAY_IN_SECONDS );
+        if ( $days_inactive <= $cutoff_days ) {
+            continue;
+        }
+        $inactive[] = array(
+            'id' => (int) $user->ID,
+            'name' => $user->display_name,
+            'email' => $user->user_email,
+            'daysInactive' => $days_inactive,
+        );
+    }
+
+    usort( $inactive, function( $a, $b ) {
+        return $b['daysInactive'] <=> $a['daysInactive'];
+    } );
+
+    return $inactive;
+}
+
+function ska_admin_get_churn_radar( WP_REST_Request $request ) {
+    return rest_ensure_response( array(
+        'inactiveUsers' => ska_get_churn_radar_users(),
     ) );
 }
 
@@ -1453,6 +1530,12 @@ function ska_register_admin_rest_routes() {
         'methods' => WP_REST_Server::READABLE,
         'permission_callback' => 'ska_admin_permission_check',
         'callback' => 'ska_admin_get_analytics',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/churn', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_get_churn_radar',
     ) );
 
     register_rest_route( 'ska/v1', '/admin/announcement', array(
