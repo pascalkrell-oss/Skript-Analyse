@@ -10564,20 +10564,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
     };
 
-    const enforceStaticHeader = () => {
-        const selectors = ['header', '.site-header', '#masthead', '.elementor-location-header'];
-        const stickyClasses = ['is-sticky', 'elementor-sticky--active', 'sheader', 'elementor-sticky', 'sticky'];
-        selectors.forEach((selector) => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach((element) => {
-                stickyClasses.forEach((className) => element.classList.remove(className));
-                element.style.position = 'relative';
-                element.style.top = 'auto';
-                element.style.transform = 'none';
-            });
-        });
-    };
-
     document.addEventListener('DOMContentLoaded', () => {
         let isIframe = false;
         if (typeof window !== 'undefined') {
@@ -10618,10 +10604,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 new SkaAdminDashboard(adminRoot);
             }
         }
-
-        enforceStaticHeader();
-        window.addEventListener('scroll', enforceStaticHeader, { passive: true });
-        window.setInterval(enforceStaticHeader, 500);
 
         renderMasqueradeBanner();
     });
