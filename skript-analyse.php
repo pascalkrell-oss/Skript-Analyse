@@ -33,11 +33,13 @@ function ska_register_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
-/* * CLEAN CHECKOUT FOR IFRAME 
- * Blendet Header/Footer aus, wenn ?embedded_checkout=1 in der URL ist.
+/* * CLEAN CHECKOUT FOR IFRAME
+ * Blendet Header/Footer aus, wenn ?embedded_checkout=1 oder ?is_modal=1 in der URL ist.
  */
 add_action( 'wp', function() {
-    if ( isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1' ) {
+    $is_embedded_checkout = isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1';
+    $is_modal_checkout = isset( $_GET['is_modal'] ) && $_GET['is_modal'] == '1';
+    if ( $is_embedded_checkout || $is_modal_checkout ) {
         // Entfernt Header und Footer in den meisten Themes
         add_filter( 'show_admin_bar', '__return_false' );
 
@@ -45,6 +47,10 @@ add_action( 'wp', function() {
         add_action( 'wp_head', function() {
             echo '<style>
                 header, footer, #masthead, #colophon, .site-header, .site-footer, .elementor-location-header, .elementor-location-footer {
+                    display: none !important;
+                }
+                .cart, .mini-cart, .site-main .cart, .woocommerce-cart, .woocommerce-cart-form,
+                .woocommerce-cart-form__contents, .widget_shopping_cart, .woocommerce-mini-cart {
                     display: none !important;
                 }
                 body {
@@ -55,7 +61,12 @@ add_action( 'wp', function() {
                 }
                 .woocommerce { padding: 20px; }
                 /* Entfernt oft störende Breadcrumbs */
-                .woocommerce-breadcrumb, nav { display: none !important; }
+                .woocommerce-breadcrumb, nav, .site-navigation, .main-navigation {
+                    display: none !important;
+                }
+                .site-footer, .footer, .footer-widgets, .site-info {
+                    display: none !important;
+                }
                 .woocommerce-notices-wrapper,
                 .woocommerce-message,
                 .woocommerce-info,
@@ -746,6 +757,75 @@ add_filter( 'ska_pro_mode', function( $pro_mode ) {
     }
     return ska_get_user_plan( $user_id ) === 'premium' ? true : $pro_mode;
 } );
+
+function ska_register_admin_menu() {
+    add_menu_page(
+        'Skript Analyse',
+        'Skript Analyse',
+        'manage_options',
+        'skript-analyse-admin',
+        'render_skript_analyse_admin_page',
+        'dashicons-chart-area',
+        26
+    );
+}
+add_action( 'admin_menu', 'ska_register_admin_menu' );
+
+function render_skript_analyse_admin_page() {
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    wp_enqueue_style( 'skript-analyse-admin-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
+    wp_enqueue_script( 'skript-analyse-admin-js', SKA_URL . 'assets/app.js', array(), SKA_VER, true );
+    wp_localize_script( 'skript-analyse-admin-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+    ?>
+    <div class="wrap">
+        <div id="ska-admin-app" class="ska-admin-app">
+            <div class="ska-admin-header">
+                <div>
+                    <h1>User Management &amp; Support Dashboard</h1>
+                    <p>Verwalte registrierte Nutzer, Pläne und Support-Logins.</p>
+                </div>
+            </div>
+            <div class="ska-admin-controls">
+                <label class="ska-admin-search">
+                    <span>Suche</span>
+                    <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
+                </label>
+                <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
+            </div>
+            <div class="ska-admin-table-wrapper">
+                <table class="ska-admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Plan</th>
+                            <th>Registriert</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody data-role="admin-rows">
+                        <tr class="ska-admin-placeholder">
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td>—</td>
+                            <td class="ska-admin-actions">
+                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" disabled>Login as User</button>
+                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" disabled>Set Premium</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <?php
+}
 
 function ska_register_admin_route() {
     add_rewrite_rule( '^admin/?$', 'index.php?ska_admin=1', 'top' );
