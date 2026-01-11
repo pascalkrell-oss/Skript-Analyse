@@ -3043,7 +3043,10 @@
                     }, 200);
                 });
             } else {
-                this.root.querySelector('.ska-grid').classList.add('is-empty');
+                const grid = this.root.querySelector('.ska-grid');
+                if (grid) {
+                    grid.classList.add('is-empty');
+                }
             }
         }
 
@@ -5391,14 +5394,16 @@
         }
 
         bindEvents() {
-            this.textarea.addEventListener('input', SA_Utils.debounce(() => {
-                this.analyze(this.getText());
-                if (this.searchInput && this.searchInput.value.trim()) {
-                    this.applySearchHighlights(this.searchInput.value);
-                } else {
-                    this.clearSearchHighlights();
-                }
-            }, 250));
+            if (this.textarea) {
+                this.textarea.addEventListener('input', SA_Utils.debounce(() => {
+                    this.analyze(this.getText());
+                    if (this.searchInput && this.searchInput.value.trim()) {
+                        this.applySearchHighlights(this.searchInput.value);
+                    } else {
+                        this.clearSearchHighlights();
+                    }
+                }, 250));
+            }
             this.root.addEventListener('input', (e) => {
                 const slider = e.target.closest('[data-action="wpm-slider"]');
                 if (slider) {
@@ -8776,6 +8781,7 @@
             this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
             const modal = document.getElementById('ska-checkout-modal');
             if (!modal) return;
+            modal.style.zIndex = '999999';
             const iframe = modal.querySelector('#ska-checkout-iframe');
             const loading = modal.querySelector('[data-role="checkout-loading"]');
             const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
@@ -9871,16 +9877,17 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        let isIframe = false;
         if (typeof window !== 'undefined') {
-            let isIframe = false;
             try {
                 isIframe = window.self !== window.top;
             } catch (error) {
                 isIframe = true;
             }
-            if (isIframe) {
-                document.body.classList.add('iframe-mode');
-            }
+        }
+        if (isIframe) {
+            document.body.classList.add('is-iframe-mode');
+            document.body.classList.add('iframe-mode');
         }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
@@ -9894,6 +9901,7 @@
                 const nameEl = document.querySelector('[data-role="checkout-product-title"]');
                 const priceEl = document.querySelector('[data-role="checkout-price"]');
                 const cycleEl = document.querySelector('[data-role="checkout-cycle"]');
+                const noteEl = document.querySelector('[data-role="checkout-plan-note"]');
                 if (nameEl) nameEl.textContent = title;
                 if (priceEl) priceEl.textContent = price;
                 if (cycleEl) cycleEl.textContent = `Abrechnung: ${cycle}`;
