@@ -3,6 +3,29 @@
  * Fixes: Rhythm Wave Sentence Preview, Optimized Audio Phrasing, Closer Label Alignment
  */
 
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    let isIframeMode = false;
+    try {
+        isIframeMode = window.self !== window.top;
+    } catch (error) {
+        isIframeMode = true;
+    }
+    if (isIframeMode) {
+        document.documentElement.classList.add('is-iframe-mode');
+        const style = document.createElement('style');
+        style.innerHTML = '.site-header, #masthead, header, footer, .site-footer { display: none !important; }';
+        if (document.head) {
+            document.head.appendChild(style);
+        } else {
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.head) {
+                    document.head.appendChild(style);
+                }
+            });
+        }
+    }
+}
+
 (function () {
     'use strict';
 
@@ -5667,18 +5690,21 @@
 
             });
 
-            document.body.addEventListener('change', (e) => {
-                const mirrorToggle = e.target.closest('[data-action="teleprompter-mirror"]');
-                if (mirrorToggle) {
-                    this.settings.teleprompterMirror = mirrorToggle.checked;
-                    this.saveUIState();
-                    this.applyTeleprompterMirror();
-                }
-            });
+            if (document.body) {
+                document.body.addEventListener('change', (e) => {
+                    const mirrorToggle = e.target.closest('[data-action="teleprompter-mirror"]');
+                    if (mirrorToggle) {
+                        this.settings.teleprompterMirror = mirrorToggle.checked;
+                        this.saveUIState();
+                        this.applyTeleprompterMirror();
+                    }
+                });
+            }
 
-            document.body.addEventListener('click', (e) => {
-                const modal = e.target.closest('.skriptanalyse-modal');
-                if(!modal) return; 
+            if (document.body) {
+                document.body.addEventListener('click', (e) => {
+                    const modal = e.target.closest('.skriptanalyse-modal');
+                    if(!modal) return; 
 
                 const btn = e.target.closest('[data-action]');
                 const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
@@ -5766,6 +5792,7 @@
 
         initSynonymTooltip() {
             if (this.synonymTooltip) return;
+            if (!document.body) return;
             const tooltip = document.createElement('div');
             tooltip.className = 'ska-synonym-tooltip';
             tooltip.setAttribute('aria-hidden', 'true');
@@ -8751,7 +8778,7 @@
             if (!modal) return;
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
-            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1');
+            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
         }
@@ -8767,12 +8794,12 @@
                 .then(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                 })
                 .catch(() => {
                     if (!iframe) return;
                     this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                 });
         }
 
@@ -8791,7 +8818,7 @@
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
-                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1');
+                    iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1');
                 }
             }
             SA_Utils.openModal(modal);
@@ -9838,6 +9865,7 @@
     const renderMasqueradeBanner = () => {
         const config = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.masquerade;
         if (!config || !config.active) return;
+        if (!document.body) return;
         if (document.querySelector('.ska-masquerade-banner')) return;
         const banner = document.createElement('div');
         banner.className = 'ska-masquerade-banner';
@@ -9885,9 +9913,12 @@
                 isIframe = true;
             }
         }
-        if (isIframe) {
+        if (isIframe && document.body) {
             document.body.classList.add('is-iframe-mode');
             document.body.classList.add('iframe-mode');
+        }
+        if (isIframe) {
+            document.documentElement.classList.add('is-iframe-mode');
         }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
@@ -9928,11 +9959,11 @@
                 fetch('/?empty_cart=1')
                     .then(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                     })
                     .catch(() => {
                         if (!iframe) return;
-                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1`);
+                        iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1`);
                     });
             };
         }
