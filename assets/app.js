@@ -37,6 +37,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
     });
 
+    const resolveNumericSetting = (value, fallback) => {
+        const numberValue = Number(value);
+        if (!Number.isFinite(numberValue) || numberValue <= 0) return fallback;
+        return numberValue;
+    };
+
     // CONFIG
     const SA_CONFIG = {
         STORAGE_KEY: 'skriptanalyse_autosave_v4_99', 
@@ -55,6 +61,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         WORKER_TEXT_THRESHOLD: 12000,
         FREE_TEXT_LIMIT: 20000,
         COLORS: { success: '#16a34a', warn: '#ea580c', error: '#dc2626', blue: '#1a93ee', text: '#0f172a', muted: '#94a3b8', disabled: '#cbd5e1' },
+        ALGORITHM_TUNING: {
+            longSentenceThreshold: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.longSentenceThreshold, 20),
+            nominalChainThreshold: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.nominalChainThreshold, 3),
+            passiveVoiceStrictness: resolveNumericSetting(window.SKA_CONFIG_PHP?.algorithmTuning?.passiveVoiceStrictness, 15),
+        },
         
         WPM: { werbung: 170, imagefilm: 155, erklaer: 145, hoerbuch: 115, podcast: 150, ansage: 160, elearning: 135, social: 170, buch: 120, default: 150 },
         SPS: { werbung: 4.6, imagefilm: 4.0, erklaer: 3.8, hoerbuch: 3.4, podcast: 3.8, ansage: 3.9, elearning: 3.5, social: 4.8, buch: 3.2, default: 3.8 },
@@ -1365,7 +1376,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             const lixEase = clamp(100 - (read.lix - 30) * 2.2);
             const simplicity = clamp((sentenceEase * 0.35) + (syllableEase * 0.35) + (lixEase * 0.3));
 
-            const maxSentenceScore = clamp(100 - (read.maxSentenceWords - 20) * 3);
+            const longSentenceLimit = SA_Logic.getLongSentenceThreshold();
+            const maxSentenceScore = clamp(100 - (read.maxSentenceWords - longSentenceLimit) * 3);
             const brevity = clamp((sentenceEase * 0.7) + (maxSentenceScore * 0.3));
 
             const sentences = read.sentences ? read.sentences.length : 0;
@@ -1645,10 +1657,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             const base = Number.isFinite(read.score) ? read.score : 0;
             const avgSentence = Number.isFinite(read.avgSentence) ? read.avgSentence : 0;
             const maxSentence = Number.isFinite(read.maxSentenceWords) ? read.maxSentenceWords : 0;
+            const longSentenceThreshold = SA_Logic.getLongSentenceThreshold();
 
             let penalty = 0;
             if (avgSentence > 18) penalty += (avgSentence - 18) * 2.5;
-            if (maxSentence > 30) penalty += (maxSentence - 30) * 2.5;
+            if (maxSentence > longSentenceThreshold) penalty += (maxSentence - longSentenceThreshold) * 2.5;
 
             const score = Math.max(0, Math.min(100, base - penalty));
             return score;
@@ -1770,6 +1783,25 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             if (!tagger || typeof tagger.tag !== 'function') return null;
             return tagger.tag(text || '');
         },
+        getAlgorithmTuning: () => {
+            return SA_CONFIG.ALGORITHM_TUNING || {};
+        },
+        getLongSentenceThreshold: () => {
+            const tuning = SA_Logic.getAlgorithmTuning();
+            return resolveNumericSetting(tuning.longSentenceThreshold, 20);
+        },
+        getNominalChainThreshold: (wordCount) => {
+            const tuning = SA_Logic.getAlgorithmTuning();
+            const baseThreshold = resolveNumericSetting(tuning.nominalChainThreshold, 3);
+            if (wordCount < 15) {
+                return Math.max(2, baseThreshold - 1);
+            }
+            return baseThreshold;
+        },
+        getPassiveStrictness: () => {
+            const tuning = SA_Logic.getAlgorithmTuning();
+            return resolveNumericSetting(tuning.passiveVoiceStrictness, 15);
+        },
         // Regex-Heuristik dominiert, wenn kein POS verfügbar ist.
         findNominalStyleRegex: (text) => {
             const regex = /\b([a-zA-ZäöüÄÖÜß]+(?:ung|heit|keit|tion|schaft|tum|ismus|ling|nis))\b/gi;
@@ -1801,13 +1833,14 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             sentences.forEach(s => {
                 const words = s.trim().split(/\s+/);
                 let count = 0;
+                const threshold = SA_Logic.getNominalChainThreshold(words.length);
                 words.forEach(w => {
                     const cleaned = w.toLowerCase().replace(/[^a-zäöüß]/g, '');
                     if (!cleaned || whitelist.has(cleaned)) return;
                     if (nominalRegex.test(w)) count++;
                 });
                 
-                if ((words.length < 15 && count >= 2) || (words.length >= 15 && count >= 3)) {
+                if (count >= threshold) {
                      if (count / words.length > 0.15) {
                          chains.push(s.trim());
                      }
@@ -1836,10 +1869,11 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 if (!trimmed) return;
                 const words = trimmed.split(/\s+/);
                 const wordCount = words.length;
+                const threshold = SA_Logic.getNominalChainThreshold(wordCount);
                 const terms = termsBySentence.get(index) || [];
                 const nominalCount = terms.filter(term => term.tags && term.tags.Noun && nominalRegex.test(term.normal) && !whitelist.has(term.normal)).length;
 
-                if ((wordCount < 15 && nominalCount >= 2) || (wordCount >= 15 && nominalCount >= 3)) {
+                if (nominalCount >= threshold) {
                     if (nominalCount / wordCount > 0.15) {
                         chains.push(trimmed);
                     }
@@ -1876,7 +1910,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         findBreathKillers: (sentences, settings = {}) => {
             const killers = [];
             const profileConfig = settings.profileConfig || {};
-            const wordLimit = Number.isFinite(profileConfig.sentenceWarningLimit) ? profileConfig.sentenceWarningLimit : 25;
+            const wordLimit = SA_Logic.getLongSentenceThreshold();
             const hardSegmentLimit = Number.isFinite(profileConfig.hardSegmentLimit) ? profileConfig.hardSegmentLimit : 20;
             sentences.forEach(s => {
                 const commas = (s.match(/,/g) || []).length;
@@ -2682,6 +2716,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     const complianceResult = compliancePhrases.length
                         ? SA_Logic.analyzeCompliance(text, compliancePhrases)
                         : null;
+                    const longSentenceThreshold = SA_Logic.getLongSentenceThreshold();
 
                     if(options.metrics) {
                         doc.setFillColor(245, 247, 250); 
@@ -2831,7 +2866,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                             doc.setTextColor(80);
                             breath.slice(0, 5).forEach(b => {
                                 let issue = [];
-                                if(b.words > 25) issue.push(`${b.words} Wörter`);
+                                if(b.words > longSentenceThreshold) issue.push(`${b.words} Wörter`);
                                 if(b.commas >= 4) issue.push(`${b.commas} Kommas`);
                                 if(b.hardSegment) issue.push('Keine Pause / Atemdruck');
                                 const line = `• "${b.text.substring(0, 70)}..." (${issue.join(', ')})`;
@@ -2856,7 +2891,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         };
                         if(Object.keys(fillers).length > 3) printTip("Viele Füllwörter gefunden. Versuche, Sätze prägnanter zu formulieren.");
                         if(passive.length > 2) printTip("Passiv-Konstruktionen wirken distanziert. Nutze aktive Verben.");
-                        if(read.maxSentenceWords > 30) printTip("Einige Sätze sind sehr lang (>30 Wörter). Teile sie auf.");
+                        if(read.maxSentenceWords > longSentenceThreshold) printTip(`Einige Sätze sind sehr lang (>${longSentenceThreshold} Wörter). Teile sie auf.`);
                         if(nominalChains.length > 0) printTip("Vermeide Nominal-Ketten (-ung, -heit), um den Text sprechbarer zu machen.");
                         if(genderIssues.length > 0) printTip("Prüfe, ob du generische Maskuline durch neutrale Begriffe ersetzen kannst.");
                         if(startIssues.length > 1) printTip("Vermeide gleiche Satzanfänge hintereinander (Monotonie).");
@@ -3732,6 +3767,12 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.loadAnalysisUtils(workerUrl);
             try {
                 this.analysisWorker = new Worker(workerUrl);
+                if (this.analysisWorker && SA_CONFIG.ALGORITHM_TUNING) {
+                    this.analysisWorker.postMessage({
+                        type: 'CONFIG',
+                        payload: { ...SA_CONFIG.ALGORITHM_TUNING }
+                    });
+                }
                 this.analysisWorker.onmessage = (event) => {
                     const { id, result } = event.data || {};
                     if (!id || !this.workerRequests.has(id)) return;
@@ -7705,7 +7746,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             let sCol = SA_CONFIG.COLORS.warn;
             if (traffic.class === 'green') sCol = SA_CONFIG.COLORS.success;
             if (traffic.class === 'red') sCol = SA_CONFIG.COLORS.error;
-            let maxSCol = (r && r.maxSentenceWords > 30) ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.text;
+            const longSentenceThreshold = SA_Logic.getLongSentenceThreshold();
+            let maxSCol = (r && r.maxSentenceWords > longSentenceThreshold) ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.text;
             let maxSVal = r ? r.maxSentenceWords : 0;
 
             const effectiveSettings = this.getEffectiveSettings();
@@ -8118,7 +8160,8 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
             // Calculate rough ratio based on matches count vs sentences/words 
             // Simple heuristic: > 2 passive sentences per 100 words is "too much"
-            const scoreVal = Math.max(0, 100 - (matches.length * 15)); 
+            const strictness = SA_Logic.getPassiveStrictness();
+            const scoreVal = Math.max(0, 100 - (matches.length * strictness)); 
             
             // Fixed Blue for Text to match style, regardless of score (user preference)
             const col = SA_CONFIG.COLORS.blue; 
@@ -8293,7 +8336,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
             let h = '';
             const isPremium = this.isPremiumActive();
-            const wordLimit = Number.isFinite(profileConfig.sentenceWarningLimit) ? profileConfig.sentenceWarningLimit : 25;
+            const wordLimit = SA_Logic.getLongSentenceThreshold();
             const criticalLimit = Number.isFinite(profileConfig.criticalSentenceLimit) ? profileConfig.criticalSentenceLimit : wordLimit + 5;
             const breathLabel = profileConfig.breathLabel || 'Keine Pause / Atemdruck';
             if(!killers || killers.length === 0) {
@@ -8448,14 +8491,17 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             
             // Limit to last 40 sentences for readability
             const slice = sentences.length > 40 ? sentences.slice(sentences.length - 40) : sentences;
+            const longSentenceThreshold = SA_Logic.getLongSentenceThreshold();
+            const visualCap = Math.max(longSentenceThreshold + 10, 30);
+            const shortSentenceThreshold = Math.max(8, Math.round(longSentenceThreshold * 0.4));
             
             slice.forEach((s, idx) => {
                 const words = s.trim().split(/\s+/);
                 const len = words.length;
-                const hPct = Math.max(10, Math.min(100, (len / 30) * 100)); // Cap at 30 words visual max
+                const hPct = Math.max(10, Math.min(100, (len / visualCap) * 100)); // Cap at long sentence max
                 let col = '#cbd5e1';
-                if(len > 25) col = '#fca5a5'; // Red-ish for long
-                else if(len < 8) col = '#86efac'; // Green-ish for short
+                if(len > longSentenceThreshold) col = '#fca5a5'; // Red-ish for long
+                else if(len < shortSentenceThreshold) col = '#86efac'; // Green-ish for short
                 else col = '#93c5fd'; // Blue-ish for medium
                 
                 // Escape sentence for data-attribute
@@ -9432,89 +9478,119 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                         <p>KPIs, Content-Updates, Feature-Nutzung und User-Verwaltung auf einen Blick.</p>
                     </div>
                 </div>
-                <div class="ska-admin-grid">
-                    <section class="ska-admin-card">
-                        <h2>Business Analytics</h2>
-                        <div class="ska-admin-kpis">
-                            <div class="ska-admin-kpi">
-                                <span>Unlock Klicks</span>
-                                <strong data-role="kpi-unlock">—</strong>
+                <div class="ska-admin-tabs">
+                    <button type="button" class="ska-admin-tab is-active" data-action="admin-tab" data-tab="dashboard">Dashboard</button>
+                    <button type="button" class="ska-admin-tab" data-action="admin-tab" data-tab="algorithm">Algorithm Tuning</button>
+                </div>
+                <div class="ska-admin-tab-panel is-active" data-panel="dashboard">
+                    <div class="ska-admin-grid">
+                        <section class="ska-admin-card">
+                            <h2>Business Analytics</h2>
+                            <div class="ska-admin-kpis">
+                                <div class="ska-admin-kpi">
+                                    <span>Unlock Klicks</span>
+                                    <strong data-role="kpi-unlock">—</strong>
+                                </div>
+                                <div class="ska-admin-kpi">
+                                    <span>Payment Success</span>
+                                    <strong data-role="kpi-success">—</strong>
+                                </div>
+                                <div class="ska-admin-kpi">
+                                    <span>Drop-off Rate</span>
+                                    <strong data-role="kpi-dropoff">—</strong>
+                                </div>
                             </div>
-                            <div class="ska-admin-kpi">
-                                <span>Payment Success</span>
-                                <strong data-role="kpi-success">—</strong>
+                            <div class="ska-admin-subsection">
+                                <h3>Churn Monitor</h3>
+                                <ul class="ska-admin-list" data-role="churn-list"></ul>
                             </div>
-                            <div class="ska-admin-kpi">
-                                <span>Drop-off Rate</span>
-                                <strong data-role="kpi-dropoff">—</strong>
+                        </section>
+                        <section class="ska-admin-card">
+                            <h2>Content Management</h2>
+                            <label class="ska-admin-field">
+                                <span>Global Announcement</span>
+                                <textarea rows="4" placeholder="z.B. Wartung am Sonntag" data-role="announcement-input"></textarea>
+                            </label>
+                            <div class="ska-admin-inline">
+                                <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-announcement">Speichern</button>
+                                <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Clear Message</button>
+                                <span class="ska-admin-meta" data-role="announcement-status"></span>
                             </div>
+                            <div class="ska-admin-field">
+                                <span>Enable Unlock Button</span>
+                                <div class="ska-admin-toggle-row">
+                                    <span>Off</span>
+                                    <label class="ska-switch">
+                                        <input type="checkbox" data-action="admin-unlock-toggle">
+                                        <span class="ska-switch-slider"></span>
+                                    </label>
+                                    <span>On</span>
+                                </div>
+                            </div>
+                        </section>
+                        <section class="ska-admin-card">
+                            <h2>Feature-Usage Heatmap</h2>
+                            <div class="ska-admin-heatmap">
+                                <div>
+                                    <h3>Most Used Features</h3>
+                                    <ul class="ska-admin-list" data-role="heatmap-most"></ul>
+                                </div>
+                                <div>
+                                    <h3>Least Used Features</h3>
+                                    <ul class="ska-admin-list" data-role="heatmap-least"></ul>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <div class="ska-admin-controls">
+                            <label class="ska-admin-search">
+                                <span>Suche</span>
+                                <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
+                            </label>
+                            <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
                         </div>
-                        <div class="ska-admin-subsection">
-                            <h3>Churn Monitor</h3>
-                            <ul class="ska-admin-list" data-role="churn-list"></ul>
-                        </div>
-                    </section>
-                    <section class="ska-admin-card">
-                        <h2>Content Management</h2>
-                        <label class="ska-admin-field">
-                            <span>Global Announcement</span>
-                            <textarea rows="4" placeholder="z.B. Wartung am Sonntag" data-role="announcement-input"></textarea>
-                        </label>
-                        <div class="ska-admin-inline">
-                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-announcement">Speichern</button>
-                            <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Clear Message</button>
-                            <span class="ska-admin-meta" data-role="announcement-status"></span>
-                        </div>
-                        <div class="ska-admin-field">
-                            <span>Enable Unlock Button</span>
-                            <div class="ska-admin-toggle-row">
-                                <span>Off</span>
-                                <label class="ska-switch">
-                                    <input type="checkbox" data-action="admin-unlock-toggle">
-                                    <span class="ska-switch-slider"></span>
-                                </label>
-                                <span>On</span>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="ska-admin-card">
-                        <h2>Feature-Usage Heatmap</h2>
-                        <div class="ska-admin-heatmap">
-                            <div>
-                                <h3>Most Used Features</h3>
-                                <ul class="ska-admin-list" data-role="heatmap-most"></ul>
-                            </div>
-                            <div>
-                                <h3>Least Used Features</h3>
-                                <ul class="ska-admin-list" data-role="heatmap-least"></ul>
-                            </div>
+                        <div class="ska-admin-table-wrapper">
+                            <table class="wp-list-table widefat fixed striped ska-admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>E-Mail</th>
+                                        <th>Plan</th>
+                                        <th>Registriert</th>
+                                        <th>Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-role="admin-rows"></tbody>
+                            </table>
                         </div>
                     </section>
                 </div>
-                <section class="ska-admin-card ska-admin-card--full">
-                    <div class="ska-admin-controls">
-                        <label class="ska-admin-search">
-                            <span>Suche</span>
-                            <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
-                        </label>
-                        <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
-                    </div>
-                    <div class="ska-admin-table-wrapper">
-                        <table class="wp-list-table widefat fixed striped ska-admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>E-Mail</th>
-                                    <th>Plan</th>
-                                    <th>Registriert</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody data-role="admin-rows"></tbody>
-                        </table>
-                    </div>
-                </section>
+                <div class="ska-admin-tab-panel" data-panel="algorithm">
+                    <section class="ska-admin-card ska-admin-card--full">
+                        <h2>Algorithm Tuning</h2>
+                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
+                        <div class="ska-admin-grid">
+                            <label class="ska-admin-field">
+                                <span>Long Sentence Threshold (Wörter)</span>
+                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
+                            </label>
+                            <label class="ska-admin-field">
+                                <span>Nominal Chain Threshold (Nomen)</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
+                            </label>
+                            <label class="ska-admin-field">
+                                <span>Passive Voice Strictness</span>
+                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
+                            </label>
+                        </div>
+                        <div class="ska-admin-inline">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
+                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
+                        </div>
+                    </section>
+                </div>
             `;
 
             this.searchInput = this.root.querySelector('[data-role="admin-search"]');
@@ -9529,10 +9605,19 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.kpiUnlock = this.root.querySelector('[data-role="kpi-unlock"]');
             this.kpiSuccess = this.root.querySelector('[data-role="kpi-success"]');
             this.kpiDropoff = this.root.querySelector('[data-role="kpi-dropoff"]');
+            this.tabButtons = Array.from(this.root.querySelectorAll('[data-action="admin-tab"]'));
+            this.tabPanels = Array.from(this.root.querySelectorAll('[data-panel]'));
+            this.algorithmLongInput = this.root.querySelector('[data-role="algorithm-long-sentence"]');
+            this.algorithmNominalInput = this.root.querySelector('[data-role="algorithm-nominal-chain"]');
+            this.algorithmPassiveInput = this.root.querySelector('[data-role="algorithm-passive-strictness"]');
+            this.algorithmStatus = this.root.querySelector('[data-role="algorithm-status"]');
 
             if (this.unlockToggle) {
                 const enabled = window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true;
                 this.unlockToggle.checked = enabled;
+            }
+            if (this.algorithmLongInput || this.algorithmNominalInput || this.algorithmPassiveInput) {
+                this.applyAlgorithmTuning(SA_CONFIG.ALGORITHM_TUNING);
             }
 
             if (this.searchInput) {
@@ -9547,6 +9632,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 if (!button) return;
                 const action = button.dataset.action;
                 const userId = button.dataset.userId;
+                if (action === 'admin-tab') {
+                    this.handleTabSwitch(button.dataset.tab);
+                }
                 if (action === 'admin-masquerade') {
                     this.handleMasquerade(userId);
                 }
@@ -9558,6 +9646,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 }
                 if (action === 'admin-clear-announcement') {
                     this.clearAnnouncement();
+                }
+                if (action === 'admin-save-algorithm') {
+                    this.saveAlgorithmTuning();
                 }
             });
 
@@ -9656,6 +9747,9 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                     if (typeof data.unlockButtonEnabled !== 'undefined') {
                         this.setUnlockToggleState(Boolean(data.unlockButtonEnabled));
                     }
+                    if (data && data.algorithmTuning) {
+                        this.applyAlgorithmTuning(data.algorithmTuning);
+                    }
                 })
                 .catch(() => {});
         }
@@ -9665,6 +9759,27 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             this.unlockToggle.checked = Boolean(enabled);
             if (window.SKA_CONFIG_PHP) {
                 window.SKA_CONFIG_PHP.unlockButtonEnabled = Boolean(enabled);
+            }
+        }
+
+        applyAlgorithmTuning(tuning) {
+            if (!tuning) return;
+            if (this.algorithmLongInput) {
+                this.algorithmLongInput.value = resolveNumericSetting(tuning.longSentenceThreshold, 20);
+            }
+            if (this.algorithmNominalInput) {
+                this.algorithmNominalInput.value = resolveNumericSetting(tuning.nominalChainThreshold, 3);
+            }
+            if (this.algorithmPassiveInput) {
+                this.algorithmPassiveInput.value = resolveNumericSetting(tuning.passiveVoiceStrictness, 15);
+            }
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.algorithmTuning = { ...tuning };
+            }
+            if (SA_CONFIG.ALGORITHM_TUNING) {
+                SA_CONFIG.ALGORITHM_TUNING.longSentenceThreshold = resolveNumericSetting(tuning.longSentenceThreshold, 20);
+                SA_CONFIG.ALGORITHM_TUNING.nominalChainThreshold = resolveNumericSetting(tuning.nominalChainThreshold, 3);
+                SA_CONFIG.ALGORITHM_TUNING.passiveVoiceStrictness = resolveNumericSetting(tuning.passiveVoiceStrictness, 15);
             }
         }
 
@@ -9690,6 +9805,45 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
                 })
                 .finally(() => {
                     input.disabled = false;
+                });
+        }
+
+        handleTabSwitch(tabId) {
+            if (!tabId) return;
+            this.tabButtons.forEach((button) => {
+                const isActive = button.dataset.tab === tabId;
+                button.classList.toggle('is-active', isActive);
+            });
+            this.tabPanels.forEach((panel) => {
+                const isActive = panel.dataset.panel === tabId;
+                panel.classList.toggle('is-active', isActive);
+            });
+        }
+
+        saveAlgorithmTuning() {
+            if (!this.apiBase) return;
+            const current = SA_CONFIG.ALGORITHM_TUNING || {};
+            const longSentenceThreshold = resolveNumericSetting(this.algorithmLongInput?.value, current.longSentenceThreshold || 20);
+            const nominalChainThreshold = resolveNumericSetting(this.algorithmNominalInput?.value, current.nominalChainThreshold || 3);
+            const passiveVoiceStrictness = resolveNumericSetting(this.algorithmPassiveInput?.value, current.passiveVoiceStrictness || 15);
+            if (this.algorithmStatus) this.algorithmStatus.textContent = 'Speichern…';
+            this.apiFetch('/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    longSentenceThreshold,
+                    nominalChainThreshold,
+                    passiveVoiceStrictness
+                })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data && data.algorithmTuning) {
+                        this.applyAlgorithmTuning(data.algorithmTuning);
+                    }
+                    if (this.algorithmStatus) this.algorithmStatus.textContent = 'Gespeichert.';
+                })
+                .catch(() => {
+                    if (this.algorithmStatus) this.algorithmStatus.textContent = 'Fehler beim Speichern.';
                 });
         }
 

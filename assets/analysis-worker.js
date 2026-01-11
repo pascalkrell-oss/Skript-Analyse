@@ -18,6 +18,21 @@ const cleanTextForCounting = sharedUtils?.cleanTextForCounting || ((text) =>
         .replace(/\s+/g, ' ')
         .trim());
 
+const parseConfigNumber = (value, fallback) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+let MAX_SENTENCE_LENGTH = 20;
+let NOMINAL_CHAIN_THRESHOLD = 3;
+let PASSIVE_VOICE_STRICTNESS = 15;
+
+const applyAlgorithmConfig = (config = {}) => {
+    MAX_SENTENCE_LENGTH = parseConfigNumber(config.longSentenceThreshold, MAX_SENTENCE_LENGTH);
+    NOMINAL_CHAIN_THRESHOLD = parseConfigNumber(config.nominalChainThreshold, NOMINAL_CHAIN_THRESHOLD);
+    PASSIVE_VOICE_STRICTNESS = parseConfigNumber(config.passiveVoiceStrictness, PASSIVE_VOICE_STRICTNESS);
+};
+
 const countSyllables = sharedUtils?.countSyllables || ((word) => {
     const clean = word.toLowerCase().replace(/[^a-zäöüß]/g, '');
     if (!clean) return 0;
@@ -256,6 +271,10 @@ const analyzeImmersion = (text) => {
 
 self.onmessage = (event) => {
     const { id, type, payload } = event.data || {};
+    if (type === 'CONFIG') {
+        applyAlgorithmConfig(payload || {});
+        return;
+    }
     if (!id || !type) return;
     if (type === 'paragraphs') {
         const { paragraphs, settings, profile } = payload || {};

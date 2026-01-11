@@ -90,6 +90,37 @@ function ska_is_unlock_button_enabled() {
     return filter_var( $enabled, FILTER_VALIDATE_BOOLEAN );
 }
 
+function ska_get_algorithm_tuning_defaults() {
+    return array(
+        'long_sentence_threshold' => 20,
+        'nominal_chain_threshold' => 3,
+        'passive_voice_strictness' => 15,
+    );
+}
+
+function ska_get_algorithm_tuning_settings() {
+    $defaults = ska_get_algorithm_tuning_defaults();
+    $long_sentence = (int) get_option( 'ska_long_sentence_threshold', $defaults['long_sentence_threshold'] );
+    $nominal_chain = (int) get_option( 'ska_nominal_chain_threshold', $defaults['nominal_chain_threshold'] );
+    $passive_strictness = (float) get_option( 'ska_passive_voice_strictness', $defaults['passive_voice_strictness'] );
+
+    if ( $long_sentence <= 0 ) {
+        $long_sentence = $defaults['long_sentence_threshold'];
+    }
+    if ( $nominal_chain <= 0 ) {
+        $nominal_chain = $defaults['nominal_chain_threshold'];
+    }
+    if ( $passive_strictness <= 0 ) {
+        $passive_strictness = $defaults['passive_voice_strictness'];
+    }
+
+    return array(
+        'longSentenceThreshold' => $long_sentence,
+        'nominalChainThreshold' => $nominal_chain,
+        'passiveVoiceStrictness' => $passive_strictness,
+    );
+}
+
 function ska_get_localized_config() {
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
@@ -133,6 +164,7 @@ function ska_get_localized_config() {
         'masquerade' => $masquerade,
         'globalAnnouncement' => ska_get_global_announcement(),
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
+        'algorithmTuning' => ska_get_algorithm_tuning_settings(),
     );
 }
 
@@ -1191,6 +1223,7 @@ function ska_admin_update_announcement( WP_REST_Request $request ) {
 function ska_admin_get_settings( WP_REST_Request $request ) {
     return rest_ensure_response( array(
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
+        'algorithmTuning' => ska_get_algorithm_tuning_settings(),
     ) );
 }
 
@@ -1198,8 +1231,37 @@ function ska_admin_update_settings( WP_REST_Request $request ) {
     $enabled = filter_var( $request->get_param( 'unlockButtonEnabled' ), FILTER_VALIDATE_BOOLEAN );
     update_option( 'ska_unlock_button_enabled', $enabled ? '1' : '0' );
 
+    $defaults = ska_get_algorithm_tuning_defaults();
+    $long_sentence = $request->get_param( 'longSentenceThreshold' );
+    if ( null !== $long_sentence ) {
+        $long_sentence = (int) $long_sentence;
+        if ( $long_sentence <= 0 ) {
+            $long_sentence = $defaults['long_sentence_threshold'];
+        }
+        update_option( 'ska_long_sentence_threshold', $long_sentence );
+    }
+
+    $nominal_chain = $request->get_param( 'nominalChainThreshold' );
+    if ( null !== $nominal_chain ) {
+        $nominal_chain = (int) $nominal_chain;
+        if ( $nominal_chain <= 0 ) {
+            $nominal_chain = $defaults['nominal_chain_threshold'];
+        }
+        update_option( 'ska_nominal_chain_threshold', $nominal_chain );
+    }
+
+    $passive_strictness = $request->get_param( 'passiveVoiceStrictness' );
+    if ( null !== $passive_strictness ) {
+        $passive_strictness = (float) $passive_strictness;
+        if ( $passive_strictness <= 0 ) {
+            $passive_strictness = $defaults['passive_voice_strictness'];
+        }
+        update_option( 'ska_passive_voice_strictness', $passive_strictness );
+    }
+
     return rest_ensure_response( array(
         'unlockButtonEnabled' => $enabled,
+        'algorithmTuning' => ska_get_algorithm_tuning_settings(),
     ) );
 }
 
