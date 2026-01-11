@@ -33,49 +33,35 @@ function ska_register_assets() {
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
-/* * CLEAN CHECKOUT FOR IFRAME
- * Blendet Header/Footer aus, wenn ?embedded_checkout=1 oder ?is_modal=1 in der URL ist.
- */
-add_action( 'wp', function() {
-    $is_embedded_checkout = isset( $_GET['embedded_checkout'] ) && $_GET['embedded_checkout'] == '1';
-    $is_modal_checkout = isset( $_GET['is_modal'] ) && $_GET['is_modal'] == '1';
-    if ( $is_embedded_checkout || $is_modal_checkout ) {
-        // Entfernt Header und Footer in den meisten Themes
-        add_filter( 'show_admin_bar', '__return_false' );
-
-        // CSS ausgeben, um Header/Footer hart auszublenden (Theme-abhängig)
-        add_action( 'wp_head', function() {
-            echo '<style>
-                header, footer, #masthead, #colophon, .site-header, .site-footer, .elementor-location-header, .elementor-location-footer {
-                    display: none !important;
-                }
-                .cart, .mini-cart, .site-main .cart, .woocommerce-cart, .woocommerce-cart-form,
-                .woocommerce-cart-form__contents, .widget_shopping_cart, .woocommerce-mini-cart {
-                    display: none !important;
-                }
-                body {
-                    background: #fff !important;
-                    padding: 0 !important;
-                    margin: 0 !important;
-                    overflow-x: hidden;
-                }
-                .woocommerce { padding: 20px; }
-                /* Entfernt oft störende Breadcrumbs */
-                .woocommerce-breadcrumb, nav, .site-navigation, .main-navigation {
-                    display: none !important;
-                }
-                .site-footer, .footer, .footer-widgets, .site-info {
-                    display: none !important;
-                }
-                .woocommerce-notices-wrapper,
-                .woocommerce-message,
-                .woocommerce-info,
-                .woocommerce-error {
-                    display: none !important;
-                }
-            </style>';
-        } );
+add_action( 'template_redirect', function() {
+    $is_checkout_modal = isset( $_GET['view'] ) && $_GET['view'] === 'checkout_modal';
+    if ( ! $is_checkout_modal ) {
+        return;
     }
+
+    remove_all_actions( 'wp_head' );
+    remove_all_actions( 'wp_footer' );
+
+    $checkout_html = '';
+    if ( function_exists( 'do_shortcode' ) ) {
+        $checkout_html = do_shortcode( '[woocommerce_checkout]' );
+    }
+
+    $style_url = esc_url( SKA_URL . 'assets/style.css?ver=' . SKA_VER );
+    $script_url = esc_url( SKA_URL . 'assets/app.js?ver=' . SKA_VER );
+
+    echo '<!doctype html>';
+    echo '<html lang="de">';
+    echo '<head>';
+    echo '<meta charset="utf-8">';
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    echo '<link rel="stylesheet" href="' . $style_url . '">';
+    echo '</head>';
+    echo '<body class="ska-clean-checkout">';
+    echo $checkout_html;
+    echo '<script src="' . $script_url . '" defer></script>';
+    echo '</body></html>';
+    exit;
 } );
 
 function ska_has_manual_access( $user_id ) {
