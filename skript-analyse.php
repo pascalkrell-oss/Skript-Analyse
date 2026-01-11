@@ -56,15 +56,23 @@ add_action( 'wp', function() {
                 .woocommerce { padding: 20px; }
                 /* Entfernt oft störende Breadcrumbs */
                 .woocommerce-breadcrumb, nav { display: none !important; }
+                .woocommerce-notices-wrapper,
+                .woocommerce-message,
+                .woocommerce-info,
+                .woocommerce-error {
+                    display: none !important;
+                }
             </style>';
         } );
     }
 } );
 
-function ska_shortcode() {
-    wp_enqueue_style( 'skript-analyse-css' );
-    wp_enqueue_script( 'skript-analyse-js' );
+function ska_get_user_plan( $user_id ) {
+    $plan = get_user_meta( $user_id, 'ska_plan', true );
+    return $plan === 'premium' ? 'premium' : 'free';
+}
 
+function ska_get_localized_config() {
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
         ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
@@ -77,17 +85,42 @@ function ska_shortcode() {
         ['label' => '[SCHNELL]', 'val' => '[SCHNELL]', 'desc' => 'Tempo deutlich anziehen'],
         ['label' => '[LANGSAM]', 'val' => '[LANGSAM]', 'desc' => 'Tempo drosseln / Getragen sprechen']
     ];
-    
+
     $pro_mode = apply_filters( 'ska_pro_mode', false );
     $pro_mode = filter_var( $pro_mode, FILTER_VALIDATE_BOOLEAN );
 
-    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', array(
+    $masquerade_admin_id = get_current_user_id() ? get_user_meta( get_current_user_id(), 'ska_masquerade_admin_id', true ) : '';
+    $masquerade = array( 'active' => false );
+    if ( $masquerade_admin_id ) {
+        $admin_user = get_user_by( 'id', (int) $masquerade_admin_id );
+        if ( $admin_user && user_can( $admin_user, 'manage_options' ) ) {
+            $current_user = wp_get_current_user();
+            $masquerade = array(
+                'active' => true,
+                'adminId' => (int) $admin_user->ID,
+                'adminName' => $admin_user->display_name,
+                'userName' => $current_user ? $current_user->display_name : '',
+            );
+        }
+    }
+
+    return array(
         'markers' => $markers_config,
         'pro' => $pro_mode,
         'isAdmin' => current_user_can( 'manage_options' ),
         'isLoggedIn' => is_user_logged_in(),
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
-    ));
+        'adminApiBase' => rest_url( 'ska/v1' ),
+        'adminNonce' => wp_create_nonce( 'wp_rest' ),
+        'masquerade' => $masquerade,
+    );
+}
+
+function ska_shortcode() {
+    wp_enqueue_style( 'skript-analyse-css' );
+    wp_enqueue_script( 'skript-analyse-js' );
+
+    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
 
     ob_start();
     ?>
@@ -705,4 +738,190 @@ function ska_shortcode() {
     return ob_get_clean();
 }
 add_shortcode( 'skript_analyse', 'ska_shortcode' );
+
+add_filter( 'ska_pro_mode', function( $pro_mode ) {
+    $user_id = get_current_user_id();
+    if ( ! $user_id ) {
+        return $pro_mode;
+    }
+    return ska_get_user_plan( $user_id ) === 'premium' ? true : $pro_mode;
+} );
+
+function ska_register_admin_route() {
+    add_rewrite_rule( '^admin/?$', 'index.php?ska_admin=1', 'top' );
+}
+add_action( 'init', 'ska_register_admin_route' );
+
+add_filter( 'query_vars', function( $vars ) {
+    $vars[] = 'ska_admin';
+    return $vars;
+} );
+
+function ska_render_admin_page() {
+    if ( (int) get_query_var( 'ska_admin' ) !== 1 ) {
+        return;
+    }
+
+    if ( ! current_user_can( 'manage_options' ) ) {
+        wp_safe_redirect( home_url( '/' ) );
+        exit;
+    }
+
+    ska_register_assets();
+    wp_enqueue_style( 'skript-analyse-css' );
+    wp_enqueue_script( 'skript-analyse-js' );
+    wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
+
+    status_header( 200 );
+    nocache_headers();
+    ?>
+    <!doctype html>
+    <html <?php language_attributes(); ?>>
+    <head>
+        <meta charset="<?php bloginfo( 'charset' ); ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <?php wp_head(); ?>
+    </head>
+    <body class="ska-admin-page">
+        <div id="ska-admin-app" class="ska-admin-app"></div>
+        <?php wp_footer(); ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+add_action( 'template_redirect', 'ska_render_admin_page' );
+
+function ska_flush_rewrite_rules() {
+    ska_register_admin_route();
+    flush_rewrite_rules();
+}
+register_activation_hook( __FILE__, 'ska_flush_rewrite_rules' );
+register_deactivation_hook( __FILE__, 'flush_rewrite_rules' );
+
+function ska_admin_permission_check() {
+    return current_user_can( 'manage_options' );
+}
+
+function ska_get_admin_users( WP_REST_Request $request ) {
+    $search = sanitize_text_field( $request->get_param( 'search' ) );
+    $args = array(
+        'number' => 200,
+        'orderby' => 'registered',
+        'order' => 'DESC',
+    );
+
+    if ( $search ) {
+        $args['search'] = '*' . $search . '*';
+        $args['search_columns'] = array( 'user_email', 'display_name', 'user_login' );
+    }
+
+    $query = new WP_User_Query( $args );
+    $users = array();
+    foreach ( $query->get_results() as $user ) {
+        $plan = ska_get_user_plan( $user->ID );
+        $users[] = array(
+            'id' => (int) $user->ID,
+            'name' => $user->display_name,
+            'email' => $user->user_email,
+            'plan' => $plan,
+            'planLabel' => $plan === 'premium' ? 'Premium' : 'Basis',
+            'registered' => $user->user_registered,
+        );
+    }
+
+    return rest_ensure_response( array( 'users' => $users ) );
+}
+
+function ska_admin_update_plan( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+
+    $plan = sanitize_text_field( $request->get_param( 'plan' ) );
+    if ( ! in_array( $plan, array( 'premium', 'free' ), true ) ) {
+        return new WP_Error( 'ska_invalid_plan', 'Invalid plan', array( 'status' => 400 ) );
+    }
+
+    update_user_meta( $user_id, 'ska_plan', $plan );
+
+    return rest_ensure_response( array(
+        'id' => $user_id,
+        'plan' => $plan,
+        'planLabel' => $plan === 'premium' ? 'Premium' : 'Basis',
+    ) );
+}
+
+function ska_admin_masquerade_user( WP_REST_Request $request ) {
+    $user_id = (int) $request->get_param( 'id' );
+    $user = get_user_by( 'id', $user_id );
+    if ( ! $user ) {
+        return new WP_Error( 'ska_user_missing', 'User not found', array( 'status' => 404 ) );
+    }
+
+    $admin_id = get_current_user_id();
+    update_user_meta( $user_id, 'ska_masquerade_admin_id', $admin_id );
+
+    wp_clear_auth_cookie();
+    wp_set_current_user( $user_id );
+    wp_set_auth_cookie( $user_id, true );
+
+    return rest_ensure_response( array(
+        'success' => true,
+        'redirect' => home_url( '/' ),
+    ) );
+}
+
+function ska_admin_exit_masquerade( WP_REST_Request $request ) {
+    $current_user_id = get_current_user_id();
+    $admin_id = $current_user_id ? get_user_meta( $current_user_id, 'ska_masquerade_admin_id', true ) : '';
+    if ( ! $admin_id ) {
+        return new WP_Error( 'ska_not_masquerading', 'Not in masquerade mode', array( 'status' => 400 ) );
+    }
+
+    $admin_user = get_user_by( 'id', (int) $admin_id );
+    if ( ! $admin_user || ! user_can( $admin_user, 'manage_options' ) ) {
+        return new WP_Error( 'ska_invalid_admin', 'Admin not found', array( 'status' => 403 ) );
+    }
+
+    delete_user_meta( $current_user_id, 'ska_masquerade_admin_id' );
+
+    wp_clear_auth_cookie();
+    wp_set_current_user( $admin_user->ID );
+    wp_set_auth_cookie( $admin_user->ID, true );
+
+    return rest_ensure_response( array(
+        'success' => true,
+        'redirect' => home_url( '/admin' ),
+    ) );
+}
+
+function ska_register_admin_rest_routes() {
+    register_rest_route( 'ska/v1', '/admin/users', array(
+        'methods' => WP_REST_Server::READABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_get_admin_users',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/users/(?P<id>\d+)/plan', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_update_plan',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/users/(?P<id>\d+)/masquerade', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'ska_admin_permission_check',
+        'callback' => 'ska_admin_masquerade_user',
+    ) );
+
+    register_rest_route( 'ska/v1', '/admin/masquerade/exit', array(
+        'methods' => WP_REST_Server::CREATABLE,
+        'permission_callback' => 'is_user_logged_in',
+        'callback' => 'ska_admin_exit_masquerade',
+    ) );
+}
+add_action( 'rest_api_init', 'ska_register_admin_rest_routes' );
 ?>

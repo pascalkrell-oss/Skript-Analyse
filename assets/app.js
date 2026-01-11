@@ -9233,6 +9233,233 @@
         }
     }
 
+    class SkaAdminPanel {
+        constructor(root) {
+            this.root = root;
+            this.users = [];
+            this.filteredUsers = [];
+            this.searchQuery = '';
+            this.apiBase = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.adminApiBase) ? SKA_CONFIG_PHP.adminApiBase.replace(/\/$/, '') : '';
+            this.nonce = window.SKA_CONFIG_PHP ? SKA_CONFIG_PHP.adminNonce : '';
+            this.init();
+        }
+
+        init() {
+            this.root.innerHTML = `
+                <div class="ska-admin-header">
+                    <div>
+                        <h1>Admin: User Management</h1>
+                        <p>Verwalte registrierte Nutzer, Pläne und Support-Logins.</p>
+                    </div>
+                </div>
+                <div class="ska-admin-controls">
+                    <label class="ska-admin-search">
+                        <span>Suche</span>
+                        <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
+                    </label>
+                    <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
+                </div>
+                <div class="ska-admin-table-wrapper">
+                    <table class="ska-admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>E-Mail</th>
+                                <th>Plan</th>
+                                <th>Registriert</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody data-role="admin-rows"></tbody>
+                    </table>
+                </div>
+            `;
+
+            this.searchInput = this.root.querySelector('[data-role="admin-search"]');
+            this.countLabel = this.root.querySelector('[data-role="admin-count"]');
+            this.rowsEl = this.root.querySelector('[data-role="admin-rows"]');
+
+            if (this.searchInput) {
+                this.searchInput.addEventListener('input', () => {
+                    this.searchQuery = this.searchInput.value.trim().toLowerCase();
+                    this.applyFilter();
+                });
+            }
+
+            this.root.addEventListener('click', (event) => {
+                const button = event.target.closest('button[data-action]');
+                if (!button) return;
+                const action = button.dataset.action;
+                const userId = button.dataset.userId;
+                if (action === 'admin-masquerade') {
+                    this.handleMasquerade(userId);
+                }
+                if (action === 'admin-plan') {
+                    this.handlePlanToggle(userId, button.dataset.plan || 'free');
+                }
+            });
+
+            this.fetchUsers();
+        }
+
+        apiFetch(path, options = {}) {
+            const url = `${this.apiBase}${path}`;
+            return fetch(url, {
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': this.nonce
+                },
+                ...options
+            });
+        }
+
+        fetchUsers() {
+            if (!this.apiBase) return;
+            this.countLabel.textContent = 'Lade Daten…';
+            this.apiFetch('/admin/users')
+                .then((response) => response.json())
+                .then((data) => {
+                    this.users = Array.isArray(data.users) ? data.users : [];
+                    this.applyFilter();
+                })
+                .catch(() => {
+                    this.countLabel.textContent = 'Fehler beim Laden.';
+                });
+        }
+
+        applyFilter() {
+            if (!this.searchQuery) {
+                this.filteredUsers = [...this.users];
+            } else {
+                this.filteredUsers = this.users.filter((user) => {
+                    const haystack = `${user.name} ${user.email}`.toLowerCase();
+                    return haystack.includes(this.searchQuery);
+                });
+            }
+            this.renderRows();
+        }
+
+        renderRows() {
+            if (!this.rowsEl) return;
+            const escapeHtml = (value) => String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+            if (this.filteredUsers.length === 0) {
+                this.rowsEl.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="ska-admin-empty">Keine Nutzer gefunden.</td>
+                    </tr>
+                `;
+            } else {
+                this.rowsEl.innerHTML = this.filteredUsers.map((user) => {
+                    const registered = user.registered ? new Date(user.registered).toLocaleDateString('de-DE') : '-';
+                    return `
+                        <tr data-user-id="${user.id}">
+                            <td>${user.id}</td>
+                            <td>${escapeHtml(user.name)}</td>
+                            <td>${escapeHtml(user.email)}</td>
+                            <td>${escapeHtml(user.planLabel)}</td>
+                            <td>${registered}</td>
+                            <td class="ska-admin-actions">
+                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">Als User einloggen</button>
+                                <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="admin-plan" data-user-id="${user.id}" data-plan="${user.plan}">Plan bearbeiten</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            this.countLabel.textContent = `${this.filteredUsers.length} Nutzer`;
+        }
+
+        handleMasquerade(userId) {
+            if (!userId) return;
+            const confirmed = window.confirm('Als ausgewählten User einloggen?');
+            if (!confirmed) return;
+            this.apiFetch(`/admin/users/${userId}/masquerade`, { method: 'POST', body: JSON.stringify({}) })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data && data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                })
+                .catch(() => {
+                    window.alert('Masquerade konnte nicht gestartet werden.');
+                });
+        }
+
+        handlePlanToggle(userId, currentPlan) {
+            if (!userId) return;
+            const isPremium = currentPlan === 'premium';
+            const nextPlan = isPremium ? 'free' : 'premium';
+            const confirmed = window.confirm(`Plan auf ${nextPlan === 'premium' ? 'Premium' : 'Basis'} setzen?`);
+            if (!confirmed) return;
+            this.apiFetch(`/admin/users/${userId}/plan`, {
+                method: 'POST',
+                body: JSON.stringify({ plan: nextPlan })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const index = this.users.findIndex((user) => String(user.id) === String(userId));
+                    if (index >= 0) {
+                        this.users[index].plan = data.plan || nextPlan;
+                        this.users[index].planLabel = data.planLabel || (nextPlan === 'premium' ? 'Premium' : 'Basis');
+                    }
+                    this.applyFilter();
+                })
+                .catch(() => {
+                    window.alert('Plan konnte nicht aktualisiert werden.');
+                });
+        }
+    }
+
+    const renderMasqueradeBanner = () => {
+        const config = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.masquerade;
+        if (!config || !config.active) return;
+        if (document.querySelector('.ska-masquerade-banner')) return;
+        const banner = document.createElement('div');
+        banner.className = 'ska-masquerade-banner';
+        banner.innerHTML = `
+            <span>Du bist eingeloggt als <strong>${config.userName || 'User'}</strong>.</span>
+            <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="masquerade-exit">Zurück zum Admin</button>
+        `;
+        document.body.prepend(banner);
+        const button = banner.querySelector('[data-action="masquerade-exit"]');
+        if (button) {
+            button.addEventListener('click', () => {
+                const apiBase = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.adminApiBase) ? SKA_CONFIG_PHP.adminApiBase.replace(/\/$/, '') : '';
+                const nonce = window.SKA_CONFIG_PHP ? SKA_CONFIG_PHP.adminNonce : '';
+                if (!apiBase) return;
+                fetch(`${apiBase}/admin/masquerade/exit`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': nonce
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data && data.redirect) {
+                            window.location.href = data.redirect;
+                        } else {
+                            window.location.reload();
+                        }
+                    })
+                    .catch(() => {
+                        window.alert('Zurückwechseln fehlgeschlagen.');
+                    });
+            });
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
@@ -9280,5 +9507,12 @@
                     });
             };
         }
+
+        const adminRoot = document.getElementById('ska-admin-app');
+        if (adminRoot) {
+            new SkaAdminPanel(adminRoot);
+        }
+
+        renderMasqueradeBanner();
     });
 })();
