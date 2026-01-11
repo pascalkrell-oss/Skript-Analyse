@@ -2661,6 +2661,24 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     color: var(--ska-text-main);
 }
 
+.ska-announcement-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1.2rem;
+    border-radius: 14px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    color: #9a3412;
+    font-size: 0.95rem;
+}
+
+.ska-announcement-banner .ska-announcement-text {
+    font-weight: 600;
+}
+
 .ska-admin-header {
     display: flex;
     justify-content: space-between;
@@ -2677,6 +2695,161 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-admin-header p {
     margin: 0;
     color: var(--ska-text-muted);
+}
+
+.ska-admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.ska-admin-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
+}
+
+.ska-admin-card--full {
+    margin-top: 2rem;
+}
+
+.ska-admin-card h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.35rem;
+}
+
+.ska-admin-card h3 {
+    margin: 1rem 0 0.6rem;
+    font-size: 1rem;
+}
+
+.ska-admin-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ska-admin-kpi {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--ska-text-muted);
+}
+
+.ska-admin-kpi strong {
+    font-size: 1.4rem;
+    color: var(--ska-text-main);
+}
+
+.ska-admin-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--ska-text-main);
+}
+
+.ska-admin-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.ska-admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--ska-text-muted);
+}
+
+.ska-admin-field textarea {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.ska-admin-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+}
+
+.ska-admin-heatmap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.ska-support-layout {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) 1fr;
+    gap: 1.5rem;
+}
+
+.ska-support-list,
+.ska-support-detail {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
+}
+
+.ska-support-users {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.ska-support-user {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
+    background: #f8fafc;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ska-support-user strong {
+    font-size: 0.95rem;
+}
+
+.ska-support-user em {
+    font-style: normal;
+    color: var(--ska-text-muted);
+    font-size: 0.8rem;
+}
+
+.ska-support-detail h2 {
+    margin-top: 0;
+}
+
+.ska-support-meta {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0 1.2rem;
+    font-size: 0.9rem;
+    color: var(--ska-text-main);
 }
 
 .ska-admin-controls {
