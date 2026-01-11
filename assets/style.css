@@ -1592,41 +1592,52 @@ header.site-header,
 .ska-checkout-modal-body { padding: 0 !important; flex: 1; }
 .ska-checkout-split-layout {
     display: grid;
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.85fr);
+    gap: 24px;
     min-height: 600px;
+    padding: 24px;
+    background: var(--ska-bg-app);
 }
 .ska-checkout-summary-col {
-    background: #0f172a !important;
-    color: #fff !important;
-    padding: 40px 30px;
-    border-right: none;
+    background: var(--ska-surface-alt);
+    color: var(--ska-text-main);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--ska-border);
+    box-shadow: var(--ska-shadow);
     display: flex;
     flex-direction: column;
+    position: sticky;
+    top: 24px;
+    align-self: start;
 }
 .ska-checkout-summary-col h4,
 .ska-checkout-item,
 .ska-item-name,
 .ska-item-price {
-    color: #fff !important;
+    color: var(--ska-text-main);
 }
 .ska-checkout-cycle,
 .ska-checkout-benefits li,
 .ska-trust-elements {
-    color: #94a3b8 !important;
+    color: var(--ska-text-muted);
 }
 .ska-checkout-divider {
-    border-top-color: #334155 !important;
+    border-top-color: var(--ska-border);
 }
 .ska-checkout-form-col {
-    padding: 0;
-    background: #fff;
+    padding: 20px;
+    background: var(--ska-surface);
+    border-radius: 8px;
+    box-shadow: var(--ska-shadow);
+    border: 1px solid var(--ska-border);
     display: flex;
     flex-direction: column;
 }
 .ska-checkout-form-col h3 {
-    padding: 20px 30px 10px;
-    margin: 0;
-    font-size: 1.2rem;
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    color: var(--ska-text-main);
 }
 #ska-checkout-iframe-wrapper {
     flex: 1;
@@ -1634,46 +1645,88 @@ header.site-header,
     flex-direction: column;
 }
 .ska-checkout-product-card h4 {
-    margin-top: 15px;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 12px;
     font-size: 1.1rem;
 }
 .ska-checkout-plan-switcher {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 15px 0 10px;
+    display: grid;
+    gap: 12px;
+    margin: 0 0 20px;
 }
 .ska-plan-option {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.9rem;
-    color: #e2e8f0;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--ska-text-main);
     cursor: pointer;
+    background: #fff;
+    border: 1px solid var(--ska-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: var(--ska-shadow);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.ska-plan-option:hover {
+    border-color: rgba(26, 147, 238, 0.4);
+    box-shadow: var(--ska-shadow-lg);
+    transform: translateY(-1px);
 }
 .ska-plan-option input {
     accent-color: #1a93ee;
+    margin-top: 2px;
 }
 .ska-plan-label {
     color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-weight: 600;
+}
+.ska-plan-label span {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--ska-text-muted);
 }
 .ska-checkout-item {
     display: flex;
     justify-content: space-between;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: #1e293b;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ska-text-main);
     gap: 12px;
+}
+.ska-checkout-price-breakdown {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 8px;
+}
+.ska-checkout-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: var(--ska-text-muted);
+}
+.ska-checkout-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-weight: 700;
+    color: var(--ska-text-main);
+}
+.ska-checkout-total strong {
+    font-size: 1.6rem;
 }
 .ska-checkout-cycle {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--ska-text-muted);
     margin-top: 5px;
 }
 .ska-checkout-tax {
     font-size: 0.8rem;
-    color: #94a3b8;
+    color: var(--ska-text-muted);
     margin-top: 4px;
 }
 .ska-checkout-divider {
@@ -1711,28 +1764,35 @@ header.site-header,
     -webkit-mask-repeat: no-repeat !important;
     mask-repeat: no-repeat !important;
 }
+.ska-checkout-cta {
+    margin-top: 16px;
+    width: 100%;
+}
+.ska-checkout-cta .ska-btn {
+    width: 100%;
+}
 .ska-ssl-badge-small {
     display: inline-block;
-    background: rgba(22, 163, 74, 0.2) !important;
-    color: #4ade80 !important;
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
     font-size: 0.75rem;
     padding: 3px 8px;
     border-radius: 4px;
     font-weight: 600;
-    border: 1px solid rgba(74, 222, 128, 0.2);
+    border: 1px solid rgba(22, 163, 74, 0.2);
 }
 .ska-trust-elements {
     margin-top: auto;
     padding-top: 30px;
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: var(--ska-text-muted);
 }
 .ska-payment-icons {
     display: flex;
     gap: 0.65rem;
     align-items: center;
     flex-wrap: wrap;
-    color: #e2e8f0;
+    color: var(--ska-text-light);
 }
 .ska-payment-icon {
     width: 64px;
@@ -1787,11 +1847,13 @@ header.site-header,
 @media (max-width: 900px) {
     .ska-checkout-split-layout {
         grid-template-columns: 1fr;
+        padding: 16px;
     }
     .ska-checkout-summary-col {
         border-right: none;
         border-bottom: 1px solid #e2e8f0;
         padding: 20px;
+        position: static;
     }
     #ska-checkout-modal .ska-checkout-modal-content {
         max-width: 100% !important;
