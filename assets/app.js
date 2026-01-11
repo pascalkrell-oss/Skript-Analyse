@@ -22,6 +22,7 @@
         UI_KEY_SETTINGS: 'skriptanalyse_settings_global',
         UI_KEY_PLAN: 'skriptanalyse_plan_mode',
         UI_KEY_UPGRADE_DISMISSED: 'skriptanalyse_upgrade_dismissed',
+        UI_KEY_ANNOUNCEMENT_DISMISSED: 'skriptanalyse_announcement_dismissed',
         SAVED_VERSION_KEY: 'skriptanalyse_saved_version_v1',
         PRO_MODE: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.pro),
         IS_ADMIN: Boolean(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.isAdmin),
@@ -3022,6 +3023,7 @@
             
             this.injectGlobalStyles(); // CSS Overrides
             this.initSynonymTooltip();
+            this.renderAnnouncementBanner();
 
             const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
             if (savedVersion && savedVersion.trim().length > 0) {
@@ -3119,6 +3121,53 @@
         }
         
         injectGlobalStyles() { SA_Utils.injectGlobalStyles(); }
+
+        renderAnnouncementBanner() {
+            const announcement = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.globalAnnouncement
+                ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
+                : '';
+            if (!announcement) return;
+            const dismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED);
+            if (dismissed && dismissed === announcement) return;
+            if (this.root.querySelector('.ska-announcement-banner')) return;
+
+            const banner = document.createElement('div');
+            banner.className = 'ska-announcement-banner';
+            const text = document.createElement('span');
+            text.className = 'ska-announcement-text';
+            text.textContent = announcement;
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'ska-btn ska-btn--ghost ska-btn--compact';
+            close.textContent = 'Schließen';
+            close.addEventListener('click', () => {
+                SA_Utils.storage.save(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED, announcement);
+                banner.remove();
+            });
+            banner.appendChild(text);
+            banner.appendChild(close);
+            this.root.prepend(banner);
+        }
+
+        trackMetric(event, feature = '') {
+            const apiBase = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.adminApiBase) ? SKA_CONFIG_PHP.adminApiBase.replace(/\/$/, '') : '';
+            if (!apiBase) return;
+            const nonce = window.SKA_CONFIG_PHP ? SKA_CONFIG_PHP.adminNonce : '';
+            fetch(`${apiBase}/metrics`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                },
+                body: JSON.stringify({ event, feature })
+            }).catch(() => {});
+        }
+
+        trackFeatureUsage(feature) {
+            if (!feature) return;
+            this.trackMetric('feature_usage', feature);
+        }
 
         getText() {
             if (!this.textarea) return '';
@@ -3809,12 +3858,12 @@
             }
 
             m = document.createElement('div');
-            m.className = 'skriptanalyse-modal';
+            m.className = 'skriptanalyse-modal checkout-modal';
             m.id = 'ska-checkout-modal';
             m.ariaHidden = 'true';
             m.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
-                <div class="skriptanalyse-modal-content ska-checkout-modal-content">
+                <div class="skriptanalyse-modal-content ska-checkout-modal-content modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
                     <div class="skriptanalyse-modal-body ska-checkout-modal-body">
                         <div class="ska-checkout-split-layout">
@@ -5397,6 +5446,10 @@
             }
             window.addEventListener('resize', SA_Utils.debounce(() => this.syncEditorHeight(), 150));
             this.root.addEventListener('change', (e) => {
+                const featureToggle = e.target.closest('input[data-action="toggle-card"]');
+                if (featureToggle && featureToggle.checked && !featureToggle.disabled) {
+                    this.trackFeatureUsage(featureToggle.dataset.card);
+                }
                 const select = e.target.closest('select');
                 if (!select) return;
                 const k = select.dataset.filter || (select.hasAttribute('data-role-select') ? 'role' : null);
@@ -8664,6 +8717,7 @@
         }
 
         openCheckout(productTitle, price, cycle) {
+            this.trackMetric('unlock_click');
             const details = this.getCheckoutDetails(productTitle, price, cycle);
             const resolvedPlan = this.resolveCheckoutPlanId(details.cycle);
             if (resolvedPlan) {
@@ -9230,7 +9284,7 @@
         }
     }
 
-    class SkaAdminPanel {
+    class SkaAdminDashboard {
         constructor(root) {
             this.root = root;
             this.users = [];
@@ -9245,37 +9299,94 @@
             this.root.innerHTML = `
                 <div class="ska-admin-header">
                     <div>
-                        <h1>Admin: User Management</h1>
-                        <p>Verwalte registrierte Nutzer, Pläne und Support-Logins.</p>
+                        <h1>Admin Dashboard</h1>
+                        <p>KPIs, Content-Updates, Feature-Nutzung und User-Verwaltung auf einen Blick.</p>
                     </div>
                 </div>
-                <div class="ska-admin-controls">
-                    <label class="ska-admin-search">
-                        <span>Suche</span>
-                        <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
-                    </label>
-                    <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
+                <div class="ska-admin-grid">
+                    <section class="ska-admin-card">
+                        <h2>Business Analytics</h2>
+                        <div class="ska-admin-kpis">
+                            <div class="ska-admin-kpi">
+                                <span>Unlock Klicks</span>
+                                <strong data-role="kpi-unlock">—</strong>
+                            </div>
+                            <div class="ska-admin-kpi">
+                                <span>Payment Success</span>
+                                <strong data-role="kpi-success">—</strong>
+                            </div>
+                            <div class="ska-admin-kpi">
+                                <span>Drop-off Rate</span>
+                                <strong data-role="kpi-dropoff">—</strong>
+                            </div>
+                        </div>
+                        <div class="ska-admin-subsection">
+                            <h3>Churn Monitor</h3>
+                            <ul class="ska-admin-list" data-role="churn-list"></ul>
+                        </div>
+                    </section>
+                    <section class="ska-admin-card">
+                        <h2>Content Management</h2>
+                        <label class="ska-admin-field">
+                            <span>Global Announcement</span>
+                            <textarea rows="4" placeholder="z.B. Wartung am Sonntag" data-role="announcement-input"></textarea>
+                        </label>
+                        <div class="ska-admin-inline">
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-announcement">Speichern</button>
+                            <span class="ska-admin-meta" data-role="announcement-status"></span>
+                        </div>
+                    </section>
+                    <section class="ska-admin-card">
+                        <h2>Feature-Usage Heatmap</h2>
+                        <div class="ska-admin-heatmap">
+                            <div>
+                                <h3>Most Used Features</h3>
+                                <ul class="ska-admin-list" data-role="heatmap-most"></ul>
+                            </div>
+                            <div>
+                                <h3>Least Used Features</h3>
+                                <ul class="ska-admin-list" data-role="heatmap-least"></ul>
+                            </div>
+                        </div>
+                    </section>
                 </div>
-                <div class="ska-admin-table-wrapper">
-                    <table class="ska-admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>E-Mail</th>
-                                <th>Plan</th>
-                                <th>Registriert</th>
-                                <th>Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody data-role="admin-rows"></tbody>
-                    </table>
-                </div>
+                <section class="ska-admin-card ska-admin-card--full">
+                    <div class="ska-admin-controls">
+                        <label class="ska-admin-search">
+                            <span>Suche</span>
+                            <input type="search" placeholder="Name oder E-Mail" data-role="admin-search">
+                        </label>
+                        <div class="ska-admin-meta" data-role="admin-count">Lade Daten…</div>
+                    </div>
+                    <div class="ska-admin-table-wrapper">
+                        <table class="ska-admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>E-Mail</th>
+                                    <th>Plan</th>
+                                    <th>Registriert</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody data-role="admin-rows"></tbody>
+                        </table>
+                    </div>
+                </section>
             `;
 
             this.searchInput = this.root.querySelector('[data-role="admin-search"]');
             this.countLabel = this.root.querySelector('[data-role="admin-count"]');
             this.rowsEl = this.root.querySelector('[data-role="admin-rows"]');
+            this.announcementInput = this.root.querySelector('[data-role="announcement-input"]');
+            this.announcementStatus = this.root.querySelector('[data-role="announcement-status"]');
+            this.churnList = this.root.querySelector('[data-role="churn-list"]');
+            this.heatmapMost = this.root.querySelector('[data-role="heatmap-most"]');
+            this.heatmapLeast = this.root.querySelector('[data-role="heatmap-least"]');
+            this.kpiUnlock = this.root.querySelector('[data-role="kpi-unlock"]');
+            this.kpiSuccess = this.root.querySelector('[data-role="kpi-success"]');
+            this.kpiDropoff = this.root.querySelector('[data-role="kpi-dropoff"]');
 
             if (this.searchInput) {
                 this.searchInput.addEventListener('input', () => {
@@ -9295,8 +9406,14 @@
                 if (action === 'admin-plan') {
                     this.handlePlanToggle(userId, button.dataset.plan || 'free');
                 }
+                if (action === 'admin-save-announcement') {
+                    this.saveAnnouncement();
+                }
             });
 
+            this.fetchAnnouncement();
+            this.fetchAnalytics();
+            this.fetchFeatureUsage();
             this.fetchUsers();
         }
 
@@ -9310,6 +9427,103 @@
                 },
                 ...options
             });
+        }
+
+        escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        fetchAnnouncement() {
+            if (!this.apiBase || !this.announcementInput) return;
+            this.apiFetch('/admin/announcement')
+                .then((response) => response.json())
+                .then((data) => {
+                    if (typeof data.message === 'string') {
+                        this.announcementInput.value = data.message;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        saveAnnouncement() {
+            if (!this.apiBase || !this.announcementInput) return;
+            if (this.announcementStatus) this.announcementStatus.textContent = 'Speichern…';
+            this.apiFetch('/admin/announcement', {
+                method: 'POST',
+                body: JSON.stringify({ message: this.announcementInput.value })
+            })
+                .then((response) => response.json())
+                .then(() => {
+                    if (this.announcementStatus) this.announcementStatus.textContent = 'Gespeichert.';
+                })
+                .catch(() => {
+                    if (this.announcementStatus) this.announcementStatus.textContent = 'Fehler beim Speichern.';
+                });
+        }
+
+        fetchAnalytics() {
+            if (!this.apiBase) return;
+            this.apiFetch('/admin/analytics')
+                .then((response) => response.json())
+                .then((data) => {
+                    if (this.kpiUnlock) this.kpiUnlock.textContent = data?.conversion?.unlockClicks ?? '0';
+                    if (this.kpiSuccess) this.kpiSuccess.textContent = data?.conversion?.paymentSuccess ?? '0';
+                    if (this.kpiDropoff) this.kpiDropoff.textContent = `${data?.conversion?.dropoffRate ?? 0}%`;
+                    this.renderChurnList(Array.isArray(data.churnedUsers) ? data.churnedUsers : []);
+                })
+                .catch(() => {
+                    if (this.kpiDropoff) this.kpiDropoff.textContent = '—';
+                });
+        }
+
+        renderChurnList(users) {
+            if (!this.churnList) return;
+            if (!users.length) {
+                this.churnList.innerHTML = '<li class="ska-admin-empty">Keine Kündigungen gefunden.</li>';
+                return;
+            }
+            this.churnList.innerHTML = users.map((user) => {
+                const date = user.cancelledAt ? ` · ${this.escapeHtml(user.cancelledAt)}` : '';
+                return `<li><strong>${this.escapeHtml(user.name)}</strong> (${this.escapeHtml(user.email)})${date}</li>`;
+            }).join('');
+        }
+
+        fetchFeatureUsage() {
+            if (!this.apiBase) return;
+            this.apiFetch('/admin/feature-usage')
+                .then((response) => response.json())
+                .then((data) => {
+                    const usage = data && data.usage ? data.usage : {};
+                    this.renderFeatureUsage(usage);
+                })
+                .catch(() => {
+                    this.renderFeatureUsage({});
+                });
+        }
+
+        renderFeatureUsage(usage) {
+            if (!this.heatmapMost || !this.heatmapLeast) return;
+            const entries = Object.entries(usage).map(([id, count]) => ({
+                id,
+                count: Number(count) || 0,
+                label: (SA_CONFIG.CARD_TITLES && SA_CONFIG.CARD_TITLES[id]) ? SA_CONFIG.CARD_TITLES[id] : id
+            }));
+            const most = [...entries].sort((a, b) => b.count - a.count).slice(0, 5);
+            const least = [...entries].sort((a, b) => a.count - b.count).slice(0, 5);
+            const renderList = (items, target) => {
+                if (!items.length) {
+                    target.innerHTML = '<li class="ska-admin-empty">Noch keine Daten.</li>';
+                    return;
+                }
+                target.innerHTML = items.map((item) => `<li>${this.escapeHtml(item.label)} <span>${item.count}</span></li>`).join('');
+            };
+            renderList(most, this.heatmapMost);
+            renderList(least, this.heatmapLeast);
         }
 
         fetchUsers() {
@@ -9340,12 +9554,6 @@
 
         renderRows() {
             if (!this.rowsEl) return;
-            const escapeHtml = (value) => String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
             if (this.filteredUsers.length === 0) {
                 this.rowsEl.innerHTML = `
                     <tr>
@@ -9358,9 +9566,9 @@
                     return `
                         <tr data-user-id="${user.id}">
                             <td>${user.id}</td>
-                            <td>${escapeHtml(user.name)}</td>
-                            <td>${escapeHtml(user.email)}</td>
-                            <td>${escapeHtml(user.planLabel)}</td>
+                            <td>${this.escapeHtml(user.name)}</td>
+                            <td>${this.escapeHtml(user.email)}</td>
+                            <td>${this.escapeHtml(user.planLabel)}</td>
                             <td>${registered}</td>
                             <td class="ska-admin-actions">
                                 <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">Als User einloggen</button>
@@ -9416,6 +9624,211 @@
         }
     }
 
+    class SkaSupportPanel {
+        constructor(root) {
+            this.root = root;
+            this.apiBase = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.adminApiBase) ? SKA_CONFIG_PHP.adminApiBase.replace(/\/$/, '') : '';
+            this.nonce = window.SKA_CONFIG_PHP ? SKA_CONFIG_PHP.adminNonce : '';
+            this.users = [];
+            this.searchQuery = '';
+            this.init();
+        }
+
+        init() {
+            this.root.innerHTML = `
+                <div class="ska-admin-header">
+                    <div>
+                        <h1>User Support</h1>
+                        <p>Finde Nutzer schnell und starte Support-Aktionen.</p>
+                    </div>
+                </div>
+                <div class="ska-support-layout">
+                    <div class="ska-support-list">
+                        <label class="ska-admin-search">
+                            <span>Suche</span>
+                            <input type="search" placeholder="Name oder E-Mail" data-role="support-search">
+                        </label>
+                        <div class="ska-admin-meta" data-role="support-count">Lade Daten…</div>
+                        <div class="ska-support-users" data-role="support-users"></div>
+                    </div>
+                    <div class="ska-support-detail" data-role="support-detail">
+                        <p class="ska-admin-empty">Bitte wähle einen Nutzer aus.</p>
+                    </div>
+                </div>
+            `;
+
+            this.searchInput = this.root.querySelector('[data-role="support-search"]');
+            this.countLabel = this.root.querySelector('[data-role="support-count"]');
+            this.usersEl = this.root.querySelector('[data-role="support-users"]');
+            this.detailEl = this.root.querySelector('[data-role="support-detail"]');
+
+            if (this.searchInput) {
+                let timer = null;
+                this.searchInput.addEventListener('input', () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        this.searchQuery = this.searchInput.value.trim();
+                        this.fetchUsers();
+                    }, 300);
+                });
+            }
+
+            this.root.addEventListener('click', (event) => {
+                const userButton = event.target.closest('[data-user-id][data-action="support-select"]');
+                if (userButton) {
+                    this.fetchDetail(userButton.dataset.userId);
+                    return;
+                }
+                const actionButton = event.target.closest('button[data-action]');
+                if (!actionButton) return;
+                const action = actionButton.dataset.action;
+                const userId = actionButton.dataset.userId;
+                if (!userId) return;
+                if (action === 'support-clear-cache') {
+                    this.clearCache(userId);
+                }
+                if (action === 'support-extend-plan') {
+                    this.extendPlan(userId);
+                }
+                if (action === 'support-reset-password') {
+                    this.sendPasswordReset(userId);
+                }
+            });
+
+            this.fetchUsers();
+        }
+
+        apiFetch(path, options = {}) {
+            const url = `${this.apiBase}${path}`;
+            return fetch(url, {
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': this.nonce
+                },
+                ...options
+            });
+        }
+
+        escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        fetchUsers() {
+            if (!this.apiBase) return;
+            if (this.countLabel) this.countLabel.textContent = 'Lade Daten…';
+            const query = this.searchQuery ? `?search=${encodeURIComponent(this.searchQuery)}` : '';
+            this.apiFetch(`/admin/support/users${query}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    this.users = Array.isArray(data.users) ? data.users : [];
+                    this.renderUsers();
+                })
+                .catch(() => {
+                    if (this.countLabel) this.countLabel.textContent = 'Fehler beim Laden.';
+                });
+        }
+
+        renderUsers() {
+            if (!this.usersEl) return;
+            if (!this.users.length) {
+                this.usersEl.innerHTML = '<div class="ska-admin-empty">Keine Nutzer gefunden.</div>';
+                if (this.countLabel) this.countLabel.textContent = '0 Nutzer';
+                return;
+            }
+            this.usersEl.innerHTML = this.users.map((user) => `
+                <button type="button" class="ska-support-user" data-action="support-select" data-user-id="${user.id}">
+                    <strong>${this.escapeHtml(user.name)}</strong>
+                    <span>${this.escapeHtml(user.email)}</span>
+                    <em>${this.escapeHtml(user.status)}</em>
+                </button>
+            `).join('');
+            if (this.countLabel) this.countLabel.textContent = `${this.users.length} Nutzer`;
+        }
+
+        fetchDetail(userId) {
+            if (!this.apiBase) return;
+            this.detailEl.innerHTML = '<div class="ska-admin-empty">Lade Details…</div>';
+            this.apiFetch(`/admin/support/users/${userId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                    this.renderDetail(data);
+                })
+                .catch(() => {
+                    this.detailEl.innerHTML = '<div class="ska-admin-empty">Details konnten nicht geladen werden.</div>';
+                });
+        }
+
+        renderDetail(data) {
+            if (!data || !this.detailEl) return;
+            const quota = data.quota || {};
+            const lastLogin = data.lastLogin || {};
+            this.detailEl.innerHTML = `
+                <h2>${this.escapeHtml(data.name)}</h2>
+                <p>${this.escapeHtml(data.email)}</p>
+                <div class="ska-support-meta">
+                    <div><strong>Status:</strong> ${this.escapeHtml(data.status)}</div>
+                    <div><strong>Plan:</strong> ${this.escapeHtml(data.planLabel)}</div>
+                    <div><strong>Manual Access:</strong> ${data.manualAccessUntil ? this.escapeHtml(data.manualAccessUntil) : '—'}</div>
+                    <div><strong>Quota:</strong> ${Number(quota.projects || 0)} Projekte · ${Number(quota.storage || 0)} MB</div>
+                    <div><strong>Last Login:</strong> ${lastLogin.time ? this.escapeHtml(lastLogin.time) : '—'}</div>
+                    <div><strong>Browser/OS:</strong> ${lastLogin.browser ? this.escapeHtml(lastLogin.browser) : '—'} · ${lastLogin.os ? this.escapeHtml(lastLogin.os) : '—'}</div>
+                </div>
+                <div class="ska-admin-actions">
+                    <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="support-clear-cache" data-user-id="${data.id}">Clear User Cache</button>
+                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-extend-plan" data-user-id="${data.id}">Extend Plan Manually</button>
+                    <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact" data-action="support-reset-password" data-user-id="${data.id}">Send Password Reset</button>
+                </div>
+            `;
+        }
+
+        clearCache(userId) {
+            const confirmed = window.confirm('Cache für diesen Nutzer löschen?');
+            if (!confirmed) return;
+            this.apiFetch(`/admin/support/users/${userId}/clear-cache`, { method: 'POST', body: JSON.stringify({}) })
+                .then(() => {
+                    window.alert('Cache gelöscht.');
+                })
+                .catch(() => {
+                    window.alert('Cache konnte nicht gelöscht werden.');
+                });
+        }
+
+        extendPlan(userId) {
+            const days = window.prompt('Wie viele Tage freischalten?', '30');
+            if (!days) return;
+            this.apiFetch(`/admin/support/users/${userId}/extend-plan`, {
+                method: 'POST',
+                body: JSON.stringify({ days: Number(days) })
+            })
+                .then((response) => response.json())
+                .then(() => {
+                    window.alert('Plan wurde verlängert.');
+                    this.fetchDetail(userId);
+                })
+                .catch(() => {
+                    window.alert('Plan konnte nicht verlängert werden.');
+                });
+        }
+
+        sendPasswordReset(userId) {
+            const confirmed = window.confirm('Passwort-Reset senden?');
+            if (!confirmed) return;
+            this.apiFetch(`/admin/support/users/${userId}/reset-password`, { method: 'POST', body: JSON.stringify({}) })
+                .then(() => {
+                    window.alert('Reset-Link wurde versendet.');
+                })
+                .catch(() => {
+                    window.alert('Reset-Link konnte nicht gesendet werden.');
+                });
+        }
+    }
+
     const renderMasqueradeBanner = () => {
         const config = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.masquerade;
         if (!config || !config.active) return;
@@ -9458,6 +9871,17 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        if (typeof window !== 'undefined') {
+            let isIframe = false;
+            try {
+                isIframe = window.self !== window.top;
+            } catch (error) {
+                isIframe = true;
+            }
+            if (isIframe) {
+                document.body.classList.add('iframe-mode');
+            }
+        }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
             window.SKA_WIDGETS = instances;
@@ -9507,7 +9931,12 @@
 
         const adminRoot = document.getElementById('ska-admin-app');
         if (adminRoot) {
-            new SkaAdminPanel(adminRoot);
+            const view = adminRoot.dataset.adminView || 'dashboard';
+            if (view === 'support') {
+                new SkaSupportPanel(adminRoot);
+            } else {
+                new SkaAdminDashboard(adminRoot);
+            }
         }
 
         renderMasqueradeBanner();
