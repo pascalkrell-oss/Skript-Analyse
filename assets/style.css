@@ -1700,7 +1700,7 @@ body.ska-modal-open .woocommerce-breadcrumb {
     opacity: 0.85;
 }
 .ska-checkout-loading {
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;

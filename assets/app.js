@@ -8702,9 +8702,6 @@
             if (!checkoutModal) return;
             const iframe = checkoutModal.querySelector('#ska-checkout-iframe');
             const loading = checkoutModal.querySelector('[data-role="checkout-loading"]');
-            if (loading) {
-                loading.style.display = 'flex';
-            }
             const addToCartUrl = `/?add-to-cart=${productId}`;
             this.emptyCheckoutCart()
                 .then(() => fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' }))
@@ -8729,7 +8726,7 @@
             const loading = modal.querySelector('[data-role="checkout-loading"]');
             const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
             if (loading && !iframeLoaded) {
-                loading.style.display = 'flex';
+                loading.style.display = 'none';
             }
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
@@ -9481,7 +9478,7 @@
                 const iframeContainer = document.getElementById('ska-checkout-iframe-wrapper');
                 const loading = iframeContainer ? iframeContainer.querySelector('[data-role="checkout-loading"]') : null;
                 const iframe = iframeContainer ? iframeContainer.querySelector('#ska-checkout-iframe') : null;
-                if (loading) loading.style.display = 'flex';
+                if (loading) loading.style.display = 'none';
 
                 const instance = instances[0];
                 if (instance) {
