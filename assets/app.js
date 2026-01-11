@@ -3031,7 +3031,7 @@
                 unlockButtonEnabled: unlockButtonEnabled,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, start: 0, duration: 0, startScroll: 0, speed: 1, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
+                teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, speed: 40, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
@@ -3956,28 +3956,50 @@
             overlay = document.createElement('div');
             overlay.className = 'teleprompter-overlay';
             overlay.innerHTML = `
-                <div class="teleprompter-scroll-area">
+                <div class="teleprompter-content">
                     <div class="teleprompter-text" data-role-teleprompter-text></div>
                 </div>
                 <div class="teleprompter-controls">
                     <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Play</button>
-                    <label class="teleprompter-speed">
+                    <label class="teleprompter-control-group">
                         <span>Speed</span>
-                        <input type="range" min="0.5" max="2" step="0.05" value="${this.state.teleprompter.speed || 1}" data-role="teleprompter-speed">
-                        <span data-role="teleprompter-speed-label">${(this.state.teleprompter.speed || 1).toFixed(2)}x</span>
+                        <input type="range" min="10" max="200" step="5" value="${this.state.teleprompter.speed}" data-role="teleprompter-speed">
+                        <span data-role="teleprompter-speed-label">${this.state.teleprompter.speed}px/s</span>
                     </label>
-                    <button type="button" class="teleprompter-control" data-action="close-teleprompter">Exit</button>
+                    <label class="teleprompter-control-group">
+                        <span>Font</span>
+                        <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
+                        <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
+                    </label>
+                    <button type="button" class="teleprompter-control teleprompter-close" data-action="close-teleprompter" aria-label="Close teleprompter">X</button>
                 </div>`;
             document.body.appendChild(overlay);
             document.body.classList.add('ska-modal-open');
 
             const speedInput = overlay.querySelector('[data-role="teleprompter-speed"]');
             const speedLabel = overlay.querySelector('[data-role="teleprompter-speed-label"]');
+            const fontInput = overlay.querySelector('[data-role="teleprompter-font"]');
+            const fontLabel = overlay.querySelector('[data-role="teleprompter-font-label"]');
+            const textEl = overlay.querySelector('[data-role-teleprompter-text]');
+
+            if (textEl) {
+                textEl.style.fontSize = `${this.state.teleprompter.fontSize}px`;
+            }
+
             if (speedInput && speedLabel) {
                 speedInput.addEventListener('input', () => {
                     const next = parseFloat(speedInput.value);
-                    this.state.teleprompter.speed = Number.isFinite(next) ? next : 1;
-                    speedLabel.textContent = `${this.state.teleprompter.speed.toFixed(2)}x`;
+                    this.state.teleprompter.speed = Number.isFinite(next) ? next : 40;
+                    speedLabel.textContent = `${this.state.teleprompter.speed}px/s`;
+                });
+            }
+
+            if (fontInput && fontLabel && textEl) {
+                fontInput.addEventListener('input', () => {
+                    const next = parseFloat(fontInput.value);
+                    this.state.teleprompter.fontSize = Number.isFinite(next) ? next : 36;
+                    fontLabel.textContent = `${this.state.teleprompter.fontSize}px`;
+                    textEl.style.fontSize = `${this.state.teleprompter.fontSize}px`;
                 });
             }
 
@@ -3990,10 +4012,10 @@
             return overlay;
         }
 
-        showTeleprompterOverlay(read) {
+        showTeleprompterOverlay() {
             const overlay = this.ensureTeleprompterOverlay();
-            this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
-            this.updateTeleprompterMeta(read);
+            const textEl = overlay.querySelector('[data-role-teleprompter-text]');
+            if (textEl) textEl.textContent = this.getText();
             this.resetTeleprompter();
             return overlay;
         }
@@ -4489,23 +4511,16 @@
             }
         }
 
-        startTeleprompter(read) {
-            if (!read) return false;
+        startTeleprompter() {
             const overlay = this.ensureTeleprompterOverlay();
-            const body = overlay.querySelector('.teleprompter-scroll-area');
+            const body = overlay.querySelector('.teleprompter-content');
             const textContainer = overlay.querySelector('[data-role-teleprompter-text]');
             if (!body) return false;
             if (textContainer && (!textContainer.textContent || !textContainer.textContent.trim())) {
-                this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
+                textContainer.textContent = this.getText();
                 this.resetTeleprompter();
             }
-            this.updateTeleprompterMeta(read);
-            const effectiveSettings = this.getEffectiveSettings();
-            const isSps = this.getEffectiveTimeMode() === 'sps';
-            const wpm = SA_Logic.getWpm(effectiveSettings);
-            const sps = SA_Logic.getSps(effectiveSettings);
-            const seconds = isSps ? (read.totalSyllables / sps) : (read.speakingWordCount / wpm) * 60;
-            const duration = seconds * 1000;
+
             const distance = body.scrollHeight - body.clientHeight;
             if (distance <= 0) {
                 this.state.teleprompter.playing = false;
@@ -4513,24 +4528,19 @@
             }
 
             this.state.teleprompter.playing = true;
-            this.state.teleprompter.duration = duration;
-            this.state.teleprompter.start = performance.now();
-            this.state.teleprompter.startScroll = body.scrollTop;
-            this.state.teleprompter.activeIndex = -1;
-            this.startTeleprompterSpeechRecognition();
+            this.state.teleprompter.lastTimestamp = performance.now();
 
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
-                const elapsed = ts - this.state.teleprompter.start;
-                const speed = this.state.teleprompter.speed || 1;
-                const progress = Math.min(1, (elapsed / duration) * speed);
-                body.scrollTop = this.state.teleprompter.startScroll + (distance * progress);
-                this.updateTeleprompterHighlight(progress);
-                if (progress < 1) {
+                const elapsedSec = Math.max(0, (ts - this.state.teleprompter.lastTimestamp) / 1000);
+                this.state.teleprompter.lastTimestamp = ts;
+                const speed = this.state.teleprompter.speed || 40;
+                const nextScroll = Math.min(distance, body.scrollTop + (speed * elapsedSec));
+                body.scrollTop = nextScroll;
+                if (nextScroll < distance) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.teleprompter.playing = false;
-                    this.stopTeleprompterSpeechRecognition();
                     const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
                     if (startBtn) startBtn.textContent = 'Play';
                 }
@@ -4548,7 +4558,7 @@
 
         resetTeleprompter() {
             const overlay = document.querySelector('.teleprompter-overlay');
-            const body = overlay ? overlay.querySelector('.teleprompter-scroll-area') : null;
+            const body = overlay ? overlay.querySelector('.teleprompter-content') : null;
             if (body) body.scrollTop = 0;
             if (this.state.teleprompter.words) {
                 this.state.teleprompter.words.forEach(word => {
@@ -4979,8 +4989,7 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                const read = SA_Logic.analyzeReadability(this.getText(), this.getEffectiveSettings());
-                this.showTeleprompterOverlay(read);
+                this.showTeleprompterOverlay();
                 const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
                 if (startBtn) startBtn.textContent = 'Play';
                 return true;
@@ -5166,8 +5175,7 @@
                     this.pauseTeleprompter();
                     btn.textContent = 'Play';
                 } else {
-                    const read = SA_Logic.analyzeReadability(this.getText(), this.getEffectiveSettings());
-                    const started = this.startTeleprompter(read);
+                    const started = this.startTeleprompter();
                     btn.textContent = started ? 'Pause' : 'Play';
                 }
                 return true;
