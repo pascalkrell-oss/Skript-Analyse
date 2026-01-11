@@ -3216,3 +3216,68 @@ body.skript-analyse-active .elementor-location-header {
     transform: none !important;
     z-index: 1 !important;
 }
+
+/* Target ALL analysis modals */
+.analysis-modal,
+.modal-content,
+.info-popup-container,
+.skriptanalyse-modal-content,
+.ska-tool-modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 999999 !important; /* Top of stack */
+    width: 90% !important;
+    max-width: 600px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    background: #ffffff !important;
+    box-shadow: 0 5px 30px rgba(0,0,0,0.3) !important;
+    display: block !important; /* Ensure it's not hidden */
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Ensure the overlay background is dark and covers everything */
+.modal-overlay,
+.modal-backdrop,
+.skriptanalyse-modal-overlay {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5) !important;
+    z-index: 999998 !important;
+    display: block !important;
+}
+
+/* FORCE STATIC HEADER on Analysis Page */
+body.skript-analyse-active header,
+body.skript-analyse-active #masthead,
+body.skript-analyse-active .site-header,
+body.skript-analyse-active .elementor-location-header,
+body.skript-analyse-active .elementor-sticky,
+body.skript-analyse-active [class*="header"] {
+    position: relative !important; /* Forces it into normal flow */
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important; /* Disables GPU sticky layers */
+    z-index: 1 !important;
+    width: 100% !important;
+}
+
+/* Disable JS-based sticky spacers if present */
+body.skript-analyse-active .elementor-sticky__spacer {
+    display: none !important;
+}
+
+.analysis-wrapper,
+.skript-analyse-container {
+    background-color: #ffffff;
+    z-index: 10;
+    position: relative;
+}
