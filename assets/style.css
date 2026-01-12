@@ -1139,27 +1139,27 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-benchmark-stats strong { color: var(--ska-text-main); }
 
 /* TELEPROMPTER */
-.teleprompter-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 200000;
-    background: #000;
-    color: #fff;
+.ska-teleprompter-modal-content {
+    width: min(1000px, 94vw);
+    max-width: 1100px;
+}
+.ska-teleprompter-body {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 .teleprompter-content {
-    flex: 1;
-    overflow-y: hidden;
-    padding: 50px 10%;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    height: 45vh;
+    overflow-y: auto;
     font-family: sans-serif;
     line-height: 1.5;
 }
 .teleprompter-text {
-    max-width: 1000px;
+    max-width: 900px;
     margin: 0 auto;
     font-size: 36px;
     line-height: 1.5;
@@ -1168,17 +1168,14 @@ body.skript-analyse-active .skript-analyse-container {
     text-align: center;
 }
 .teleprompter-controls {
-    height: 60px;
-    background: #222;
+    background: #111827;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
-    z-index: 200001;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 16px;
+    flex-wrap: wrap;
 }
 .teleprompter-control {
     background: #ffffff;
@@ -1206,16 +1203,16 @@ body.skript-analyse-active .skript-analyse-container {
 }
 
 /* FOCUS MODE */
-.focus-mode-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: #f8f9fa;
-    z-index: 200000;
+.ska-focus-modal-content {
+    width: min(1000px, 94vw);
+    max-width: 1000px;
+}
+.ska-focus-modal-body {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
+    height: 70vh;
+    overflow: hidden;
 }
 .focus-toolbar {
     padding: 15px 30px;
@@ -1317,11 +1314,18 @@ body.skript-analyse-active .skript-analyse-container {
     resize: none;
     color: #0f172a;
 }
-.focus-mode-modal.is-time-up .focus-textarea {
+.ska-focus-modal .focus-textarea {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    max-width: 100%;
+    margin: 0;
+}
+.ska-focus-modal.is-time-up .focus-textarea {
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.6);
     border-radius: 16px;
 }
-.focus-mode-modal.is-goal-reached .focus-progress-fill {
+.ska-focus-modal.is-goal-reached .focus-progress-fill {
     background: linear-gradient(90deg, #86efac, #16a34a);
 }
 .ska-sprint-editor-modal .ska-sprint-editor-shell {
