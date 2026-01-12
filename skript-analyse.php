@@ -27,6 +27,12 @@ function ska_get_stored_plan_status( $user_id ) {
         return '';
     }
 
+    $explicit = get_user_meta( $user_id, 'sa_plan_status', true );
+    $explicit = ska_normalize_plan_status( $explicit );
+    if ( $explicit ) {
+        return $explicit;
+    }
+
     $stored = get_user_meta( $user_id, 'sa_user_plan_status', true );
     $stored = $stored ? $stored : get_user_meta( $user_id, 'sa_simulation_mode', true );
     $normalized = ska_normalize_plan_status( $stored );
@@ -45,6 +51,28 @@ function ska_get_stored_plan_status( $user_id ) {
     return '';
 }
 
+function ska_get_user_plan_status( $user_id ) {
+    $simulation = ska_get_simulation_override();
+    if ( $simulation ) {
+        return $simulation;
+    }
+
+    $stored = '';
+    if ( $user_id ) {
+        $stored = get_user_meta( $user_id, 'sa_plan_status', true );
+    }
+    $stored = ska_normalize_plan_status( $stored );
+    if ( $stored ) {
+        return $stored;
+    }
+
+    if ( $user_id && user_can( $user_id, 'manage_options' ) ) {
+        return 'premium';
+    }
+
+    return 'basis';
+}
+
 function ska_get_simulation_override() {
     if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
         $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_COOKIE['ska_simulation_mode'] ) ) );
@@ -58,21 +86,7 @@ function ska_get_simulation_override() {
 
 function ska_get_simulation_mode() {
     $user_id = get_current_user_id();
-    $is_admin = current_user_can( 'manage_options' );
-
-    if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
-        $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_COOKIE['ska_simulation_mode'] ) ) );
-        if ( $role ) {
-            return $role;
-        }
-    }
-
-    $stored = ska_get_stored_plan_status( $user_id );
-    if ( $stored ) {
-        return $stored;
-    }
-
-    return $is_admin ? 'premium' : 'basis';
+    return ska_get_user_plan_status( $user_id );
 }
 
 function ska_handle_simulation_mode_request() {
@@ -159,6 +173,7 @@ function ska_save_user_profile_fields( $user_id ) {
 
     update_user_meta( $user_id, 'sa_user_plan_status', $status );
     update_user_meta( $user_id, 'sa_simulation_mode', $status );
+    update_user_meta( $user_id, 'sa_plan_status', $status );
     update_user_meta( $user_id, 'ska_plan', $status === 'premium' ? 'premium' : 'free' );
 }
 add_action( 'personal_options_update', 'ska_save_user_profile_fields' );
@@ -241,6 +256,24 @@ function ska_get_global_announcement() {
 function ska_is_unlock_button_enabled() {
     $enabled = get_option( 'ska_unlock_button_enabled', '1' );
     return filter_var( $enabled, FILTER_VALIDATE_BOOLEAN );
+}
+
+function ska_is_maintenance_mode_enabled() {
+    $enabled = get_option( 'ska_maintenance_mode', '0' );
+    return filter_var( $enabled, FILTER_VALIDATE_BOOLEAN );
+}
+
+function ska_get_default_analysis_mode() {
+    $mode = get_option( 'ska_default_analysis_mode', 'live' );
+    if ( ! in_array( $mode, array( 'live', 'click' ), true ) ) {
+        return 'live';
+    }
+    return $mode;
+}
+
+function ska_get_pdf_footer_text() {
+    $text = get_option( 'ska_pdf_footer_text', '' );
+    return is_string( $text ) ? $text : '';
 }
 
 function ska_get_algorithm_tuning_defaults() {
@@ -335,6 +368,9 @@ function ska_get_localized_config() {
         'globalAnnouncement' => ska_get_global_announcement(),
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+        'maintenanceMode' => ska_is_maintenance_mode_enabled(),
+        'defaultAnalysisMode' => ska_get_default_analysis_mode(),
+        'pdfFooterText' => ska_get_pdf_footer_text(),
         'planMode' => $plan_mode,
     );
 }
@@ -1466,12 +1502,41 @@ function ska_admin_get_settings( WP_REST_Request $request ) {
     return rest_ensure_response( array(
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+        'maintenanceMode' => ska_is_maintenance_mode_enabled(),
+        'defaultAnalysisMode' => ska_get_default_analysis_mode(),
+        'pdfFooterText' => ska_get_pdf_footer_text(),
     ) );
 }
 
 function ska_admin_update_settings( WP_REST_Request $request ) {
-    $enabled = filter_var( $request->get_param( 'unlockButtonEnabled' ), FILTER_VALIDATE_BOOLEAN );
-    update_option( 'ska_unlock_button_enabled', $enabled ? '1' : '0' );
+    $enabled_param = $request->get_param( 'unlockButtonEnabled' );
+    if ( null !== $enabled_param ) {
+        $enabled = filter_var( $enabled_param, FILTER_VALIDATE_BOOLEAN );
+        update_option( 'ska_unlock_button_enabled', $enabled ? '1' : '0' );
+    } else {
+        $enabled = ska_is_unlock_button_enabled();
+    }
+
+    $maintenance_mode = $request->get_param( 'maintenanceMode' );
+    if ( null !== $maintenance_mode ) {
+        $maintenance_enabled = filter_var( $maintenance_mode, FILTER_VALIDATE_BOOLEAN );
+        update_option( 'ska_maintenance_mode', $maintenance_enabled ? '1' : '0' );
+    }
+
+    $default_analysis_mode = $request->get_param( 'defaultAnalysisMode' );
+    if ( null !== $default_analysis_mode ) {
+        $default_analysis_mode = sanitize_text_field( (string) $default_analysis_mode );
+        if ( ! in_array( $default_analysis_mode, array( 'live', 'click' ), true ) ) {
+            $default_analysis_mode = 'live';
+        }
+        update_option( 'ska_default_analysis_mode', $default_analysis_mode );
+    }
+
+    $pdf_footer_text = $request->get_param( 'pdfFooterText' );
+    if ( null !== $pdf_footer_text ) {
+        $pdf_footer_text = sanitize_text_field( (string) $pdf_footer_text );
+        update_option( 'ska_pdf_footer_text', $pdf_footer_text );
+    }
 
     $defaults = ska_get_algorithm_tuning_defaults();
     $long_sentence = $request->get_param( 'longSentenceThreshold' );
@@ -1504,6 +1569,9 @@ function ska_admin_update_settings( WP_REST_Request $request ) {
     return rest_ensure_response( array(
         'unlockButtonEnabled' => $enabled,
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
+        'maintenanceMode' => ska_is_maintenance_mode_enabled(),
+        'defaultAnalysisMode' => ska_get_default_analysis_mode(),
+        'pdfFooterText' => ska_get_pdf_footer_text(),
     ) );
 }
 

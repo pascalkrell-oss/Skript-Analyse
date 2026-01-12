@@ -2586,10 +2586,14 @@
                     const margin = 20;
                     const contentWidth = pageWidth - (margin * 2);
                     let y = 25;
-                    const footerText = [
+                    const defaultFooter = [
                         'Skript-Analyse Tool bereitgestellt von Sprecher Pascal Krell',
                         'www.sprecher-pascal.de | kontakt@sprecher-pascal.de'
                     ];
+                    const customFooter = typeof window !== 'undefined'
+                        ? String(window.SKA_CONFIG_PHP?.pdfFooterText || '').trim()
+                        : '';
+                    const footerText = customFooter ? [customFooter, defaultFooter[1]] : defaultFooter;
                     const renderFooter = () => {
                         const footerTop = pageHeight - 16;
                         doc.setDrawColor(226, 232, 240);
@@ -3031,7 +3035,10 @@
                 this.textarea.setAttribute('data-placeholder', "Dein Skript hier einfügen...\n\nWir analysieren Sprechdauer, Lesbarkeit und Stil in Echtzeit.\nEinfach tippen oder Text reinkopieren.");
             }
 
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
+            const defaultAnalysisMode = typeof window !== 'undefined'
+                ? (window.SKA_CONFIG_PHP?.defaultAnalysisMode || 'live')
+                : 'live';
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
             const planModeFromWindow = typeof window !== 'undefined'
                 ? (window.SKA_CONFIG_PHP?.planMode || window.SKA_PLAN_MODE)
@@ -9773,17 +9780,6 @@
                                 <button type="button" class="ska-btn ska-btn--ghost" data-action="admin-clear-announcement">Mitteilung löschen</button>
                                 <span class="ska-admin-meta" data-role="announcement-status"></span>
                             </div>
-                            <div class="ska-admin-field">
-                                <span>Freischalt-Button aktivieren</span>
-                                <div class="ska-admin-toggle-row">
-                                    <span>Aus</span>
-                                    <label class="ska-switch">
-                                        <input type="checkbox" data-action="admin-unlock-toggle">
-                                        <span class="ska-switch-slider"></span>
-                                    </label>
-                                    <span>An</span>
-                                </div>
-                            </div>
                         </section>
                         <section class="ska-admin-card">
                             <h2>Dashboard-Überblick</h2>
@@ -9834,7 +9830,7 @@
                 </div>
                 <div class="ska-admin-tab-panel" data-panel="users">
                     <section class="ska-admin-card ska-admin-card--full">
-                        <div class="ska-admin-inline">
+                        <div class="ska-admin-card-header">
                             <div>
                                 <h2>Churn-Radar</h2>
                                 <p>Premium-Nutzer ohne Login seit mehr als 14 Tagen.</p>
@@ -9880,9 +9876,8 @@
                             <table class="wp-list-table widefat fixed striped ska-admin-table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>E-Mail</th>
+                                        <th class="ska-admin-col-id">ID</th>
+                                        <th>Name & E-Mail</th>
                                         <th>Plan</th>
                                         <th>Registriert</th>
                                         <th>Aktionen</th>
@@ -9895,25 +9890,92 @@
                 </div>
                 <div class="ska-admin-tab-panel" data-panel="settings">
                     <section class="ska-admin-card ska-admin-card--full">
-                        <h2>Algorithmus-Tuning</h2>
-                        <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
-                        <div class="ska-admin-grid">
-                            <label class="ska-admin-field">
-                                <span>Grenzwert lange Sätze (Wörter)</span>
-                                <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
-                            </label>
-                            <label class="ska-admin-field">
-                                <span>Grenzwert Nominalketten (Nomen)</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
-                            </label>
-                            <label class="ska-admin-field">
-                                    <span>Passiv-Toleranz</span>
-                                <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
-                            </label>
-                        </div>
-                        <div class="ska-admin-inline">
-                            <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
-                            <span class="ska-admin-meta" data-role="algorithm-status"></span>
+                        <div class="ska-admin-settings">
+                            <nav class="ska-admin-settings-nav">
+                                <button type="button" class="ska-admin-settings-tab is-active" data-action="settings-tab" data-tab="general">Allgemein</button>
+                                <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="algorithm">Algorithmus-Tuning</button>
+                                <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="system">System & Cache</button>
+                                <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="pdf">PDF & Export</button>
+                            </nav>
+                            <div class="ska-admin-settings-content">
+                                <section class="ska-admin-settings-panel is-active" data-panel="general">
+                                    <h2>Allgemein</h2>
+                                    <p>Globale Einstellungen für Status und Standard-Workflow.</p>
+                                    <div class="ska-admin-grid">
+                                        <label class="ska-admin-field">
+                                            <span>Wartungsmodus aktivieren</span>
+                                            <div class="ska-admin-toggle-row">
+                                                <span>Aus</span>
+                                                <label class="ska-switch">
+                                                    <input type="checkbox" data-role="settings-maintenance-mode">
+                                                    <span class="ska-switch-slider"></span>
+                                                </label>
+                                                <span>An</span>
+                                            </div>
+                                        </label>
+                                        <label class="ska-admin-field">
+                                            <span>Standard-Analyse-Modus</span>
+                                            <select class="ska-admin-select" data-role="settings-analysis-mode">
+                                                <option value="live">Live</option>
+                                                <option value="click">Klick</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="ska-admin-inline">
+                                        <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-general">Speichern</button>
+                                        <span class="ska-admin-meta" data-role="general-status"></span>
+                                    </div>
+                                </section>
+                                <section class="ska-admin-settings-panel" data-panel="algorithm">
+                                    <h2>Algorithmus-Tuning</h2>
+                                    <p>Feinjustiere die Schwellenwerte für Satzlängen, Nominalketten und Passiv-Checks.</p>
+                                    <div class="ska-admin-grid">
+                                        <label class="ska-admin-field">
+                                            <span>Grenzwert lange Sätze (Wörter)</span>
+                                            <input type="number" min="5" step="1" data-role="algorithm-long-sentence">
+                                        </label>
+                                        <label class="ska-admin-field">
+                                            <span>Grenzwert Nominalketten (Nomen)</span>
+                                            <input type="number" min="1" step="1" data-role="algorithm-nominal-chain">
+                                        </label>
+                                        <label class="ska-admin-field">
+                                            <span>Passiv-Toleranz</span>
+                                            <input type="number" min="1" step="1" data-role="algorithm-passive-strictness">
+                                        </label>
+                                    </div>
+                                    <div class="ska-admin-inline">
+                                        <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-algorithm">Speichern</button>
+                                        <span class="ska-admin-meta" data-role="algorithm-status"></span>
+                                    </div>
+                                </section>
+                                <section class="ska-admin-settings-panel" data-panel="system">
+                                    <h2>System & Cache</h2>
+                                    <p>Systemweite Steuerelemente für Freischaltungen und globales Verhalten.</p>
+                                    <label class="ska-admin-field">
+                                        <span>Freischalt-Button aktivieren</span>
+                                        <div class="ska-admin-toggle-row">
+                                            <span>Aus</span>
+                                            <label class="ska-switch">
+                                                <input type="checkbox" data-action="admin-unlock-toggle">
+                                                <span class="ska-switch-slider"></span>
+                                            </label>
+                                            <span>An</span>
+                                        </div>
+                                    </label>
+                                </section>
+                                <section class="ska-admin-settings-panel" data-panel="pdf">
+                                    <h2>PDF & Export</h2>
+                                    <p>Ergänze den PDF-Report mit einem eigenen Footer.</p>
+                                    <label class="ska-admin-field">
+                                        <span>Benutzerdefinierter Footer-Text für PDFs</span>
+                                        <input type="text" class="ska-admin-input" placeholder="z.B. Erstellt von Skript-Analyse" data-role="settings-pdf-footer">
+                                    </label>
+                                    <div class="ska-admin-inline">
+                                        <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-pdf">Speichern</button>
+                                        <span class="ska-admin-meta" data-role="pdf-status"></span>
+                                    </div>
+                                </section>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -9938,11 +10000,18 @@
             this.churnAverage = this.root.querySelector('[data-role="churn-average"]');
             this.churnMax = this.root.querySelector('[data-role="churn-max"]');
             this.tabButtons = Array.from(this.root.querySelectorAll('[data-action="admin-tab"]'));
-            this.tabPanels = Array.from(this.root.querySelectorAll('[data-panel]'));
+            this.tabPanels = Array.from(this.root.querySelectorAll('.ska-admin-tab-panel'));
+            this.settingsTabs = Array.from(this.root.querySelectorAll('[data-action="settings-tab"]'));
+            this.settingsPanels = Array.from(this.root.querySelectorAll('.ska-admin-settings-panel'));
             this.algorithmLongInput = this.root.querySelector('[data-role="algorithm-long-sentence"]');
             this.algorithmNominalInput = this.root.querySelector('[data-role="algorithm-nominal-chain"]');
             this.algorithmPassiveInput = this.root.querySelector('[data-role="algorithm-passive-strictness"]');
             this.algorithmStatus = this.root.querySelector('[data-role="algorithm-status"]');
+            this.maintenanceToggle = this.root.querySelector('[data-role="settings-maintenance-mode"]');
+            this.defaultAnalysisSelect = this.root.querySelector('[data-role="settings-analysis-mode"]');
+            this.generalStatus = this.root.querySelector('[data-role="general-status"]');
+            this.pdfFooterInput = this.root.querySelector('[data-role="settings-pdf-footer"]');
+            this.pdfStatus = this.root.querySelector('[data-role="pdf-status"]');
 
             if (this.unlockToggle) {
                 const enabled = window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true;
@@ -9967,6 +10036,9 @@
                 if (action === 'admin-tab') {
                     this.handleTabSwitch(button.dataset.tab);
                 }
+                if (action === 'settings-tab') {
+                    this.handleSettingsTabSwitch(button.dataset.tab);
+                }
                 if (action === 'admin-masquerade') {
                     this.handleMasquerade(userId);
                 }
@@ -9979,8 +10051,14 @@
                 if (action === 'admin-clear-announcement') {
                     this.clearAnnouncement();
                 }
+                if (action === 'admin-save-general') {
+                    this.saveGeneralSettings();
+                }
                 if (action === 'admin-save-algorithm') {
                     this.saveAlgorithmTuning();
+                }
+                if (action === 'admin-save-pdf') {
+                    this.savePdfSettings();
                 }
                 if (action === 'admin-export-churn') {
                     this.exportChurnCsv();
@@ -10089,6 +10167,15 @@
                     if (data && data.algorithmTuning) {
                         this.applyAlgorithmTuning(data.algorithmTuning);
                     }
+                    if (typeof data.maintenanceMode !== 'undefined') {
+                        this.setMaintenanceMode(Boolean(data.maintenanceMode));
+                    }
+                    if (typeof data.defaultAnalysisMode === 'string') {
+                        this.setDefaultAnalysisMode(data.defaultAnalysisMode);
+                    }
+                    if (typeof data.pdfFooterText === 'string') {
+                        this.setPdfFooterText(data.pdfFooterText);
+                    }
                 })
                 .catch(() => {});
         }
@@ -10098,6 +10185,33 @@
             this.unlockToggle.checked = Boolean(enabled);
             if (window.SKA_CONFIG_PHP) {
                 window.SKA_CONFIG_PHP.unlockButtonEnabled = Boolean(enabled);
+            }
+        }
+
+        setMaintenanceMode(enabled) {
+            if (this.maintenanceToggle) {
+                this.maintenanceToggle.checked = Boolean(enabled);
+            }
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.maintenanceMode = Boolean(enabled);
+            }
+        }
+
+        setDefaultAnalysisMode(mode) {
+            if (this.defaultAnalysisSelect) {
+                this.defaultAnalysisSelect.value = mode === 'click' ? 'click' : 'live';
+            }
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.defaultAnalysisMode = mode === 'click' ? 'click' : 'live';
+            }
+        }
+
+        setPdfFooterText(text) {
+            if (this.pdfFooterInput) {
+                this.pdfFooterInput.value = text || '';
+            }
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.pdfFooterText = text || '';
             }
         }
 
@@ -10160,6 +10274,62 @@
                 const isActive = panel.dataset.panel === tabId;
                 panel.classList.toggle('is-active', isActive);
             });
+        }
+
+        handleSettingsTabSwitch(tabId) {
+            if (!tabId) return;
+            this.settingsTabs.forEach((button) => {
+                const isActive = button.dataset.tab === tabId;
+                button.classList.toggle('is-active', isActive);
+            });
+            this.settingsPanels.forEach((panel) => {
+                const isActive = panel.dataset.panel === tabId;
+                panel.classList.toggle('is-active', isActive);
+            });
+        }
+
+        saveGeneralSettings() {
+            if (!this.apiBase) return;
+            const maintenanceMode = this.maintenanceToggle ? this.maintenanceToggle.checked : false;
+            const defaultAnalysisMode = this.defaultAnalysisSelect ? this.defaultAnalysisSelect.value : 'live';
+            if (this.generalStatus) this.generalStatus.textContent = 'Speichern…';
+            this.apiFetch('/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    maintenanceMode,
+                    defaultAnalysisMode
+                })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    this.setMaintenanceMode(Boolean(data.maintenanceMode));
+                    if (typeof data.defaultAnalysisMode === 'string') {
+                        this.setDefaultAnalysisMode(data.defaultAnalysisMode);
+                    }
+                    if (this.generalStatus) this.generalStatus.textContent = 'Gespeichert.';
+                })
+                .catch(() => {
+                    if (this.generalStatus) this.generalStatus.textContent = 'Fehler beim Speichern.';
+                });
+        }
+
+        savePdfSettings() {
+            if (!this.apiBase) return;
+            const pdfFooterText = this.pdfFooterInput ? this.pdfFooterInput.value : '';
+            if (this.pdfStatus) this.pdfStatus.textContent = 'Speichern…';
+            this.apiFetch('/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify({ pdfFooterText })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const footerText = typeof data.pdfFooterText === 'string' ? data.pdfFooterText : pdfFooterText;
+                    this.setPdfFooterText(footerText);
+                    if (this.pdfStatus) this.pdfStatus.textContent = 'Gespeichert.';
+                })
+                .catch(() => {
+                    if (this.pdfStatus) this.pdfStatus.textContent = 'Fehler beim Speichern.';
+                });
         }
 
         saveAlgorithmTuning() {
@@ -10356,7 +10526,7 @@
             if (this.filteredUsers.length === 0) {
                 this.rowsEl.innerHTML = `
                     <tr>
-                        <td colspan="6" class="ska-admin-empty">Keine Nutzer gefunden.</td>
+                        <td colspan="5" class="ska-admin-empty">Keine Nutzer gefunden.</td>
                     </tr>
                 `;
             } else {
@@ -10365,9 +10535,13 @@
                     const isPremium = user.plan === 'premium';
                     return `
                         <tr data-user-id="${user.id}">
-                            <td>${user.id}</td>
-                            <td>${this.escapeHtml(user.name)}</td>
-                            <td>${this.escapeHtml(user.email)}</td>
+                            <td class="ska-admin-col-id">${user.id}</td>
+                            <td class="ska-admin-user-cell">
+                                <div class="ska-admin-user-meta">
+                                    <span class="ska-admin-user-name">${this.escapeHtml(user.name)}</span>
+                                    <span class="ska-admin-user-email">${this.escapeHtml(user.email)}</span>
+                                </div>
+                            </td>
                             <td>
                                 <div class="ska-admin-plan-cell">
                                     <span class="ska-admin-plan-label">${this.escapeHtml(user.planLabel)}</span>
@@ -10383,7 +10557,7 @@
                             </td>
                             <td>${registered}</td>
                             <td class="ska-admin-actions">
-                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="admin-masquerade" data-user-id="${user.id}">
+                                <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact ska-admin-masquerade-btn" data-action="admin-masquerade" data-user-id="${user.id}">
                                     <span class="dashicons dashicons-admin-users" aria-hidden="true"></span>
                                     Als Nutzer einloggen
                                 </button>
