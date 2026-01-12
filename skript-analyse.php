@@ -51,17 +51,26 @@ function ska_get_stored_plan_status( $user_id ) {
     return '';
 }
 
-function ska_get_user_plan_status( $user_id ) {
-    $simulation = ska_get_simulation_override();
-    if ( $simulation ) {
-        return $simulation;
+function ska_get_user_plan_status( $user_id = 0 ) {
+    if ( ! $user_id ) {
+        $user_id = get_current_user_id();
     }
 
-    $stored = ska_get_stored_plan_status( $user_id );
-    if ( $stored ) {
-        return $stored;
+    // SCHRITT 1: Wenn Admin simuliert, gilt das ZWINGEND für ALLES
+    if ( current_user_can( 'manage_options' ) && $user_id == get_current_user_id() ) {
+        $sim_mode = ska_get_simulation_mode();
+        if ( ! empty( $sim_mode ) ) {
+            return $sim_mode;
+        }
     }
 
+    // SCHRITT 2: Echter Status aus der Datenbank
+    $plan = get_user_meta( $user_id, 'sa_plan_status', true );
+    if ( $plan === 'premium' ) {
+        return 'premium';
+    }
+
+    // SCHRITT 3: Fallback ist IMMER Basis
     return 'basis';
 }
 
@@ -77,8 +86,22 @@ function ska_get_simulation_override() {
 }
 
 function ska_get_simulation_mode() {
-    $user_id = get_current_user_id();
-    return ska_get_user_plan_status( $user_id );
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return '';
+    }
+    // Zuerst Cookie prüfen (Prio 1 für Admin-Tests)
+    if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
+        $sim = sanitize_key( $_COOKIE['ska_simulation_mode'] );
+        if ( in_array( $sim, array( 'basis', 'premium' ), true ) ) {
+            return $sim;
+        }
+    }
+    // Dann Datenbank (Prio 2)
+    $db_mode = get_user_meta( get_current_user_id(), 'sa_simulation_mode', true );
+    if ( $db_mode === 'basis' || $db_mode === 'premium' ) {
+        return $db_mode;
+    }
+    return ''; // Keine aktive Simulation
 }
 
 function ska_handle_simulation_mode_request() {
@@ -520,6 +543,7 @@ function ska_get_localized_config() {
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
         'pdfFooterText' => ska_get_pdf_footer_text(),
         'planMode' => $plan_mode,
+        'currentUserPlan' => ska_get_user_plan_status(),
     );
 }
 
