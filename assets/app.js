@@ -3113,7 +3113,9 @@
                 premiumUpgradeDismissed: false,
                 nominalChains: [],
                 search: { query: '', matches: [], index: -1 },
-                projectObject: { settings: {} }
+                projectObject: { settings: {} },
+                currentProjectId: null,
+                projects: []
             };
             this.synonymCache = new Map();
             this.synonymHoverState = { activeWord: null, activeTarget: null, hideTimer: null, requestId: 0 };
@@ -3196,6 +3198,7 @@
                  btn.innerHTML = `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
                  headerActions.appendChild(btn);
             }
+            this.setupProjectControls();
             this.searchBox = null;
             this.searchInput = null;
             this.searchCount = null;
@@ -3217,6 +3220,57 @@
                 this.toolsModalStore.className = 'ska-tools-modal-store';
                 this.toolsPanel.appendChild(this.toolsModalStore);
             }
+        }
+
+        getUserPlanStatus() {
+            const status = typeof window !== 'undefined'
+                ? (window.SKA_CONFIG_PHP?.planStatus || window.SKA_CONFIG_PHP?.userPlanStatus || window.SKA_CONFIG_PHP?.planMode)
+                : null;
+            if (status === 'premium') return 'premium';
+            if (status === 'basis' || status === 'free') return 'basis';
+            return this.isPremiumActive() ? 'premium' : 'basis';
+        }
+
+        getAjaxUrl() {
+            if (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.ajaxUrl) {
+                return window.SKA_CONFIG_PHP.ajaxUrl;
+            }
+            return '/wp-admin/admin-ajax.php';
+        }
+
+        setupProjectControls() {
+            const toolbarActions = this.root.querySelector('.ska-toolbar-actions');
+            if (toolbarActions && !this.root.querySelector('[data-action="save-project"]')) {
+                const saveBtn = document.createElement('button');
+                saveBtn.type = 'button';
+                saveBtn.className = 'ska-btn ska-btn--secondary';
+                saveBtn.dataset.action = 'save-project';
+                saveBtn.textContent = 'Projekt speichern';
+                toolbarActions.insertBefore(saveBtn, toolbarActions.firstChild);
+                this.projectSaveButton = saveBtn;
+            }
+
+            const editorPanel = this.root.querySelector('.ska-editor-panel');
+            if (editorPanel && !editorPanel.querySelector('.ska-projects-panel')) {
+                const panel = document.createElement('div');
+                panel.className = 'ska-projects-panel';
+                panel.innerHTML = `
+                    <div class="ska-projects-panel-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:16px 0 8px;">
+                        <strong>Meine Projekte laden</strong>
+                        <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="refresh-projects">Aktualisieren</button>
+                    </div>
+                    <div class="ska-projects-panel-body" data-role="project-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                `;
+                const footer = editorPanel.querySelector('.ska-editor-footer');
+                if (footer && footer.parentElement) {
+                    footer.parentElement.insertBefore(panel, footer.nextSibling);
+                } else {
+                    editorPanel.appendChild(panel);
+                }
+                this.projectPanel = panel;
+                this.projectList = panel.querySelector('[data-role="project-list"]');
+            }
+            this.updateProjectControls();
         }
 
         syncProfileSelectOptions() {
@@ -3313,6 +3367,16 @@
                     appRoot.prepend(toast);
                 }
             }
+        }
+
+        showToast(message, isError = false) {
+            const toast = this.root ? this.root.querySelector('[data-role-toast]') : null;
+            if (!toast) return;
+            toast.textContent = message;
+            toast.style.background = isError ? '#dc2626' : '';
+            toast.style.color = isError ? '#fff' : '';
+            toast.classList.add('is-visible');
+            setTimeout(() => toast.classList.remove('is-visible'), 2500);
         }
 
         setupGlobalControlSync() {
@@ -4684,15 +4748,15 @@
 
         startTeleprompter() {
             const modal = this.ensureTeleprompterModal();
-            const body = modal.querySelector('.teleprompter-content');
+            const scrollContainer = modal.querySelector('.teleprompter-content');
             const textContainer = modal.querySelector('[data-role-teleprompter-text]');
-            if (!body) return false;
+            if (!scrollContainer) return false;
             if (textContainer && (!textContainer.textContent || !textContainer.textContent.trim())) {
                 textContainer.textContent = this.getText();
                 this.resetTeleprompter();
             }
 
-            const distance = body.scrollHeight - body.clientHeight;
+            const distance = scrollContainer.scrollHeight - scrollContainer.clientHeight;
             if (distance <= 0) {
                 this.state.teleprompter.playing = false;
                 return false;
@@ -4712,9 +4776,10 @@
                 if (!this.state.teleprompter.playing) return;
                 const elapsedSec = Math.max(0, (ts - this.state.teleprompter.lastTimestamp) / 1000);
                 this.state.teleprompter.lastTimestamp = ts;
-                const nextScroll = Math.min(distance, body.scrollTop + (baseSpeed * elapsedSec));
-                body.scrollTop = nextScroll;
-                if (nextScroll < distance) {
+                const delta = baseSpeed * elapsedSec;
+                const nextScroll = Math.min(distance, scrollContainer.scrollTop + delta);
+                scrollContainer.scrollTop = nextScroll;
+                if (scrollContainer.scrollTop < distance) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.teleprompter.playing = false;
@@ -5066,6 +5131,23 @@
             this.updateClickTrackButton();
         }
 
+        stopClickTrackImmediate() {
+            this.stopClickTrack();
+            const ctx = this.state.clickTrack.context;
+            if (ctx && ctx.state === 'running') {
+                ctx.suspend().catch(() => {});
+            }
+        }
+
+        handlePacingModalClose(modal) {
+            if (!modal || modal.id !== 'ska-tool-card-modal') return;
+            const body = modal.querySelector('[data-role="tool-modal-body"]');
+            if (!body || body.dataset.cardId !== 'pacing') return;
+            if (this.state.clickTrack.playing) {
+                this.stopClickTrackImmediate();
+            }
+        }
+
         updateClickTrackButton() {
             const btn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-clicktrack"]') : null;
             if (!btn) return;
@@ -5096,6 +5178,19 @@
         }
 
         handleAction(act, btn, event = null) {
+            if (act === 'save-project') {
+                this.saveCurrentProject();
+                return true;
+            }
+            if (act === 'refresh-projects') {
+                this.refreshProjectsList();
+                return true;
+            }
+            if (act === 'load-project') {
+                const projectId = btn.dataset.projectId;
+                this.loadProject(projectId);
+                return true;
+            }
             if (act.startsWith('format-')) {
                 this.applyFormatting(act);
                 return true;
@@ -5802,6 +5897,165 @@
             this.enforceFreeSettings();
             this.syncPdfOptions();
             this.renderSettingsModal();
+            this.updateProjectControls();
+        }
+
+        updateProjectControls() {
+            const planStatus = this.getUserPlanStatus();
+            const isPremium = planStatus === 'premium';
+            if (this.projectSaveButton) {
+                this.projectSaveButton.disabled = !isPremium;
+                this.projectSaveButton.classList.toggle('is-disabled', !isPremium);
+                this.projectSaveButton.setAttribute('aria-disabled', String(!isPremium));
+                this.projectSaveButton.title = isPremium ? 'Projekt speichern' : 'Nur für Premium';
+            }
+            if (this.projectPanel) {
+                this.projectPanel.classList.toggle('is-disabled', !isPremium);
+                const refreshBtn = this.projectPanel.querySelector('[data-action="refresh-projects"]');
+                if (refreshBtn) {
+                    refreshBtn.disabled = !isPremium;
+                    refreshBtn.classList.toggle('is-disabled', !isPremium);
+                    refreshBtn.setAttribute('aria-disabled', String(!isPremium));
+                    refreshBtn.title = isPremium ? 'Projekte aktualisieren' : 'Nur für Premium';
+                }
+                const list = this.projectList;
+                if (!isPremium && list) {
+                    list.innerHTML = '<div style="color:#94a3b8;">Nur für Premium verfügbar.</div>';
+                }
+                if (isPremium) {
+                    this.refreshProjectsList();
+                }
+            }
+        }
+
+        refreshProjectsList() {
+            const list = this.projectList;
+            if (!list) return;
+            const planStatus = this.getUserPlanStatus();
+            if (planStatus !== 'premium') return;
+            list.innerHTML = '<div style="color:#94a3b8;">Lade Projekte...</div>';
+            const body = new URLSearchParams();
+            body.set('action', 'ska_load_projects');
+            fetch(this.getAjaxUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                credentials: 'same-origin',
+                body
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (!data || !data.success) {
+                        const message = data && data.data && data.data.message ? data.data.message : 'Projekte konnten nicht geladen werden.';
+                        list.innerHTML = `<div style="color:#dc2626;">${message}</div>`;
+                        return;
+                    }
+                    const projects = Array.isArray(data.data.projects) ? data.data.projects : [];
+                    this.state.projects = projects;
+                    this.renderProjectList(projects);
+                })
+                .catch(() => {
+                    list.innerHTML = '<div style="color:#dc2626;">Projekte konnten nicht geladen werden.</div>';
+                });
+        }
+
+        renderProjectList(projects) {
+            const list = this.projectList;
+            if (!list) return;
+            if (!projects.length) {
+                list.innerHTML = '<div style="color:#94a3b8;">Noch keine Projekte gespeichert.</div>';
+                return;
+            }
+            list.innerHTML = projects.map((project) => {
+                const title = project.title ? project.title : 'Unbenanntes Projekt';
+                const updated = project.updated ? `• ${project.updated}` : '';
+                return `
+                    <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="load-project" data-project-id="${project.id}" style="justify-content:flex-start;">
+                        ${title} <span style="margin-left:6px; font-size:0.75rem; color:#94a3b8;">${updated}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        saveCurrentProject() {
+            const planStatus = this.getUserPlanStatus();
+            if (planStatus !== 'premium') {
+                this.showPremiumNotice('Projekte speichern ist nur in Premium verfügbar.');
+                return;
+            }
+            const name = window.prompt('Projektname eingeben', '');
+            if (name === null) return;
+            const title = String(name || '').trim() || 'Unbenanntes Projekt';
+            const content = this.getText();
+            if (!content.trim()) {
+                this.showToast('Bitte zuerst einen Text eingeben.');
+                return;
+            }
+            const body = new URLSearchParams();
+            body.set('action', 'ska_save_project');
+            body.set('title', title);
+            body.set('content', content);
+            if (this.state.currentProjectId) {
+                body.set('project_id', String(this.state.currentProjectId));
+            }
+            fetch(this.getAjaxUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                credentials: 'same-origin',
+                body
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (!data || !data.success) {
+                        const message = data && data.data && data.data.message ? data.data.message : 'Projekt konnte nicht gespeichert werden.';
+                        this.showToast(message, true);
+                        return;
+                    }
+                    const savedId = data.data && data.data.id ? Number(data.data.id) : null;
+                    if (savedId) {
+                        this.state.currentProjectId = savedId;
+                    }
+                    this.showToast('Projekt gespeichert.');
+                    this.refreshProjectsList();
+                })
+                .catch(() => {
+                    this.showToast('Projekt konnte nicht gespeichert werden.', true);
+                });
+        }
+
+        loadProject(projectId) {
+            const planStatus = this.getUserPlanStatus();
+            if (planStatus !== 'premium') {
+                this.showPremiumNotice('Projekte laden ist nur in Premium verfügbar.');
+                return;
+            }
+            const id = Number(projectId);
+            if (!id) return;
+            const body = new URLSearchParams();
+            body.set('action', 'ska_get_project');
+            body.set('project_id', String(id));
+            fetch(this.getAjaxUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                credentials: 'same-origin',
+                body
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (!data || !data.success) {
+                        const message = data && data.data && data.data.message ? data.data.message : 'Projekt konnte nicht geladen werden.';
+                        this.showToast(message, true);
+                        return;
+                    }
+                    const project = data.data || {};
+                    const content = project.content ? String(project.content) : '';
+                    this.state.currentProjectId = project.id ? Number(project.id) : null;
+                    this.setText(content);
+                    this.analyze(content);
+                    this.showToast('Projekt geladen.');
+                })
+                .catch(() => {
+                    this.showToast('Projekt konnte nicht geladen werden.', true);
+                });
         }
 
         enforceFreeSettings() {
@@ -6166,6 +6420,7 @@
                         this.requestFocusModeClose();
                         return;
                     }
+                    this.handlePacingModalClose(modal);
                     SA_Utils.closeModal(modal, () => {
                         document.body.classList.remove('ska-modal-open');
                         if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
@@ -6197,6 +6452,7 @@
                         e.preventDefault();
                         return;
                     }
+                    this.handlePacingModalClose(modal);
                     SA_Utils.closeModal(modal, () => {
                         document.body.classList.remove('ska-modal-open');
                         if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
@@ -9284,7 +9540,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Tipp: Nutze den PDF-Export für deine Unterlagen oder frage bei Bedarf ein professionelles Sprecher-Coaching an.';
+            return 'Bei Bedarf kannst Du Deine Analyse als PDF herunterladen. Soll Dein Skript vertont werden? Dann frag mich ganz bequem für Deine Sprachaufnahme an.';
         }
 
         openCheckout(productTitle, price, cycle) {
