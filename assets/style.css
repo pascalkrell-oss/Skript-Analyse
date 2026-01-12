@@ -3644,3 +3644,33 @@ html.is-iframe-mode .admin-bar {
 .analysis-modal.is-closing {
     opacity: 0;
 }
+
+/* --- Teleprompter Fix --- */
+.analysis-modal-body .teleprompter-content {
+    height: 60vh !important;
+    overflow-y: auto !important;
+    display: block;
+    scroll-behavior: auto; /* Wichtig für JS Scroll */
+}
+
+/* --- Globale Mitteilung Clean --- */
+.ska-global-notice .notice-icon {
+    background: transparent !important; /* Kein Kreis */
+    width: auto; height: auto;
+    padding: 0;
+}
+.ska-global-notice {
+    position: relative;
+    padding-right: 40px; /* Platz für X */
+}
+.ska-global-notice .notice-dismiss {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* --- User Tabelle Abstände --- */
+.ska-admin-dashboard .wp-list-table .column-id { width: 60px; }
+.ska-admin-dashboard .wp-list-table .column-email { width: 25%; }
+.ska-admin-dashboard .wp-list-table td { vertical-align: middle; padding: 12px 10px; }
