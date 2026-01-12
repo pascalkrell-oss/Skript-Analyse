@@ -576,8 +576,21 @@
         }
     };
 
+    const getSharedAnalysisUtils = () => (typeof window !== 'undefined' ? window.SA_ANALYSIS_UTILS : null);
+
     const SA_Utils = {
         debounce: (func, delay) => { let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); }; },
+        throttle: (func) => {
+            let ticking = false;
+            return function(...args) {
+                if (ticking) return;
+                ticking = true;
+                window.requestAnimationFrame(() => {
+                    ticking = false;
+                    func.apply(this, args);
+                });
+            };
+        },
         formatMin: (sec) => { if (!sec || sec <= 0) return '0:00'; let m = Math.floor(sec / 60), s = Math.round(sec % 60); if(s===60){m++;s=0} return `${m}:${s < 10 ? '0' : ''}${s}`; },
         escapeRegex: (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
         normalizeWord: (text) => String(text || '').toLowerCase().replace(/[^a-zäöüß]/gi, '').trim(),
@@ -618,6 +631,10 @@
                 .map((marker) => String(marker.val || '').trim())
                 .filter(Boolean)
                 .sort((a, b) => b.length - a.length);
+            const sharedUtils = getSharedAnalysisUtils();
+            if (sharedUtils && sharedUtils.cleanTextForCounting) {
+                return sharedUtils.cleanTextForCounting(text, { markerTokens });
+            }
             let cleaned = text;
             markerTokens.forEach((marker) => {
                 cleaned = cleaned.replace(new RegExp(`\\s*${SA_Utils.escapeRegex(marker)}\\s*`, 'g'), ' ');
@@ -1175,6 +1192,10 @@
                 const syllables = hyphenator.hyphenate(clean);
                 if (syllables && syllables.length) return syllables.length;
             }
+            const sharedUtils = getSharedAnalysisUtils();
+            if (sharedUtils && sharedUtils.countSyllables) {
+                return sharedUtils.countSyllables(clean);
+            }
             const normalized = clean.replace(/(?:eu|au|ei|ie|äu|oi)/g, 'a');
             const matches = normalized.match(/[aeiouäöü]/g);
             return matches ? matches.length : 1;
@@ -1240,6 +1261,20 @@
             return { stretches: flagged, avgSyllables, maxSyllables, threshold };
         },
         analyzeReadability: (text, settings = {}) => {
+            const sharedUtils = getSharedAnalysisUtils();
+            if (sharedUtils && sharedUtils.analyzeReadability) {
+                const baseRead = sharedUtils.analyzeReadability(text, {
+                    ...settings,
+                    cleanTextForCounting: SA_Utils.cleanTextForCounting
+                });
+                if (!baseRead || !baseRead.wordCount) {
+                    return baseRead || { score: 0, avgSentence: 0, syllablesPerWord: 0, wordCount: 0, speakingWordCount: 0, words: [], sentences: [], paragraphs: 0, maxSentenceWords: 0, totalSyllables: 0, longWordCount: 0, lix: 0 };
+                }
+                const words = baseRead.words || [];
+                const longWordCount = words.filter(w => w.replace(/[^a-zäöüß]/gi, '').length > 6).length;
+                const lix = baseRead.wordCount > 0 ? baseRead.avgSentence + (longWordCount * 100 / baseRead.wordCount) : 0;
+                return { ...baseRead, longWordCount, lix };
+            }
             let clean = SA_Utils.cleanTextForCounting(text).trim();
             if (settings.numberMode === 'word') {
                 clean = SA_Logic.expandNumbersForAudio(clean);
@@ -1421,6 +1456,10 @@
             return { label: 'Sehr schwer', color: '#7f1d1d' };
         },
         expandNumbersForAudio: (text) => {
+            const sharedUtils = getSharedAnalysisUtils();
+            if (sharedUtils && sharedUtils.expandNumbersForAudio) {
+                return sharedUtils.expandNumbersForAudio(text);
+            }
             const toWords = (num) => {
                 const units = ['null','eins','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf','dreizehn','vierzehn','fünfzehn','sechzehn','siebzehn','achtzehn','neunzehn'];
                 const tens = ['', '', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
@@ -3804,6 +3843,7 @@
         }
 
         initAnalysisWorker() {
+            if (this.analysisWorker) return;
             const workerUrl = window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.workerUrl;
             if (!workerUrl || !window.Worker) return;
             this.loadAnalysisUtils(workerUrl);
@@ -9599,8 +9639,9 @@
                     premiumCol.style.overflow = '';
                 }
             };
-            grid.addEventListener('scroll', () => window.requestAnimationFrame(update), { passive: true });
-            window.addEventListener('resize', () => window.requestAnimationFrame(update));
+            const throttledUpdate = SA_Utils.throttle(update);
+            grid.addEventListener('scroll', throttledUpdate, { passive: true });
+            window.addEventListener('resize', throttledUpdate);
             window.requestAnimationFrame(update);
         }
 
