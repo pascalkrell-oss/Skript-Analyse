@@ -3092,6 +3092,19 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
 }
 
+.ska-admin-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.ska-admin-card-header p {
+    margin-bottom: 0;
+    color: var(--ska-text-muted);
+}
+
 .ska-admin-card--full {
     margin-top: 2rem;
 }
@@ -3166,6 +3179,15 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 0.8rem;
+    font-size: 0.95rem;
+    background: #fff;
+}
+
+.ska-admin-input,
+.ska-admin-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.6rem 0.8rem;
     font-size: 0.95rem;
     background: #fff;
 }
@@ -3301,6 +3323,50 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     display: block;
 }
 
+.ska-admin-settings {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.ska-admin-settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 220px;
+}
+
+.ska-admin-settings-tab {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #475569;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ska-admin-settings-tab.is-active {
+    background: var(--ska-primary);
+    color: #ffffff;
+    border-color: var(--ska-primary);
+}
+
+.ska-admin-settings-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ska-admin-settings-panel {
+    display: none;
+}
+
+.ska-admin-settings-panel.is-active {
+    display: block;
+}
+
 .ska-admin-table-wrapper {
     background: #fff;
     border-radius: 16px;
@@ -3326,6 +3392,31 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     border-bottom: 1px solid #e2e8f0;
 }
 
+.ska-admin-table th.ska-admin-col-id,
+.ska-admin-table td.ska-admin-col-id {
+    width: 50px;
+}
+
+.ska-admin-user-cell {
+    padding-left: 1.5rem;
+}
+
+.ska-admin-user-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: baseline;
+}
+
+.ska-admin-user-name {
+    font-weight: 600;
+}
+
+.ska-admin-user-email {
+    color: var(--ska-text-muted);
+    font-size: 0.85rem;
+}
+
 .ska-admin-table tbody tr:last-child td {
     border-bottom: none;
 }
@@ -3335,6 +3426,10 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     flex-wrap: nowrap;
     gap: 0.5rem;
     align-items: center;
+}
+
+.ska-admin-masquerade-btn {
+    margin-left: 0.5rem;
 }
 
 .ska-admin-actions .dashicons {
