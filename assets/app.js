@@ -490,7 +490,7 @@
             redundancy: ["Wiederholungen direkt hintereinander wirken unfreiwillig.", "Formuliere den zweiten Satz mit anderem Fokus oder streiche ihn.", "Achte auf doppelte Bedeutungen ('weißer Schimmel').", "Streiche Dopplungen: Eine Aussage, ein Bild, ein Satz.", "Wiederholungen nur als Stilmittel – sonst kürzen."],
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig.", "Längere Sätze mit Kommas strukturieren, damit die Atmung mitkommt.", "Tempo entsteht durch Variation – nicht durch dauerhafte Beschleunigung."],
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres.", "Ein Gedanke pro Satz – das erhöht Verständlichkeit sofort.", "Fachbegriffe nur, wenn nötig – sonst erklären oder ersetzen."],
-            teleprompter: ["Nutze den Teleprompter im Vollbild für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
+            teleprompter: ["Nutze den Teleprompter im großen Fenster für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
             pacing: ["Starte den Pacing-Takt und sprich synchron zum Balken.", "Der Soll-Fortschritt zeigt dir, wo du nach X Sekunden sein solltest.", "Trainiere mit verschiedenen Genres, um Tempo-Gefühl zu entwickeln.", "Halte Pausen sichtbar – sie zählen in die Timing-Logik ein.", "Nutze den Takt als Metronom für Sprecher-Rhythmus."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen.", "Konkrete Beispiele schlagen Buzzwords – ersetze Floskeln durch Nutzen.", "Wenn ein Satz nichts messbar sagt, streichen oder präzisieren."],
             metaphor: ["Klischees wirken vorhersehbar – prüfe Alternativen.", "Ein frisches Bild bleibt länger im Kopf als bekannte Sprüche.", "Metaphern sind stark, wenn sie zur Zielgruppe passen.", "Ein einziges gutes Bild schlägt fünf Floskeln.", "Originalität steigert die Sprecher-Wirkung spürbar."],
@@ -804,10 +804,12 @@
         openModal: (modal) => {
             if (!modal) return;
             modal.classList.remove('is-closing');
+            modal.removeAttribute('data-closing');
             modal.setAttribute('aria-hidden', 'false');
-            requestAnimationFrame(() => {
-                modal.classList.add('is-open');
-            });
+            modal.classList.add('is-open');
+            window.setTimeout(() => {
+                modal.classList.add('is-visible');
+            }, 25);
         },
         isPremiumFeatureEnabled: () => {
             const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
@@ -815,11 +817,34 @@
             return hasPremiumFlag && planMode === 'premium';
         },
         closeModal: (modal, onClosed) => {
-            if (!modal) return;
-            modal.classList.remove('is-open');
-            modal.classList.remove('is-closing');
+            if (!modal || modal.dataset.closing === 'true') return;
+            modal.dataset.closing = 'true';
+            modal.classList.remove('is-visible');
+            modal.classList.add('is-closing');
             modal.setAttribute('aria-hidden', 'true');
-            if (typeof onClosed === 'function') onClosed();
+
+            const transitionTarget = modal.querySelector('.skriptanalyse-modal-content') || modal;
+            let finished = false;
+
+            const finalize = () => {
+                if (finished) return;
+                finished = true;
+                modal.classList.remove('is-open', 'is-closing');
+                modal.removeAttribute('data-closing');
+                if (modal.dataset.removeOnClose === 'true') {
+                    modal.remove();
+                }
+                if (typeof onClosed === 'function') onClosed();
+            };
+
+            const onTransitionEnd = (event) => {
+                if (event && event.target !== transitionTarget) return;
+                transitionTarget.removeEventListener('transitionend', onTransitionEnd);
+                finalize();
+            };
+
+            transitionTarget.addEventListener('transitionend', onTransitionEnd);
+            window.setTimeout(finalize, 450);
         },
         copyToClipboard: async (text) => {
             const value = String(text || '').trim();
@@ -3592,7 +3617,7 @@
                     this.renderBenchmarkModal();
                     const modal = document.getElementById('ska-benchmark-modal');
                     if (modal) {
-                        modal.classList.add('is-open');
+                        SA_Utils.openModal(modal);
                         document.body.classList.add('ska-modal-open');
                     }
                 });
@@ -3957,6 +3982,7 @@
             modal.className = 'skriptanalyse-modal ska-teleprompter-modal';
             modal.id = 'ska-teleprompter-modal';
             modal.ariaHidden = 'true';
+            modal.dataset.removeOnClose = 'true';
             modal.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
                 <div class="skriptanalyse-modal-content ska-tool-modal-content ska-teleprompter-modal-content">
@@ -3967,18 +3993,23 @@
                             <div class="teleprompter-text" data-role-teleprompter-text></div>
                         </div>
                         <div class="teleprompter-controls">
-                            <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Play</button>
+                            <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
                             <label class="teleprompter-control-group">
-                                <span>Speed</span>
+                                <span>Geschwindigkeit</span>
                                 <input type="range" min="10" max="200" step="5" value="${this.state.teleprompter.speed}" data-role="teleprompter-speed">
                                 <span data-role="teleprompter-speed-label">${this.state.teleprompter.speed}px/s</span>
                             </label>
                             <label class="teleprompter-control-group">
-                                <span>Font</span>
+                                <span>Schriftgröße</span>
                                 <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
                                 <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
                             </label>
-                            <button type="button" class="teleprompter-control teleprompter-close" data-action="teleprompter-reset">Reset</button>
+                            <label class="teleprompter-control-group teleprompter-toggle">
+                                <span>Spiegeln</span>
+                                <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
+                            </label>
+                            <button type="button" class="teleprompter-control teleprompter-export" data-action="teleprompter-export-txt">Als Textdatei speichern</button>
+                            <button type="button" class="teleprompter-control teleprompter-close" data-action="teleprompter-reset">Zurücksetzen</button>
                         </div>
                     </div>
                 </div>`;
@@ -4011,6 +4042,8 @@
                 });
             }
 
+            this.applyTeleprompterMirror(modal);
+
             return modal;
         }
 
@@ -4019,6 +4052,7 @@
             const textEl = modal.querySelector('[data-role-teleprompter-text]');
             if (textEl) textEl.textContent = this.getText();
             this.resetTeleprompter();
+            this.applyTeleprompterMirror(modal);
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
             return modal;
@@ -4041,6 +4075,7 @@
             modal.className = 'skriptanalyse-modal ska-focus-modal';
             modal.id = 'ska-focus-modal';
             modal.ariaHidden = 'true';
+            modal.dataset.removeOnClose = 'true';
             modal.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-focus-mode"></div>
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
@@ -4049,23 +4084,23 @@
                     <div class="skriptanalyse-modal-body ska-focus-modal-body">
                         <div class="focus-toolbar">
                             <label class="focus-field">
-                                <span>Time Limit (min)</span>
+                                <span>Zeit (Min.)</span>
                                 <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
                             </label>
                             <label class="focus-field">
-                                <span>Word Goal</span>
+                                <span>Wortziel</span>
                                 <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
                             </label>
-                            <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start Timer</button>
+                            <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start</button>
                             <div class="focus-stats">
                                 <span data-role="focus-timer">00:00</span>
-                                <span data-role="focus-words">0 / 0 Words</span>
+                                <span data-role="focus-words">0 / 0 Wörter</span>
                             </div>
                             <div class="focus-progress" aria-hidden="true">
                                 <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
                                 <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
                             </div>
-                            <button type="button" class="focus-exit" data-action="close-focus-mode">Exit Focus Mode</button>
+                            <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
                         </div>
                         <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                     </div>
@@ -4086,7 +4121,6 @@
                 if (startBtn) {
                     const canStart = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.phase !== 'active';
                     startBtn.disabled = !canStart;
-                    startBtn.classList.toggle('is-hidden', this.state.wordSprint.durationMinutes <= 0);
                 }
                 this.updateWordSprintUI(true);
             };
@@ -4541,7 +4575,7 @@
                 } else {
                     this.state.teleprompter.playing = false;
                     const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
-                    if (startBtn) startBtn.textContent = 'Play';
+                    if (startBtn) startBtn.textContent = 'Start';
                 }
             };
             this.state.teleprompter.rafId = requestAnimationFrame(step);
@@ -4786,8 +4820,8 @@
             const goal = this.state.wordSprint.targetWords || 0;
             if (wordsEl) {
                 wordsEl.textContent = goal > 0
-                    ? `${sessionWords} / ${goal} Words`
-                    : `${sessionWords} Words`;
+                    ? `${sessionWords} / ${goal} Wörter`
+                    : `${sessionWords} Wörter`;
             }
 
             const wordProgress = goal > 0 ? sessionWords / goal : 0;
@@ -4804,7 +4838,6 @@
             if (startBtn) {
                 const canStart = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.phase !== 'active';
                 startBtn.disabled = !canStart;
-                startBtn.classList.toggle('is-hidden', this.state.wordSprint.durationMinutes <= 0);
             }
         }
 
@@ -5007,7 +5040,7 @@
                 }
                 this.showTeleprompterModal();
                 const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
-                if (startBtn) startBtn.textContent = 'Play';
+                if (startBtn) startBtn.textContent = 'Start';
                 return true;
             }
             if (act === 'close-teleprompter') {
@@ -5184,13 +5217,14 @@
                     this.analyze(this.getText());
                 }
                 if (modal) {
-                    modal.classList.remove('is-open');
-                    document.body.classList.remove('ska-modal-open');
-                    if (this.state.benchmark.timerId) {
-                        clearInterval(this.state.benchmark.timerId);
-                        this.state.benchmark.timerId = null;
-                    }
-                    this.state.benchmark.running = false;
+                    SA_Utils.closeModal(modal, () => {
+                        document.body.classList.remove('ska-modal-open');
+                        if (this.state.benchmark.timerId) {
+                            clearInterval(this.state.benchmark.timerId);
+                            this.state.benchmark.timerId = null;
+                        }
+                        this.state.benchmark.running = false;
+                    });
                 }
                 return true;
             }
@@ -5202,10 +5236,10 @@
                 }
                 if (this.state.teleprompter.playing) {
                     this.pauseTeleprompter();
-                    btn.textContent = 'Play';
+                    btn.textContent = 'Start';
                 } else {
                     const started = this.startTeleprompter();
-                    btn.textContent = started ? 'Pause' : 'Play';
+                    btn.textContent = started ? 'Pause' : 'Start';
                 }
                 return true;
             }
@@ -5217,7 +5251,19 @@
                 }
                 this.resetTeleprompter();
                 const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
-                if (startBtn) startBtn.textContent = 'Play';
+                if (startBtn) startBtn.textContent = 'Start';
+                return true;
+            }
+
+            if (act === 'teleprompter-mirror') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
+                    btn.checked = !btn.checked;
+                    return true;
+                }
+                this.settings.teleprompterMirror = !!btn.checked;
+                this.saveUIState();
+                this.applyTeleprompterMirror();
                 return true;
             }
 
@@ -5297,13 +5343,6 @@
                     this.showPremiumNotice('Der Schreib-Sprint ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                const container = btn.closest('.ska-word-sprint');
-                const minutesInput = container ? container.querySelector('[data-role="word-sprint-minutes"]') : null;
-                const targetInput = container ? container.querySelector('[data-role="word-sprint-target"]') : null;
-                const minutes = minutesInput ? minutesInput.value : this.state.wordSprint.durationMinutes;
-                const target = targetInput ? targetInput.value : this.state.wordSprint.targetWords;
-                this.state.wordSprint.durationMinutes = parseInt(minutes, 10) || 0;
-                this.state.wordSprint.targetWords = parseInt(target, 10) || 0;
                 this.openFocusModeModal();
                 return true;
             }
@@ -7319,16 +7358,7 @@
             if(!active) return this.updateCard('word_sprint', this.renderDisabledState(), targetGrid, '', '', true);
             const isUnlocked = this.isCardUnlocked('word_sprint');
             const content = `
-                <div class="ska-word-sprint-inputs">
-                    <label>
-                        <span>⏱️ Zeit (Minuten)</span>
-                        <input type="number" min="1" value="${this.state.wordSprint.durationMinutes}" data-role="word-sprint-minutes">
-                    </label>
-                    <label>
-                        <span>🎯 Ziel (Wörter)</span>
-                        <input type="number" min="1" value="${this.state.wordSprint.targetWords}" data-role="word-sprint-target">
-                    </label>
-                </div>
+                <p style="margin:0 0 0.75rem; color:#64748b; font-size:0.95rem;">Starte den Schreib-Sprint direkt im Editor und setze Zeit &amp; Ziel oben in der Leiste.</p>
                 <button class="ska-btn ska-btn--primary ska-word-sprint-launch" data-action="word-sprint-start" ${isUnlocked ? '' : 'disabled'}>Fokus-Modus starten 🚀</button>
             `;
 
