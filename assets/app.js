@@ -3058,7 +3058,7 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, wpm: 0, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
-                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false },
+                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false, originalText: '' },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
@@ -4071,7 +4071,7 @@
             if (modal) return modal;
 
             modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-focus-modal';
+            modal.className = 'skriptanalyse-modal ska-focus-modal sprint-modal';
             modal.id = 'ska-focus-modal';
             modal.ariaHidden = 'true';
             modal.dataset.removeOnClose = 'true';
@@ -4080,7 +4080,7 @@
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
                     <div class="ska-modal-header ska-focus-modal-header">
-                        <h3>Schreib-Sprint & Fokus</h3>
+                        <h3>Schreib-Sprint</h3>
                         <div class="focus-toolbar">
                             <label class="focus-field">
                                 <span>Zeit (Min.)</span>
@@ -4091,6 +4091,10 @@
                                 <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
                             </label>
                             <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start</button>
+                        </div>
+                    </div>
+                    <div class="skriptanalyse-modal-body ska-focus-modal-body">
+                        <div class="focus-status-row">
                             <div class="focus-stats">
                                 <span data-role="focus-timer">00:00</span>
                                 <span data-role="focus-words">0 / 0 Wörter</span>
@@ -4101,8 +4105,6 @@
                             </div>
                             <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
                         </div>
-                    </div>
-                    <div class="skriptanalyse-modal-body ska-focus-modal-body">
                         <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                     </div>
                 </div>
@@ -4132,7 +4134,6 @@
             const syncText = SA_Utils.debounce(() => {
                 if (!focusArea) return;
                 const value = focusArea.value;
-                this.setText(value);
                 this.analyze(value);
                 this.updateWordSprintUI();
             }, 250);
@@ -4149,10 +4150,11 @@
             const focusArea = modal.querySelector('[data-role="focus-textarea"]');
             const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
             const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
+            this.state.wordSprint.originalText = this.getText();
             if (timeInput) timeInput.value = this.state.wordSprint.durationMinutes || '';
             if (goalInput) goalInput.value = this.state.wordSprint.targetWords || '';
             if (focusArea) {
-                focusArea.value = this.getText();
+                focusArea.value = this.state.wordSprint.originalText;
                 focusArea.focus();
             }
             modal.classList.remove('is-time-up', 'is-goal-reached');
@@ -4165,25 +4167,51 @@
         toggleFocusMode() {
             const existing = document.getElementById('ska-focus-modal');
             if (existing && existing.classList.contains('is-open')) {
-                this.closeFocusMode();
+                this.requestFocusModeClose();
                 return;
             }
             this.openFocusModeModal();
         }
 
-        closeFocusMode() {
+        requestFocusModeClose() {
             const modal = document.getElementById('ska-focus-modal');
             if (!modal) return;
             const focusArea = modal.querySelector('[data-role="focus-textarea"]');
-            if (focusArea) {
+            const currentText = focusArea ? focusArea.value.trim() : '';
+            if (!currentText) {
+                this.closeFocusMode({ applyText: false });
+                return;
+            }
+            const shouldApply = window.confirm('Möchtest du den Text in den Haupt-Editor übernehmen?');
+            if (shouldApply) {
+                this.closeFocusMode({ applyText: true });
+                return;
+            }
+            const shouldDiscard = window.confirm('Möchtest du den Text verwerfen?');
+            if (shouldDiscard) {
+                this.closeFocusMode({ applyText: false });
+            }
+        }
+
+        closeFocusMode(options = {}) {
+            const modal = document.getElementById('ska-focus-modal');
+            if (!modal) return;
+            const focusArea = modal.querySelector('[data-role="focus-textarea"]');
+            const applyText = options.applyText !== false;
+            const originalText = this.state.wordSprint.originalText || this.getText();
+            if (focusArea && applyText) {
                 const value = focusArea.value;
                 this.setText(value);
                 this.analyze(value);
+            } else if (!applyText) {
+                this.setText(originalText);
+                this.analyze(originalText);
             }
             this.stopWordSprint();
             SA_Utils.closeModal(modal, () => {
                 document.body.classList.remove('ska-modal-open');
             });
+            this.state.wordSprint.originalText = '';
         }
 
         renderCheckoutModal(productTitle = '', price = '', cycle = '') {
@@ -4599,7 +4627,7 @@
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.teleprompter.playing = false;
-                    const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                    const startBtn = modal.querySelector('[data-action="teleprompter-toggle"]');
                     if (startBtn) startBtn.textContent = 'Start';
                 }
             };
@@ -5063,8 +5091,8 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                this.showTeleprompterModal();
-                const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                const modal = this.showTeleprompterModal();
+                const startBtn = modal ? modal.querySelector('[data-action="teleprompter-toggle"]') : null;
                 if (startBtn) startBtn.textContent = 'Start';
                 return true;
             }
@@ -5077,7 +5105,7 @@
                 return true;
             }
             if (act === 'close-focus-mode') {
-                this.closeFocusMode();
+                this.requestFocusModeClose();
                 return true;
             }
             if (act === 'focus-start-timer') {
@@ -5275,7 +5303,8 @@
                     return true;
                 }
                 this.resetTeleprompter();
-                const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
+                const modal = document.getElementById('ska-teleprompter-modal');
+                const startBtn = modal ? modal.querySelector('[data-action="teleprompter-toggle"]') : null;
                 if (startBtn) startBtn.textContent = 'Start';
                 return true;
             }
@@ -5297,7 +5326,8 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                const textEl = document.querySelector('[data-role-teleprompter-text]');
+                const modal = document.getElementById('ska-teleprompter-modal');
+                const textEl = modal ? modal.querySelector('[data-role-teleprompter-text]') : null;
                 if (textEl) {
                     const current = parseFloat(window.getComputedStyle(textEl).fontSize);
                     const next = act === 'teleprompter-bigger' ? current + 2 : current - 2;
@@ -6004,7 +6034,7 @@
                         return;
                     }
                     if (modal.id === 'ska-focus-modal') {
-                        this.closeFocusMode();
+                        this.requestFocusModeClose();
                         return;
                     }
                     SA_Utils.closeModal(modal, () => {
@@ -6034,7 +6064,7 @@
                         return;
                     }
                     if (modal.id === 'ska-focus-modal') {
-                        this.closeFocusMode();
+                        this.requestFocusModeClose();
                         e.preventDefault();
                         return;
                     }
