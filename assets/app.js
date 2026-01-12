@@ -3065,7 +3065,7 @@
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, wpm: 0, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
-                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false, originalText: '' },
+                wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false, originalText: '', confettiFired: false },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
                 syllableEntropyIssues: [],
                 analysisToken: 0,
@@ -3214,6 +3214,9 @@
                         ? String(SKA_CONFIG_PHP.globalAnnouncement).trim()
                         : ''));
             const existingToast = document.querySelector('.ska-announcement-toast');
+            const appRoot = document.querySelector('.skriptanalyse-app');
+            const header = appRoot ? appRoot.querySelector('.ska-header') : null;
+            const toolbar = appRoot ? appRoot.querySelector('.ska-toolbar') : null;
             if (!announcement) {
                 if (existingToast) {
                     existingToast.remove();
@@ -3230,11 +3233,23 @@
             if (existingToast) {
                 const text = existingToast.querySelector('.ska-announcement-toast__text');
                 if (text) text.textContent = announcement;
+                if (appRoot && existingToast.parentElement !== appRoot) {
+                    if (header) {
+                        header.insertAdjacentElement('afterend', existingToast);
+                    } else if (toolbar) {
+                        toolbar.insertAdjacentElement('beforebegin', existingToast);
+                    } else {
+                        appRoot.prepend(existingToast);
+                    }
+                }
                 return;
             }
 
             const toast = document.createElement('div');
             toast.className = 'ska-announcement-toast';
+            const icon = document.createElement('span');
+            icon.className = 'ska-announcement-toast__icon';
+            icon.textContent = 'ℹ️';
             const text = document.createElement('div');
             text.className = 'ska-announcement-toast__text';
             text.textContent = announcement;
@@ -3247,10 +3262,17 @@
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED, announcement);
                 toast.remove();
             });
+            toast.appendChild(icon);
             toast.appendChild(text);
             toast.appendChild(close);
-            if (document.body) {
-                document.body.appendChild(toast);
+            if (appRoot) {
+                if (header) {
+                    header.insertAdjacentElement('afterend', toast);
+                } else if (toolbar) {
+                    toolbar.insertAdjacentElement('beforebegin', toast);
+                } else {
+                    appRoot.prepend(toast);
+                }
             }
         }
 
@@ -4086,6 +4108,7 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-focus-mode"></div>
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
+                    <div class="ska-focus-confetti" data-role="focus-confetti" aria-hidden="true"></div>
                     <div class="ska-modal-header ska-focus-modal-header">
                         <h3>Schreib-Sprint</h3>
                         <div class="focus-toolbar">
@@ -4113,6 +4136,15 @@
                             <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
                         </div>
                         <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
+                        <div class="ska-focus-confirm" data-role="focus-confirm" aria-hidden="true">
+                            <div class="ska-focus-confirm__card">
+                                <p>Text in Editor übernehmen?</p>
+                                <div class="ska-focus-confirm__actions">
+                                    <button type="button" class="ska-btn ska-btn--primary" data-action="focus-confirm-apply">Ja, übernehmen</button>
+                                    <button type="button" class="ska-btn ska-btn--secondary" data-action="focus-confirm-discard">Nein, verwerfen</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -4157,6 +4189,7 @@
             const focusArea = modal.querySelector('[data-role="focus-textarea"]');
             const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
             const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
+            const confirmOverlay = modal.querySelector('[data-role="focus-confirm"]');
             this.state.wordSprint.originalText = this.getText();
             if (timeInput) timeInput.value = this.state.wordSprint.durationMinutes || '';
             if (goalInput) goalInput.value = this.state.wordSprint.targetWords || '';
@@ -4164,6 +4197,12 @@
                 focusArea.value = this.state.wordSprint.originalText;
                 focusArea.focus();
             }
+            if (confirmOverlay) {
+                confirmOverlay.classList.remove('is-visible');
+                confirmOverlay.setAttribute('aria-hidden', 'true');
+            }
+            modal.classList.remove('is-confirming');
+            this.state.wordSprint.confettiFired = false;
             modal.classList.remove('is-time-up', 'is-goal-reached');
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
@@ -4189,20 +4228,25 @@
                 this.closeFocusMode({ applyText: false });
                 return;
             }
-            const shouldApply = window.confirm('Möchtest du den Text in den Haupt-Editor übernehmen?');
-            if (shouldApply) {
-                this.closeFocusMode({ applyText: true });
-                return;
-            }
-            const shouldDiscard = window.confirm('Möchtest du den Text verwerfen?');
-            if (shouldDiscard) {
-                this.closeFocusMode({ applyText: false });
+            const confirmOverlay = modal.querySelector('[data-role="focus-confirm"]');
+            if (confirmOverlay) {
+                confirmOverlay.classList.add('is-visible');
+                confirmOverlay.setAttribute('aria-hidden', 'false');
+                modal.classList.add('is-confirming');
             }
         }
 
         closeFocusMode(options = {}) {
             const modal = document.getElementById('ska-focus-modal');
             if (!modal) return;
+            const confirmOverlay = modal.querySelector('[data-role="focus-confirm"]');
+            const confettiLayer = modal.querySelector('[data-role="focus-confetti"]');
+            if (confirmOverlay) {
+                confirmOverlay.classList.remove('is-visible');
+                confirmOverlay.setAttribute('aria-hidden', 'true');
+                modal.classList.remove('is-confirming');
+            }
+            if (confettiLayer) confettiLayer.innerHTML = '';
             const focusArea = modal.querySelector('[data-role="focus-textarea"]');
             const applyText = options.applyText !== false;
             const originalText = this.state.wordSprint.originalText || this.getText();
@@ -4767,6 +4811,29 @@
             return clean.split(/\s+/).filter(Boolean).length;
         }
 
+        launchFocusConfetti(modal) {
+            if (!modal) return;
+            const container = modal.querySelector('[data-role="focus-confetti"]');
+            if (!container) return;
+            container.innerHTML = '';
+            const colors = ['#38bdf8', '#f97316', '#22c55e', '#a855f7', '#f43f5e', '#eab308'];
+            const pieceCount = 36;
+            for (let i = 0; i < pieceCount; i += 1) {
+                const piece = document.createElement('span');
+                piece.className = 'ska-confetti-piece';
+                piece.style.left = `${Math.random() * 100}%`;
+                piece.style.top = `${-20 - Math.random() * 40}px`;
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = `${0.9 + Math.random() * 0.8}s`;
+                piece.style.animationDelay = `${Math.random() * 0.2}s`;
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                container.appendChild(piece);
+            }
+            window.setTimeout(() => {
+                container.innerHTML = '';
+            }, 2000);
+        }
+
         startWordSprint(durationMinutes, targetWords) {
             const minutes = Math.max(1, parseInt(durationMinutes, 10) || 1);
             const goal = Math.max(0, parseInt(targetWords, 10) || 0);
@@ -4784,7 +4851,8 @@
                 remainingSec: durationSec,
                 sessionWords: 0,
                 lastResult: null,
-                completed: false
+                completed: false,
+                confettiFired: false
             };
             this.openFocusModeModal();
             this.state.wordSprint.timerId = setInterval(() => this.tickWordSprint(), 1000);
@@ -4824,6 +4892,7 @@
             this.state.wordSprint.timerId = null;
             this.state.wordSprint.phase = 'setup';
             this.state.wordSprint.completed = false;
+            this.state.wordSprint.confettiFired = false;
             this.state.wordSprint.remainingSec = Math.max(0, (this.state.wordSprint.durationMinutes || 0) * 60);
             this.state.wordSprint.sessionWords = 0;
             this.updateWordSprintUI(true);
@@ -4841,7 +4910,8 @@
                 sessionWords: 0,
                 timerId: null,
                 lastResult: null,
-                completed: false
+                completed: false,
+                confettiFired: false
             };
             this.updateWordSprintUI(true);
         }
@@ -4891,6 +4961,10 @@
             const goalReached = goal > 0 && sessionWords >= goal;
             if (progressCheck) progressCheck.classList.toggle('is-visible', goalReached);
             modal.classList.toggle('is-goal-reached', goalReached);
+            if (goalReached && !this.state.wordSprint.confettiFired) {
+                this.state.wordSprint.confettiFired = true;
+                this.launchFocusConfetti(modal);
+            }
 
             const timeUp = this.state.wordSprint.durationMinutes > 0 && this.state.wordSprint.remainingSec <= 0 && this.state.wordSprint.phase !== 'setup';
             modal.classList.toggle('is-time-up', timeUp);
@@ -5113,6 +5187,14 @@
             }
             if (act === 'close-focus-mode') {
                 this.requestFocusModeClose();
+                return true;
+            }
+            if (act === 'focus-confirm-apply') {
+                this.closeFocusMode({ applyText: true });
+                return true;
+            }
+            if (act === 'focus-confirm-discard') {
+                this.closeFocusMode({ applyText: false });
                 return true;
             }
             if (act === 'focus-start-timer') {
@@ -9162,9 +9244,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return this.isPremiumActive()
-                ? 'Nutze die volle Power Deiner Skriptanalyse inklusive unlimitiertem PDF-Export für Dein Feintuning. Wenn Du möchtest, kannst Du mich für die finale Umsetzung auch direkt als Sprecher für Dein Skript anfragen.'
-                : 'Exportiere Deine Auswertung als PDF. Bitte beachte: Im Basis-Plan ist der Export-Umfang limitiert. Upgrade auf den Premium Plan für die volle Export-Funktion. Für eine professionelle Umsetzung kannst Du mich auch direkt als Sprecher für Dein Skript anfragen.';
+            return 'Tipp: Nutze den PDF-Export für deine Unterlagen oder frage bei Bedarf ein professionelles Sprecher-Coaching an.';
         }
 
         openCheckout(productTitle, price, cycle) {

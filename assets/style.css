@@ -21,18 +21,6 @@
 
 /* --- GLOBAL RESETS & HELPERS --- */
 body.ska-modal-open { overflow: hidden !important; }
-body.ska-modal-open header,
-body.ska-modal-open footer,
-body.ska-modal-open #masthead,
-body.ska-modal-open #colophon,
-body.ska-modal-open .site-header,
-body.ska-modal-open .site-footer,
-body.ska-modal-open .elementor-location-header,
-body.ska-modal-open .elementor-location-footer,
-body.ska-modal-open nav,
-body.ska-modal-open .woocommerce-breadcrumb {
-    display: none !important;
-}
 body.iframe-mode header,
 body.iframe-mode footer,
 body.iframe-mode #masthead,
@@ -206,6 +194,9 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-filterbar-toggle { border: none; background: transparent; color: var(--ska-primary); font-weight: 600; cursor: pointer; padding: 0;
 
     line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 .ska-filterbar-toggle-view { font-size: 13.6px; }
 .ska-filterbar-collapse {
@@ -1184,8 +1175,8 @@ body.skript-analyse-active .skript-analyse-container {
     background: #111827;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+    justify-content: center;
+    gap: 10px;
     padding: 0.75rem 1rem;
     border-radius: 16px;
     flex-wrap: wrap;
@@ -1230,6 +1221,9 @@ body.skript-analyse-active .skript-analyse-container {
 .sprint-modal .ska-focus-modal-content {
     width: 90vw;
     max-width: 1200px;
+}
+.ska-focus-modal-content {
+    position: relative;
 }
 .ska-focus-modal-header {
     display: flex;
@@ -1353,6 +1347,68 @@ body.skript-analyse-active .skript-analyse-container {
     border-radius: 16px;
     max-width: 100%;
     margin: 0;
+}
+.ska-focus-confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 6;
+}
+.ska-confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 12px;
+    opacity: 0.9;
+    border-radius: 2px;
+    animation: ska-confetti-fall 1.4s ease-out forwards;
+}
+@keyframes ska-confetti-fall {
+    0% {
+        transform: translate3d(0, -20px, 0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(0, 80vh, 0) rotate(360deg);
+        opacity: 0;
+    }
+}
+.ska-focus-confirm {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 7;
+    padding: 1rem;
+}
+.ska-focus-confirm.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+.ska-focus-confirm__card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: var(--ska-shadow-lg);
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+}
+.ska-focus-confirm__card p {
+    margin: 0 0 1rem;
+    font-weight: 700;
+    color: var(--ska-text-main);
+}
+.ska-focus-confirm__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 .ska-focus-modal.is-time-up .focus-textarea {
     box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.6);
@@ -2583,6 +2639,11 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
 }
+.ska-analysis-filterbar.is-collapsed .ska-filterbar-header,
+.ska-analysis-filterbar.is-collapsed .ska-filterbar-header > span,
+.ska-analysis-filterbar.is-collapsed .ska-filterbar-actions {
+    align-items: center;
+}
 
 
 
@@ -3024,20 +3085,32 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 }
 
 .ska-announcement-toast {
-    position: fixed;
-    right: 1.5rem;
-    bottom: 1.5rem;
+    position: relative;
+    width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.75rem;
-    padding: 1rem 1.2rem;
-    border-radius: 16px;
-    background: #ffffff;
+    padding: 0.85rem 1.1rem;
+    border-radius: 14px;
+    background: #f8fafc;
     border: 1px solid #e2e8f0;
-    box-shadow: var(--ska-shadow-lg);
-    max-width: min(360px, calc(100vw - 3rem));
-    z-index: 99999;
-    border-left: 4px solid var(--ska-accent);
+    box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.4);
+    max-width: 100%;
+    margin: 1rem 0 1.5rem;
+    border-left: 4px solid var(--ska-primary);
+}
+
+.ska-announcement-toast__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #0284c7;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .ska-announcement-toast__text {
