@@ -4759,13 +4759,22 @@
             const duration = wpm > 0 ? (read.speakingWordCount / wpm) * 60 + pause : 0;
             const baseSpeed = duration > 0 ? distance / duration : 40;
 
+            this.state.teleprompter.speed = baseSpeed / 30;
+            this.state.teleprompter.isPlaying = true;
+            const state = this.state;
+
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
                 const elapsedSec = Math.max(0, (ts - this.state.teleprompter.lastTimestamp) / 1000);
                 this.state.teleprompter.lastTimestamp = ts;
-                const delta = baseSpeed * elapsedSec;
-                const nextScroll = Math.min(distance, scrollContainer.scrollTop + delta);
-                scrollContainer.scrollTop = nextScroll;
+
+                // Neue Scroll-Logik
+                const scroller = document.querySelector('.analysis-modal-body .teleprompter-content');
+                if (scroller && state.teleprompter.isPlaying) {
+                    // Pixel-genaues Scrollen
+                    scroller.scrollTop += (state.teleprompter.speed * 0.5);
+                }
+
                 if (scrollContainer.scrollTop < distance) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
@@ -11276,3 +11285,44 @@
         renderMasqueradeBanner();
     });
 })();
+
+function closeSprintModalCheck() {
+    const editor = document.getElementById('sprint-editor-area');
+    const text = editor ? editor.value.trim() : '';
+
+    if (text.length > 10) {
+        // Custom Dialog erstellen
+        const dialog = document.createElement('div');
+        dialog.className = 'ska-custom-confirm';
+        dialog.innerHTML = `
+            <div class="ska-confirm-box" style="background:white; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.2); text-align:center;">
+                <h3 style="margin-top:0;">Text übernehmen?</h3>
+                <p>Möchtest du deinen Sprint-Text in den Haupt-Editor kopieren?</p>
+                <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+                    <button id="btn-discard" style="padding:8px 16px; border:1px solid #ccc; background:none; cursor:pointer;">Verwerfen</button>
+                    <button id="btn-adopt" style="padding:8px 16px; background:#1a93ee; color:white; border:none; border-radius:4px; cursor:pointer;">Ja, übernehmen</button>
+                </div>
+            </div>
+        `;
+        dialog.style.position = 'fixed';
+        dialog.style.top = '0'; dialog.style.left = '0'; dialog.style.width = '100vw'; dialog.style.height = '100vh';
+        dialog.style.background = 'rgba(0,0,0,0.5)';
+        dialog.style.display = 'flex'; dialog.style.alignItems = 'center'; dialog.style.justifyContent = 'center'; dialog.style.zIndex = '99999';
+
+        document.body.appendChild(dialog);
+
+        document.getElementById('btn-adopt').onclick = () => {
+            const mainEditor = document.querySelector('.skript-editor');
+            if(mainEditor) mainEditor.value += "\\n" + text;
+            dialog.remove();
+            // Hier Funktion zum Schließen des Modals aufrufen (z.B. closeModal('sprint-modal'))
+             document.querySelector('.sprint-modal').classList.remove('is-visible');
+        };
+        document.getElementById('btn-discard').onclick = () => {
+            dialog.remove();
+             document.querySelector('.sprint-modal').classList.remove('is-visible');
+        };
+    } else {
+         document.querySelector('.sprint-modal').classList.remove('is-visible');
+    }
+}
