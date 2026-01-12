@@ -11,17 +11,77 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
 
-function ska_get_simulation_mode() {
+function ska_normalize_plan_status( $value ) {
+    $value = strtolower( (string) $value );
+    if ( $value === 'premium' ) {
+        return 'premium';
+    }
+    if ( $value === 'basis' || $value === 'free' ) {
+        return 'basis';
+    }
+    return '';
+}
+
+function ska_get_stored_plan_status( $user_id ) {
+    if ( ! $user_id ) {
+        return '';
+    }
+
+    $stored = get_user_meta( $user_id, 'sa_user_plan_status', true );
+    $stored = $stored ? $stored : get_user_meta( $user_id, 'sa_simulation_mode', true );
+    $normalized = ska_normalize_plan_status( $stored );
+    if ( $normalized ) {
+        return $normalized;
+    }
+
+    $legacy_plan = get_user_meta( $user_id, 'ska_plan', true );
+    if ( $legacy_plan === 'premium' ) {
+        return 'premium';
+    }
+    if ( $legacy_plan === 'free' ) {
+        return 'basis';
+    }
+
+    return '';
+}
+
+function ska_get_simulation_override() {
     if ( ! current_user_can( 'manage_options' ) ) {
         return '';
     }
 
-    $mode = get_user_meta( get_current_user_id(), 'sa_simulation_mode', true );
-    if ( $mode === 'basis' || $mode === 'premium' ) {
-        return $mode;
+    if ( isset( $_GET['simulated_role'] ) ) {
+        $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
+        if ( $role ) {
+            return $role;
+        }
     }
 
-    return 'premium';
+    if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
+        $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_COOKIE['ska_simulation_mode'] ) ) );
+        if ( $role ) {
+            return $role;
+        }
+    }
+
+    return '';
+}
+
+function ska_get_simulation_mode() {
+    $user_id = get_current_user_id();
+    $is_admin = current_user_can( 'manage_options' );
+
+    $override = ska_get_simulation_override();
+    if ( $override ) {
+        return $override;
+    }
+
+    $stored = ska_get_stored_plan_status( $user_id );
+    if ( $stored ) {
+        return $stored;
+    }
+
+    return $is_admin ? 'premium' : 'basis';
 }
 
 function ska_handle_simulation_mode_request() {
@@ -33,9 +93,10 @@ function ska_handle_simulation_mode_request() {
         return;
     }
 
-    $role = strtolower( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
-    if ( $role === 'basis' || $role === 'premium' ) {
-        update_user_meta( get_current_user_id(), 'sa_simulation_mode', $role );
+    $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
+    if ( $role ) {
+        $_COOKIE['ska_simulation_mode'] = $role;
+        setcookie( 'ska_simulation_mode', $role, 0, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
     }
 }
 add_action( 'init', 'ska_handle_simulation_mode_request' );
@@ -71,6 +132,30 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
     );
 }
 add_action( 'admin_bar_menu', 'ska_add_simulation_admin_bar', 90 );
+
+function ska_save_user_profile_fields( $user_id ) {
+    if ( ! current_user_can( 'edit_user', $user_id ) ) {
+        return;
+    }
+
+    $raw_status = '';
+    if ( isset( $_POST['sa_user_plan_status'] ) ) {
+        $raw_status = sanitize_text_field( wp_unslash( $_POST['sa_user_plan_status'] ) );
+    } elseif ( isset( $_POST['sa_simulation_mode'] ) ) {
+        $raw_status = sanitize_text_field( wp_unslash( $_POST['sa_simulation_mode'] ) );
+    }
+
+    $status = ska_normalize_plan_status( $raw_status );
+    if ( ! $status ) {
+        return;
+    }
+
+    update_user_meta( $user_id, 'sa_user_plan_status', $status );
+    update_user_meta( $user_id, 'sa_simulation_mode', $status );
+    update_user_meta( $user_id, 'ska_plan', $status === 'premium' ? 'premium' : 'free' );
+}
+add_action( 'personal_options_update', 'ska_save_user_profile_fields' );
+add_action( 'edit_user_profile_update', 'ska_save_user_profile_fields' );
 
 function ska_register_assets() {
     if ( is_admin() ) return;

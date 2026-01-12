@@ -3056,7 +3056,7 @@
                 unlockButtonEnabled: unlockButtonEnabled,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, speed: 40, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
+                teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, wpm: 0, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
@@ -3995,9 +3995,9 @@
                         <div class="teleprompter-controls">
                             <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
                             <label class="teleprompter-control-group">
-                                <span>Geschwindigkeit</span>
-                                <input type="range" min="10" max="200" step="5" value="${this.state.teleprompter.speed}" data-role="teleprompter-speed">
-                                <span data-role="teleprompter-speed-label">${this.state.teleprompter.speed}px/s</span>
+                                <span>Geschwindigkeit (WPM)</span>
+                                <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
+                                <span data-role="teleprompter-speed-label">${this.state.teleprompter.wpm || 120} WPM</span>
                             </label>
                             <label class="teleprompter-control-group">
                                 <span>Schriftgröße</span>
@@ -4008,8 +4008,6 @@
                                 <span>Spiegeln</span>
                                 <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
                             </label>
-                            <button type="button" class="teleprompter-control teleprompter-export" data-action="teleprompter-export-txt">Als Textdatei speichern</button>
-                            <button type="button" class="teleprompter-control teleprompter-close" data-action="teleprompter-reset">Zurücksetzen</button>
                         </div>
                     </div>
                 </div>`;
@@ -4028,8 +4026,8 @@
             if (speedInput && speedLabel) {
                 speedInput.addEventListener('input', () => {
                     const next = parseFloat(speedInput.value);
-                    this.state.teleprompter.speed = Number.isFinite(next) ? next : 40;
-                    speedLabel.textContent = `${this.state.teleprompter.speed}px/s`;
+                    this.state.teleprompter.wpm = Number.isFinite(next) ? next : 120;
+                    speedLabel.textContent = `${this.state.teleprompter.wpm} WPM`;
                 });
             }
 
@@ -4053,6 +4051,7 @@
             if (textEl) textEl.textContent = this.getText();
             this.resetTeleprompter();
             this.applyTeleprompterMirror(modal);
+            this.syncTeleprompterSpeed(modal, true);
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
             return modal;
@@ -4080,8 +4079,8 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-focus-mode"></div>
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header"><h3>Schreib-Sprint & Fokus</h3></div>
-                    <div class="skriptanalyse-modal-body ska-focus-modal-body">
+                    <div class="ska-modal-header ska-focus-modal-header">
+                        <h3>Schreib-Sprint & Fokus</h3>
                         <div class="focus-toolbar">
                             <label class="focus-field">
                                 <span>Zeit (Min.)</span>
@@ -4102,6 +4101,8 @@
                             </div>
                             <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
                         </div>
+                    </div>
+                    <div class="skriptanalyse-modal-body ska-focus-modal-body">
                         <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                     </div>
                 </div>
@@ -4333,6 +4334,10 @@
         openToolModal(toolId) {
             if (!toolId) return;
             if (!this.isCardUnlocked(toolId)) return;
+            if (toolId === 'word_sprint') {
+                this.openFocusModeModal();
+                return;
+            }
             const card = this.toolsModalStore ? this.toolsModalStore.querySelector(`[data-card-id="${toolId}"]`) : null;
             if (!card) return;
             const title = SA_CONFIG.CARD_TITLES[toolId] || 'Werkzeug';
@@ -4375,6 +4380,20 @@
             mirrorTarget.classList.toggle('is-mirrored', !!this.settings.teleprompterMirror);
             const toggle = target.querySelector('[data-action="teleprompter-mirror"]');
             if (toggle) toggle.checked = !!this.settings.teleprompterMirror;
+        }
+
+        syncTeleprompterSpeed(modal = null, force = false) {
+            const target = modal || document.getElementById('ska-teleprompter-modal');
+            if (!target) return;
+            const speedInput = target.querySelector('[data-role="teleprompter-speed"]');
+            const speedLabel = target.querySelector('[data-role="teleprompter-speed-label"]');
+            const effectiveSettings = this.getEffectiveSettings();
+            const baseWpm = SA_Logic.getWpm(effectiveSettings);
+            if (!this.state.teleprompter.wpm || force) {
+                this.state.teleprompter.wpm = baseWpm;
+            }
+            if (speedInput) speedInput.value = String(this.state.teleprompter.wpm);
+            if (speedLabel) speedLabel.textContent = `${this.state.teleprompter.wpm} WPM`;
         }
 
         updateTeleprompterMeta(read) {
@@ -4562,13 +4581,19 @@
 
             this.state.teleprompter.playing = true;
             this.state.teleprompter.lastTimestamp = performance.now();
+            const effectiveSettings = this.getEffectiveSettings();
+            const text = textContainer ? textContainer.textContent || '' : this.getText();
+            const read = SA_Logic.analyzeReadability(text, effectiveSettings);
+            const pause = SA_Utils.getPausenTime(text, effectiveSettings);
+            const wpm = this.state.teleprompter.wpm || SA_Logic.getWpm(effectiveSettings);
+            const duration = wpm > 0 ? (read.speakingWordCount / wpm) * 60 + pause : 0;
+            const baseSpeed = duration > 0 ? distance / duration : 40;
 
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
                 const elapsedSec = Math.max(0, (ts - this.state.teleprompter.lastTimestamp) / 1000);
                 this.state.teleprompter.lastTimestamp = ts;
-                const speed = this.state.teleprompter.speed || 40;
-                const nextScroll = Math.min(distance, body.scrollTop + (speed * elapsedSec));
+                const nextScroll = Math.min(distance, body.scrollTop + (baseSpeed * elapsedSec));
                 body.scrollTop = nextScroll;
                 if (nextScroll < distance) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
@@ -6379,7 +6404,9 @@
                 const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
                 const locked = !this.isCardUnlocked(id);
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
-                const action = id === 'teleprompter' ? 'open-teleprompter' : 'open-tool-modal';
+                const action = id === 'teleprompter'
+                    ? 'open-teleprompter'
+                    : (id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal');
                 const toolAttr = `data-tool-id="${id}"`;
                 const hint = locked ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
                 return `
@@ -9596,8 +9623,9 @@
 
             const buildHeader = () => {
                 const lockBadge = isLocked ? '<span class="ska-premium-badge">Premium</span>' : '';
+                const expandAction = id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal';
                 const expandBtn = isToolCard
-                    ? `<button class="ska-tool-expand-btn" data-action="open-tool-modal" data-tool-id="${id}" title="Werkzeug vergrößern" aria-label="Werkzeug vergrößern">
+                    ? `<button class="ska-tool-expand-btn" data-action="${expandAction}" data-tool-id="${id}" title="Werkzeug vergrößern" aria-label="Werkzeug vergrößern">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M15 3h6v6"></path>
                                 <path d="M9 21H3v-6"></path>
