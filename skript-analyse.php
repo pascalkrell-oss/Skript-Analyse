@@ -333,6 +333,8 @@ function ska_get_algorithm_tuning_localized_config() {
         'globalAnnouncement' => ska_get_global_announcement(),
         'currentUserPlan' => $current_plan,
         'canSaveProjects' => $current_plan === 'premium',
+        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+        'nonce' => wp_create_nonce( 'ska_analysis_nonce' ),
     );
 }
 
