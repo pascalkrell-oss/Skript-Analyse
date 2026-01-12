@@ -1804,7 +1804,9 @@ function ska_register_admin_rest_routes() {
 }
 add_action( 'rest_api_init', 'ska_register_admin_rest_routes' );
 
-/* --- PROJEKT MANAGEMENT (CRUD) --- */
+/* =========================================
+   PROJEKT MANAGEMENT (Re-Integration)
+   ========================================= */
 
 // 1. Post Type registrieren
 function ska_register_project_cpt() {
@@ -1824,13 +1826,14 @@ add_action( 'wp_ajax_ska_save_project', 'ska_ajax_save_project' );
 function ska_ajax_save_project() {
     check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
 
-    // Status Check: Nur Premium (oder Simulation)
-    $status = ska_get_user_plan_status();
+    // Status Check via Helper
+    $status = function_exists('ska_get_user_plan_status') ? ska_get_user_plan_status() : 'basis';
     if ( $status !== 'premium' ) {
         wp_send_json_error( 'Nur für Premium-Nutzer.' );
     }
 
     $title = sanitize_text_field( $_POST['title'] );
+    // HTML erlauben, da Editor Formatierung hat
     $content = wp_kses_post( $_POST['content'] );
     $update_id = isset($_POST['id']) ? intval($_POST['id']) : 0;
 
@@ -1843,14 +1846,19 @@ function ska_ajax_save_project() {
     );
 
     if ( $update_id > 0 ) {
-        // Überschreiben
-        $post_data['ID'] = $update_id;
-        $id = wp_update_post( $post_data );
-        $msg = 'Projekt überschrieben.';
+        // Sicherheitscheck: Gehört das Projekt mir?
+        $existing = get_post($update_id);
+        if($existing && $existing->post_author == get_current_user_id()) {
+            $post_data['ID'] = $update_id;
+            $id = wp_update_post( $post_data );
+            $msg = 'Projekt erfolgreich überschrieben.';
+        } else {
+            wp_send_json_error('Zugriff verweigert.');
+            return;
+        }
     } else {
-        // Neu erstellen
         $id = wp_insert_post( $post_data );
-        $msg = 'Projekt gespeichert.';
+        $msg = 'Projekt neu gespeichert.';
     }
 
     if ( is_wp_error( $id ) ) {
@@ -1860,7 +1868,7 @@ function ska_ajax_save_project() {
     }
 }
 
-// 3. AJAX: Projekte laden (Liste)
+// 3. AJAX: Projekte auflisten
 add_action( 'wp_ajax_ska_list_projects', 'ska_ajax_list_projects' );
 function ska_ajax_list_projects() {
     check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
@@ -1871,7 +1879,7 @@ function ska_ajax_list_projects() {
         'author' => get_current_user_id(),
         'orderby' => 'date',
         'order' => 'DESC',
-        'post_status' => 'private' // Wichtig
+        'post_status' => 'private'
     );
 
     $query = new WP_Query( $args );
@@ -1884,16 +1892,14 @@ function ska_ajax_list_projects() {
                 'id' => get_the_ID(),
                 'title' => get_the_title(),
                 'date' => get_the_date( 'd.m.Y H:i' ),
-                'ago'  => human_time_diff( get_the_time('U'), current_time('timestamp') ) . ' her'
             );
         }
         wp_reset_postdata();
     }
-
     wp_send_json_success( $projects );
 }
 
-// 4. AJAX: Projekt Inhalt holen
+// 4. AJAX: Projekt laden
 add_action( 'wp_ajax_ska_get_project', 'ska_ajax_get_project' );
 function ska_ajax_get_project() {
     check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
@@ -1903,7 +1909,7 @@ function ska_ajax_get_project() {
     if ( $post && $post->post_author == get_current_user_id() ) {
         wp_send_json_success( array( 'content' => $post->post_content, 'title' => $post->post_title ) );
     } else {
-        wp_send_json_error( 'Fehler beim Laden.' );
+        wp_send_json_error( 'Projekt nicht gefunden.' );
     }
 }
 
@@ -1921,4 +1927,3 @@ function ska_ajax_delete_project() {
         wp_send_json_error( 'Fehler.' );
     }
 }
-?>
