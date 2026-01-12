@@ -23,6 +23,7 @@
     const SKRIPT_ANALYSE_CONFIG = (typeof window !== 'undefined' && window.skriptAnalyseConfig)
         ? window.skriptAnalyseConfig
         : {};
+    const CURRENT_USER_PLAN = SKRIPT_ANALYSE_CONFIG.currentUserPlan === 'premium' ? 'premium' : 'basis';
     const ALGORITHM_TUNING_CONFIG = SKRIPT_ANALYSE_CONFIG.algorithmTuning || {};
 
     // CONFIG
@@ -828,11 +829,7 @@
                 modal.classList.add('is-visible');
             }, 25);
         },
-        isPremiumFeatureEnabled: () => {
-            const planMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            const hasPremiumFlag = SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN || planMode === 'premium';
-            return hasPremiumFlag && planMode === 'premium';
-        },
+        isPremiumFeatureEnabled: () => CURRENT_USER_PLAN === 'premium',
         closeModal: (modal, onClosed) => {
             if (!modal || modal.dataset.closing === 'true') return;
             modal.dataset.closing = 'true';
@@ -3079,12 +3076,7 @@
                 : 'live';
             this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
             
-            const planModeFromWindow = typeof window !== 'undefined'
-                ? (window.SKA_CONFIG_PHP?.planMode || window.SKA_PLAN_MODE)
-                : null;
-            const initialPlanMode = SA_CONFIG.PRO_MODE
-                ? 'premium'
-                : ((planModeFromWindow === 'premium' || planModeFromWindow === 'free') ? planModeFromWindow : 'free');
+            const initialPlanMode = CURRENT_USER_PLAN;
             const unlockButtonEnabled = typeof window !== 'undefined'
                 ? (window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true)
                 : true;
@@ -3223,12 +3215,7 @@
         }
 
         getUserPlanStatus() {
-            const status = typeof window !== 'undefined'
-                ? (window.SKA_CONFIG_PHP?.planStatus || window.SKA_CONFIG_PHP?.userPlanStatus || window.SKA_CONFIG_PHP?.planMode)
-                : null;
-            if (status === 'premium') return 'premium';
-            if (status === 'basis' || status === 'free') return 'basis';
-            return this.isPremiumActive() ? 'premium' : 'basis';
+            return CURRENT_USER_PLAN;
         }
 
         getAjaxUrl() {
@@ -5223,12 +5210,7 @@
             }
             if (act === 'toggle-plan') {
                 if (!SA_CONFIG.IS_ADMIN) return true;
-                const isPremium = btn.checked;
-                this.state.planMode = isPremium ? 'premium' : 'free';
-                if (!isPremium) {
-                    this.stopClickTrack();
-                }
-                this.saveUIState();
+                this.state.planMode = this.getUserPlanStatus();
                 this.updatePlanUI();
                 this.renderFilterBar();
                 this.renderHiddenPanel();
@@ -5768,20 +5750,7 @@
             if(h) this.state.hiddenCards = new Set(JSON.parse(h));
             const e = SA_Utils.storage.load(SA_CONFIG.UI_KEY_EXCLUDED);
             if(e) this.state.excludedCards = new Set(JSON.parse(e));
-            const planModeFromWindow = typeof window !== 'undefined'
-                ? (window.SKA_CONFIG_PHP?.planMode || window.SKA_PLAN_MODE)
-                : null;
-            if (planModeFromWindow === 'premium' || planModeFromWindow === 'free') {
-                this.state.planMode = planModeFromWindow;
-            } else if (SA_CONFIG.IS_ADMIN) {
-                const p = SA_Utils.storage.load(SA_CONFIG.UI_KEY_PLAN);
-                if (p === 'premium' || p === 'free') this.state.planMode = p;
-            }
-            if (SA_CONFIG.PRO_MODE) {
-                this.state.planMode = 'premium';
-            } else if (this.state.planMode !== 'premium') {
-                this.state.planMode = 'free';
-            }
+            this.state.planMode = this.getUserPlanStatus();
 
             if (this.isPremiumActive()) {
                 const upgradeDismissed = SA_Utils.storage.load(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED);
@@ -5854,15 +5823,13 @@
         saveUIState() {
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_HIDDEN, JSON.stringify([...this.state.hiddenCards]));
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_EXCLUDED, JSON.stringify([...this.state.excludedCards]));
-            if (SA_CONFIG.IS_ADMIN) {
-                SA_Utils.storage.save(SA_CONFIG.UI_KEY_PLAN, this.state.planMode);
-            }
             const upgradeDismissed = this.isPremiumActive() ? false : this.state.premiumUpgradeDismissed;
             SA_Utils.storage.save(SA_CONFIG.UI_KEY_UPGRADE_DISMISSED, String(upgradeDismissed));
             this.saveSettings();
         }
 
         updatePlanUI() {
+            this.state.planMode = this.getUserPlanStatus();
             const label = document.querySelector('[data-role-plan-label]');
             if (label) {
                 label.textContent = this.isPremiumActive() ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher';
@@ -5901,13 +5868,12 @@
         }
 
         updateProjectControls() {
-            const planStatus = this.getUserPlanStatus();
-            const isPremium = planStatus === 'premium';
+            const isPremium = CURRENT_USER_PLAN === 'premium';
             if (this.projectSaveButton) {
                 this.projectSaveButton.disabled = !isPremium;
                 this.projectSaveButton.classList.toggle('is-disabled', !isPremium);
                 this.projectSaveButton.setAttribute('aria-disabled', String(!isPremium));
-                this.projectSaveButton.title = isPremium ? 'Projekt speichern' : 'Nur für Premium';
+                this.projectSaveButton.title = isPremium ? 'Projekt speichern' : 'Upgrade für Projekt-Speicherung';
             }
             if (this.projectPanel) {
                 this.projectPanel.classList.toggle('is-disabled', !isPremium);
@@ -5916,7 +5882,7 @@
                     refreshBtn.disabled = !isPremium;
                     refreshBtn.classList.toggle('is-disabled', !isPremium);
                     refreshBtn.setAttribute('aria-disabled', String(!isPremium));
-                    refreshBtn.title = isPremium ? 'Projekte aktualisieren' : 'Nur für Premium';
+                    refreshBtn.title = isPremium ? 'Projekte aktualisieren' : 'Upgrade für Projekt-Speicherung';
                 }
                 const list = this.projectList;
                 if (!isPremium && list) {
@@ -6060,7 +6026,7 @@
 
         enforceFreeSettings() {
             if (this.isPremiumActive()) return;
-            this.state.planMode = 'free';
+            this.state.planMode = 'basis';
             this.settings.timeMode = 'wpm';
             this.settings.manualWpm = 0;
             this.settings.commaPause = 0.2;
@@ -6973,7 +6939,7 @@
                 const hideByPlan = !isPlanVisible(id);
                 card.classList.toggle('is-hidden-profile', hideByProfile || hideBySelection);
                 card.classList.toggle('is-hidden-plan', hideByPlan);
-                const shouldLock = !SA_CONFIG.PRO_MODE && toolCards.has(id);
+                const shouldLock = !this.isPremiumActive() && toolCards.has(id);
                 card.classList.toggle('ska-premium-locked', shouldLock);
                 if (shouldLock) {
                     let overlay = card.querySelector('.ska-premium-lock-overlay');
@@ -9234,10 +9200,7 @@
         }
 
         isPremiumActive() {
-            const planMode = this.state.planMode;
-            const windowPlanMode = typeof window !== 'undefined' ? window.SKA_PLAN_MODE : null;
-            const hasPremiumFlag = SA_CONFIG.PRO_MODE || SA_CONFIG.IS_ADMIN || windowPlanMode === 'premium';
-            return hasPremiumFlag && planMode === 'premium';
+            return this.getUserPlanStatus() === 'premium';
         }
 
         getEffectiveTimeMode() {
