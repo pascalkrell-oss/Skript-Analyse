@@ -57,11 +57,7 @@ function ska_get_user_plan_status( $user_id ) {
         return $simulation;
     }
 
-    $stored = '';
-    if ( $user_id ) {
-        $stored = get_user_meta( $user_id, 'sa_plan_status', true );
-    }
-    $stored = ska_normalize_plan_status( $stored );
+    $stored = ska_get_stored_plan_status( $user_id );
     if ( $stored ) {
         return $stored;
     }
@@ -244,6 +240,9 @@ function ska_require_premium_ajax_user() {
 
 function ska_ajax_save_project() {
     $user_id = ska_require_premium_ajax_user();
+    if ( ska_get_user_plan_status( $user_id ) !== 'premium' ) {
+        wp_send_json_error( array( 'message' => 'Premium erforderlich.' ), 403 );
+    }
 
     $title = isset( $_POST['title'] ) ? sanitize_text_field( wp_unslash( $_POST['title'] ) ) : '';
     $content = isset( $_POST['content'] ) ? wp_kses_post( wp_unslash( $_POST['content'] ) ) : '';
@@ -453,9 +452,13 @@ function ska_get_algorithm_tuning_settings() {
 }
 
 function ska_get_algorithm_tuning_localized_config() {
+    $user_id = get_current_user_id();
+    $current_plan = ska_get_user_plan_status( $user_id );
     return array(
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
         'globalAnnouncement' => ska_get_global_announcement(),
+        'currentUserPlan' => $current_plan,
+        'canSaveProjects' => $current_plan === 'premium',
     );
 }
 
