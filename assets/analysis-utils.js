@@ -1,5 +1,16 @@
-const cleanTextForCounting = (text) =>
-    text
+const cleanTextForCounting = (text, options = {}) => {
+    const markerTokens = Array.isArray(options.markerTokens)
+        ? options.markerTokens.map((marker) => String(marker || '').trim()).filter(Boolean)
+        : [];
+    const uniqueMarkers = markerTokens.length ? Array.from(new Set(markerTokens)) : [];
+    const markerRegexList = uniqueMarkers.sort((a, b) => b.length - a.length).map((marker) => new RegExp(`\\s*${escapeRegex(marker)}\\s*`, 'g'));
+    let cleaned = String(text || '');
+    if (markerRegexList.length) {
+        markerRegexList.forEach((pattern) => {
+            cleaned = cleaned.replace(pattern, ' ');
+        });
+    }
+    return cleaned
         .replace(/\s*\|[0-9\.]+S?\|\s*/g, ' ')
         .replace(/\s*\[PAUSE:.*?\]\s*/g, ' ')
         .replace(/\s*\[[^\]]+\]\s*/g, ' ')
@@ -7,6 +18,7 @@ const cleanTextForCounting = (text) =>
         .replace(/[\u200B\uFEFF]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
+};
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -146,7 +158,10 @@ const resolveProfileConfig = (settings = {}) => {
 };
 
 const analyzeReadability = (text, settings = {}) => {
-    let clean = cleanTextForCounting(text).trim();
+    const cleanTextForCountingFn = typeof settings.cleanTextForCounting === 'function'
+        ? settings.cleanTextForCounting
+        : (value) => cleanTextForCounting(value, settings.cleanTextOptions || {});
+    let clean = cleanTextForCountingFn(text).trim();
     if (settings.numberMode === 'word') {
         clean = expandNumbersForAudio(clean);
     }
@@ -226,11 +241,14 @@ const analyzeKeywordClusters = (text, settings = {}, stopwords = []) => {
     if (!text || !text.trim()) {
         return { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 };
     }
+    const cleanTextForCountingFn = typeof settings.cleanTextForCounting === 'function'
+        ? settings.cleanTextForCounting
+        : (value) => cleanTextForCounting(value, settings.cleanTextOptions || {});
     const stopwordSet = new Set(stopwords || []);
     const counts = new Map();
     let total = 0;
 
-    const cleanedText = cleanTextForCounting(text);
+    const cleanedText = cleanTextForCountingFn(text);
     const totalWords = cleanedText.match(/[A-Za-zÄÖÜäöüß0-9]+/g) || [];
     const focusKeywords = (settings.focusKeywords || '')
         .split(/[,|\n]/)
