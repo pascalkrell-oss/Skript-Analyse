@@ -46,17 +46,6 @@ function ska_get_stored_plan_status( $user_id ) {
 }
 
 function ska_get_simulation_override() {
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return '';
-    }
-
-    if ( isset( $_GET['simulated_role'] ) ) {
-        $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
-        if ( $role ) {
-            return $role;
-        }
-    }
-
     if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
         $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_COOKIE['ska_simulation_mode'] ) ) );
         if ( $role ) {
@@ -71,9 +60,11 @@ function ska_get_simulation_mode() {
     $user_id = get_current_user_id();
     $is_admin = current_user_can( 'manage_options' );
 
-    $override = ska_get_simulation_override();
-    if ( $override ) {
-        return $override;
+    if ( isset( $_COOKIE['ska_simulation_mode'] ) ) {
+        $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_COOKIE['ska_simulation_mode'] ) ) );
+        if ( $role ) {
+            return $role;
+        }
     }
 
     $stored = ska_get_stored_plan_status( $user_id );
@@ -89,11 +80,18 @@ function ska_handle_simulation_mode_request() {
         return;
     }
 
-    if ( ! isset( $_GET['simulated_role'] ) ) {
+    if ( ! isset( $_GET['ska_sim_role'] ) ) {
         return;
     }
 
-    $role = ska_normalize_plan_status( sanitize_text_field( wp_unslash( $_GET['simulated_role'] ) ) );
+    $raw_role = sanitize_text_field( wp_unslash( $_GET['ska_sim_role'] ) );
+    if ( $raw_role === 'reset' ) {
+        unset( $_COOKIE['ska_simulation_mode'] );
+        setcookie( 'ska_simulation_mode', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+        return;
+    }
+
+    $role = ska_normalize_plan_status( $raw_role );
     if ( $role ) {
         $_COOKIE['ska_simulation_mode'] = $role;
         setcookie( 'ska_simulation_mode', $role, 0, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
@@ -101,7 +99,7 @@ function ska_handle_simulation_mode_request() {
 }
 add_action( 'init', 'ska_handle_simulation_mode_request' );
 
-function ska_add_simulation_admin_bar( $wp_admin_bar ) {
+function ska_admin_bar_menu( $wp_admin_bar ) {
     if ( ! is_admin_bar_showing() || ! current_user_can( 'manage_options' ) ) {
         return;
     }
@@ -118,7 +116,7 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
             'id' => 'skript-analyse-mode-basis',
             'parent' => 'skript-analyse-mode',
             'title' => 'Als Basis anzeigen',
-            'href' => add_query_arg( 'simulated_role', 'basis' ),
+            'href' => add_query_arg( 'ska_sim_role', 'basis', remove_query_arg( 'ska_sim_role' ) ),
         )
     );
 
@@ -127,11 +125,20 @@ function ska_add_simulation_admin_bar( $wp_admin_bar ) {
             'id' => 'skript-analyse-mode-premium',
             'parent' => 'skript-analyse-mode',
             'title' => 'Als Premium anzeigen',
-            'href' => add_query_arg( 'simulated_role', 'premium' ),
+            'href' => add_query_arg( 'ska_sim_role', 'premium', remove_query_arg( 'ska_sim_role' ) ),
+        )
+    );
+
+    $wp_admin_bar->add_node(
+        array(
+            'id' => 'skript-analyse-mode-reset',
+            'parent' => 'skript-analyse-mode',
+            'title' => 'Simulation beenden',
+            'href' => add_query_arg( 'ska_sim_role', 'reset', remove_query_arg( 'ska_sim_role' ) ),
         )
     );
 }
-add_action( 'admin_bar_menu', 'ska_add_simulation_admin_bar', 90 );
+add_action( 'admin_bar_menu', 'ska_admin_bar_menu', 90 );
 
 function ska_save_user_profile_fields( $user_id ) {
     if ( ! current_user_can( 'edit_user', $user_id ) ) {
