@@ -1110,7 +1110,8 @@
 
 })();
 
-/* --- PROJEKT MANAGER LOGIK --- */
+
+/* --- PROJEKT MANAGER LOGIK (UPDATED) --- */
 (function() {
     // Hilfsfunktion: Modals erstellen
     const createModalHTML = (id, title, bodyContent) => `
@@ -1126,52 +1127,86 @@
         </div>
     `;
 
-    // 1. UI Initialisieren (Buttons einfügen)
+    // 1. UI Initialisieren (Sicherer Start)
     function initProjectUI() {
-        // A. Entferne alte Sektion falls vorhanden
-        const oldSection = document.querySelector('.project-manager-ui');
-        if(oldSection) oldSection.remove();
+        try {
+            // A. Entferne alte Sektion falls vorhanden
+            const oldSection = document.querySelector('.project-manager-ui');
+            if(oldSection) oldSection.remove();
 
-        // B. Buttons einfügen (Links neben "Aufräumen" oder in der Toolbar)
-        // Wir suchen den Container der Buttons
-        const cleanBtn = document.querySelector('button[data-action="clean"]');
-        if (cleanBtn && cleanBtn.parentNode) {
-            // Container für unsere Buttons
-            const wrapper = document.createElement('div');
-            wrapper.className = 'project-manager-ui ska-tool-wrapper';
-            wrapper.style.display = 'inline-flex';
-            wrapper.style.gap = '5px';
-            wrapper.style.marginRight = '10px';
+            // B. Button Einfügen (Sicherheits-Check)
+            const clearBtn = document.querySelector('button[data-action="clean"]') || document.querySelector('.btn-clear-script');
 
-            // Load Button
-            const loadBtn = document.createElement('button');
-            loadBtn.type = 'button';
-            loadBtn.className = 'ska-tool-btn';
-            loadBtn.innerHTML = '<span class="dashicons dashicons-portfolio" style="font-family:dashicons; margin-right:4px;"></span> Laden';
-            loadBtn.onclick = openLoadModal;
+            // Nur einfügen wenn clearBtn existiert und noch kein Load-Button da ist
+            if (clearBtn && clearBtn.parentNode && !document.querySelector('.ska-btn-brand-blue')) {
+                // Wrapper für saubere Ausrichtung
+                const wrapper = document.createElement('div');
+                wrapper.className = 'project-manager-ui ska-tool-wrapper';
+                wrapper.style.display = 'inline-flex';
+                wrapper.style.gap = '5px';
+                wrapper.style.marginRight = '10px';
 
-            // Save Button
-            const saveBtn = document.createElement('button');
-            saveBtn.type = 'button';
-            saveBtn.className = 'ska-tool-btn';
-            saveBtn.innerHTML = '<span class="dashicons dashicons-saved" style="font-family:dashicons; margin-right:4px;"></span> Speichern';
-            saveBtn.onclick = openSaveModal;
+                const loadBtn = document.createElement('button');
+                loadBtn.className = 'ska-btn ska-btn-brand-blue ska-tool-btn'; // ska-tool-btn für einheitlichen Style
+                loadBtn.innerHTML = '<span class="dashicons dashicons-portfolio" style="font-family:dashicons; margin-right:4px;"></span> Projekte laden';
+                loadBtn.type = "button";
+                loadBtn.onclick = function(e) {
+                    e.preventDefault();
+                    if(typeof openLoadModal === 'function') openLoadModal();
+                };
 
-            wrapper.appendChild(loadBtn);
-            wrapper.appendChild(saveBtn);
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'ska-tool-btn';
+                saveBtn.innerHTML = '<span class="dashicons dashicons-saved" style="font-family:dashicons; margin-right:4px;"></span> Speichern';
+                saveBtn.type = "button";
+                saveBtn.onclick = function(e) {
+                    e.preventDefault();
+                    if(typeof openSaveModal === 'function') openSaveModal();
+                };
 
-            // Insert before clean button's wrapper if it exists, or just before the button
-            const cleanWrapper = cleanBtn.closest('.ska-tool-wrapper');
-            if (cleanWrapper) {
-                cleanWrapper.parentNode.insertBefore(wrapper, cleanWrapper);
-            } else {
-                cleanBtn.parentNode.insertBefore(wrapper, cleanBtn);
+                wrapper.appendChild(loadBtn);
+                wrapper.appendChild(saveBtn);
+
+                // Insert logic
+                const cleanWrapper = clearBtn.closest('.ska-tool-wrapper');
+                if (cleanWrapper) {
+                    cleanWrapper.parentNode.insertBefore(wrapper, cleanWrapper);
+                } else {
+                    clearBtn.parentNode.insertBefore(wrapper, clearBtn);
+                }
             }
+
+            // 2. Editor Value Helper (Global verfügbar machen)
+            window.getSkriptContent = function() {
+                const editorDiv = document.querySelector('.skriptanalyse-textarea') || document.querySelector('.skript-editor');
+                if (editorDiv) {
+                    // Bevorzugt innerText für Zeilenumbrüche, value fallback
+                    return editorDiv.value !== undefined ? editorDiv.value : editorDiv.innerText;
+                }
+                return '';
+            };
+
+            // 3. Editor Set Helper
+            window.setSkriptContent = function(text) {
+                 const editorDiv = document.querySelector('.skriptanalyse-textarea') || document.querySelector('.skript-editor');
+                 if (editorDiv) {
+                     if (editorDiv.value !== undefined) {
+                         editorDiv.value = text;
+                     } else {
+                         editorDiv.innerText = text;
+                     }
+                     // Trigger Input Event for analysis update
+                     editorDiv.dispatchEvent(new Event('input', { bubbles: true }));
+                 }
+            };
+
+        } catch (err) {
+            console.error('SKA Project UI Error:', err);
         }
     }
 
-    // 2. MODAL: Speichern
-    function openSaveModal() {
+    // Global Functions for Modal Access
+    window.openSaveModal = function() {
         if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
             alert('Nur für Premium-Nutzer verfügbar.');
             return;
@@ -1195,7 +1230,6 @@
             document.body.insertAdjacentHTML('beforeend', createModalHTML('ska-save-modal', 'Projekt speichern', body));
             modal = document.getElementById('ska-save-modal');
 
-            // Listener für "Neu Speichern"
             const saveBtn = document.getElementById('ska-btn-save-new');
             if (saveBtn) {
                 saveBtn.onclick = () => {
@@ -1211,8 +1245,7 @@
         modal.classList.add('is-visible');
     }
 
-    // 3. MODAL: Laden
-    function openLoadModal() {
+    window.openLoadModal = function() {
         if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
             alert('Nur für Premium-Nutzer verfügbar.');
             return;
@@ -1229,7 +1262,7 @@
         modal.classList.add('is-visible');
     }
 
-    // 4. AJAX: Liste laden & Rendern
+    // AJAX: Liste laden & Rendern
     function loadProjectsForList(containerId, mode) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -1277,7 +1310,7 @@
         });
     }
 
-    // 5. Globale Funktionen für Onclick
+    // Globale Funktionen für Onclick
     window.skaOverwriteProject = (id, title) => {
         if(confirm(`Projekt "${title}" wirklich überschreiben?`)) {
             saveProjectAjax(title, id);
@@ -1297,12 +1330,14 @@
         .then(response => response.json())
         .then(res => {
             if(res.success) {
-                const editor = document.querySelector('.skriptanalyse-textarea');
-                if(editor) {
-                    editor.innerText = res.data.content; // Use innerText for contenteditable
-                    // Trigger Input Event for analysis update
-                    editor.dispatchEvent(new Event('input', { bubbles: true }));
+                if(window.setSkriptContent) {
+                    window.setSkriptContent(res.data.content);
+                } else {
+                    // Fallback
+                    const editor = document.querySelector('.skriptanalyse-textarea');
+                    if(editor) editor.innerText = res.data.content;
                 }
+
                 const loadModal = document.getElementById('ska-load-modal');
                 if (loadModal) loadModal.classList.remove('is-visible');
             } else {
@@ -1329,14 +1364,13 @@
         })
         .then(response => response.json())
         .then(res => {
-            loadProjectsForList(containerId, mode); // Reload List
+            loadProjectsForList(containerId, mode);
         });
     };
 
     function saveProjectAjax(title, id) {
-        const editor = document.querySelector('.skriptanalyse-textarea');
-        // Grab innerText to preserve line breaks
-        const content = editor ? editor.innerText : '';
+        // Use the safe getter
+        const content = window.getSkriptContent ? window.getSkriptContent() : '';
 
         const formData = new FormData();
         formData.append('action', 'ska_save_project');
@@ -1365,9 +1399,11 @@
         });
     }
 
-    // Starte UI wenn DOM bereit
-    document.addEventListener('DOMContentLoaded', initProjectUI);
-    // Fallback falls DOM schon da
-    if(document.readyState === 'complete' || document.readyState === 'interactive') initProjectUI();
+    // Starte UI sicher
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProjectUI);
+    } else {
+        initProjectUI();
+    }
 
 })();

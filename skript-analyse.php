@@ -201,7 +201,10 @@ function ska_register_assets() {
 
     $jspdf_url = SKA_URL . 'assets/jspdf.umd.min.js';
     $pos_url = SKA_URL . 'assets/pos-tagger.js';
+    $utils_url = SKA_URL . 'assets/analysis-utils.js';
     $js_deps = array();
+
+    wp_enqueue_style( 'skript-analyse-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
 
     if ( file_exists( plugin_dir_path( __FILE__ ) . 'assets/jspdf.umd.min.js' ) ) {
         wp_register_script( 'jspdf', $jspdf_url, array(), '2.5.1', true );
@@ -213,8 +216,30 @@ function ska_register_assets() {
         $js_deps[] = 'skript-analyse-pos';
     }
 
-    wp_register_style( 'skript-analyse-css', SKA_URL . 'assets/style.css', array(), SKA_VER );
+    if ( file_exists( plugin_dir_path( __FILE__ ) . 'assets/analysis-utils.js' ) ) {
+        wp_register_script( 'skript-analyse-utils', $utils_url, array(), SKA_VER, true );
+        $js_deps[] = 'skript-analyse-utils';
+    }
+
     wp_register_script( 'skript-analyse-js', SKA_URL . 'assets/app.js', $js_deps, SKA_VER, true );
+
+    $current_user_id = get_current_user_id();
+    $plan_status = function_exists('ska_get_user_plan_status') ? ska_get_user_plan_status($current_user_id) : 'basis';
+
+    if(current_user_can('manage_options') && $plan_status === 'basis') {
+         if(isset($_COOKIE['ska_simulation_mode']) && $_COOKIE['ska_simulation_mode'] === 'premium') $plan_status = 'premium';
+    }
+
+    wp_localize_script( 'skript-analyse-js', 'skriptAnalyseConfig', array(
+        'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+        'nonce'           => wp_create_nonce( 'ska_analysis_nonce' ),
+        'currentUserPlan' => $plan_status,
+        'loggedIn'        => is_user_logged_in(),
+        'settings'        => ska_get_algorithm_tuning_settings(),
+        'workerUrl'       => SKA_URL . 'assets/analysis-worker.js',
+        'globalAnnouncement' => ska_get_global_announcement(),
+        'canSaveProjects' => $plan_status === 'premium',
+    ));
 }
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
@@ -405,12 +430,13 @@ function ska_shortcode() {
     wp_enqueue_script( 'skript-analyse-js' );
 
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
-    ska_localize_algorithm_tuning_config( 'skript-analyse-js' );
+    // ska_localize_algorithm_tuning_config is now handled by ska_register_assets localization
+    // ska_localize_algorithm_tuning_config( 'skript-analyse-js' );
 
     ob_start();
     ?>
     <div class="skriptanalyse-app">
-        
+
         <header class="ska-header">
             <div class="ska-header-content">
                 <h2>Jetzt Skript analysieren</h2>
@@ -457,12 +483,12 @@ function ska_shortcode() {
                         </select>
                     </div>
                 </div>
-                
+
                 <button type="button" class="ska-btn ska-btn--ghost ska-settings-btn-inline" data-action="open-settings" title="Einstellungen">
                     <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </button>
             </div>
-            
+
             <div class="ska-toolbar-actions">
                 <button type="button" class="ska-btn ska-btn--secondary" data-action="open-help">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -494,7 +520,7 @@ function ska_shortcode() {
                             </button>
                             <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Versionen speichern & vergleichen.</div>
                         </div>
-                        <div class="skriptanalyse-input-actions"></div> 
+                        <div class="skriptanalyse-input-actions"></div>
                     </div>
                 </div>
                 <div class="ska-editor-formatting" role="toolbar" aria-label="Textformatierung">
@@ -568,7 +594,7 @@ function ska_shortcode() {
                 <div class="ska-modal-footer"><button class="ska-btn ska-btn--primary" data-action="close-settings">Speichern</button></div>
             </div>
         </div>
-        
+
         <div class="skriptanalyse-modal" id="ska-help-modal" aria-hidden="true">
             <div class="skriptanalyse-modal-overlay" data-action="close-help"></div>
             <div class="skriptanalyse-modal-content" style="max-width:880px;">
@@ -903,9 +929,9 @@ function ska_shortcode() {
                     <p style="margin:0.2rem 0 0 0; color:#64748b; font-size:0.9rem; font-weight:normal;">Was soll im PDF enthalten sein?</p>
                 </div>
                 <div class="skriptanalyse-modal-body" style="padding-top:1rem;">
-                    
+
                     <div class="ska-compact-options-grid">
-                        
+
                         <label class="ska-compact-option">
                             <input type="checkbox" id="pdf-opt-overview" checked>
                             <div class="ska-compact-option-inner">
@@ -1116,7 +1142,7 @@ function ska_render_admin_page() {
     wp_enqueue_style( 'dashicons' );
     wp_enqueue_script( 'skript-analyse-js' );
     wp_localize_script( 'skript-analyse-js', 'SKA_CONFIG_PHP', ska_get_localized_config() );
-    ska_localize_algorithm_tuning_config( 'skript-analyse-js' );
+    // ska_localize_algorithm_tuning_config( 'skript-analyse-js' ); // Already localized in register_assets
 
     status_header( 200 );
     nocache_headers();
