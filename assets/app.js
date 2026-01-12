@@ -3949,38 +3949,46 @@
                 </div>`;
         }
 
-        ensureTeleprompterOverlay() {
-            let overlay = document.querySelector('.teleprompter-overlay');
-            if (overlay) return overlay;
+        ensureTeleprompterModal() {
+            let modal = document.getElementById('ska-teleprompter-modal');
+            if (modal) return modal;
 
-            overlay = document.createElement('div');
-            overlay.className = 'teleprompter-overlay';
-            overlay.innerHTML = `
-                <div class="teleprompter-content">
-                    <div class="teleprompter-text" data-role-teleprompter-text></div>
-                </div>
-                <div class="teleprompter-controls">
-                    <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Play</button>
-                    <label class="teleprompter-control-group">
-                        <span>Speed</span>
-                        <input type="range" min="10" max="200" step="5" value="${this.state.teleprompter.speed}" data-role="teleprompter-speed">
-                        <span data-role="teleprompter-speed-label">${this.state.teleprompter.speed}px/s</span>
-                    </label>
-                    <label class="teleprompter-control-group">
-                        <span>Font</span>
-                        <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
-                        <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
-                    </label>
-                    <button type="button" class="teleprompter-control teleprompter-close" data-action="close-teleprompter" aria-label="Close teleprompter">X</button>
+            modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal ska-teleprompter-modal';
+            modal.id = 'ska-teleprompter-modal';
+            modal.ariaHidden = 'true';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
+                <div class="skriptanalyse-modal-content ska-tool-modal-content ska-teleprompter-modal-content">
+                    <button type="button" class="ska-close-icon" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
+                    <div class="ska-modal-header"><h3>Teleprompter</h3></div>
+                    <div class="skriptanalyse-modal-body ska-teleprompter-body">
+                        <div class="teleprompter-content">
+                            <div class="teleprompter-text" data-role-teleprompter-text></div>
+                        </div>
+                        <div class="teleprompter-controls">
+                            <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Play</button>
+                            <label class="teleprompter-control-group">
+                                <span>Speed</span>
+                                <input type="range" min="10" max="200" step="5" value="${this.state.teleprompter.speed}" data-role="teleprompter-speed">
+                                <span data-role="teleprompter-speed-label">${this.state.teleprompter.speed}px/s</span>
+                            </label>
+                            <label class="teleprompter-control-group">
+                                <span>Font</span>
+                                <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
+                                <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
+                            </label>
+                            <button type="button" class="teleprompter-control teleprompter-close" data-action="teleprompter-reset">Reset</button>
+                        </div>
+                    </div>
                 </div>`;
-            document.body.appendChild(overlay);
-            document.body.classList.add('ska-modal-open');
+            document.body.appendChild(modal);
 
-            const speedInput = overlay.querySelector('[data-role="teleprompter-speed"]');
-            const speedLabel = overlay.querySelector('[data-role="teleprompter-speed-label"]');
-            const fontInput = overlay.querySelector('[data-role="teleprompter-font"]');
-            const fontLabel = overlay.querySelector('[data-role="teleprompter-font-label"]');
-            const textEl = overlay.querySelector('[data-role-teleprompter-text]');
+            const speedInput = modal.querySelector('[data-role="teleprompter-speed"]');
+            const speedLabel = modal.querySelector('[data-role="teleprompter-speed-label"]');
+            const fontInput = modal.querySelector('[data-role="teleprompter-font"]');
+            const fontLabel = modal.querySelector('[data-role="teleprompter-font-label"]');
+            const textEl = modal.querySelector('[data-role-teleprompter-text]');
 
             if (textEl) {
                 textEl.style.fontSize = `${this.state.teleprompter.fontSize}px`;
@@ -4003,72 +4011,72 @@
                 });
             }
 
-            overlay.addEventListener('click', (event) => {
-                const btn = event.target.closest('[data-action]');
-                if (!btn) return;
-                this.handleAction(btn.dataset.action, btn, event);
-            });
-
-            return overlay;
+            return modal;
         }
 
-        showTeleprompterOverlay() {
-            const overlay = this.ensureTeleprompterOverlay();
-            const textEl = overlay.querySelector('[data-role-teleprompter-text]');
+        showTeleprompterModal() {
+            const modal = this.ensureTeleprompterModal();
+            const textEl = modal.querySelector('[data-role-teleprompter-text]');
             if (textEl) textEl.textContent = this.getText();
             this.resetTeleprompter();
-            return overlay;
+            SA_Utils.openModal(modal);
+            document.body.classList.add('ska-modal-open');
+            return modal;
         }
 
-        closeTeleprompterOverlay() {
-            const overlay = document.querySelector('.teleprompter-overlay');
-            if (!overlay) return;
+        closeTeleprompterModal() {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
             this.resetTeleprompter();
-            overlay.remove();
-            document.body.classList.remove('ska-modal-open');
+            SA_Utils.closeModal(modal, () => {
+                document.body.classList.remove('ska-modal-open');
+            });
         }
 
         ensureFocusModeModal() {
-            let overlay = document.querySelector('.focus-mode-modal');
-            if (overlay) return overlay;
+            let modal = document.getElementById('ska-focus-modal');
+            if (modal) return modal;
 
-            overlay = document.createElement('div');
-            overlay.className = 'focus-mode-modal';
-            overlay.innerHTML = `
-                <div class="focus-toolbar">
-                    <label class="focus-field">
-                        <span>Time Limit (min)</span>
-                        <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
-                    </label>
-                    <label class="focus-field">
-                        <span>Word Goal</span>
-                        <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
-                    </label>
-                    <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start Timer</button>
-                    <div class="focus-stats">
-                        <span data-role="focus-timer">00:00</span>
-                        <span data-role="focus-words">0 / 0 Words</span>
+            modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal ska-focus-modal';
+            modal.id = 'ska-focus-modal';
+            modal.ariaHidden = 'true';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-focus-mode"></div>
+                <div class="skriptanalyse-modal-content ska-focus-modal-content">
+                    <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
+                    <div class="ska-modal-header"><h3>Schreib-Sprint & Fokus</h3></div>
+                    <div class="skriptanalyse-modal-body ska-focus-modal-body">
+                        <div class="focus-toolbar">
+                            <label class="focus-field">
+                                <span>Time Limit (min)</span>
+                                <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
+                            </label>
+                            <label class="focus-field">
+                                <span>Word Goal</span>
+                                <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
+                            </label>
+                            <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start Timer</button>
+                            <div class="focus-stats">
+                                <span data-role="focus-timer">00:00</span>
+                                <span data-role="focus-words">0 / 0 Words</span>
+                            </div>
+                            <div class="focus-progress" aria-hidden="true">
+                                <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
+                                <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
+                            </div>
+                            <button type="button" class="focus-exit" data-action="close-focus-mode">Exit Focus Mode</button>
+                        </div>
+                        <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                     </div>
-                    <div class="focus-progress" aria-hidden="true">
-                        <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
-                        <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
-                    </div>
-                    <button type="button" class="focus-exit" data-action="close-focus-mode">Exit Focus Mode</button>
                 </div>
-                <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
             `;
-            document.body.appendChild(overlay);
+            document.body.appendChild(modal);
 
-            overlay.addEventListener('click', (event) => {
-                const btn = event.target.closest('[data-action]');
-                if (!btn) return;
-                this.handleAction(btn.dataset.action, btn, event);
-            });
-
-            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
-            const timeInput = overlay.querySelector('[data-role="focus-time-limit"]');
-            const goalInput = overlay.querySelector('[data-role="focus-word-goal"]');
-            const startBtn = overlay.querySelector('[data-action="focus-start-timer"]');
+            const focusArea = modal.querySelector('[data-role="focus-textarea"]');
+            const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
+            const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
+            const startBtn = modal.querySelector('[data-action="focus-start-timer"]');
 
             const updateInputs = () => {
                 const minutes = parseInt(timeInput.value, 10);
@@ -4098,29 +4106,30 @@
                 focusArea.addEventListener('input', syncText);
             }
 
-            return overlay;
+            return modal;
         }
 
         openFocusModeModal() {
-            const overlay = this.ensureFocusModeModal();
-            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
-            const timeInput = overlay.querySelector('[data-role="focus-time-limit"]');
-            const goalInput = overlay.querySelector('[data-role="focus-word-goal"]');
+            const modal = this.ensureFocusModeModal();
+            const focusArea = modal.querySelector('[data-role="focus-textarea"]');
+            const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
+            const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
             if (timeInput) timeInput.value = this.state.wordSprint.durationMinutes || '';
             if (goalInput) goalInput.value = this.state.wordSprint.targetWords || '';
             if (focusArea) {
                 focusArea.value = this.getText();
                 focusArea.focus();
             }
-            overlay.classList.remove('is-time-up', 'is-goal-reached');
+            modal.classList.remove('is-time-up', 'is-goal-reached');
+            SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
             this.updateWordSprintUI(true);
-            return overlay;
+            return modal;
         }
 
         toggleFocusMode() {
-            const existing = document.querySelector('.focus-mode-modal');
-            if (existing) {
+            const existing = document.getElementById('ska-focus-modal');
+            if (existing && existing.classList.contains('is-open')) {
                 this.closeFocusMode();
                 return;
             }
@@ -4128,17 +4137,18 @@
         }
 
         closeFocusMode() {
-            const overlay = document.querySelector('.focus-mode-modal');
-            if (!overlay) return;
-            const focusArea = overlay.querySelector('[data-role="focus-textarea"]');
+            const modal = document.getElementById('ska-focus-modal');
+            if (!modal) return;
+            const focusArea = modal.querySelector('[data-role="focus-textarea"]');
             if (focusArea) {
                 const value = focusArea.value;
                 this.setText(value);
                 this.analyze(value);
             }
             this.stopWordSprint();
-            overlay.remove();
-            document.body.classList.remove('ska-modal-open');
+            SA_Utils.closeModal(modal, () => {
+                document.body.classList.remove('ska-modal-open');
+            });
         }
 
         renderCheckoutModal(productTitle = '', price = '', cycle = '') {
@@ -4501,9 +4511,9 @@
         }
 
         startTeleprompter() {
-            const overlay = this.ensureTeleprompterOverlay();
-            const body = overlay.querySelector('.teleprompter-content');
-            const textContainer = overlay.querySelector('[data-role-teleprompter-text]');
+            const modal = this.ensureTeleprompterModal();
+            const body = modal.querySelector('.teleprompter-content');
+            const textContainer = modal.querySelector('[data-role-teleprompter-text]');
             if (!body) return false;
             if (textContainer && (!textContainer.textContent || !textContainer.textContent.trim())) {
                 textContainer.textContent = this.getText();
@@ -4546,8 +4556,8 @@
         }
 
         resetTeleprompter() {
-            const overlay = document.querySelector('.teleprompter-overlay');
-            const body = overlay ? overlay.querySelector('.teleprompter-content') : null;
+            const modal = document.getElementById('ska-teleprompter-modal');
+            const body = modal ? modal.querySelector('.teleprompter-content') : null;
             if (body) body.scrollTop = 0;
             if (this.state.teleprompter.words) {
                 this.state.teleprompter.words.forEach(word => {
@@ -4743,7 +4753,7 @@
         }
 
         updateWordSprintUI(forceIdle = false) {
-            const modal = document.querySelector('.focus-mode-modal');
+            const modal = document.getElementById('ska-focus-modal');
             if (!modal) return;
             const countdownEl = modal.querySelector('[data-role="focus-timer"]');
             const progressFill = modal.querySelector('[data-role="focus-progress-fill"]');
@@ -4995,13 +5005,13 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
-                this.showTeleprompterOverlay();
+                this.showTeleprompterModal();
                 const startBtn = document.querySelector('[data-action="teleprompter-toggle"]');
                 if (startBtn) startBtn.textContent = 'Play';
                 return true;
             }
             if (act === 'close-teleprompter') {
-                this.closeTeleprompterOverlay();
+                this.closeTeleprompterModal();
                 return true;
             }
             if (act === 'toggle-focus-mode') {
@@ -5013,7 +5023,7 @@
                 return true;
             }
             if (act === 'focus-start-timer') {
-                const modal = document.querySelector('.focus-mode-modal');
+                const modal = document.getElementById('ska-focus-modal');
                 if (!modal) return true;
                 const timeInput = modal.querySelector('[data-role="focus-time-limit"]');
                 const goalInput = modal.querySelector('[data-role="focus-word-goal"]');
@@ -5925,6 +5935,14 @@
                     const overlay = e.target.classList.contains('skriptanalyse-modal-overlay');
                 
                 if(overlay) {
+                    if (modal.id === 'ska-teleprompter-modal') {
+                        this.closeTeleprompterModal();
+                        return;
+                    }
+                    if (modal.id === 'ska-focus-modal') {
+                        this.closeFocusMode();
+                        return;
+                    }
                     SA_Utils.closeModal(modal, () => {
                         document.body.classList.remove('ska-modal-open');
                         if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
@@ -5946,6 +5964,16 @@
                 const act = btn.dataset.action;
 
                 if(act.startsWith('close-')) { 
+                    if (modal.id === 'ska-teleprompter-modal') {
+                        this.closeTeleprompterModal();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (modal.id === 'ska-focus-modal') {
+                        this.closeFocusMode();
+                        e.preventDefault();
+                        return;
+                    }
                     SA_Utils.closeModal(modal, () => {
                         document.body.classList.remove('ska-modal-open');
                         if (modal.id === 'ska-benchmark-modal' && this.state.benchmark.timerId) {
