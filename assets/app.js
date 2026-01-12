@@ -11276,3 +11276,231 @@
         renderMasqueradeBanner();
     });
 })();
+
+(function() {
+    // Hilfsfunktion: Modals erstellen
+    const createModalHTML = (id, title, bodyContent) => `
+        <div id="${id}" class="analysis-modal">
+            <div class="analysis-modal-backdrop" onclick="document.getElementById('${id}').classList.remove('is-visible')"></div>
+            <div class="analysis-modal-container">
+                <div class="analysis-modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="document.getElementById('${id}').classList.remove('is-visible')">&times;</button>
+                </div>
+                <div class="analysis-modal-body">${bodyContent}</div>
+            </div>
+        </div>
+    `;
+
+    function initProjectManager() {
+        // 1. Alte Sektion entfernen (Falls vorhanden)
+        const oldSection = document.querySelector('.project-load-section');
+        if(oldSection) oldSection.remove();
+
+        // 2. Blauen Button einfügen (Links neben "Aufräumen")
+        const cleanBtn = document.querySelector('button[data-action="clean"]');
+        // Check ob Button schon da ist, um Duplikate zu vermeiden
+        if (cleanBtn && cleanBtn.parentNode && !document.querySelector('.btn-load-projects')) {
+            const loadBtn = document.createElement('button');
+            loadBtn.className = 'ska-btn ska-btn-brand-blue btn-load-projects';
+            loadBtn.innerHTML = '<span class="dashicons dashicons-portfolio"></span> Projekte laden';
+            loadBtn.style.marginRight = '10px';
+            loadBtn.type = "button";
+            loadBtn.onclick = openLoadModal;
+            cleanBtn.parentNode.insertBefore(loadBtn, cleanBtn);
+        }
+
+        // 3. "Projekt Speichern" Button im Header überschreiben/finden
+        // Versuche Button zu finden (Oft "Version speichern" oder ähnlich im UI)
+        // Wir hängen uns an den vorhandenen Save Button oder erstellen einen, falls keiner da ist
+        let saveBtn = document.querySelector('.btn-save-project'); // Klasse ggf. anpassen
+        if (!saveBtn) {
+             // Fallback: Suche nach Button im Header
+             const headerActions = document.querySelector('.analysis-header-actions'); // Beispiel-Klasse
+             if(headerActions) {
+                 saveBtn = document.createElement('button');
+                 saveBtn.innerText = 'Projekt speichern';
+                 saveBtn.className = 'ska-btn ska-btn-primary btn-save-project';
+                 headerActions.appendChild(saveBtn);
+             }
+        }
+
+        if (saveBtn) {
+            saveBtn.onclick = (e) => {
+                e.preventDefault();
+                openSaveModal();
+            };
+        }
+    }
+
+    // --- MODAL LOGIK: SPEICHERN ---
+    function openSaveModal() {
+        if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
+            alert('Nur für Premium-Nutzer verfügbar.');
+            return;
+        }
+
+        // Modal bauen falls nicht existiert
+        let modal = document.getElementById('ska-save-modal');
+        if (!modal) {
+            const body = `
+                <div class="ska-save-top">
+                    <label>Neues Projekt anlegen:</label>
+                    <div class="ska-input-group">
+                        <input type="text" id="ska-new-project-name" placeholder="Projektname eingeben..." class="ska-input">
+                        <button id="ska-btn-save-new" class="ska-btn-primary">Speichern</button>
+                    </div>
+                </div>
+                <hr class="ska-divider">
+                <div class="ska-save-existing">
+                    <h4>Oder bestehendes überschreiben:</h4>
+                    <div id="ska-save-list" class="ska-project-list">Lade...</div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', createModalHTML('ska-save-modal', 'Projekt speichern', body));
+            modal = document.getElementById('ska-save-modal');
+
+            // Event Listener Neu Speichern
+            document.getElementById('ska-btn-save-new').onclick = () => {
+                const title = document.getElementById('ska-new-project-name').value;
+                if(!title) return alert('Bitte Namen eingeben');
+                saveProjectAjax(title, 0);
+            };
+        }
+
+        loadProjectsForList('ska-save-list', 'save');
+        modal.classList.add('is-visible');
+    }
+
+    // --- MODAL LOGIK: LADEN ---
+    function openLoadModal() {
+        if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
+            alert('Feature nur im Premium-Plan.');
+            return;
+        }
+
+        let modal = document.getElementById('ska-load-modal');
+        if (!modal) {
+            const body = `<div id="ska-load-list" class="ska-project-list">Lade...</div>`;
+            document.body.insertAdjacentHTML('beforeend', createModalHTML('ska-load-modal', 'Projekte verwalten', body));
+            modal = document.getElementById('ska-load-modal');
+        }
+
+        loadProjectsForList('ska-load-list', 'load');
+        modal.classList.add('is-visible');
+    }
+
+    // --- API HELPER (FETCH REPLACEMENT FOR JQUERY) ---
+    function apiPost(action, data, callback) {
+        const formData = new FormData();
+        formData.append('action', action);
+        formData.append('nonce', window.skriptAnalyseConfig.nonce);
+        for (const key in data) {
+            formData.append(key, data[key]);
+        }
+
+        fetch(window.skriptAnalyseConfig.ajaxUrl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(res => {
+            if (callback) callback(res);
+        })
+        .catch(err => {
+            console.error('API Error:', err);
+            if (callback) callback({ success: false, data: 'Netzwerkfehler' });
+        });
+    }
+
+    // --- AJAX HELPER ---
+    function loadProjectsForList(containerId, mode) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '<div class="ska-spinner"></div>';
+
+        apiPost('ska_list_projects', {}, (res) => {
+            if (!res.success || !res.data.length) {
+                container.innerHTML = '<p class="text-muted">Keine gespeicherten Projekte gefunden.</p>';
+                return;
+            }
+
+            let html = '';
+            res.data.forEach(p => {
+                let actionHtml = '';
+                if (mode === 'save') {
+                    actionHtml = `<button class="ska-btn-sm ska-btn-outline" onclick="window.skaOverwrite(${p.id}, '${p.title}')">Überschreiben</button>`;
+                } else {
+                    actionHtml = `<button class="ska-btn-sm ska-btn-primary" onclick="window.skaLoad(${p.id})">Laden</button>`;
+                }
+
+                html += `
+                    <div class="ska-project-item">
+                        <div class="ska-p-info"><strong>${p.title}</strong><span>${p.date}</span></div>
+                        <div class="ska-p-actions">
+                            ${actionHtml}
+                            <button class="ska-btn-sm ska-btn-danger-icon" onclick="window.skaDelete(${p.id}, '${containerId}', '${mode}')" title="Löschen">&times;</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        });
+    }
+
+    function saveProjectAjax(title, id) {
+        // Content holen (Fallback für Contenteditable Div)
+        let content = '';
+        if(typeof window.getSkriptContent === 'function') {
+            content = window.getSkriptContent();
+        } else {
+             // Notfall Fallback
+             const el = document.querySelector('.skriptanalyse-textarea');
+             content = el ? (el.value || el.innerText) : '';
+        }
+
+        apiPost('ska_save_project', {
+            title: title,
+            content: content,
+            id: id
+        }, (res) => {
+            if(res.success) {
+                alert(res.data.message);
+                document.querySelectorAll('.analysis-modal').forEach(m => m.classList.remove('is-visible'));
+            } else {
+                alert('Fehler: ' + res.data);
+            }
+        });
+    }
+
+    // Globale Actions für Onclick im HTML string
+    window.skaOverwrite = (id, title) => {
+        if(confirm(`Projekt "${title}" wirklich überschreiben?`)) saveProjectAjax(title, id);
+    };
+    window.skaLoad = (id) => {
+        apiPost('ska_get_project', { id: id }, (res) => {
+            if(res.success) {
+                if(typeof window.setSkriptContent === 'function') {
+                    window.setSkriptContent(res.data.content);
+                } else {
+                    const el = document.querySelector('.skriptanalyse-textarea');
+                    if(el) { el.innerText = res.data.content; el.dispatchEvent(new Event('input')); }
+                }
+                document.getElementById('ska-load-modal').classList.remove('is-visible');
+            }
+        });
+    };
+    window.skaDelete = (id, cid, mode) => {
+        if(confirm('Wirklich löschen?')) {
+            apiPost('ska_delete_project', { id: id }, () => {
+                loadProjectsForList(cid, mode);
+            });
+        }
+    };
+
+    // Start
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initProjectManager);
+    } else {
+        initProjectManager();
+    }
+})();

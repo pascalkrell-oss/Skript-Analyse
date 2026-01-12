@@ -3644,3 +3644,115 @@ html.is-iframe-mode .admin-bar {
 .analysis-modal.is-closing {
     opacity: 0;
 }
+
+/* --- PROJEKT MANAGER STYLES --- */
+
+/* Brand Blue Button */
+.ska-btn-brand-blue {
+    background-color: #1a93ee;
+    color: #fff !important;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.ska-btn-brand-blue:hover {
+    background-color: #1578c2;
+    text-decoration: none;
+}
+.ska-btn-brand-blue .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Modal Layouts */
+.ska-save-top {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+.ska-input-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+.ska-input-group input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+.ska-divider {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin: 20px 0;
+}
+
+/* Projekt Liste */
+.ska-project-list {
+    max-height: 350px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.ska-project-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    transition: transform 0.1s, border-color 0.1s;
+}
+.ska-project-item:hover {
+    border-color: #1a93ee;
+    transform: translateX(2px);
+}
+.ska-p-info {
+    display: flex;
+    flex-direction: column;
+}
+.ska-p-info strong { font-size: 0.95rem; color: #334155; }
+.ska-p-info span { font-size: 0.8rem; color: #94a3b8; }
+
+.ska-p-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ska-btn-sm {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.ska-btn-outline {
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+}
+.ska-btn-outline:hover {
+    border-color: #1a93ee;
+    color: #1a93ee;
+}
+.ska-btn-danger-icon {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding: 0 5px;
+}
+.ska-btn-danger-icon:hover {
+    color: #dc2626;
+    background: rgba(239, 68, 68, 0.1);
+}
