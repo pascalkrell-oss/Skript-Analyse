@@ -9998,10 +9998,11 @@
                                 <thead>
                                     <tr>
                                         <th class="ska-admin-col-id">ID</th>
-                                        <th>Name & E-Mail</th>
-                                        <th>Plan</th>
-                                        <th>Registriert</th>
-                                        <th>Aktionen</th>
+                                        <th class="ska-admin-col-name">Name</th>
+                                        <th class="ska-admin-col-email">E-Mail</th>
+                                        <th class="ska-admin-col-plan">Plan</th>
+                                        <th class="ska-admin-col-registered">Registriert</th>
+                                        <th class="ska-admin-col-actions">Aktionen</th>
                                     </tr>
                                 </thead>
                                 <tbody data-role="admin-rows"></tbody>
@@ -10647,7 +10648,7 @@
             if (this.filteredUsers.length === 0) {
                 this.rowsEl.innerHTML = `
                     <tr>
-                        <td colspan="5" class="ska-admin-empty">Keine Nutzer gefunden.</td>
+                        <td colspan="6" class="ska-admin-empty">Keine Nutzer gefunden.</td>
                     </tr>
                 `;
             } else {
@@ -10657,13 +10658,13 @@
                     return `
                         <tr data-user-id="${user.id}">
                             <td class="ska-admin-col-id">${user.id}</td>
-                            <td class="ska-admin-user-cell">
-                                <div class="ska-admin-user-meta">
-                                    <span class="ska-admin-user-name">${this.escapeHtml(user.name)}</span>
-                                    <span class="ska-admin-user-email">${this.escapeHtml(user.email)}</span>
-                                </div>
+                            <td class="ska-admin-col-name">
+                                <span class="ska-admin-user-name">${this.escapeHtml(user.name)}</span>
                             </td>
-                            <td>
+                            <td class="ska-admin-col-email">
+                                <span class="ska-admin-user-email">${this.escapeHtml(user.email)}</span>
+                            </td>
+                            <td class="ska-admin-col-plan">
                                 <div class="ska-admin-plan-cell">
                                     <span class="ska-admin-plan-label">${this.escapeHtml(user.planLabel)}</span>
                                     <div class="ska-admin-plan-toggle">
@@ -10676,8 +10677,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>${registered}</td>
-                            <td class="ska-admin-actions">
+                            <td class="ska-admin-col-registered">${registered}</td>
+                            <td class="ska-admin-actions ska-admin-col-actions">
                                 <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact ska-admin-masquerade-btn" data-action="admin-masquerade" data-user-id="${user.id}">
                                     <span class="dashicons dashicons-admin-users" aria-hidden="true"></span>
                                     Als Nutzer einloggen

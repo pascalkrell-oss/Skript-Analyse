@@ -3470,15 +3470,29 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     width: 50px;
 }
 
-.ska-admin-user-cell {
-    padding-left: 1.5rem;
+.ska-admin-table th.ska-admin-col-name,
+.ska-admin-table td.ska-admin-col-name {
+    width: 180px;
 }
 
-.ska-admin-user-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    align-items: baseline;
+.ska-admin-table th.ska-admin-col-email,
+.ska-admin-table td.ska-admin-col-email {
+    width: 240px;
+}
+
+.ska-admin-table th.ska-admin-col-plan,
+.ska-admin-table td.ska-admin-col-plan {
+    width: 190px;
+}
+
+.ska-admin-table th.ska-admin-col-registered,
+.ska-admin-table td.ska-admin-col-registered {
+    width: 140px;
+}
+
+.ska-admin-table th.ska-admin-col-actions,
+.ska-admin-table td.ska-admin-col-actions {
+    width: 230px;
 }
 
 .ska-admin-user-name {
@@ -3497,12 +3511,13 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 .ska-admin-actions {
     display: flex;
     flex-wrap: nowrap;
-    gap: 0.5rem;
+    gap: 0.6rem;
     align-items: center;
+    padding-right: 1.5rem;
 }
 
 .ska-admin-masquerade-btn {
-    margin-left: 0.5rem;
+    margin-left: 0.3rem;
 }
 
 .ska-admin-actions .dashicons {
