@@ -3236,26 +3236,18 @@
                 toolbarActions.insertBefore(saveBtn, toolbarActions.firstChild);
                 this.projectSaveButton = saveBtn;
             }
-
-            const editorPanel = this.root.querySelector('.ska-editor-panel');
-            if (editorPanel && !editorPanel.querySelector('.ska-projects-panel')) {
-                const panel = document.createElement('div');
-                panel.className = 'ska-projects-panel';
-                panel.innerHTML = `
-                    <div class="ska-projects-panel-header" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin:16px 0 8px;">
-                        <strong>Meine Projekte laden</strong>
-                        <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="refresh-projects">Aktualisieren</button>
-                    </div>
-                    <div class="ska-projects-panel-body" data-role="project-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-                `;
-                const footer = editorPanel.querySelector('.ska-editor-footer');
-                if (footer && footer.parentElement) {
-                    footer.parentElement.insertBefore(panel, footer.nextSibling);
+            if (toolbarActions && !this.root.querySelector('[data-action="manage-projects"]')) {
+                const manageBtn = document.createElement('button');
+                manageBtn.type = 'button';
+                manageBtn.className = 'ska-btn ska-btn--secondary';
+                manageBtn.dataset.action = 'manage-projects';
+                manageBtn.innerHTML = '<span class="dashicons dashicons-portfolio"></span> Projekte verwalten';
+                if (this.projectSaveButton && this.projectSaveButton.parentElement === toolbarActions) {
+                    this.projectSaveButton.insertAdjacentElement('afterend', manageBtn);
                 } else {
-                    editorPanel.appendChild(panel);
+                    toolbarActions.insertBefore(manageBtn, toolbarActions.firstChild);
                 }
-                this.projectPanel = panel;
-                this.projectList = panel.querySelector('[data-role="project-list"]');
+                this.projectManagerButton = manageBtn;
             }
             this.updateProjectControls();
         }
@@ -5169,6 +5161,10 @@
                 this.saveCurrentProject();
                 return true;
             }
+            if (act === 'manage-projects') {
+                this.openProjectManagerModal();
+                return true;
+            }
             if (act === 'refresh-projects') {
                 this.refreshProjectsList();
                 return true;
@@ -5176,6 +5172,16 @@
             if (act === 'load-project') {
                 const projectId = btn.dataset.projectId;
                 this.loadProject(projectId);
+                return true;
+            }
+            if (act === 'project-load') {
+                const projectId = btn.dataset.projectId;
+                this.loadProject(projectId);
+                return true;
+            }
+            if (act === 'project-delete') {
+                const projectId = btn.dataset.projectId;
+                this.deleteProject(projectId);
                 return true;
             }
             if (act.startsWith('format-')) {
@@ -5875,31 +5881,75 @@
                 this.projectSaveButton.setAttribute('aria-disabled', String(!isPremium));
                 this.projectSaveButton.title = isPremium ? 'Projekt speichern' : 'Upgrade für Projekt-Speicherung';
             }
-            if (this.projectPanel) {
-                this.projectPanel.classList.toggle('is-disabled', !isPremium);
-                const refreshBtn = this.projectPanel.querySelector('[data-action="refresh-projects"]');
-                if (refreshBtn) {
-                    refreshBtn.disabled = !isPremium;
-                    refreshBtn.classList.toggle('is-disabled', !isPremium);
-                    refreshBtn.setAttribute('aria-disabled', String(!isPremium));
-                    refreshBtn.title = isPremium ? 'Projekte aktualisieren' : 'Upgrade für Projekt-Speicherung';
-                }
-                const list = this.projectList;
-                if (!isPremium && list) {
-                    list.innerHTML = '<div style="color:#94a3b8;">Nur für Premium verfügbar.</div>';
-                }
-                if (isPremium) {
-                    this.refreshProjectsList();
-                }
+            if (this.projectManagerButton) {
+                this.projectManagerButton.title = isPremium ? 'Gespeicherte Projekte verwalten' : 'Gespeicherte Projekte (Premium)';
+            }
+        }
+
+        ensureProjectManagerModal() {
+            if (this.projectManagerModal) return;
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal ska-project-manager-modal';
+            modal.id = 'ska-project-manager-modal';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-project-manager"></div>
+                <div class="skriptanalyse-modal-content ska-project-manager-modal__content">
+                    <button type="button" class="ska-close-icon" data-action="close-project-manager" aria-label="Schließen">&times;</button>
+                    <div class="ska-modal-header"><h3>Meine gespeicherten Projekte</h3></div>
+                    <div class="skriptanalyse-modal-body">
+                        <div class="ska-project-manager__upsell" data-role="project-upsell">
+                            <div class="ska-project-manager__upsell-icon">⭐</div>
+                            <div class="ska-project-manager__upsell-text">
+                                <strong>Speichere deine Skripte dauerhaft mit Premium.</strong>
+                                <span>Greife jederzeit auf alle Projekte zu und verwalte Versionen zentral.</span>
+                            </div>
+                        </div>
+                        <div class="ska-project-manager__list" data-role="project-manager-list"></div>
+                        <div class="ska-project-manager__empty" data-role="project-manager-empty">
+                            <div class="ska-project-manager__empty-icon">📁</div>
+                            <div>Noch keine Projekte gespeichert.</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            this.projectManagerModal = modal;
+            this.projectManagerList = modal.querySelector('[data-role="project-manager-list"]');
+            this.projectManagerUpsell = modal.querySelector('[data-role="project-upsell"]');
+            this.projectManagerEmpty = modal.querySelector('[data-role="project-manager-empty"]');
+        }
+
+        openProjectManagerModal(context = 'manage') {
+            this.ensureProjectManagerModal();
+            const isPremium = this.isPremiumActive();
+            if (this.projectManagerUpsell) {
+                this.projectManagerUpsell.hidden = isPremium;
+                this.projectManagerUpsell.dataset.context = context;
+            }
+            if (this.projectManagerList) {
+                this.projectManagerList.classList.toggle('is-disabled', !isPremium);
+                this.projectManagerList.innerHTML = '';
+            }
+            if (this.projectManagerEmpty) {
+                this.projectManagerEmpty.hidden = true;
+            }
+            if (isPremium) {
+                this.refreshProjectsList();
+            }
+            if (this.projectManagerModal) {
+                SA_Utils.openModal(this.projectManagerModal);
             }
         }
 
         refreshProjectsList() {
-            const list = this.projectList;
+            const list = this.projectManagerList;
             if (!list) return;
             const planStatus = this.getUserPlanStatus();
             if (planStatus !== 'premium') return;
-            list.innerHTML = '<div style="color:#94a3b8;">Lade Projekte...</div>';
+            list.innerHTML = '<div class="ska-project-manager__loading">Lade Projekte...</div>';
+            if (this.projectManagerEmpty) {
+                this.projectManagerEmpty.hidden = true;
+            }
             const body = new URLSearchParams();
             body.set('action', 'ska_load_projects');
             fetch(this.getAjaxUrl(), {
@@ -5912,7 +5962,7 @@
                 .then((data) => {
                     if (!data || !data.success) {
                         const message = data && data.data && data.data.message ? data.data.message : 'Projekte konnten nicht geladen werden.';
-                        list.innerHTML = `<div style="color:#dc2626;">${message}</div>`;
+                        list.innerHTML = `<div class="ska-project-manager__error">${message}</div>`;
                         return;
                     }
                     const projects = Array.isArray(data.data.projects) ? data.data.projects : [];
@@ -5920,24 +5970,43 @@
                     this.renderProjectList(projects);
                 })
                 .catch(() => {
-                    list.innerHTML = '<div style="color:#dc2626;">Projekte konnten nicht geladen werden.</div>';
+                    list.innerHTML = '<div class="ska-project-manager__error">Projekte konnten nicht geladen werden.</div>';
                 });
         }
 
         renderProjectList(projects) {
-            const list = this.projectList;
+            const list = this.projectManagerList;
             if (!list) return;
             if (!projects.length) {
-                list.innerHTML = '<div style="color:#94a3b8;">Noch keine Projekte gespeichert.</div>';
+                list.innerHTML = '';
+                if (this.projectManagerEmpty) {
+                    this.projectManagerEmpty.hidden = false;
+                }
                 return;
+            }
+            if (this.projectManagerEmpty) {
+                this.projectManagerEmpty.hidden = true;
             }
             list.innerHTML = projects.map((project) => {
                 const title = project.title ? project.title : 'Unbenanntes Projekt';
-                const updated = project.updated ? `• ${project.updated}` : '';
+                const updated = project.updated || project.date || '';
                 return `
-                    <button type="button" class="ska-btn ska-btn--secondary ska-btn--compact" data-action="load-project" data-project-id="${project.id}" style="justify-content:flex-start;">
-                        ${title} <span style="margin-left:6px; font-size:0.75rem; color:#94a3b8;">${updated}</span>
-                    </button>
+                    <div class="ska-project-manager__item" data-project-id="${project.id}">
+                        <div class="ska-project-manager__meta">
+                            <div class="ska-project-manager__title">${title}</div>
+                            <div class="ska-project-manager__date">${updated || ''}</div>
+                        </div>
+                        <div class="ska-project-manager__actions">
+                            <button type="button" class="ska-btn ska-btn--primary ska-btn--compact" data-action="project-load" data-project-id="${project.id}">
+                                <span class="dashicons dashicons-download"></span>
+                                Laden
+                            </button>
+                            <button type="button" class="ska-btn ska-btn--ghost ska-btn--compact ska-project-manager__delete" data-action="project-delete" data-project-id="${project.id}">
+                                <span class="dashicons dashicons-trash"></span>
+                                Löschen
+                            </button>
+                        </div>
+                    </div>
                 `;
             }).join('');
         }
@@ -5945,7 +6014,7 @@
         saveCurrentProject() {
             const planStatus = this.getUserPlanStatus();
             if (planStatus !== 'premium') {
-                this.showPremiumNotice('Projekte speichern ist nur in Premium verfügbar.');
+                this.openProjectManagerModal('save');
                 return;
             }
             const name = window.prompt('Projektname eingeben', '');
@@ -6018,9 +6087,49 @@
                     this.setText(content);
                     this.analyze(content);
                     this.showToast('Projekt geladen.');
+                    if (this.projectManagerModal) {
+                        SA_Utils.closeModal(this.projectManagerModal, () => {
+                            document.body.classList.remove('ska-modal-open');
+                        });
+                    }
                 })
                 .catch(() => {
                     this.showToast('Projekt konnte nicht geladen werden.', true);
+                });
+        }
+
+        deleteProject(projectId) {
+            const planStatus = this.getUserPlanStatus();
+            if (planStatus !== 'premium') {
+                this.openProjectManagerModal('delete');
+                return;
+            }
+            const id = Number(projectId);
+            if (!id) return;
+            const confirmed = window.confirm('Projekt wirklich löschen?');
+            if (!confirmed) return;
+            const body = new URLSearchParams();
+            body.set('action', 'ska_delete_project');
+            body.set('project_id', String(id));
+            body.set('id', String(id));
+            fetch(this.getAjaxUrl(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                credentials: 'same-origin',
+                body
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    if (!data || !data.success) {
+                        const message = data && data.data && data.data.message ? data.data.message : 'Projekt konnte nicht gelöscht werden.';
+                        this.showToast(message, true);
+                        return;
+                    }
+                    this.showToast('Projekt gelöscht.');
+                    this.refreshProjectsList();
+                })
+                .catch(() => {
+                    this.showToast('Projekt konnte nicht gelöscht werden.', true);
                 });
         }
 
@@ -11275,232 +11384,4 @@
 
         renderMasqueradeBanner();
     });
-})();
-
-(function() {
-    // Hilfsfunktion: Modals erstellen
-    const createModalHTML = (id, title, bodyContent) => `
-        <div id="${id}" class="analysis-modal">
-            <div class="analysis-modal-backdrop" onclick="document.getElementById('${id}').classList.remove('is-visible')"></div>
-            <div class="analysis-modal-container">
-                <div class="analysis-modal-header">
-                    <h3>${title}</h3>
-                    <button class="modal-close" onclick="document.getElementById('${id}').classList.remove('is-visible')">&times;</button>
-                </div>
-                <div class="analysis-modal-body">${bodyContent}</div>
-            </div>
-        </div>
-    `;
-
-    function initProjectManager() {
-        // 1. Alte Sektion entfernen (Falls vorhanden)
-        const oldSection = document.querySelector('.project-load-section');
-        if(oldSection) oldSection.remove();
-
-        // 2. Blauen Button einfügen (Links neben "Aufräumen")
-        const cleanBtn = document.querySelector('button[data-action="clean"]');
-        // Check ob Button schon da ist, um Duplikate zu vermeiden
-        if (cleanBtn && cleanBtn.parentNode && !document.querySelector('.btn-load-projects')) {
-            const loadBtn = document.createElement('button');
-            loadBtn.className = 'ska-btn ska-btn-brand-blue btn-load-projects';
-            loadBtn.innerHTML = '<span class="dashicons dashicons-portfolio"></span> Projekte laden';
-            loadBtn.style.marginRight = '10px';
-            loadBtn.type = "button";
-            loadBtn.onclick = openLoadModal;
-            cleanBtn.parentNode.insertBefore(loadBtn, cleanBtn);
-        }
-
-        // 3. "Projekt Speichern" Button im Header überschreiben/finden
-        // Versuche Button zu finden (Oft "Version speichern" oder ähnlich im UI)
-        // Wir hängen uns an den vorhandenen Save Button oder erstellen einen, falls keiner da ist
-        let saveBtn = document.querySelector('.btn-save-project'); // Klasse ggf. anpassen
-        if (!saveBtn) {
-             // Fallback: Suche nach Button im Header
-             const headerActions = document.querySelector('.analysis-header-actions'); // Beispiel-Klasse
-             if(headerActions) {
-                 saveBtn = document.createElement('button');
-                 saveBtn.innerText = 'Projekt speichern';
-                 saveBtn.className = 'ska-btn ska-btn-primary btn-save-project';
-                 headerActions.appendChild(saveBtn);
-             }
-        }
-
-        if (saveBtn) {
-            saveBtn.onclick = (e) => {
-                e.preventDefault();
-                openSaveModal();
-            };
-        }
-    }
-
-    // --- MODAL LOGIK: SPEICHERN ---
-    function openSaveModal() {
-        if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
-            alert('Nur für Premium-Nutzer verfügbar.');
-            return;
-        }
-
-        // Modal bauen falls nicht existiert
-        let modal = document.getElementById('ska-save-modal');
-        if (!modal) {
-            const body = `
-                <div class="ska-save-top">
-                    <label>Neues Projekt anlegen:</label>
-                    <div class="ska-input-group">
-                        <input type="text" id="ska-new-project-name" placeholder="Projektname eingeben..." class="ska-input">
-                        <button id="ska-btn-save-new" class="ska-btn-primary">Speichern</button>
-                    </div>
-                </div>
-                <hr class="ska-divider">
-                <div class="ska-save-existing">
-                    <h4>Oder bestehendes überschreiben:</h4>
-                    <div id="ska-save-list" class="ska-project-list">Lade...</div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', createModalHTML('ska-save-modal', 'Projekt speichern', body));
-            modal = document.getElementById('ska-save-modal');
-
-            // Event Listener Neu Speichern
-            document.getElementById('ska-btn-save-new').onclick = () => {
-                const title = document.getElementById('ska-new-project-name').value;
-                if(!title) return alert('Bitte Namen eingeben');
-                saveProjectAjax(title, 0);
-            };
-        }
-
-        loadProjectsForList('ska-save-list', 'save');
-        modal.classList.add('is-visible');
-    }
-
-    // --- MODAL LOGIK: LADEN ---
-    function openLoadModal() {
-        if (window.skriptAnalyseConfig.currentUserPlan !== 'premium') {
-            alert('Feature nur im Premium-Plan.');
-            return;
-        }
-
-        let modal = document.getElementById('ska-load-modal');
-        if (!modal) {
-            const body = `<div id="ska-load-list" class="ska-project-list">Lade...</div>`;
-            document.body.insertAdjacentHTML('beforeend', createModalHTML('ska-load-modal', 'Projekte verwalten', body));
-            modal = document.getElementById('ska-load-modal');
-        }
-
-        loadProjectsForList('ska-load-list', 'load');
-        modal.classList.add('is-visible');
-    }
-
-    // --- API HELPER (FETCH REPLACEMENT FOR JQUERY) ---
-    function apiPost(action, data, callback) {
-        const formData = new FormData();
-        formData.append('action', action);
-        formData.append('nonce', window.skriptAnalyseConfig.nonce);
-        for (const key in data) {
-            formData.append(key, data[key]);
-        }
-
-        fetch(window.skriptAnalyseConfig.ajaxUrl, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(res => {
-            if (callback) callback(res);
-        })
-        .catch(err => {
-            console.error('API Error:', err);
-            if (callback) callback({ success: false, data: 'Netzwerkfehler' });
-        });
-    }
-
-    // --- AJAX HELPER ---
-    function loadProjectsForList(containerId, mode) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = '<div class="ska-spinner"></div>';
-
-        apiPost('ska_list_projects', {}, (res) => {
-            if (!res.success || !res.data.length) {
-                container.innerHTML = '<p class="text-muted">Keine gespeicherten Projekte gefunden.</p>';
-                return;
-            }
-
-            let html = '';
-            res.data.forEach(p => {
-                let actionHtml = '';
-                if (mode === 'save') {
-                    actionHtml = `<button class="ska-btn-sm ska-btn-outline" onclick="window.skaOverwrite(${p.id}, '${p.title}')">Überschreiben</button>`;
-                } else {
-                    actionHtml = `<button class="ska-btn-sm ska-btn-primary" onclick="window.skaLoad(${p.id})">Laden</button>`;
-                }
-
-                html += `
-                    <div class="ska-project-item">
-                        <div class="ska-p-info"><strong>${p.title}</strong><span>${p.date}</span></div>
-                        <div class="ska-p-actions">
-                            ${actionHtml}
-                            <button class="ska-btn-sm ska-btn-danger-icon" onclick="window.skaDelete(${p.id}, '${containerId}', '${mode}')" title="Löschen">&times;</button>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        });
-    }
-
-    function saveProjectAjax(title, id) {
-        // Content holen (Fallback für Contenteditable Div)
-        let content = '';
-        if(typeof window.getSkriptContent === 'function') {
-            content = window.getSkriptContent();
-        } else {
-             // Notfall Fallback
-             const el = document.querySelector('.skriptanalyse-textarea');
-             content = el ? (el.value || el.innerText) : '';
-        }
-
-        apiPost('ska_save_project', {
-            title: title,
-            content: content,
-            id: id
-        }, (res) => {
-            if(res.success) {
-                alert(res.data.message);
-                document.querySelectorAll('.analysis-modal').forEach(m => m.classList.remove('is-visible'));
-            } else {
-                alert('Fehler: ' + res.data);
-            }
-        });
-    }
-
-    // Globale Actions für Onclick im HTML string
-    window.skaOverwrite = (id, title) => {
-        if(confirm(`Projekt "${title}" wirklich überschreiben?`)) saveProjectAjax(title, id);
-    };
-    window.skaLoad = (id) => {
-        apiPost('ska_get_project', { id: id }, (res) => {
-            if(res.success) {
-                if(typeof window.setSkriptContent === 'function') {
-                    window.setSkriptContent(res.data.content);
-                } else {
-                    const el = document.querySelector('.skriptanalyse-textarea');
-                    if(el) { el.innerText = res.data.content; el.dispatchEvent(new Event('input')); }
-                }
-                document.getElementById('ska-load-modal').classList.remove('is-visible');
-            }
-        });
-    };
-    window.skaDelete = (id, cid, mode) => {
-        if(confirm('Wirklich löschen?')) {
-            apiPost('ska_delete_project', { id: id }, () => {
-                loadProjectsForList(cid, mode);
-            });
-        }
-    };
-
-    // Start
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initProjectManager);
-    } else {
-        initProjectManager();
-    }
 })();
