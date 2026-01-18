@@ -333,6 +333,8 @@ function ska_get_algorithm_tuning_localized_config() {
         'globalAnnouncement' => ska_get_global_announcement(),
         'currentUserPlan' => $current_plan,
         'canSaveProjects' => $current_plan === 'premium',
+        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+        'ajaxNonce' => wp_create_nonce( 'ska_analysis_nonce' ),
     );
 }
 
@@ -386,6 +388,8 @@ function ska_get_localized_config() {
         'workerUrl' => SKA_URL . 'assets/analysis-worker.js',
         'adminApiBase' => rest_url( 'ska/v1' ),
         'adminNonce' => wp_create_nonce( 'wp_rest' ),
+        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+        'ajaxNonce' => wp_create_nonce( 'ska_analysis_nonce' ),
         'masquerade' => $masquerade,
         'globalAnnouncement' => ska_get_global_announcement(),
         'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
@@ -463,10 +467,9 @@ function ska_shortcode() {
             
             <div class="ska-toolbar-actions">
                 <button type="button" class="ska-btn ska-btn--secondary" data-action="open-help">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="margin-right:6px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     Anleitung & Hilfe
                 </button>
-                <button type="button" class="ska-btn ska-btn--primary" data-action="open-reset">Analyse zurücksetzen</button>
+                <button type="button" class="ska-btn ska-btn--primary" data-action="open-reset">Projekt zurücksetzen</button>
             </div>
         </div>
 
@@ -994,14 +997,14 @@ function ska_shortcode() {
             <div class="skriptanalyse-modal-overlay" data-action="close-reset"></div>
             <div class="skriptanalyse-modal-content">
                 <div class="ska-modal-header">
-                    <h3>Analyse zurücksetzen?</h3>
+                    <h3>Projekt zurücksetzen?</h3>
                 </div>
                 <div class="skriptanalyse-modal-body">
-                    <p style="margin-bottom:2rem; color:#64748b;">Möchtest du wirklich neu starten? Dein aktueller Text und alle Einstellungen werden dabei zurückgesetzt.</p>
+                    <p style="margin-bottom:2rem; color:#64748b;">Möchtest du wirklich neu starten? Dein aktuelles Projekt mit Text und Einstellungen wird dabei zurückgesetzt.</p>
                 </div>
                 <div class="ska-modal-footer">
                     <button type="button" class="ska-btn ska-btn--secondary" data-action="close-reset">Abbrechen</button>
-                    <button type="button" class="ska-btn ska-btn--primary" data-action="confirm-reset">Ja, zurücksetzen</button>
+                    <button type="button" class="ska-btn ska-btn--primary" data-action="confirm-reset">Ja, Projekt zurücksetzen</button>
                 </div>
             </div>
         </div>

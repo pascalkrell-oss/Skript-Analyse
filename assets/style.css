@@ -2647,13 +2647,18 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
 }
 
 .ska-analysis-filterbar.is-collapsed {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
 }
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-header,
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-header > span,
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-actions {
     align-items: center;
+}
+.ska-analysis-filterbar.is-collapsed .ska-filterbar-header {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    min-height: 32px;
 }
 
 
@@ -3137,6 +3142,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     line-height: 1;
     cursor: pointer;
     padding: 0;
+    margin-left: auto;
 }
 
 .ska-announcement-toast__close:hover {
