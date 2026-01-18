@@ -113,6 +113,17 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-btn--secondary:hover { background: #e2e8f0; color: var(--ska-text-main); }
 .ska-btn--ghost { background: transparent; color: var(--ska-text-muted); padding: 0 0.6rem; height: 42px; }
 .ska-btn--ghost:hover { color: var(--ska-primary); background: var(--ska-primary-light); }
+.ska-btn.is-disabled,
+.ska-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.ska-btn.is-disabled:hover,
+.ska-btn:disabled:hover {
+    background: inherit;
+    color: inherit;
+}
 .ska-settings-btn-inline { margin-left: -0.5rem; margin-right: 0; }
 .ska-premium-pill { display: inline-flex; align-items: center; justify-content: center; padding: 0 0.45rem; height: 18px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; background: #e0f2fe; color: #0369a1; margin-left: 0.4rem; }
 .ska-plan-premium .ska-premium-pill { display: none; }
@@ -3646,113 +3657,123 @@ html.is-iframe-mode .admin-bar {
 }
 
 /* --- PROJEKT MANAGER STYLES --- */
-
-/* Brand Blue Button */
-.ska-btn-brand-blue {
-    background-color: #1a93ee;
-    color: #fff !important;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 15px;
+.ska-project-manager-modal__content {
+    width: min(720px, 92vw);
+    max-width: 760px;
+}
+.ska-project-manager__upsell {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid #c7d2fe;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    color: #1e1b4b;
+    margin-bottom: 1rem;
+}
+.ska-project-manager__upsell[hidden] {
+    display: none;
+}
+.ska-project-manager__upsell-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+.ska-project-manager__upsell-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+}
+.ska-project-manager__upsell-text strong {
+    font-size: 1rem;
+    color: #312e81;
+}
+.ska-project-manager__list {
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    background: #fff;
+    max-height: 420px;
+    overflow-y: auto;
+}
+.ska-project-manager__list.is-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.ska-project-manager__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+}
+.ska-project-manager__item:last-child {
+    border-bottom: none;
+}
+.ska-project-manager__item:hover {
+    background-color: #f8fafc;
+}
+.ska-project-manager__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.ska-project-manager__title {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.95rem;
+}
+.ska-project-manager__date {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+.ska-project-manager__actions {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
+    gap: 0.5rem;
 }
-.ska-btn-brand-blue:hover {
-    background-color: #1578c2;
-    text-decoration: none;
+.ska-project-manager__actions .ska-btn {
+    gap: 0.4rem;
 }
-.ska-btn-brand-blue .dashicons {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+.ska-project-manager__delete {
+    opacity: 0;
+    pointer-events: none;
+    color: #94a3b8;
 }
-
-/* Modal Layouts */
-.ska-save-top {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-}
-.ska-input-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 5px;
-}
-.ska-input-group input {
-    flex: 1;
-    padding: 8px;
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-}
-.ska-divider {
-    border: 0;
-    border-top: 1px solid #e2e8f0;
-    margin: 20px 0;
-}
-
-/* Projekt Liste */
-.ska-project-list {
-    max-height: 350px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.ska-project-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    transition: transform 0.1s, border-color 0.1s;
-}
-.ska-project-item:hover {
-    border-color: #1a93ee;
-    transform: translateX(2px);
-}
-.ska-p-info {
-    display: flex;
-    flex-direction: column;
-}
-.ska-p-info strong { font-size: 0.95rem; color: #334155; }
-.ska-p-info span { font-size: 0.8rem; color: #94a3b8; }
-
-.ska-p-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.ska-btn-sm {
-    padding: 4px 10px;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.ska-btn-outline {
-    background: transparent;
-    border: 1px solid #cbd5e1;
-    color: #475569;
-}
-.ska-btn-outline:hover {
-    border-color: #1a93ee;
-    color: #1a93ee;
-}
-.ska-btn-danger-icon {
-    background: transparent;
-    border: none;
-    color: #ef4444;
-    font-size: 1.4rem;
-    line-height: 1;
-    padding: 0 5px;
-}
-.ska-btn-danger-icon:hover {
+.ska-project-manager__item:hover .ska-project-manager__delete {
+    opacity: 1;
+    pointer-events: auto;
     color: #dc2626;
-    background: rgba(239, 68, 68, 0.1);
+    background: #fef2f2;
+}
+.ska-project-manager__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 2rem 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+.ska-project-manager__empty[hidden] {
+    display: none;
+}
+.ska-project-manager__empty-icon {
+    font-size: 1.8rem;
+}
+.ska-project-manager__loading {
+    padding: 1rem;
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+.ska-project-manager__error {
+    padding: 1rem;
+    color: #dc2626;
+    font-size: 0.85rem;
 }
