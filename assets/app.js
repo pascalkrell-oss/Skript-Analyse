@@ -531,14 +531,14 @@
         premium: {
             tools: [
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
-                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
-                { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
-                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
-                { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten." },
-                { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort." },
                 { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
                 { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
                 { name: "Teleprompter", desc: "Ein professioneller, browserbasierter Teleprompter mit Sprachsteuerung und Geschwindigkeitsregelung." },
+                { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort." },
+                { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten." },
+                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
+                { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
+                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
                 { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen." },
                 { name: "Sprech-Pacing", desc: "Ein visuelles Tool, das dir hilft, das exakte Timing für Takes zu üben." }
             ],
@@ -3225,6 +3225,18 @@
             return '/wp-admin/admin-ajax.php';
         }
 
+        getAjaxNonce() {
+            if (typeof window !== 'undefined') {
+                if (window.SKA_CONFIG_PHP?.ajaxNonce) {
+                    return window.SKA_CONFIG_PHP.ajaxNonce;
+                }
+                if (window.skriptAnalyseConfig?.ajaxNonce) {
+                    return window.skriptAnalyseConfig.ajaxNonce;
+                }
+            }
+            return '';
+        }
+
         setupProjectControls() {
             const toolbarActions = this.root.querySelector('.ska-toolbar-actions');
             if (toolbarActions && !this.root.querySelector('[data-action="save-project"]')) {
@@ -3241,7 +3253,7 @@
                 manageBtn.type = 'button';
                 manageBtn.className = 'ska-btn ska-btn--secondary';
                 manageBtn.dataset.action = 'manage-projects';
-                manageBtn.innerHTML = '<span class="dashicons dashicons-portfolio"></span> Projekte verwalten';
+                manageBtn.innerHTML = 'Projekte verwalten';
                 if (this.projectSaveButton && this.projectSaveButton.parentElement === toolbarActions) {
                     this.projectSaveButton.insertAdjacentElement('afterend', manageBtn);
                 } else {
@@ -5876,6 +5888,7 @@
         updateProjectControls() {
             const isPremium = CURRENT_USER_PLAN === 'premium';
             if (this.projectSaveButton) {
+                this.projectSaveButton.hidden = !isPremium;
                 this.projectSaveButton.disabled = !isPremium;
                 this.projectSaveButton.classList.toggle('is-disabled', !isPremium);
                 this.projectSaveButton.setAttribute('aria-disabled', String(!isPremium));
@@ -5951,7 +5964,8 @@
                 this.projectManagerEmpty.hidden = true;
             }
             const body = new URLSearchParams();
-            body.set('action', 'ska_load_projects');
+            body.set('action', 'ska_list_projects');
+            body.set('nonce', this.getAjaxNonce());
             fetch(this.getAjaxUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -5965,7 +5979,7 @@
                         list.innerHTML = `<div class="ska-project-manager__error">${message}</div>`;
                         return;
                     }
-                    const projects = Array.isArray(data.data.projects) ? data.data.projects : [];
+                    const projects = Array.isArray(data.data) ? data.data : (data.data?.projects || []);
                     this.state.projects = projects;
                     this.renderProjectList(projects);
                 })
@@ -6030,8 +6044,9 @@
             body.set('title', title);
             body.set('content', content);
             if (this.state.currentProjectId) {
-                body.set('project_id', String(this.state.currentProjectId));
+                body.set('id', String(this.state.currentProjectId));
             }
+            body.set('nonce', this.getAjaxNonce());
             fetch(this.getAjaxUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -6067,7 +6082,8 @@
             if (!id) return;
             const body = new URLSearchParams();
             body.set('action', 'ska_get_project');
-            body.set('project_id', String(id));
+            body.set('id', String(id));
+            body.set('nonce', this.getAjaxNonce());
             fetch(this.getAjaxUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
@@ -6110,8 +6126,8 @@
             if (!confirmed) return;
             const body = new URLSearchParams();
             body.set('action', 'ska_delete_project');
-            body.set('project_id', String(id));
             body.set('id', String(id));
+            body.set('nonce', this.getAjaxNonce());
             fetch(this.getAjaxUrl(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
