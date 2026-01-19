@@ -95,14 +95,14 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-switch input:checked + .ska-switch-slider::before { transform: translateX(20px); }
 
 .ska-toolbar { background: var(--ska-surface); padding: 1rem; border-radius: var(--ska-radius-md); border: 1px solid var(--ska-border); display: flex; justify-content: flex-start; align-items: flex-end; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; box-shadow: var(--ska-shadow); position: relative; z-index: 5; }
-.ska-toolbar-group { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; flex: 1; }
+.ska-toolbar-group { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; flex: 1; min-width: 0; }
 .ska-select-wrapper { display: flex; flex-direction: column; }
 .ska-select-wrapper label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ska-text-muted); margin-bottom: 0.4rem; letter-spacing: 0.02em; }
 .ska-custom-select-wrapper { position: relative; min-width: 180px; }
 .ska-custom-select-wrapper::after { content: ''; position: absolute; top: 50%; right: 1rem; width: 8px; height: 8px; border-right: 2px solid var(--ska-text-muted); border-bottom: 2px solid var(--ska-text-muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
 .ska-select, .ska-input { width: 100%; padding: 0 2.5rem 0 1.2rem; border-radius: 999px; border: 1px solid var(--ska-border); background: var(--ska-surface-alt); font-size: 0.9rem; color: var(--ska-text-main); font-weight: 500; appearance: none; -webkit-appearance: none; outline: none; height: 42px; line-height: 40px; display: block; }
 .ska-select:focus, .ska-input:focus { border-color: var(--ska-primary); box-shadow: 0 0 0 3px rgba(26, 147, 238, 0.15); background: white; }
-.ska-toolbar-actions { display: flex; gap: 0.8rem; margin-left: 0; align-items: center; }
+.ska-toolbar-actions { display: flex; gap: 0.8rem; margin-left: 0; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
 
 /* BUTTONS */
 .ska-btn { border: none; padding: 0 1.2rem; border-radius: 999px; font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease, color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: 42px; line-height: 1.1; white-space: nowrap; transform: none !important; }
@@ -512,6 +512,28 @@ body.skript-analyse-active .skript-analyse-container {
     font-size: 12.5px !important;
     line-height: 1.4 !important;
     cursor: help; /* Zeigt Maus-Interaktion an */
+}
+.ska-premium-upgrade-listing li.is-featured {
+    background: var(--ska-primary-light);
+    border: 1px solid var(--ska-border);
+    border-radius: 12px;
+    padding-right: 0.6rem !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+.ska-premium-upgrade-listing li.is-featured span {
+    font-weight: 600;
+}
+.ska-feature-badge {
+    margin-left: auto;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ska-primary);
+    background: var(--ska-surface);
+    border: 1px solid var(--ska-border);
 }
 /* Das Icon (via Mask) */
 .ska-premium-upgrade-listing li::before {
@@ -3626,6 +3648,53 @@ html.is-iframe-mode .admin-bar {
 .ska-project-manager__upsell-text strong {
     font-size: 1rem;
     color: #312e81;
+}
+.ska-project-manager__save {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid var(--ska-border);
+    background: var(--ska-surface-alt);
+    margin-bottom: 1rem;
+}
+.ska-project-manager__save[hidden] {
+    display: none;
+}
+.ska-project-manager__save-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+.ska-project-manager__save-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--ska-text-main);
+}
+.ska-project-manager__save-hint {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--ska-text-muted);
+}
+.ska-project-manager__save-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+.ska-project-manager__save-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+.ska-project-manager__save-meta {
+    min-height: 1rem;
+    font-size: 0.75rem;
+    color: var(--ska-text-muted);
 }
 .ska-project-manager__list {
     display: flex;
