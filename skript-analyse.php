@@ -221,8 +221,9 @@ add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
 add_action( 'template_redirect', function() {
     $is_checkout_modal = isset( $_GET['view'] ) && $_GET['view'] === 'checkout_modal';
-    $is_iframe_checkout = isset( $_GET['iframe_mode'] ) && $_GET['iframe_mode'] === '1' && isset( $_GET['embedded_checkout'] );
-    if ( ! $is_checkout_modal && ! $is_iframe_checkout ) {
+    $is_iframe_checkout = isset( $_GET['ska_iframe'] ) && $_GET['ska_iframe'] === '1';
+    $is_legacy_iframe = isset( $_GET['iframe_mode'] ) && $_GET['iframe_mode'] === '1' && isset( $_GET['embedded_checkout'] );
+    if ( ! $is_checkout_modal && ! $is_iframe_checkout && ! $is_legacy_iframe ) {
         return;
     }
 
@@ -239,16 +240,19 @@ add_action( 'template_redirect', function() {
         }
         if ( WC()->cart ) {
             $product = wc_get_product( $product_id );
-            if ( $product ) {
+            if ( $product && $product->is_purchasable() ) {
                 WC()->cart->empty_cart( true );
                 WC()->cart->add_to_cart( $product_id, 1 );
+                if ( method_exists( WC()->cart, 'remove_coupons' ) ) {
+                    WC()->cart->remove_coupons();
+                }
+                if ( method_exists( WC()->cart, 'fees_api' ) ) {
+                    WC()->cart->fees_api()->remove_all_fees();
+                }
                 WC()->cart->calculate_totals();
             }
         }
     }
-
-    remove_all_actions( 'wp_head' );
-    remove_all_actions( 'wp_footer' );
 
     $checkout_html = '';
     if ( function_exists( 'do_shortcode' ) ) {
@@ -264,10 +268,14 @@ add_action( 'template_redirect', function() {
     echo '<meta charset="utf-8">';
     echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
     echo '<link rel="stylesheet" href="' . $style_url . '">';
+    do_action( 'wp_head' );
     echo '</head>';
-    echo '<body class="ska-clean-checkout">';
+    echo '<body ';
+    body_class( 'ska-clean-checkout ska-embedded-checkout' );
+    echo '>';
     echo $checkout_html;
     echo '<script src="' . $script_url . '" defer></script>';
+    do_action( 'wp_footer' );
     echo '</body></html>';
     exit;
 } );
