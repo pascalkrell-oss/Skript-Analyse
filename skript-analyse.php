@@ -221,8 +221,30 @@ add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
 add_action( 'template_redirect', function() {
     $is_checkout_modal = isset( $_GET['view'] ) && $_GET['view'] === 'checkout_modal';
-    if ( ! $is_checkout_modal ) {
+    $is_iframe_checkout = isset( $_GET['iframe_mode'] ) && $_GET['iframe_mode'] === '1' && isset( $_GET['embedded_checkout'] );
+    if ( ! $is_checkout_modal && ! $is_iframe_checkout ) {
         return;
+    }
+
+    $product_id = 0;
+    if ( isset( $_GET['product_id'] ) ) {
+        $product_id = absint( wp_unslash( $_GET['product_id'] ) );
+    } elseif ( isset( $_GET['add-to-cart'] ) ) {
+        $product_id = absint( wp_unslash( $_GET['add-to-cart'] ) );
+    }
+
+    if ( $product_id && function_exists( 'WC' ) ) {
+        if ( null === WC()->cart ) {
+            wc_load_cart();
+        }
+        if ( WC()->cart ) {
+            $product = wc_get_product( $product_id );
+            if ( $product ) {
+                WC()->cart->empty_cart( true );
+                WC()->cart->add_to_cart( $product_id, 1 );
+                WC()->cart->calculate_totals();
+            }
+        }
     }
 
     remove_all_actions( 'wp_head' );
