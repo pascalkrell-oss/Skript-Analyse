@@ -6113,6 +6113,17 @@
                     this.filterBar.classList.toggle('is-expanded', !this.state.filterCollapsed);
                     const btn = this.filterBar.querySelector('[data-action="toggle-filter-collapse"]');
                     if (btn) btn.textContent = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
+                    const profile = this.normalizeProfile(this.settings.role);
+                    const isGeneralProfile = profile === 'general';
+                    const shouldShowProfile = !this.state.filterCollapsed && !isGeneralProfile;
+                    const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
+                    const profileRowEl = this.filterBar.querySelector('.ska-filterbar-profile-row');
+                    if (profileLinkEl) {
+                        profileLinkEl.style.display = shouldShowProfile ? 'inline-flex' : 'none';
+                    }
+                    if (profileRowEl) {
+                        profileRowEl.style.display = shouldShowProfile ? 'flex' : 'none';
+                    }
                 }
                 return true;
             }
@@ -7639,7 +7650,28 @@
                 if(c) { 
                     this.state.hiddenCards.add(id); 
                     this.saveUIState();
-                    c.remove(); 
+                    c.style.maxHeight = `${c.scrollHeight}px`;
+                    c.style.overflow = 'hidden';
+                    const finalizeRemoval = () => {
+                        if (c.isConnected) {
+                            c.remove();
+                        }
+                    };
+                    const onTransitionEnd = (event) => {
+                        if (event.target !== c) return;
+                        c.removeEventListener('transitionend', onTransitionEnd);
+                        clearTimeout(fallbackTimer);
+                        finalizeRemoval();
+                    };
+                    const fallbackTimer = window.setTimeout(() => {
+                        c.removeEventListener('transitionend', onTransitionEnd);
+                        finalizeRemoval();
+                    }, 420);
+                    c.addEventListener('transitionend', onTransitionEnd);
+                    requestAnimationFrame(() => {
+                        c.classList.add('is-dismissing');
+                        c.style.maxHeight = '0px';
+                    });
                     this.renderHiddenPanel(); 
                     this.renderFilterBar();
                 }
@@ -7697,7 +7729,7 @@
                     <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
-                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header" style="padding-bottom:0; border:none; margin-bottom:1rem;"><div class="ska-card-title-wrapper"><h3>Legende & Hilfe</h3></div><div class="ska-card-header-actions"><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div></div><div class="ska-legend-body" style="padding-top:0;"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
+                this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header"><div class="ska-card-title-wrapper"><h3>Legende & Hilfe</h3></div><div class="ska-card-header-actions"><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div></div><div class="ska-legend-body"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
             }
         }
 
@@ -7854,11 +7886,12 @@
             this.filterBar.innerHTML = html;
             const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
             const profileRowEl = this.filterBar.querySelector('.ska-filterbar-profile-row');
+            const shouldShowProfile = !isGeneralProfile && isExpanded;
             if (profileLinkEl) {
-                profileLinkEl.style.display = isGeneralProfile ? 'none' : 'inline-block';
+                profileLinkEl.style.display = shouldShowProfile ? 'inline-flex' : 'none';
             }
             if (profileRowEl) {
-                profileRowEl.style.display = isGeneralProfile ? 'none' : 'flex';
+                profileRowEl.style.display = shouldShowProfile ? 'flex' : 'none';
             }
         }
 
