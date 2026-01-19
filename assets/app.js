@@ -2617,71 +2617,181 @@
                     });
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
+                    const TOKENS = {
+                        colors: {
+                            brand: [26, 147, 238],
+                            brandDark: [15, 23, 42],
+                            text: [15, 23, 42],
+                            muted: [100, 116, 139],
+                            line: [226, 232, 240],
+                            soft: [241, 245, 249],
+                            card: [248, 250, 252],
+                            success: [22, 163, 74],
+                            warn: [234, 88, 12],
+                            danger: [220, 38, 38]
+                        },
+                        fontSizes: {
+                            title: 20,
+                            subtitle: 10,
+                            section: 11,
+                            body: 10,
+                            small: 8
+                        },
+                        layout: {
+                            margin: 20,
+                            pageTop: 24,
+                            headerHeight: 28,
+                            footerHeight: 16,
+                            cardPadding: 6,
+                            cardGap: 6,
+                            sectionGap: 10,
+                            lineHeight: 5
+                        }
+                    };
                     const pageWidth = doc.internal.pageSize.getWidth();
                     const pageHeight = doc.internal.pageSize.getHeight();
-                    const margin = 20;
+                    const { margin, pageTop, footerHeight, cardPadding, cardGap, sectionGap, lineHeight } = TOKENS.layout;
                     const contentWidth = pageWidth - (margin * 2);
-                    let y = 25;
-                    const defaultFooter = [
-                        'Skript-Analyse Tool bereitgestellt von Sprecher Pascal Krell',
-                        'www.sprecher-pascal.de | kontakt@sprecher-pascal.de'
-                    ];
-                    const customFooter = typeof window !== 'undefined'
-                        ? String(window.SKA_CONFIG_PHP?.pdfFooterText || '').trim()
-                        : '';
-                    const footerText = customFooter ? [customFooter, defaultFooter[1]] : defaultFooter;
-                    const renderFooter = () => {
-                        const footerTop = pageHeight - 16;
-                        doc.setDrawColor(226, 232, 240);
-                        doc.line(margin, footerTop, margin + contentWidth, footerTop);
-                        doc.setFontSize(8);
-                        doc.setTextColor(120);
-                        doc.setFont(undefined, 'normal');
-                        doc.text(footerText[0], margin, footerTop + 5);
-                        doc.text(footerText[1], margin, footerTop + 9);
-                        doc.setTextColor(0);
+                    const bottomLimit = pageHeight - footerHeight - 6;
+                    let y = pageTop;
+                    const isPremium = CURRENT_USER_PLAN === 'premium';
+                    const reportTitle = isPremium ? 'Pro-PDF-Report' : 'Skript-Analyse Report';
+                    const reportSubtitle = isPremium ? 'Premium-Auswertung' : 'Basis-Export';
+                    const footerText = 'Bereitgestellt von Sprecher Pascal Krell | www.sprecher-pascal.de | kontakt@sprecher-pascal.de';
+
+                    const setTextStyle = ({ size, color, style }) => {
+                        doc.setFontSize(size);
+                        if (Array.isArray(color)) {
+                            doc.setTextColor(color[0], color[1], color[2]);
+                        } else {
+                            doc.setTextColor(0);
+                        }
+                        doc.setFont(undefined, style || 'normal');
                     };
 
-                    const checkPage = (heightIfNeeded) => {
-                        if (y + heightIfNeeded >= 280) {
+                    const drawDivider = (yPos) => {
+                        doc.setDrawColor(TOKENS.colors.line[0], TOKENS.colors.line[1], TOKENS.colors.line[2]);
+                        doc.line(margin, yPos, margin + contentWidth, yPos);
+                    };
+
+                    const renderFooter = (pageNo, totalPages) => {
+                        const footerTop = pageHeight - footerHeight;
+                        drawDivider(footerTop);
+                        setTextStyle({ size: 7.5, color: TOKENS.colors.muted });
+                        doc.text(footerText, margin, footerTop + 6);
+                        doc.text(`Seite ${pageNo} / ${totalPages}`, margin + contentWidth, footerTop + 6, { align: 'right' });
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text });
+                    };
+
+                    const drawPageHeader = () => {
+                        setTextStyle({ size: 9, color: TOKENS.colors.muted });
+                        doc.text(reportTitle, margin, pageTop - 8);
+                        drawDivider(pageTop - 6);
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text });
+                    };
+
+                    const addPageWithHeaderIfNeeded = (heightIfNeeded) => {
+                        if (y + heightIfNeeded >= bottomLimit) {
                             doc.addPage();
-                            y = 20;
+                            y = pageTop;
+                            drawPageHeader();
+                            y += 4;
                         }
+                    };
+
+                    const drawCard = (x, yPos, width, height, opts = {}) => {
+                        const fill = opts.fill || TOKENS.colors.card;
+                        const stroke = opts.stroke || TOKENS.colors.line;
+                        doc.setFillColor(fill[0], fill[1], fill[2]);
+                        doc.setDrawColor(stroke[0], stroke[1], stroke[2]);
+                        doc.rect(x, yPos, width, height, opts.outlineOnly ? 'S' : 'FD');
+                    };
+
+                    const drawMetricCard = ({ x, yPos, width, height, label, value, accent }) => {
+                        drawCard(x, yPos, width, height);
+                        setTextStyle({ size: 15, color: accent || TOKENS.colors.brandDark, style: 'bold' });
+                        doc.text(String(value), x + cardPadding, yPos + 10);
+                        setTextStyle({ size: 9, color: TOKENS.colors.muted, style: 'normal' });
+                        doc.text(label, x + cardPadding, yPos + 16);
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
+                    };
+
+                    const drawBadge = (label, tone, x, yPos) => {
+                        const toneMap = {
+                            success: { bg: [220, 252, 231], text: TOKENS.colors.success },
+                            warn: { bg: [255, 237, 213], text: TOKENS.colors.warn },
+                            danger: { bg: [254, 226, 226], text: TOKENS.colors.danger },
+                            neutral: { bg: TOKENS.colors.soft, text: TOKENS.colors.muted }
+                        };
+                        const palette = toneMap[tone] || toneMap.neutral;
+                        const badgePaddingX = 3;
+                        const badgePaddingY = 2.5;
+                        setTextStyle({ size: 8, color: palette.text, style: 'bold' });
+                        const textWidth = doc.getTextWidth(label);
+                        const badgeWidth = textWidth + badgePaddingX * 2;
+                        const badgeHeight = 6;
+                        doc.setFillColor(palette.bg[0], palette.bg[1], palette.bg[2]);
+                        doc.setDrawColor(palette.text[0], palette.text[1], palette.text[2]);
+                        doc.roundedRect(x, yPos - badgePaddingY, badgeWidth, badgeHeight, 1.5, 1.5, 'FD');
+                        doc.text(label, x + badgePaddingX, yPos + 1.5);
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
+                        return badgeWidth + 4;
                     };
 
                     const addSectionTitle = (title) => {
-                        checkPage(15);
-                        doc.setFontSize(12);
-                        doc.setTextColor(26, 147, 238); // Blue
-                        doc.setFont(undefined, 'bold');
-                        doc.text(title.toUpperCase(), margin, y);
-                        doc.setDrawColor(226, 232, 240); // Light gray
-                        doc.line(margin, y + 2, margin + contentWidth, y + 2);
-                        doc.setFont(undefined, 'normal');
-                        doc.setTextColor(0);
+                        addPageWithHeaderIfNeeded(16);
+                        doc.setFillColor(TOKENS.colors.soft[0], TOKENS.colors.soft[1], TOKENS.colors.soft[2]);
+                        doc.rect(margin, y - 5, contentWidth, 10, 'F');
+                        setTextStyle({ size: TOKENS.fontSizes.section, color: TOKENS.colors.brand, style: 'bold' });
+                        doc.text(title, margin + 2, y);
                         y += 12;
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
                     };
 
                     const addRow = (label, value) => {
-                        checkPage(8);
-                        doc.setFontSize(10);
-                        doc.setFont(undefined, 'bold');
+                        const labelWidth = 50;
+                        const valueWidth = contentWidth - labelWidth;
+                        const baseHeight = 6;
+                        addPageWithHeaderIfNeeded(baseHeight);
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'bold' });
                         doc.text(label, margin, y);
-                        doc.setFont(undefined, 'normal');
-                        if(Array.isArray(value) && value.length > 0) {
-                             const vText = doc.splitTextToSize(value.join(', '), contentWidth - 50);
-                             doc.text(vText, margin + 50, y);
-                             y += (vText.length * 5) + 2;
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
+                        if (Array.isArray(value) && value.length > 0) {
+                            const vText = doc.splitTextToSize(value.join(', '), valueWidth);
+                            doc.text(vText, margin + labelWidth, y);
+                            y += (vText.length * lineHeight) + 2;
                         } else if (value) {
-                             doc.text(String(value), margin + 50, y);
-                             y += 6;
+                            doc.text(String(value), margin + labelWidth, y);
+                            y += baseHeight;
                         } else {
-                            doc.setTextColor(150);
-                            doc.text("-", margin + 50, y);
-                            doc.setTextColor(0);
-                            y += 6;
+                            setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.muted, style: 'normal' });
+                            doc.text("-", margin + labelWidth, y);
+                            setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
+                            y += baseHeight;
                         }
                     };
+
+                    const addCardBlock = ({ title, lines }) => {
+                        const resolvedLines = [];
+                        lines.forEach((line) => {
+                            const split = doc.splitTextToSize(String(line), contentWidth - (cardPadding * 2));
+                            resolvedLines.push(...split);
+                        });
+                        const titleHeight = title ? 6 : 0;
+                        const blockHeight = (cardPadding * 2) + titleHeight + (resolvedLines.length * lineHeight);
+                        addPageWithHeaderIfNeeded(blockHeight);
+                        drawCard(margin, y, contentWidth, blockHeight);
+                        let cursorY = y + cardPadding + 2;
+                        if (title) {
+                            setTextStyle({ size: TOKENS.fontSizes.section, color: TOKENS.colors.brand, style: 'bold' });
+                            doc.text(title, margin + cardPadding, cursorY);
+                            cursorY += titleHeight;
+                        }
+                        setTextStyle({ size: TOKENS.fontSizes.body, color: TOKENS.colors.text, style: 'normal' });
+                        doc.text(resolvedLines, margin + cardPadding, cursorY);
+                        y += blockHeight + sectionGap;
+                    };
+
                     const markerPattern = /(\[[^\]]+\]|\|[0-9.]+S?\||\|)/g;
                     const renderLineWithMarkers = (line, x, yPos) => {
                         const parts = String(line || '').split(markerPattern).filter(Boolean);
@@ -2690,38 +2800,40 @@
                             const isPause = part.startsWith('|');
                             const isMarker = part.startsWith('[') && part.endsWith(']');
                             if (isPause) {
-                                doc.setTextColor(234, 88, 12);
+                                doc.setTextColor(TOKENS.colors.warn[0], TOKENS.colors.warn[1], TOKENS.colors.warn[2]);
                             } else if (isMarker) {
-                                doc.setTextColor(220, 38, 38);
+                                doc.setTextColor(TOKENS.colors.danger[0], TOKENS.colors.danger[1], TOKENS.colors.danger[2]);
                             } else {
-                                doc.setTextColor(0);
+                                doc.setTextColor(TOKENS.colors.text[0], TOKENS.colors.text[1], TOKENS.colors.text[2]);
                             }
                             doc.text(part, x + offsetX, yPos);
                             offsetX += doc.getTextWidth(part);
                         });
-                        doc.setTextColor(0);
+                        doc.setTextColor(TOKENS.colors.text[0], TOKENS.colors.text[1], TOKENS.colors.text[2]);
                     };
 
-                    // --- HEADER ---
-                    const headerTop = y - 8;
-                    doc.setFillColor(241, 245, 249);
-                    doc.rect(margin, headerTop, contentWidth, 22, 'F');
-                    doc.setFontSize(20);
-                    doc.setTextColor(26, 147, 238);
-                    doc.setFont(undefined, 'bold');
-                    doc.text("Skript-Analyse Report", margin + 2, y);
-                    y += 7;
-                    doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.setFont(undefined, 'normal');
-                    doc.text("Erstellt am: " + new Date().toLocaleDateString() + " um " + new Date().toLocaleTimeString(), margin + 2, y);
-                    y += 16;
-
                     const profileConfig = settings.profileConfig || this.getProfileConfig(settings.role);
+
+                    const headerTop = y - 8;
+                    const coverHeight = TOKENS.layout.headerHeight;
+                    doc.setFillColor(TOKENS.colors.soft[0], TOKENS.colors.soft[1], TOKENS.colors.soft[2]);
+                    doc.rect(margin, headerTop, contentWidth, coverHeight, 'F');
+                    doc.setFillColor(TOKENS.colors.brand[0], TOKENS.colors.brand[1], TOKENS.colors.brand[2]);
+                    doc.rect(margin, headerTop, 6, coverHeight, 'F');
+                    setTextStyle({ size: TOKENS.fontSizes.title, color: TOKENS.colors.brandDark, style: 'bold' });
+                    doc.text(reportTitle, margin + 12, y);
+                    setTextStyle({ size: TOKENS.fontSizes.subtitle, color: TOKENS.colors.muted, style: 'normal' });
+                    const createdAt = new Date();
+                    const createdAtText = `${createdAt.toLocaleDateString('de-DE')} · ${createdAt.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`;
+                    doc.text(`${reportSubtitle} · ${createdAtText}`, margin + 12, y + 6);
+                    doc.text(`Profil: ${profileConfig.label}`, margin + 12, y + 12);
+                    doc.text(`Wörter: ${data.wordCount} · Sprechdauer: ${data.duration} Min`, margin + 12, y + 18);
+                    y = headerTop + coverHeight + sectionGap;
                     const read = SA_Logic.analyzeReadability(text, settings);
                     const stumbles = profileConfig.features && profileConfig.features.phonetics === false
                         ? { long: [], camel: [], phonetic: [], alliter: [], sibilant_warning: false, sibilant_density: 0 }
                         : SA_Logic.findStumbles(text);
+                    const normalizedStumbles = normalizeStumbles(stumbles);
                     const fillers = SA_Logic.findFillers(read.cleanedText);
                     const passive = SA_Logic.findPassive(read.cleanedText);
                     const nominal = SA_Logic.findNominalStyle(read.cleanedText);
@@ -2766,24 +2878,106 @@
                     const longSentenceThreshold = SA_Logic.getLongSentenceThreshold();
 
                     if(options.metrics) {
-                        doc.setFillColor(245, 247, 250); 
-                        doc.rect(margin, y, contentWidth, 35, 'F'); 
-                        doc.setTextColor(0);
-                        let startY = y + 10;
-                        doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.setTextColor(26, 147, 238);
-                        doc.text(data.duration + " Min", margin + 5, startY);
-                        doc.setFontSize(9); doc.setTextColor(100); doc.setFont(undefined, 'normal');
-                        doc.text(`Dauer (${data.wpm} WPM / ${data.mode || 'Auto'})`, margin + 5, startY + 6);
-                        doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.setTextColor(15, 23, 42);
-                        doc.text(String(data.wordCount), margin + 60, startY);
-                        doc.setFontSize(9); doc.setTextColor(100); doc.setFont(undefined, 'normal');
-                        doc.text("Wörter", margin + 60, startY + 6);
-                        const scoreCol = parseInt(data.score) > 60 ? [22, 163, 74] : [234, 88, 12];
-                        doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.setTextColor(scoreCol[0], scoreCol[1], scoreCol[2]);
-                        doc.text(data.score + "/100", margin + 110, startY);
-                        doc.setFontSize(9); doc.setTextColor(100); doc.setFont(undefined, 'normal');
-                        doc.text("Flesch-Index", margin + 110, startY + 6);
-                        y += 45;
+                        const metricHeight = 22;
+                        const metricWidth = (contentWidth - (cardGap * 2)) / 3;
+                        const scoreValue = typeof data.score !== 'undefined' ? data.score : Math.round(read.score || 0);
+                        const scoreColor = Number(scoreValue) >= 60 ? TOKENS.colors.success : TOKENS.colors.warn;
+                        addPageWithHeaderIfNeeded(metricHeight + sectionGap + 4);
+                        drawMetricCard({
+                            x: margin,
+                            yPos: y,
+                            width: metricWidth,
+                            height: metricHeight,
+                            label: `Dauer (${data.wpm} WPM / ${data.mode || 'Auto'})`,
+                            value: `${data.duration} Min`,
+                            accent: TOKENS.colors.brand
+                        });
+                        drawMetricCard({
+                            x: margin + metricWidth + cardGap,
+                            yPos: y,
+                            width: metricWidth,
+                            height: metricHeight,
+                            label: 'Wörter',
+                            value: String(data.wordCount),
+                            accent: TOKENS.colors.brandDark
+                        });
+                        drawMetricCard({
+                            x: margin + ((metricWidth + cardGap) * 2),
+                            yPos: y,
+                            width: metricWidth,
+                            height: metricHeight,
+                            label: 'Flesch-Index',
+                            value: `${scoreValue}/100`,
+                            accent: scoreColor
+                        });
+                        y += metricHeight + sectionGap;
+
+                        const summaryLines = [
+                            `Das Skript umfasst ${data.wordCount} Wörter mit einer geschätzten Sprechdauer von ${data.duration} Minuten.`,
+                            `Lesbarkeit: ${scoreValue}/100 (Ø Satzlänge ${read.avgSentence.toFixed(1)} Wörter, LIX ${read.lix.toFixed(1)}).`,
+                            `Sprechhaltung: ${tone.label} · Tempo: ${data.wpm} WPM.`
+                        ];
+                        const summaryTitle = isPremium ? 'Executive Summary' : 'Kurzüberblick';
+                        addCardBlock({ title: summaryTitle, lines: summaryLines });
+
+                        if (isPremium) {
+                            const fillerCount = Object.keys(fillers).length;
+                            const stumbleCount = normalizedStumbles.long.length
+                                + normalizedStumbles.camel.length
+                                + normalizedStumbles.phonetic.length;
+                            const highlights = [];
+                            const warnings = [];
+                            if (Number(scoreValue) >= 60) {
+                                highlights.push('Gute Lesbarkeit');
+                            } else {
+                                warnings.push('Lesbarkeit erhöhen');
+                            }
+                            if (fillerCount === 0) {
+                                highlights.push('Klare Formulierungen');
+                            } else {
+                                warnings.push(`Füllwörter (${fillerCount})`);
+                            }
+                            if (stumbleCount > 0) {
+                                warnings.push(`Stolperstellen (${stumbleCount})`);
+                            } else {
+                                highlights.push('Flüssiger Sprachfluss');
+                            }
+                            if (nominalChains.length) {
+                                warnings.push(`Nominalketten (${nominalChains.length})`);
+                            }
+                            const badgeItems = [
+                                ...highlights.map(text => ({ text, tone: 'success' })),
+                                ...warnings.map(text => ({ text, tone: 'warn' }))
+                            ];
+                            const availableWidth = contentWidth - (cardPadding * 2);
+                            let badgeLineCount = 1;
+                            let badgeRowWidth = 0;
+                            badgeItems.forEach((item) => {
+                                const width = doc.getTextWidth(item.text) + 10;
+                                if (badgeRowWidth + width > availableWidth) {
+                                    badgeLineCount += 1;
+                                    badgeRowWidth = width;
+                                } else {
+                                    badgeRowWidth += width;
+                                }
+                            });
+                            const badgeBlockHeight = (cardPadding * 2) + 6 + (badgeLineCount * 8);
+                            addPageWithHeaderIfNeeded(badgeBlockHeight);
+                            drawCard(margin, y, contentWidth, badgeBlockHeight);
+                            setTextStyle({ size: TOKENS.fontSizes.section, color: TOKENS.colors.brand, style: 'bold' });
+                            doc.text('Highlights & Hinweise', margin + cardPadding, y + cardPadding + 2);
+                            let badgeX = margin + cardPadding;
+                            let badgeY = y + cardPadding + 10;
+                            badgeItems.forEach((item) => {
+                                const width = doc.getTextWidth(item.text) + 10;
+                                if (badgeX + width > margin + cardPadding + availableWidth) {
+                                    badgeX = margin + cardPadding;
+                                    badgeY += 8;
+                                }
+                                badgeX += drawBadge(item.text, item.tone, badgeX, badgeY);
+                            });
+                            y += badgeBlockHeight + sectionGap;
+                        }
                     }
 
                     if(options.compare && data.savedVersion && data.savedVersion !== text) {
@@ -2886,7 +3080,6 @@
                         if(adverbs.length) addRow("Adverbien (-weise):", adverbs);
                         if(anglicisms.length) addRow("Anglizismen:", anglicisms);
                         if(echoes.length) addRow("Wort-Wiederholungen:", echoes);
-                        const normalizedStumbles = normalizeStumbles(stumbles);
                         const stumbleArr = [...normalizedStumbles.phonetic, ...normalizedStumbles.camel, ...normalizedStumbles.long, ...normalizedStumbles.alliter];
                         if(stumbleArr.length) addRow("Stolpersteine:", stumbleArr);
                         if(normalizedStumbles.sibilant_warning) addRow("Warnung:", `Hohe Zischlaut-Dichte (${normalizedStumbles.sibilant_density}%)`);
@@ -2903,7 +3096,7 @@
                             addRow("Call to Action:", "Keine direkten Signale gefunden");
                         }
                         if(breath.length > 0) {
-                            checkPage(20);
+                            addPageWithHeaderIfNeeded(20);
                             y += 4;
                             doc.setFont(undefined, 'bold');
                             doc.text(`Auffällige Sätze (${breath.length}):`, margin, y);
@@ -2917,7 +3110,7 @@
                                 if(b.commas >= 4) issue.push(`${b.commas} Kommas`);
                                 if(b.hardSegment) issue.push('Keine Pause / Atemdruck');
                                 const line = `• "${b.text.substring(0, 70)}..." (${issue.join(', ')})`;
-                                checkPage(6);
+                                addPageWithHeaderIfNeeded(6);
                                 doc.text(line, margin + 5, y);
                                 y += 5;
                             });
@@ -2930,11 +3123,13 @@
                         addSectionTitle("Tipps & Hinweise");
                         doc.setFontSize(9);
                         doc.setTextColor(80);
+                        let tipCount = 0;
                         const printTip = (txt) => {
-                             checkPage(6);
+                             addPageWithHeaderIfNeeded(6);
                              const split = doc.splitTextToSize("• " + txt, contentWidth);
                              doc.text(split, margin, y);
                              y += (split.length * 4.5) + 2;
+                             tipCount += 1;
                         };
                         if(Object.keys(fillers).length > 3) printTip("Viele Füllwörter gefunden. Versuche, Sätze prägnanter zu formulieren.");
                         if(passive.length > 2) printTip("Passiv-Konstruktionen wirken distanziert. Nutze aktive Verben.");
@@ -2952,8 +3147,8 @@
                         if(adjectives.length > 5) printTip("Text wirkt 'blumig'. Prüfe, ob du alle Adjektive wirklich brauchst.");
                         if(pronunc.words.length > 0 || pronunc.hiatuses.length > 0) printTip("Achte auf die korrekte Aussprache bei Lehnwörtern und '-ig' Endungen.");
                         if(echoes.length > 3) printTip("Achte auf Wortwiederholungen auf engem Raum (Wort-Echos).");
-                        if(y == 25) { 
-                             printTip("Dein Text sieht technisch sehr sauber aus! Achte beim Sprechen auf Betonung.");
+                        if(tipCount === 0) {
+                            printTip("Dein Text sieht technisch sehr sauber aus! Achte beim Sprechen auf Betonung.");
                         }
                         y += 10;
                         doc.setTextColor(0);
@@ -2961,21 +3156,24 @@
 
                     if(options.script) {
                         doc.addPage();
-                        y = 20;
-                        doc.setFontSize(14); doc.setTextColor(26, 147, 238); doc.setFont(undefined, 'bold');
-                        doc.text("Dein Skript", margin, y);
-                        y += 10;
-                        doc.setFontSize(11); 
-                        doc.setTextColor(0); 
+                        y = pageTop;
+                        drawPageHeader();
+                        y += 4;
+                        addSectionTitle("Dein Skript");
+                        doc.setFontSize(11);
+                        doc.setTextColor(TOKENS.colors.text[0], TOKENS.colors.text[1], TOKENS.colors.text[2]);
                         doc.setFont(undefined, 'normal');
                         const splitScript = doc.splitTextToSize(text, contentWidth);
                         for(let i=0; i < splitScript.length; i++) {
-                            if (y > 280) {
+                            if (y + lineHeight > bottomLimit) {
                                 doc.addPage();
-                                y = 20;
+                                y = pageTop;
+                                drawPageHeader();
+                                y += 4;
+                                addSectionTitle("Dein Skript (Fortsetzung)");
                             }
                             renderLineWithMarkers(splitScript[i], margin, y);
-                            y += 6;
+                            y += lineHeight + 1;
                         }
                     }
 
@@ -2983,7 +3181,6 @@
                         doc.addPage();
                         const notesMargin = 15;
                         const notesGap = 8;
-                        const pageHeight = doc.internal.pageSize.getHeight();
                         const notesContentWidth = pageWidth - (notesMargin * 2);
                         const scriptWidth = (notesContentWidth - notesGap) * 0.62;
                         const notesWidth = notesContentWidth - notesGap - scriptWidth;
@@ -2994,6 +3191,8 @@
                         const bottomLimit = pageHeight - notesMargin;
 
                         const renderNotesHeader = () => {
+                            drawPageHeader();
+                            y += 4;
                             doc.setFontSize(12);
                             doc.setTextColor(26, 147, 238);
                             doc.setFont(undefined, 'bold');
@@ -3007,14 +3206,14 @@
                             doc.setFont(undefined, 'normal');
                         };
 
-                        y = 20;
+                        y = pageTop;
                         renderNotesHeader();
 
                         const splitNotesScript = doc.splitTextToSize(text, scriptWidth);
                         splitNotesScript.forEach((line) => {
                             if (y + lineHeight > bottomLimit) {
                                 doc.addPage();
-                                y = 20;
+                                y = pageTop;
                                 renderNotesHeader();
                             }
                             doc.text(line, scriptX, y);
@@ -3027,7 +3226,7 @@
                     const totalPages = doc.internal.getNumberOfPages();
                     for (let page = 1; page <= totalPages; page++) {
                         doc.setPage(page);
-                        renderFooter();
+                        renderFooter(page, totalPages);
                     }
                     doc.save('Skript-Analyse-Report.pdf'); 
                     
