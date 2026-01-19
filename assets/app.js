@@ -369,9 +369,10 @@
             'anglicism',
             'breath',
             'stumble',
-            'pronunciation'
+            'pronunciation',
+            'keyword_focus'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'keyword_focus', 'bpm', 'rhythm'],
+        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'bpm', 'rhythm'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'word_sprint'],
@@ -2852,9 +2853,7 @@
                     const nominalChains = SA_Logic.findNominalChains(read.cleanedText);
                     const vocab = SA_Logic.analyzeVocabulary(read.words);
                     const pronunc = SA_Logic.analyzePronunciation(read.cleanedText);
-                    const keywordFocus = profileConfig.features && profileConfig.features.keywordFocus === false
-                        ? { top: [], total: 0, focusScore: 0, focusKeywords: [], focusCounts: [], focusTotalCount: 0, focusDensity: 0, focusLimit: 0, focusOverLimit: false, totalWords: 0 }
-                        : SA_Logic.analyzeKeywordClusters(text, settings);
+                    const keywordFocus = SA_Logic.analyzeKeywordClusters(text, settings);
                     const spreadIndex = SA_Logic.calculateVariance(read.sentences);
                     const plosiveClusters = SA_Logic.findPlosiveClusters(text);
                     const redundancy = SA_Logic.analyzeRedundancy(read.sentences);
@@ -3273,7 +3272,7 @@
             const defaultAnalysisMode = typeof window !== 'undefined'
                 ? (window.SKA_CONFIG_PHP?.defaultAnalysisMode || 'live')
                 : 'live';
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false, layoutOrderByProfile: {} };
             
             const initialPlanMode = CURRENT_USER_PLAN;
             const unlockButtonEnabled = typeof window !== 'undefined'
@@ -3915,12 +3914,12 @@
                             </select>
                             <p class="ska-settings-help">Warnung bei zu langen Sätzen oder geringer Lesbarkeit für die Zielgruppe.</p>
                         </div>
-                        <div class="ska-settings-field ${isPremium ? '' : 'is-locked'}">
-                            <label class="ska-settings-label">Keyword-Dichte (SEO vs. Voice) ${isPremium ? '' : '<span class="ska-premium-pill">Premium</span>'}</label>
-                            <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff" ${isPremium ? '' : 'disabled'}>${this.settings.focusKeywords || ''}</textarea>
+                        <div class="ska-settings-field">
+                            <label class="ska-settings-label">Keyword-Dichte (SEO vs. Voice)</label>
+                            <textarea id="ska-set-focus-keywords" class="ska-settings-textarea" placeholder="z.B. Produktname, Kernbegriff">${this.settings.focusKeywords || ''}</textarea>
                             <div class="ska-settings-inline">
                                 <span class="ska-settings-helper-label">Dichte-Limit (%)</span>
-                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit != null ? this.settings.keywordDensityLimit : 2}" class="ska-settings-input ska-settings-input--compact" ${isPremium ? '' : 'disabled'}>
+                                <input type="number" step="0.1" min="0" id="ska-set-keyword-limit" value="${this.settings.keywordDensityLimit != null ? this.settings.keywordDensityLimit : 2}" class="ska-settings-input ska-settings-input--compact">
                             </div>
                             <p class="ska-settings-help">Zu hohe Keyword-Dichte klingt beim Vorlesen schnell repetitiv.</p>
                         </div>
@@ -4069,10 +4068,6 @@
             const focusInput = m.querySelector('#ska-set-focus-keywords');
             if (focusInput) {
                 focusInput.addEventListener('input', (e) => {
-                    if (!isPremium) {
-                        this.showPremiumNotice('Die Keyword-Analyse ist in der Premium-Version verfügbar.');
-                        return;
-                    }
                     this.settings.focusKeywords = e.target.value;
                     this.saveUIState();
                     this.analyze(this.getText());
@@ -4082,10 +4077,6 @@
             const keywordLimitInput = m.querySelector('#ska-set-keyword-limit');
             if (keywordLimitInput) {
                 keywordLimitInput.addEventListener('input', (e) => {
-                    if (!isPremium) {
-                        this.showPremiumNotice('Die Keyword-Analyse ist in der Premium-Version verfügbar.');
-                        return;
-                    }
                     this.settings.keywordDensityLimit = Math.max(0, parseFloat(e.target.value) || 0);
                     this.saveUIState();
                     this.analyze(this.getText());
@@ -5968,6 +5959,34 @@
                 this.analyze(this.getText());
                 return true;
             }
+            if (act === 'open-layout-modal') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                this.openLayoutModal();
+                return true;
+            }
+            if (act === 'close-layout-modal') {
+                this.closeLayoutModal();
+                return true;
+            }
+            if (act === 'layout-reset') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                this.resetLayoutModalOrder();
+                return true;
+            }
+            if (act === 'layout-save') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                this.saveLayoutModalOrder();
+                return true;
+            }
             if (act === 'premium-price-plan') {
                 const plan = btn.dataset.plan;
                 if (plan) {
@@ -6571,6 +6590,7 @@
                 if(typeof global.keywordDensityLimit !== 'undefined') this.settings.keywordDensityLimit = global.keywordDensityLimit;
                 if(typeof global.complianceText !== 'undefined') this.settings.complianceText = global.complianceText;
                 if(typeof global.teleprompterMirror !== 'undefined') this.settings.teleprompterMirror = global.teleprompterMirror;
+                if(typeof global.layoutOrderByProfile !== 'undefined') this.settings.layoutOrderByProfile = global.layoutOrderByProfile || {};
                 
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
@@ -6601,7 +6621,8 @@
                 focusKeywords: this.settings.focusKeywords,
                 keywordDensityLimit: this.settings.keywordDensityLimit,
                 complianceText: this.settings.complianceText,
-                teleprompterMirror: this.settings.teleprompterMirror
+                teleprompterMirror: this.settings.teleprompterMirror,
+                layoutOrderByProfile: this.settings.layoutOrderByProfile
             };
             if (this.isPremiumActive()) {
                 if (!this.state.projectObject) {
@@ -6988,9 +7009,7 @@
             this.settings.commaPause = 0.2;
             this.settings.periodPause = 0.5;
             this.settings.audienceTarget = '';
-            this.settings.focusKeywords = '';
             this.settings.complianceText = '';
-            this.settings.keywordDensityLimit = 2;
             this.settings.bullshitBlacklist = '';
         }
 
@@ -7411,7 +7430,7 @@
 
                     if(act === 'confirm-reset') {
                         this.setText(''); 
-                        this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:''}; 
+                        this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:'', teleprompterMirror:false, layoutOrderByProfile:{}}; 
                         this.state.savedVersion=''; 
                         SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                         this.state.hiddenCards.clear(); 
@@ -7690,7 +7709,7 @@
             const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const sorted = SA_CONFIG.CARD_ORDER.filter(id => {
+            const sorted = this.getLayoutOrder(profile).filter(id => {
                 if (toolCards.includes(id)) return false;
                 if (!this.state.hiddenCards.has(id) || !this.isCardAvailable(id) || !this.isCardUnlocked(id)) return false;
                 if (!allowed) return true;
@@ -7824,7 +7843,8 @@
             const isGeneralProfile = profile === 'general';
             const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const items = SA_CONFIG.CARD_ORDER.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
+            const layoutOrder = this.getLayoutOrder(profile);
+            const items = layoutOrder.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
             const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
             const title = 'Analyseboxen auswählen';
             const isExpanded = !this.state.filterCollapsed;
@@ -7854,10 +7874,14 @@
                 <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
                     ${profileFilterLabel}
                 </button>`;
+            const layoutButton = isPremium
+                ? `<button class="ska-filterbar-toggle" data-action="open-layout-modal">Layout anpassen</button>`
+                : `<button class="ska-filterbar-toggle is-locked" data-action="open-layout-modal">Layout anpassen <span class="ska-premium-pill">Premium</span></button>`;
             const html = `
                 <div class="ska-filterbar-header">
                     <span>${title}</span>
                     <div class="ska-filterbar-actions">
+                        ${layoutButton}
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
@@ -7893,6 +7917,122 @@
             if (profileRowEl) {
                 profileRowEl.style.display = shouldShowProfile ? 'flex' : 'none';
             }
+        }
+
+        ensureLayoutModal() {
+            if (this.layoutModal) return;
+            const modal = document.createElement('div');
+            modal.className = 'skriptanalyse-modal ska-layout-modal';
+            modal.id = 'ska-layout-modal';
+            modal.innerHTML = `
+                <div class="skriptanalyse-modal-overlay" data-action="close-layout-modal"></div>
+                <div class="skriptanalyse-modal-content">
+                    <button type="button" class="ska-close-icon" data-action="close-layout-modal" aria-label="Schließen">&times;</button>
+                    <div class="ska-modal-header">
+                        <h3>Layout anpassen</h3>
+                    </div>
+                    <div class="skriptanalyse-modal-body">
+                        <p style="margin-top:0; color:#64748b;">Ziehe die Boxen in die gewünschte Reihenfolge. Neue Boxen werden automatisch am Ende ergänzt.</p>
+                        <div data-role="layout-grid" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;"></div>
+                    </div>
+                    <div class="ska-modal-footer" style="display:flex; justify-content:space-between; gap:0.75rem;">
+                        <button type="button" class="ska-btn ska-btn--ghost" data-action="layout-reset">Reset Layout</button>
+                        <div style="display:flex; gap:0.75rem;">
+                            <button type="button" class="ska-btn ska-btn--secondary" data-action="close-layout-modal">Abbrechen</button>
+                            <button type="button" class="ska-btn ska-btn--primary" data-action="layout-save">Speichern</button>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.appendChild(modal);
+            this.layoutModal = modal;
+            this.bindLayoutModalDrag();
+        }
+
+        bindLayoutModalDrag() {
+            if (!this.layoutModal) return;
+            const grid = this.layoutModal.querySelector('[data-role="layout-grid"]');
+            if (!grid || grid.dataset.dragBound) return;
+            grid.dataset.dragBound = 'true';
+            let draggingItem = null;
+
+            grid.addEventListener('dragstart', (event) => {
+                const item = event.target.closest('[data-card-id]');
+                if (!item) return;
+                draggingItem = item;
+                item.classList.add('is-dragging');
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', item.dataset.cardId || '');
+            });
+
+            grid.addEventListener('dragend', () => {
+                if (draggingItem) {
+                    draggingItem.classList.remove('is-dragging');
+                }
+                draggingItem = null;
+            });
+
+            grid.addEventListener('dragover', (event) => {
+                if (!draggingItem) return;
+                const target = event.target.closest('[data-card-id]');
+                if (!target || target === draggingItem) return;
+                event.preventDefault();
+                const rect = target.getBoundingClientRect();
+                const shouldInsertBefore = event.clientY < rect.top + rect.height / 2;
+                const referenceNode = shouldInsertBefore ? target : target.nextSibling;
+                if (referenceNode !== draggingItem) {
+                    grid.insertBefore(draggingItem, referenceNode);
+                }
+            });
+        }
+
+        renderLayoutModalItems(order) {
+            if (!this.layoutModal) return;
+            const grid = this.layoutModal.querySelector('[data-role="layout-grid"]');
+            if (!grid) return;
+            const items = order.filter(id => id !== 'overview' && SA_CONFIG.CARD_TITLES[id] && this.isCardAvailable(id));
+            grid.innerHTML = items.map((id) => `
+                <div data-card-id="${id}" draggable="true" style="display:flex; align-items:center; gap:0.6rem; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.75rem; background:#fff; cursor:grab;">
+                    <span aria-hidden="true" style="font-weight:700; color:#94a3b8;">⋮⋮</span>
+                    <span style="font-weight:600; color:#0f172a;">${SA_CONFIG.CARD_TITLES[id]}</span>
+                </div>`).join('');
+        }
+
+        openLayoutModal() {
+            this.ensureLayoutModal();
+            const profile = this.normalizeProfile(this.settings.role);
+            const order = this.getLayoutOrder(profile);
+            this.renderLayoutModalItems(order);
+            if (this.layoutModal) {
+                SA_Utils.openModal(this.layoutModal);
+                document.body.classList.add('ska-modal-open');
+            }
+        }
+
+        closeLayoutModal() {
+            if (!this.layoutModal) return;
+            SA_Utils.closeModal(this.layoutModal, () => {
+                document.body.classList.remove('ska-modal-open');
+            });
+        }
+
+        resetLayoutModalOrder() {
+            this.renderLayoutModalItems(SA_CONFIG.CARD_ORDER);
+        }
+
+        saveLayoutModalOrder() {
+            if (!this.layoutModal) return;
+            const grid = this.layoutModal.querySelector('[data-role="layout-grid"]');
+            if (!grid) return;
+            const profile = this.normalizeProfile(this.settings.role);
+            const order = Array.from(grid.querySelectorAll('[data-card-id]'))
+                .map(item => item.dataset.cardId)
+                .filter(Boolean);
+            const mergedOrder = this.mergeLayoutOrder(order);
+            this.setLayoutOrder(profile, mergedOrder);
+            this.closeLayoutModal();
+            this.renderFilterBar();
+            this.renderHiddenPanel();
+            this.analyze(this.getText());
         }
 
         updateGridVisibility() {
@@ -8075,9 +8215,10 @@
             const getCardContainer = (id) => (isToolCard(id) ? this.toolsModalStore : this.bottomGrid);
 
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            let availableCards = SA_CONFIG.CARD_ORDER.filter((id) => this.isCardAvailable(id));
+            const layoutOrder = this.getLayoutOrder(profile);
+            let availableCards = layoutOrder.filter((id) => this.isCardAvailable(id));
             if (!this.isPremiumActive()) {
-                const freeCards = SA_CONFIG.CARD_ORDER.filter((id) => SA_CONFIG.FREE_CARDS.includes(id));
+                const freeCards = layoutOrder.filter((id) => SA_CONFIG.FREE_CARDS.includes(id));
                 const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
                 availableCards = [...freeCards, ...teaserCards.filter(id => !freeCards.includes(id))];
             }
@@ -8140,10 +8281,6 @@
                     case 'keyword_focus':
                         if (!active) {
                             this.renderKeywordFocusCard(null, false);
-                            break;
-                        }
-                        if (profileConfig.features && profileConfig.features.keywordFocus === false) {
-                            this.updateCard('keyword_focus', '<p style="color:#64748b; font-size:0.9rem;">Keyword-Fokus ist nur im Autor:innen- oder Marketing-Profil aktiv.</p>');
                             break;
                         }
                         if (useWorker) {
@@ -10232,6 +10369,40 @@
             return config.label || 'Allgemein';
         }
 
+        mergeLayoutOrder(order) {
+            const defaultOrder = SA_CONFIG.CARD_ORDER.slice();
+            if (!Array.isArray(order) || !order.length) return defaultOrder.slice();
+            const cleaned = order.filter(id => defaultOrder.includes(id));
+            const seen = new Set(cleaned);
+            defaultOrder.forEach((id) => {
+                if (!seen.has(id)) cleaned.push(id);
+            });
+            return cleaned;
+        }
+
+        getLayoutOrder(profile = this.settings.role) {
+            const normalized = this.normalizeProfile(profile);
+            const stored = this.settings.layoutOrderByProfile ? this.settings.layoutOrderByProfile[normalized] : null;
+            return this.mergeLayoutOrder(stored);
+        }
+
+        setLayoutOrder(profile, order) {
+            const normalized = this.normalizeProfile(profile);
+            if (!this.settings.layoutOrderByProfile) {
+                this.settings.layoutOrderByProfile = {};
+            }
+            this.settings.layoutOrderByProfile[normalized] = order;
+            this.saveUIState();
+        }
+
+        resetLayoutOrder(profile) {
+            const normalized = this.normalizeProfile(profile);
+            if (this.settings.layoutOrderByProfile && this.settings.layoutOrderByProfile[normalized]) {
+                delete this.settings.layoutOrderByProfile[normalized];
+            }
+            this.saveUIState();
+        }
+
         getEffectiveSettings() {
             const normalizedProfile = this.normalizeProfile(this.settings.role);
             const baseSettings = this.isPremiumActive()
@@ -10244,7 +10415,6 @@
                     periodPause: 0.5,
                     paragraphPause: 1,
                     audienceTarget: '',
-                    focusKeywords: '',
                     complianceText: ''
                 };
             const profileConfig = this.getProfileConfig(normalizedProfile);
