@@ -2653,6 +2653,19 @@
                     const { margin, pageTop, footerHeight, cardPadding, cardGap, sectionGap, lineHeight } = TOKENS.layout;
                     const contentWidth = pageWidth - (margin * 2);
                     const bottomLimit = pageHeight - footerHeight - 6;
+                    const columnLayout = {
+                        margin,
+                        gutter: 8,
+                        columnWidth: 0,
+                        leftX: margin,
+                        rightX: margin,
+                        topY: pageTop + 4,
+                        bottomY: bottomLimit,
+                        lineHeight: lineHeight,
+                        safeBaseline: Math.max(1, lineHeight - 2)
+                    };
+                    columnLayout.columnWidth = (contentWidth - columnLayout.gutter) / 2;
+                    columnLayout.rightX = margin + columnLayout.columnWidth + columnLayout.gutter;
                     let y = pageTop;
                     const isPremium = CURRENT_USER_PLAN === 'premium';
                     const reportTitle = isPremium ? 'Pro-PDF-Report' : 'Skript-Analyse Report';
@@ -2810,6 +2823,42 @@
                             offsetX += doc.getTextWidth(part);
                         });
                         doc.setTextColor(TOKENS.colors.text[0], TOKENS.colors.text[1], TOKENS.colors.text[2]);
+                    };
+
+                    const measureTextBlock = (textBlock, width, fontSize, blockLineHeight) => {
+                        doc.setFontSize(fontSize);
+                        const lines = doc.splitTextToSize(String(textBlock || ''), width);
+                        return lines.length * blockLineHeight;
+                    };
+
+                    const renderTextBlock = (textBlock, x, yPos, width, fontSize, blockLineHeight) => {
+                        doc.setFontSize(fontSize);
+                        const lines = doc.splitTextToSize(String(textBlock || ''), width);
+                        const baselineOffset = Math.min(
+                            blockLineHeight,
+                            Math.max(columnLayout.safeBaseline, blockLineHeight - 2)
+                        );
+                        doc.text(lines, x, yPos + baselineOffset);
+                        return lines.length * blockLineHeight;
+                    };
+
+                    const ensureSpace = (heightNeeded, flow) => {
+                        if (flow.cursor.y + heightNeeded <= columnLayout.bottomY) return;
+                        if (flow.cursor.col === 'left') {
+                            flow.cursor.col = 'right';
+                            flow.cursor.y = flow.topY;
+                            flow.yRight = flow.cursor.y;
+                            return;
+                        }
+                        doc.addPage();
+                        y = pageTop;
+                        drawPageHeader();
+                        y += 4;
+                        flow.topY = y;
+                        flow.yLeft = y;
+                        flow.yRight = y;
+                        flow.cursor.col = 'left';
+                        flow.cursor.y = y;
                     };
 
                     const profileConfig = settings.profileConfig || this.getProfileConfig(settings.role);
@@ -3122,12 +3171,28 @@
                         doc.setFontSize(9);
                         doc.setTextColor(80);
                         let tipCount = 0;
+                        const tipFlow = {
+                            topY: y,
+                            yLeft: y,
+                            yRight: y,
+                            cursor: { col: 'left', y }
+                        };
+                        const tipFontSize = 9;
+                        const tipLineHeight = 4.5;
                         const printTip = (txt) => {
-                             addPageWithHeaderIfNeeded(6);
-                             const split = doc.splitTextToSize("• " + txt, contentWidth);
-                             doc.text(split, margin, y);
-                             y += (split.length * 4.5) + 2;
-                             tipCount += 1;
+                            const tipText = `• ${txt}`;
+                            const blockHeight = measureTextBlock(tipText, columnLayout.columnWidth, tipFontSize, tipLineHeight);
+                            ensureSpace(blockHeight, tipFlow);
+                            const isLeft = tipFlow.cursor.col === 'left';
+                            const x = isLeft ? columnLayout.leftX : columnLayout.rightX;
+                            const renderedHeight = renderTextBlock(tipText, x, tipFlow.cursor.y, columnLayout.columnWidth, tipFontSize, tipLineHeight);
+                            tipFlow.cursor.y += renderedHeight + 2;
+                            if (isLeft) {
+                                tipFlow.yLeft = tipFlow.cursor.y;
+                            } else {
+                                tipFlow.yRight = tipFlow.cursor.y;
+                            }
+                            tipCount += 1;
                         };
                         if(Object.keys(fillers).length > 3) printTip("Viele Füllwörter gefunden. Versuche, Sätze prägnanter zu formulieren.");
                         if(passive.length > 2) printTip("Passiv-Konstruktionen wirken distanziert. Nutze aktive Verben.");
@@ -3148,7 +3213,7 @@
                         if(tipCount === 0) {
                             printTip("Dein Text sieht technisch sehr sauber aus! Achte beim Sprechen auf Betonung.");
                         }
-                        y += 10;
+                        y = Math.max(tipFlow.yLeft, tipFlow.yRight) + 10;
                         doc.setTextColor(0);
                     }
 
