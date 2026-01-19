@@ -532,30 +532,30 @@
             tools: [
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
                 { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
-                { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud.", featured: true, badge: "Top" },
-                { name: "Teleprompter", desc: "Ein professioneller, browserbasierter Teleprompter mit Sprachsteuerung und Geschwindigkeitsregelung.", featured: true, badge: "Top" },
-                { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort.", featured: true, badge: "Top" },
-                { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten.", featured: true, badge: "Top" },
-                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
+                { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
+                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Highlight" },
+                { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her.", featured: true, badge: "Highlight" },
+                { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true, badge: "Highlight" },
+                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen.", featured: true, badge: "Highlight" },
                 { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
                 { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
                 { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen." },
-                { name: "Sprech-Pacing", desc: "Ein visuelles Tool, das dir hilft, das exakte Timing für Takes zu üben.", featured: true, badge: "Top" }
+                { name: "Sprech-Pacing", desc: "Perfektes Timing vor der Aufnahme: Sieh schon während des Schreibens exakt, wie viele Sekunden oder Minuten dein Text gesprochen dauern wird.", featured: true, badge: "Highlight" }
             ],
             analysis: [
                 { name: "Regie-Anweisung", desc: "Erkennt technische Anweisungen und formatiert sie korrekt für Sprecher." },
-                { name: "Satz-Rhythmus", desc: "Visualisiert den Flow deines Textes, um monotone Satzstrukturen zu vermeiden.", featured: true, badge: "Top" },
+                { name: "Satz-Rhythmus", desc: "Hypnotischer Lesefluss: Visualisiert die 'Melodie' deines Textes, damit deine Leser nicht durch monotone Satzlängen einschlafen.", featured: true, badge: "Highlight" },
                 { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen." },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
                 { name: "Rollen-Verteilung", desc: "Analysiert, wie viel Sprechanteil verschiedene Charaktere oder Rollen haben." },
-                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen.", featured: true, badge: "Top" },
+                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen." },
                 { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
                 { name: "Leichte Sprache", desc: "Prüft deinen Text auf Barrierefreiheit (B1/B2 Level) und Verständlichkeit." },
-                { name: "Semantische Redundanz", desc: "Findet inhaltliche Wiederholungen, bei denen das Gleiche mit anderen Worten gesagt wird.", featured: true, badge: "Top" },
-                { name: "Buzzword-Check", desc: "Entlarvt abgedroschene Marketing-Phrasen und leere Worthülsen.", featured: true, badge: "Top" },
+                { name: "Semantische Redundanz", desc: "Lösche das Überflüssige: Findet Wort-Doppelungen und aufgeblähte Phrasen – macht deinen Text sofort straffer und schneller lesbar.", featured: true, badge: "Highlight" },
+                { name: "Buzzword-Check", desc: "Schluss mit Bla-Bla: Entlarvt hohle Marketing-Floskeln und sorgt für authentische, glaubwürdige Kommunikation, der man vertraut.", featured: true, badge: "Highlight" },
                 { name: "Metaphern & Phrasen", desc: "Analysiert die Bildsprache und prüft, ob Metaphern stimmig sind." },
-                { name: "Immersion & Show, don't tell", desc: "Findet Distanz-Wörter ('er sah', 'sie hörte'), die die Immersion schwächen.", featured: true, badge: "Top" },
-                { name: "Zielgruppen-Filter", desc: "Passt die Analyse-Parameter speziell auf deine definierte Zielgruppe an." },
+                { name: "Immersion & Show, don't tell", desc: "Der Bestseller-Effekt: Das System zeigt dir gnadenlos, wo du nur behauptest, statt echtes Kopfkino beim Leser zu erzeugen.", featured: true, badge: "Highlight" },
+                { name: "Zielgruppen-Filter", desc: "Treffsicher formulieren: Prüft Wortwahl und Komplexität chirurgisch genau auf deine Zielgruppe – damit deine Message auch wirklich verstanden wird.", featured: true, badge: "Highlight" },
                 { name: "Rhetorische Fragen", desc: "Zählt Fragen im Text und bewertet deren Wirkung auf den Zuhörer." },
                 { name: "Satz-Verschachtelung", desc: "Warnt vor zu komplexen Schachtelsätzen, die beim Hören schwer verständlich sind." },
                 { name: "Satzanfang-Varianz", desc: "Prüft, ob zu viele Sätze mit dem gleichen Wort beginnen (z.B. 'Dann... Dann...')." },
@@ -3332,7 +3332,20 @@
             close.innerHTML = '&times;';
             close.addEventListener('click', () => {
                 SA_Utils.storage.save(SA_CONFIG.UI_KEY_ANNOUNCEMENT_DISMISSED, announcement);
-                toast.remove();
+                if (toast.classList.contains('is-dismissing')) return;
+                toast.style.maxHeight = `${toast.scrollHeight}px`;
+                requestAnimationFrame(() => {
+                    toast.classList.add('is-dismissing');
+                });
+                const finalize = () => {
+                    if (!toast.isConnected) return;
+                    toast.remove();
+                };
+                toast.addEventListener('transitionend', (event) => {
+                    if (event.propertyName !== 'max-height' && event.propertyName !== 'opacity') return;
+                    finalize();
+                }, { once: true });
+                window.setTimeout(finalize, 420);
             });
             toast.appendChild(icon);
             toast.appendChild(text);
@@ -5278,9 +5291,7 @@
                 return true;
             }
             if (act === 'close-premium-upgrade') {
-                this.state.premiumUpgradeDismissed = true;
-                this.saveUIState();
-                this.renderUpgradePanel();
+                this.dismissPremiumUpgradeCard();
                 return true;
             }
             if (act === 'open-tool-modal') {
@@ -5914,8 +5925,9 @@
                         <div class="ska-project-manager__upsell" data-role="project-upsell">
                             <div class="ska-project-manager__upsell-icon">⭐</div>
                             <div class="ska-project-manager__upsell-text">
-                                <strong>Speichere deine Skripte dauerhaft mit Premium.</strong>
+                                <strong>Speichere deine Skripte & Projekte dauerhaft mit einem Premium-Plan.</strong>
                                 <span>Greife jederzeit auf alle Projekte zu und verwalte Versionen zentral.</span>
+                                <a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>
                             </div>
                         </div>
                         <div class="ska-project-manager__list" data-role="project-manager-list"></div>
@@ -7049,7 +7061,7 @@
                         return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
                     }).join('')}
                 </div>` : '';
-            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil-Boxen anzeigen';
+            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil spezifische Boxen anzeigen';
             const profileFilterLink = `
                 <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
                     ${profileFilterLabel}
@@ -7061,10 +7073,10 @@
                         <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
                     </div>
                 </div>
+                <div class="ska-filterbar-profile-row">
+                    ${profileFilterLink}
+                </div>
                 <div class="ska-filterbar-body">
-                    <div class="ska-filterbar-profile-row">
-                        ${profileFilterLink}
-                    </div>
                     <div class="ska-filterbar-bulk">
                         <div class="ska-filterbar-bulk-actions">
                             <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
@@ -7085,8 +7097,12 @@
                 </div>`;
             this.filterBar.innerHTML = html;
             const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
+            const profileRowEl = this.filterBar.querySelector('.ska-filterbar-profile-row');
             if (profileLinkEl) {
                 profileLinkEl.style.display = isGeneralProfile ? 'none' : 'inline-block';
+            }
+            if (profileRowEl) {
+                profileRowEl.style.display = isGeneralProfile ? 'none' : 'flex';
             }
         }
 
@@ -9678,7 +9694,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Bei Bedarf kannst Du Deine Analyse als PDF herunterladen. Soll Dein Skript vertont werden? Dann frag mich ganz bequem für Deine Sprachaufnahme an.';
+            return 'Teleprompter, Pro-PDF-Report, Profi-Analysen & Textvergleich – jederzeit kündbar.';
         }
 
         openCheckout(productTitle, price, cycle) {
@@ -9855,7 +9871,7 @@
                     const hiddenClass = isHidden ? 'ska-hidden-feature' : '';
                     const styleAttr = isHidden ? 'style="display:none"' : '';
                     const featuredClass = item.featured ? 'is-featured' : '';
-                    const badgeLabel = item.badge ? String(item.badge) : 'Top';
+                    const badgeLabel = item.badge ? String(item.badge) : 'Highlight';
                     const badgeHTML = item.featured ? `<em class="ska-feature-badge">${badgeLabel}</em>` : '';
                     return `
                     <li class="${hiddenClass} ${featuredClass}" ${styleAttr} data-tooltip="${item.desc}">
@@ -10041,6 +10057,33 @@
             grid.addEventListener('scroll', throttledUpdate, { passive: true });
             window.addEventListener('resize', throttledUpdate);
             window.requestAnimationFrame(update);
+        }
+
+        dismissPremiumUpgradeCard() {
+            const container = this.legendContainer ? this.legendContainer.parentElement : null;
+            const card = container ? container.querySelector('.ska-premium-upgrade-card') : document.querySelector('.ska-premium-upgrade-card');
+            if (!card) {
+                this.state.premiumUpgradeDismissed = true;
+                this.saveUIState();
+                return;
+            }
+            if (card.classList.contains('is-dismissing')) return;
+            card.style.maxHeight = `${card.scrollHeight}px`;
+            requestAnimationFrame(() => {
+                card.classList.add('is-dismissing');
+            });
+            const finalize = () => {
+                if (card.dataset.dismissed === 'true') return;
+                card.dataset.dismissed = 'true';
+                this.state.premiumUpgradeDismissed = true;
+                this.saveUIState();
+                card.remove();
+            };
+            card.addEventListener('transitionend', (event) => {
+                if (event.propertyName !== 'max-height' && event.propertyName !== 'opacity') return;
+                finalize();
+            }, { once: true });
+            window.setTimeout(finalize, 450);
         }
 
         renderComparison(sec, w, sc) {
