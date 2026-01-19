@@ -2088,10 +2088,10 @@ body.skript-analyse-active .skript-analyse-container {
 
 /* --- FOOTER FIX (FINAL ALIGNMENT) --- */
 .ska-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; gap: 2rem; flex-wrap: wrap; }
-.ska-footer-intro { flex: 1; min-width: 300px; display: flex; align-items: center; }
+.ska-footer-intro { flex: 1 1 340px; min-width: 280px; display: flex; align-items: center; }
 .ska-footer-intro p { margin: 0; font-size: 0.9rem; color: var(--ska-text-muted); line-height: 1.5; vertical-align: middle; }
-.ska-footer-actions { display: flex; gap: 1rem; align-items: stretch; flex-direction: row; }
-.ska-footer-actions > * { flex: 1 1 0; }
+.ska-footer-actions { display: flex; gap: 1rem; align-items: center; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+.ska-footer-actions > * { flex: 1 1 220px; }
 .ska-footer-actions .ska-tool-wrapper { width: 100%; }
 .ska-footer-actions .ska-btn { width: 100%; justify-content: center; min-height: 48px; }
 
@@ -2754,8 +2754,8 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .skriptanalyse-analysis-bottom-grid { grid-template-columns: 1fr; }
     .skriptanalyse-compare-grid { grid-template-columns: 1fr; }
     .ska-footer { flex-direction: column; align-items: stretch; gap: 1.5rem; }
-    .ska-footer-intro { text-align: center; }
-    .ska-footer-actions { flex-direction: column; width: 100%; }
+    .ska-footer-intro { text-align: left; }
+    .ska-footer-actions { flex-direction: row; width: 100%; justify-content: flex-end; }
     .ska-footer-actions .ska-btn { width: 100%; }
     .ska-help-grid, .ska-settings-grid { grid-template-columns: 1fr; }
     .ska-help-hero { grid-template-columns: 1fr; }

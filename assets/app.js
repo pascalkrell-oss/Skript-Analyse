@@ -10683,7 +10683,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Teleprompter, Pro-PDF-Report, Profi-Analysen & Textvergleich – jederzeit kündbar.';
+            return 'Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an. Klar strukturiert, zuverlässig und jederzeit kündbar.';
         }
 
         openCheckout(productTitle, price, cycle) {
