@@ -532,29 +532,29 @@
             tools: [
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
                 { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
-                { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
-                { name: "Teleprompter", desc: "Ein professioneller, browserbasierter Teleprompter mit Sprachsteuerung und Geschwindigkeitsregelung." },
-                { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort." },
-                { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten." },
+                { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud.", featured: true, badge: "Top" },
+                { name: "Teleprompter", desc: "Ein professioneller, browserbasierter Teleprompter mit Sprachsteuerung und Geschwindigkeitsregelung.", featured: true, badge: "Top" },
+                { name: "Textvergleich (Versionen)", desc: "Vergleiche verschiedene Versionen deines Skripts und sieh Änderungen sofort.", featured: true, badge: "Top" },
+                { name: "Pro-PDF-Report", desc: "Erstellt einen detaillierten Report für Regie und Kunden mit allen Analyse-Daten.", featured: true, badge: "Top" },
                 { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
                 { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
                 { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
                 { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen." },
-                { name: "Sprech-Pacing", desc: "Ein visuelles Tool, das dir hilft, das exakte Timing für Takes zu üben." }
+                { name: "Sprech-Pacing", desc: "Ein visuelles Tool, das dir hilft, das exakte Timing für Takes zu üben.", featured: true, badge: "Top" }
             ],
             analysis: [
                 { name: "Regie-Anweisung", desc: "Erkennt technische Anweisungen und formatiert sie korrekt für Sprecher." },
-                { name: "Satz-Rhythmus", desc: "Visualisiert den Flow deines Textes, um monotone Satzstrukturen zu vermeiden." },
+                { name: "Satz-Rhythmus", desc: "Visualisiert den Flow deines Textes, um monotone Satzstrukturen zu vermeiden.", featured: true, badge: "Top" },
                 { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen." },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
                 { name: "Rollen-Verteilung", desc: "Analysiert, wie viel Sprechanteil verschiedene Charaktere oder Rollen haben." },
-                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen." },
+                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen.", featured: true, badge: "Top" },
                 { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
                 { name: "Leichte Sprache", desc: "Prüft deinen Text auf Barrierefreiheit (B1/B2 Level) und Verständlichkeit." },
-                { name: "Semantische Redundanz", desc: "Findet inhaltliche Wiederholungen, bei denen das Gleiche mit anderen Worten gesagt wird." },
-                { name: "Buzzword-Check", desc: "Entlarvt abgedroschene Marketing-Phrasen und leere Worthülsen." },
+                { name: "Semantische Redundanz", desc: "Findet inhaltliche Wiederholungen, bei denen das Gleiche mit anderen Worten gesagt wird.", featured: true, badge: "Top" },
+                { name: "Buzzword-Check", desc: "Entlarvt abgedroschene Marketing-Phrasen und leere Worthülsen.", featured: true, badge: "Top" },
                 { name: "Metaphern & Phrasen", desc: "Analysiert die Bildsprache und prüft, ob Metaphern stimmig sind." },
-                { name: "Immersion & Show, don't tell", desc: "Findet Distanz-Wörter ('er sah', 'sie hörte'), die die Immersion schwächen." },
+                { name: "Immersion & Show, don't tell", desc: "Findet Distanz-Wörter ('er sah', 'sie hörte'), die die Immersion schwächen.", featured: true, badge: "Top" },
                 { name: "Zielgruppen-Filter", desc: "Passt die Analyse-Parameter speziell auf deine definierte Zielgruppe an." },
                 { name: "Rhetorische Fragen", desc: "Zählt Fragen im Text und bewertet deren Wirkung auf den Zuhörer." },
                 { name: "Satz-Verschachtelung", desc: "Warnt vor zu komplexen Schachtelsätzen, die beim Hören schwer verständlich sind." },
@@ -3107,6 +3107,7 @@
                 search: { query: '', matches: [], index: -1 },
                 projectObject: { settings: {} },
                 currentProjectId: null,
+                currentProjectTitle: '',
                 projects: []
             };
             this.synonymCache = new Map();
@@ -3239,26 +3240,13 @@
 
         setupProjectControls() {
             const toolbarActions = this.root.querySelector('.ska-toolbar-actions');
-            if (toolbarActions && !this.root.querySelector('[data-action="save-project"]')) {
-                const saveBtn = document.createElement('button');
-                saveBtn.type = 'button';
-                saveBtn.className = 'ska-btn ska-btn--secondary';
-                saveBtn.dataset.action = 'save-project';
-                saveBtn.textContent = 'Projekt speichern';
-                toolbarActions.insertBefore(saveBtn, toolbarActions.firstChild);
-                this.projectSaveButton = saveBtn;
-            }
             if (toolbarActions && !this.root.querySelector('[data-action="manage-projects"]')) {
                 const manageBtn = document.createElement('button');
                 manageBtn.type = 'button';
                 manageBtn.className = 'ska-btn ska-btn--secondary';
                 manageBtn.dataset.action = 'manage-projects';
                 manageBtn.innerHTML = 'Projekte verwalten';
-                if (this.projectSaveButton && this.projectSaveButton.parentElement === toolbarActions) {
-                    this.projectSaveButton.insertAdjacentElement('afterend', manageBtn);
-                } else {
-                    toolbarActions.insertBefore(manageBtn, toolbarActions.firstChild);
-                }
+                toolbarActions.insertBefore(manageBtn, toolbarActions.firstChild);
                 this.projectManagerButton = manageBtn;
             }
             this.updateProjectControls();
@@ -5169,10 +5157,6 @@
         }
 
         handleAction(act, btn, event = null) {
-            if (act === 'save-project') {
-                this.saveCurrentProject();
-                return true;
-            }
             if (act === 'manage-projects') {
                 this.openProjectManagerModal();
                 return true;
@@ -5194,6 +5178,16 @@
             if (act === 'project-delete') {
                 const projectId = btn.dataset.projectId;
                 this.deleteProject(projectId);
+                return true;
+            }
+            if (act === 'project-save-new') {
+                const title = this.getProjectSaveTitle();
+                this.saveProject({ title, overwrite: false });
+                return true;
+            }
+            if (act === 'project-save-overwrite') {
+                const title = this.getProjectSaveTitle();
+                this.saveProject({ title, overwrite: true });
                 return true;
             }
             if (act.startsWith('format-')) {
@@ -5887,13 +5881,6 @@
 
         updateProjectControls() {
             const isPremium = CURRENT_USER_PLAN === 'premium';
-            if (this.projectSaveButton) {
-                this.projectSaveButton.hidden = !isPremium;
-                this.projectSaveButton.disabled = !isPremium;
-                this.projectSaveButton.classList.toggle('is-disabled', !isPremium);
-                this.projectSaveButton.setAttribute('aria-disabled', String(!isPremium));
-                this.projectSaveButton.title = isPremium ? 'Projekt speichern' : 'Upgrade für Projekt-Speicherung';
-            }
             if (this.projectManagerButton) {
                 this.projectManagerButton.title = isPremium ? 'Gespeicherte Projekte verwalten' : 'Gespeicherte Projekte (Premium)';
             }
@@ -5910,6 +5897,20 @@
                     <button type="button" class="ska-close-icon" data-action="close-project-manager" aria-label="Schließen">&times;</button>
                     <div class="ska-modal-header"><h3>Meine gespeicherten Projekte</h3></div>
                     <div class="skriptanalyse-modal-body">
+                        <div class="ska-project-manager__save" data-role="project-save-panel">
+                            <div class="ska-project-manager__save-header">
+                                <h4>Projekt speichern</h4>
+                                <span class="ska-project-manager__save-hint">Nur Premium</span>
+                            </div>
+                            <div class="ska-project-manager__save-fields">
+                                <input class="ska-input" data-role="project-save-title" type="text" placeholder="Projektname…" autocomplete="off">
+                                <div class="ska-project-manager__save-actions">
+                                    <button type="button" class="ska-btn ska-btn--primary" data-action="project-save-new">Neu speichern</button>
+                                    <button type="button" class="ska-btn ska-btn--secondary" data-action="project-save-overwrite">Überschreiben</button>
+                                </div>
+                            </div>
+                            <div class="ska-project-manager__save-meta" data-role="project-save-meta"></div>
+                        </div>
                         <div class="ska-project-manager__upsell" data-role="project-upsell">
                             <div class="ska-project-manager__upsell-icon">⭐</div>
                             <div class="ska-project-manager__upsell-text">
@@ -5930,6 +5931,10 @@
             this.projectManagerList = modal.querySelector('[data-role="project-manager-list"]');
             this.projectManagerUpsell = modal.querySelector('[data-role="project-upsell"]');
             this.projectManagerEmpty = modal.querySelector('[data-role="project-manager-empty"]');
+            this.projectSavePanel = modal.querySelector('[data-role="project-save-panel"]');
+            this.projectSaveTitleInput = modal.querySelector('[data-role="project-save-title"]');
+            this.projectSaveMeta = modal.querySelector('[data-role="project-save-meta"]');
+            this.projectSaveOverwriteButton = modal.querySelector('[data-action="project-save-overwrite"]');
         }
 
         openProjectManagerModal(context = 'manage') {
@@ -5939,6 +5944,9 @@
                 this.projectManagerUpsell.hidden = isPremium;
                 this.projectManagerUpsell.dataset.context = context;
             }
+            if (this.projectSavePanel) {
+                this.projectSavePanel.hidden = !isPremium;
+            }
             if (this.projectManagerList) {
                 this.projectManagerList.classList.toggle('is-disabled', !isPremium);
                 this.projectManagerList.innerHTML = '';
@@ -5946,6 +5954,7 @@
             if (this.projectManagerEmpty) {
                 this.projectManagerEmpty.hidden = true;
             }
+            this.updateProjectSavePanelState({ focus: isPremium && context === 'save' });
             if (isPremium) {
                 this.refreshProjectsList();
             }
@@ -6025,25 +6034,54 @@
             }).join('');
         }
 
-        saveCurrentProject() {
+        getProjectSaveTitle() {
+            if (!this.projectSaveTitleInput) return '';
+            return this.projectSaveTitleInput.value || '';
+        }
+
+        updateProjectSavePanelState({ focus = false } = {}) {
+            const hasProject = Boolean(this.state.currentProjectId);
+            if (this.projectSaveOverwriteButton) {
+                this.projectSaveOverwriteButton.disabled = !hasProject;
+                this.projectSaveOverwriteButton.classList.toggle('is-disabled', !hasProject);
+                this.projectSaveOverwriteButton.setAttribute('aria-disabled', String(!hasProject));
+            }
+            if (this.projectSaveMeta) {
+                this.projectSaveMeta.textContent = hasProject ? `Aktuelles Projekt: #${this.state.currentProjectId}` : '';
+            }
+            if (this.projectSaveTitleInput && this.state.currentProjectTitle) {
+                if (!this.projectSaveTitleInput.value.trim()) {
+                    this.projectSaveTitleInput.value = this.state.currentProjectTitle;
+                }
+            }
+            if (focus && this.projectSaveTitleInput) {
+                this.projectSaveTitleInput.focus();
+                this.projectSaveTitleInput.select();
+            }
+        }
+
+        saveProject({ title, overwrite }) {
             const planStatus = this.getUserPlanStatus();
             if (planStatus !== 'premium') {
                 this.openProjectManagerModal('save');
                 return;
             }
-            const name = window.prompt('Projektname eingeben', '');
-            if (name === null) return;
-            const title = String(name || '').trim() || 'Unbenanntes Projekt';
             const content = this.getText();
             if (!content.trim()) {
                 this.showToast('Bitte zuerst einen Text eingeben.');
                 return;
             }
+            const trimmedTitle = String(title || '').trim();
+            const finalTitle = trimmedTitle || 'Unbenanntes Projekt';
+            if (overwrite && !this.state.currentProjectId) {
+                this.showToast('Bitte zuerst ein Projekt laden, um zu überschreiben.');
+                return;
+            }
             const body = new URLSearchParams();
             body.set('action', 'ska_save_project');
-            body.set('title', title);
+            body.set('title', finalTitle);
             body.set('content', content);
-            if (this.state.currentProjectId) {
+            if (overwrite && this.state.currentProjectId) {
                 body.set('id', String(this.state.currentProjectId));
             }
             body.set('nonce', this.getAjaxNonce());
@@ -6064,6 +6102,11 @@
                     if (savedId) {
                         this.state.currentProjectId = savedId;
                     }
+                    this.state.currentProjectTitle = finalTitle;
+                    if (this.projectSaveTitleInput) {
+                        this.projectSaveTitleInput.value = finalTitle;
+                    }
+                    this.updateProjectSavePanelState();
                     this.showToast('Projekt gespeichert.');
                     this.refreshProjectsList();
                 })
@@ -6100,6 +6143,13 @@
                     const project = data.data || {};
                     const content = project.content ? String(project.content) : '';
                     this.state.currentProjectId = project.id ? Number(project.id) : null;
+                    if (project.title) {
+                        this.state.currentProjectTitle = String(project.title);
+                    }
+                    if (this.projectSaveTitleInput && project.title) {
+                        this.projectSaveTitleInput.value = String(project.title);
+                    }
+                    this.updateProjectSavePanelState();
                     this.setText(content);
                     this.analyze(content);
                     this.showToast('Projekt geladen.');
@@ -9804,9 +9854,13 @@
                     const isHidden = index >= visibleCount;
                     const hiddenClass = isHidden ? 'ska-hidden-feature' : '';
                     const styleAttr = isHidden ? 'style="display:none"' : '';
+                    const featuredClass = item.featured ? 'is-featured' : '';
+                    const badgeLabel = item.badge ? String(item.badge) : 'Top';
+                    const badgeHTML = item.featured ? `<em class="ska-feature-badge">${badgeLabel}</em>` : '';
                     return `
-                    <li class="${hiddenClass}" ${styleAttr} data-tooltip="${item.desc}">
+                    <li class="${hiddenClass} ${featuredClass}" ${styleAttr} data-tooltip="${item.desc}">
                         <span>${item.name}</span>
+                        ${badgeHTML}
                     </li>`;
                 }).join('');
                 const buttonHTML = hasMore ? `
