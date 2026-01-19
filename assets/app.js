@@ -533,7 +533,7 @@
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
                 { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
                 { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
-                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Highlight" },
+                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Studio" },
                 { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her.", featured: true, badge: "Highlight" },
                 { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true, badge: "Highlight" },
                 { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen.", featured: true, badge: "Highlight" },
@@ -3293,7 +3293,42 @@
                 unlockButtonEnabled: unlockButtonEnabled,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
-                teleprompter: { playing: false, rafId: null, lastTimestamp: 0, startScroll: 0, wpm: 0, fontSize: 36, words: [], wordTokens: [], activeIndex: -1, speechRecognition: null, speechActive: false, speechIndex: 0, speechTranscript: '', speechWordCount: 0, speechWarningShown: false },
+                teleprompter: {
+                    playing: false,
+                    rafId: null,
+                    lastTimestamp: 0,
+                    startScroll: 0,
+                    wpm: 0,
+                    fontSize: 36,
+                    words: [],
+                    wordTokens: [],
+                    activeIndex: -1,
+                    speechRecognition: null,
+                    speechActive: false,
+                    speechEnabled: false,
+                    speechIndex: 0,
+                    speechTranscript: '',
+                    speechWordCount: 0,
+                    speechWarningShown: false,
+                    speechConfidence: 0,
+                    markers: [],
+                    markerMode: 'none',
+                    pauseUntil: 0,
+                    slowUntil: 0,
+                    durationSec: 0,
+                    countdownEnabled: true,
+                    countdownActive: false,
+                    countdownTimerId: null,
+                    countdownValue: 3,
+                    keyHandler: null,
+                    fullscreenHandler: null,
+                    calibration: {
+                        active: false,
+                        timerId: null,
+                        startWordCount: 0,
+                        startedSpeech: false
+                    }
+                },
                 pacing: { playing: false, rafId: null, start: 0, duration: 0, elapsed: 0 },
                 wordSprint: { phase: 'setup', durationMinutes: 15, targetWords: 300, startCount: 0, startTime: 0, endTime: 0, remainingSec: 0, sessionWords: 0, timerId: null, lastResult: null, completed: false, originalText: '', confettiFired: false },
                 clickTrack: { playing: false, bpm: 0, timerId: null, context: null },
@@ -4311,10 +4346,52 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
                 <div class="skriptanalyse-modal-content ska-tool-modal-content ska-teleprompter-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header"><h3>Teleprompter</h3></div>
+                    <div class="ska-modal-header ska-teleprompter-header">
+                        <div class="ska-teleprompter-title">
+                            <h3>Teleprompter</h3>
+                            <span class="ska-teleprompter-badge">Studio Mode</span>
+                        </div>
+                        <div class="ska-teleprompter-header-actions">
+                            <button type="button" class="teleprompter-chip" data-action="teleprompter-fullscreen">Fullscreen</button>
+                            <button type="button" class="teleprompter-chip" data-action="teleprompter-reset">Reset</button>
+                        </div>
+                    </div>
+                    <div class="teleprompter-hotkeys" aria-label="Teleprompter-Hotkeys">
+                        <span class="teleprompter-hotkey">Space · Start/Stop</span>
+                        <span class="teleprompter-hotkey">↑/↓ · Tempo</span>
+                        <span class="teleprompter-hotkey">+/- · Schriftgröße</span>
+                        <span class="teleprompter-hotkey">M · Spiegeln</span>
+                        <span class="teleprompter-hotkey">Esc · Schließen</span>
+                    </div>
                     <div class="skriptanalyse-modal-body ska-teleprompter-body">
                         <div class="teleprompter-content">
+                            <div class="teleprompter-countdown" data-role="teleprompter-countdown" aria-hidden="true"></div>
                             <div class="teleprompter-text" data-role-teleprompter-text></div>
+                        </div>
+                        <div class="teleprompter-guide">
+                            <div class="teleprompter-guide-main">
+                                <span class="teleprompter-guide-rate" data-role="teleprompter-rate">Tempo: --</span>
+                                <span class="teleprompter-guide-time" data-role="teleprompter-time">Restzeit: --</span>
+                            </div>
+                            <progress class="teleprompter-progress" data-role="teleprompter-progress" value="0" max="100">0%</progress>
+                            <div class="teleprompter-guide-sub">
+                                <span data-role="teleprompter-progress-label">0%</span>
+                                <span class="teleprompter-guide-divider">•</span>
+                                <span data-role="teleprompter-progress-words">0 / 0 Wörter</span>
+                            </div>
+                        </div>
+                        <div class="teleprompter-status-row">
+                            <div class="teleprompter-status" data-role="teleprompter-speech-status">
+                                <span class="teleprompter-status-dot" aria-hidden="true"></span>
+                                <span data-role="teleprompter-speech-label">Sprechtempo-Follow aus</span>
+                                <span class="teleprompter-status-metric" data-role="teleprompter-speech-metric">Match: --</span>
+                            </div>
+                            <div class="teleprompter-calibration" data-role="teleprompter-calibration-status">
+                                <span class="teleprompter-calibration-label">Kalibrierung: Bereit</span>
+                            </div>
+                        </div>
+                        <div class="teleprompter-speech-hint">
+                            Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt deinem Live-Tempo.
                         </div>
                         <div class="teleprompter-controls">
                             <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
@@ -4328,6 +4405,23 @@
                                 <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
                                 <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
                             </label>
+                            <label class="teleprompter-control-group">
+                                <span>Marker</span>
+                                <select data-role="teleprompter-marker-mode">
+                                    <option value="none">Nur markieren</option>
+                                    <option value="pause">Auto-Pause</option>
+                                    <option value="slow">Slowdown</option>
+                                </select>
+                            </label>
+                            <label class="teleprompter-control-group teleprompter-toggle">
+                                <span>Countdown</span>
+                                <input type="checkbox" data-role="teleprompter-countdown-toggle" ${this.state.teleprompter.countdownEnabled ? 'checked' : ''}>
+                            </label>
+                            <label class="teleprompter-control-group teleprompter-toggle">
+                                <span>Sprechtempo-Follow</span>
+                                <input type="checkbox" data-role="teleprompter-speech-toggle" ${this.state.teleprompter.speechEnabled ? 'checked' : ''}>
+                            </label>
+                            <button type="button" class="teleprompter-control teleprompter-control--secondary" data-action="teleprompter-calibrate">Kalibrieren (15s)</button>
                             <label class="teleprompter-control-group teleprompter-toggle">
                                 <span>Spiegeln</span>
                                 <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
@@ -4342,6 +4436,10 @@
             const fontInput = modal.querySelector('[data-role="teleprompter-font"]');
             const fontLabel = modal.querySelector('[data-role="teleprompter-font-label"]');
             const textEl = modal.querySelector('[data-role-teleprompter-text]');
+            const scrollContainer = modal.querySelector('.teleprompter-content');
+            const markerSelect = modal.querySelector('[data-role="teleprompter-marker-mode"]');
+            const countdownToggle = modal.querySelector('[data-role="teleprompter-countdown-toggle"]');
+            const speechToggle = modal.querySelector('[data-role="teleprompter-speech-toggle"]');
 
             if (textEl) {
                 textEl.style.fontSize = `${this.state.teleprompter.fontSize}px`;
@@ -4352,6 +4450,7 @@
                     const next = parseFloat(speedInput.value);
                     this.state.teleprompter.wpm = Number.isFinite(next) ? next : 120;
                     speedLabel.textContent = `${this.state.teleprompter.wpm} WPM`;
+                    this.updateTeleprompterGuide(modal);
                 });
             }
 
@@ -4364,7 +4463,35 @@
                 });
             }
 
+            if (markerSelect) {
+                markerSelect.value = this.state.teleprompter.markerMode || 'none';
+                markerSelect.addEventListener('change', () => {
+                    this.state.teleprompter.markerMode = markerSelect.value || 'none';
+                });
+            }
+
+            if (countdownToggle) {
+                countdownToggle.addEventListener('change', () => {
+                    this.state.teleprompter.countdownEnabled = !!countdownToggle.checked;
+                });
+            }
+
+            if (speechToggle) {
+                speechToggle.addEventListener('change', () => {
+                    this.toggleTeleprompterSpeechFollow(!!speechToggle.checked);
+                });
+            }
+
+            if (scrollContainer) {
+                const onScroll = SA_Utils.debounce(() => {
+                    this.updateTeleprompterGuide(modal);
+                }, 50);
+                scrollContainer.addEventListener('scroll', onScroll);
+            }
+
             this.applyTeleprompterMirror(modal);
+            this.updateTeleprompterGuide(modal);
+            this.updateTeleprompterSpeechStatus(modal);
 
             return modal;
         }
@@ -4372,10 +4499,23 @@
         showTeleprompterModal() {
             const modal = this.ensureTeleprompterModal();
             const textEl = modal.querySelector('[data-role-teleprompter-text]');
-            if (textEl) textEl.textContent = this.getText();
+            if (textEl) {
+                const text = this.getText();
+                if (text.trim()) {
+                    this.state.teleprompter.words = this.buildTeleprompterContent(text);
+                } else {
+                    textEl.textContent = '';
+                    this.state.teleprompter.words = [];
+                }
+            }
             this.resetTeleprompter();
             this.applyTeleprompterMirror(modal);
             this.syncTeleprompterSpeed(modal, true);
+            this.prepareTeleprompterMarkers(modal);
+            this.updateTeleprompterGuide(modal);
+            this.updateTeleprompterSpeechStatus(modal);
+            this.bindTeleprompterHotkeys(modal);
+            this.bindTeleprompterFullscreenListener(modal);
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
             return modal;
@@ -4385,6 +4525,11 @@
             const modal = document.getElementById('ska-teleprompter-modal');
             if (!modal) return;
             this.resetTeleprompter();
+            this.stopTeleprompterCountdown();
+            this.stopTeleprompterCalibration();
+            this.detachTeleprompterHotkeys();
+            this.detachTeleprompterFullscreenListener();
+            this.exitTeleprompterFullscreen();
             SA_Utils.closeModal(modal, () => {
                 document.body.classList.remove('ska-modal-open');
             });
@@ -4768,6 +4913,7 @@
             }
             if (speedInput) speedInput.value = String(this.state.teleprompter.wpm);
             if (speedLabel) speedLabel.textContent = `${this.state.teleprompter.wpm} WPM`;
+            this.updateTeleprompterGuide(target);
         }
 
         updateTeleprompterMeta(read) {
@@ -4795,6 +4941,16 @@
                 .trim();
         }
 
+        parseTeleprompterMarker(token) {
+            const trimmed = token.trim();
+            if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) return null;
+            const raw = trimmed.slice(1, -1).trim();
+            if (!raw) return { duration: 0.5, label: 'Pause' };
+            const numeric = parseFloat(raw.replace(',', '.'));
+            if (!Number.isFinite(numeric)) return null;
+            return { duration: Math.max(0.2, Math.min(5, numeric)), label: `${numeric}s` };
+        }
+
         buildTeleprompterContent(text) {
             const container = document.querySelector('[data-role-teleprompter-text]');
             if (!container) return [];
@@ -4805,6 +4961,10 @@
                 if (!token.trim()) {
                     return token;
                 }
+                const marker = this.parseTeleprompterMarker(token);
+                if (marker) {
+                    return `<span class="teleprompter-marker" data-marker-duration="${marker.duration}" title="${marker.label}" aria-hidden="true">|</span>`;
+                }
                 const normalized = this.normalizeSpeechToken(token);
                 wordTokens.push(normalized);
                 const span = `<span class="teleprompter-word" data-word-index="${wordIndex++}">${token}</span>`;
@@ -4813,6 +4973,21 @@
             container.innerHTML = fragments.join('');
             this.state.teleprompter.wordTokens = wordTokens;
             return Array.from(container.querySelectorAll('.teleprompter-word'));
+        }
+
+        prepareTeleprompterMarkers(modal = null) {
+            const target = modal || document.getElementById('ska-teleprompter-modal');
+            if (!target) return;
+            const scrollContainer = target.querySelector('.teleprompter-content');
+            const markers = target.querySelectorAll('.teleprompter-marker');
+            if (!scrollContainer) return;
+            const triggerOffset = scrollContainer.clientHeight * 0.4;
+            this.state.teleprompter.markers = Array.from(markers).map((marker) => ({
+                element: marker,
+                duration: Math.max(0.2, Number(marker.dataset.markerDuration) || 0.5),
+                triggerAt: Math.max(0, marker.offsetTop - triggerOffset),
+                triggered: false
+            }));
         }
 
         applyTeleprompterActiveWord(index) {
@@ -4843,9 +5018,13 @@
                     this.state.teleprompter.speechWarningShown = true;
                     alert('Live-Spracherkennung wird von deinem Browser nicht unterstützt. Bitte nutze Chrome oder Edge.');
                 }
+                this.updateTeleprompterSpeechStatus();
                 return false;
             }
-            if (!this.state.teleprompter.wordTokens || !this.state.teleprompter.wordTokens.length) return false;
+            if (!this.state.teleprompter.wordTokens || !this.state.teleprompter.wordTokens.length) {
+                this.updateTeleprompterSpeechStatus();
+                return false;
+            }
             if (this.state.teleprompter.speechActive) return true;
 
             const recognition = this.state.teleprompter.speechRecognition || new ctor();
@@ -4863,6 +5042,11 @@
                     const res = event.results[i];
                     if (res.isFinal) {
                         this.state.teleprompter.speechTranscript += `${res[0].transcript} `;
+                        if (typeof res[0].confidence === 'number') {
+                            const current = this.state.teleprompter.speechConfidence || 0;
+                            const next = res[0].confidence;
+                            this.state.teleprompter.speechConfidence = current ? (current + next) / 2 : next;
+                        }
                     } else {
                         interim += res[0].transcript;
                     }
@@ -4896,6 +5080,7 @@
                     }
                 });
                 this.state.teleprompter.speechIndex = currentIndex;
+                this.updateTeleprompterSpeechStatus();
             };
 
             recognition.onerror = () => {
@@ -4907,7 +5092,7 @@
             };
 
             recognition.onend = () => {
-                if (this.state.teleprompter.speechActive && this.state.teleprompter.playing) {
+                if (this.state.teleprompter.speechActive && (this.state.teleprompter.speechEnabled || this.state.teleprompter.calibration.active)) {
                     try {
                         recognition.start();
                     } catch (err) {
@@ -4923,6 +5108,7 @@
                 this.state.teleprompter.speechActive = false;
                 return false;
             }
+            this.updateTeleprompterSpeechStatus();
             return true;
         }
 
@@ -4935,6 +5121,7 @@
             } catch (err) {
                 // no-op
             }
+            this.updateTeleprompterSpeechStatus();
         }
 
         startTeleprompter() {
@@ -4943,7 +5130,8 @@
             const textContainer = modal.querySelector('[data-role-teleprompter-text]');
             if (!scrollContainer) return false;
             if (textContainer && (!textContainer.textContent || !textContainer.textContent.trim())) {
-                textContainer.textContent = this.getText();
+                this.state.teleprompter.words = this.buildTeleprompterContent(this.getText());
+                this.prepareTeleprompterMarkers(modal);
                 this.resetTeleprompter();
             }
 
@@ -4955,27 +5143,59 @@
 
             this.state.teleprompter.playing = true;
             this.state.teleprompter.lastTimestamp = performance.now();
+            this.state.teleprompter.pauseUntil = 0;
+            this.state.teleprompter.slowUntil = 0;
             const effectiveSettings = this.getEffectiveSettings();
-            const text = textContainer ? textContainer.textContent || '' : this.getText();
+            const text = this.getText();
             const read = SA_Logic.analyzeReadability(text, effectiveSettings);
             const pause = SA_Utils.getPausenTime(text, effectiveSettings);
             const wpm = this.state.teleprompter.wpm || SA_Logic.getWpm(effectiveSettings);
             const duration = wpm > 0 ? (read.speakingWordCount / wpm) * 60 + pause : 0;
             const baseSpeed = duration > 0 ? distance / duration : 40;
+            this.state.teleprompter.durationSec = duration;
+            this.updateTeleprompterGuide(modal);
+            if (this.state.teleprompter.speechEnabled) {
+                this.startTeleprompterSpeechRecognition();
+            }
 
             const step = (ts) => {
                 if (!this.state.teleprompter.playing) return;
                 const elapsedSec = Math.max(0, (ts - this.state.teleprompter.lastTimestamp) / 1000);
                 this.state.teleprompter.lastTimestamp = ts;
-                const delta = baseSpeed * elapsedSec;
+                if (this.state.teleprompter.pauseUntil && ts < this.state.teleprompter.pauseUntil) {
+                    this.state.teleprompter.rafId = requestAnimationFrame(step);
+                    this.updateTeleprompterGuide(modal);
+                    return;
+                }
+                const slowFactor = this.state.teleprompter.slowUntil && ts < this.state.teleprompter.slowUntil ? 0.5 : 1;
+                const delta = baseSpeed * elapsedSec * slowFactor;
                 const nextScroll = Math.min(distance, scrollContainer.scrollTop + delta);
                 scrollContainer.scrollTop = nextScroll;
+
+                const markerMode = this.state.teleprompter.markerMode || 'none';
+                if (markerMode !== 'none' && this.state.teleprompter.markers && this.state.teleprompter.markers.length) {
+                    const threshold = scrollContainer.scrollTop + scrollContainer.clientHeight * 0.4;
+                    this.state.teleprompter.markers.forEach((marker) => {
+                        if (marker.triggered || threshold < marker.triggerAt) return;
+                        marker.triggered = true;
+                        if (marker.element) marker.element.classList.add('is-hit');
+                        const holdMs = marker.duration * 1000;
+                        if (markerMode === 'pause') {
+                            this.state.teleprompter.pauseUntil = Math.max(this.state.teleprompter.pauseUntil || 0, ts + holdMs);
+                        } else if (markerMode === 'slow') {
+                            this.state.teleprompter.slowUntil = Math.max(this.state.teleprompter.slowUntil || 0, ts + holdMs);
+                        }
+                    });
+                }
+
+                this.updateTeleprompterGuide(modal);
                 if (scrollContainer.scrollTop < distance) {
                     this.state.teleprompter.rafId = requestAnimationFrame(step);
                 } else {
                     this.state.teleprompter.playing = false;
                     const startBtn = modal.querySelector('[data-action="teleprompter-toggle"]');
                     if (startBtn) startBtn.textContent = 'Start';
+                    this.updateTeleprompterGuide(modal);
                 }
             };
             this.state.teleprompter.rafId = requestAnimationFrame(step);
@@ -4987,6 +5207,7 @@
             if (this.state.teleprompter.rafId) cancelAnimationFrame(this.state.teleprompter.rafId);
             this.state.teleprompter.rafId = null;
             this.stopTeleprompterSpeechRecognition();
+            this.updateTeleprompterGuide();
         }
 
         resetTeleprompter() {
@@ -4998,11 +5219,317 @@
                     word.classList.remove('is-active', 'is-past');
                 });
             }
+            if (this.state.teleprompter.markers) {
+                this.state.teleprompter.markers.forEach((marker) => {
+                    if (marker.element) marker.element.classList.remove('is-hit');
+                    marker.triggered = false;
+                });
+            }
             this.state.teleprompter.activeIndex = -1;
             this.state.teleprompter.speechIndex = 0;
             this.state.teleprompter.speechTranscript = '';
             this.state.teleprompter.speechWordCount = 0;
+            this.state.teleprompter.pauseUntil = 0;
+            this.state.teleprompter.slowUntil = 0;
             this.pauseTeleprompter();
+            this.updateTeleprompterGuide(modal);
+        }
+
+        getTeleprompterText(modal = null) {
+            return this.getText();
+        }
+
+        computeTeleprompterDuration(text) {
+            const effectiveSettings = this.getEffectiveSettings();
+            const read = SA_Logic.analyzeReadability(text, effectiveSettings);
+            const pause = SA_Utils.getPausenTime(text, effectiveSettings);
+            const wpm = this.state.teleprompter.wpm || SA_Logic.getWpm(effectiveSettings);
+            return wpm > 0 ? (read.speakingWordCount / wpm) * 60 + pause : 0;
+        }
+
+        updateTeleprompterGuide(modal = null) {
+            const target = modal || document.getElementById('ska-teleprompter-modal');
+            if (!target) return;
+            const scrollContainer = target.querySelector('.teleprompter-content');
+            const rateEl = target.querySelector('[data-role="teleprompter-rate"]');
+            const timeEl = target.querySelector('[data-role="teleprompter-time"]');
+            const progressEl = target.querySelector('[data-role="teleprompter-progress"]');
+            const progressLabel = target.querySelector('[data-role="teleprompter-progress-label"]');
+            const wordsLabel = target.querySelector('[data-role="teleprompter-progress-words"]');
+
+            const effectiveSettings = this.getEffectiveSettings();
+            const isSps = this.getEffectiveTimeMode() === 'sps';
+            const wpm = this.state.teleprompter.wpm || SA_Logic.getWpm(effectiveSettings);
+            const sps = SA_Logic.getSps(effectiveSettings);
+            const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
+            if (rateEl) rateEl.textContent = `Tempo: ${rateLabel}`;
+
+            const distance = scrollContainer ? scrollContainer.scrollHeight - scrollContainer.clientHeight : 0;
+            const progress = distance > 0 ? scrollContainer.scrollTop / distance : 0;
+            const text = this.getTeleprompterText(target);
+            if (!this.state.teleprompter.durationSec || !this.state.teleprompter.playing) {
+                this.state.teleprompter.durationSec = text.trim() ? this.computeTeleprompterDuration(text) : 0;
+            }
+            const remaining = this.state.teleprompter.durationSec > 0 ? this.state.teleprompter.durationSec * (1 - progress) : 0;
+            if (timeEl) timeEl.textContent = `Restzeit: ${this.state.teleprompter.durationSec ? SA_Utils.formatMin(remaining) : '--'}`;
+
+            if (progressEl) progressEl.value = Math.round(progress * 100);
+            if (progressLabel) progressLabel.textContent = `${Math.round(progress * 100)}%`;
+
+            const totalWords = this.state.teleprompter.words ? this.state.teleprompter.words.length : 0;
+            const currentWord = this.state.teleprompter.speechActive
+                ? Math.min(this.state.teleprompter.speechIndex || 0, totalWords)
+                : Math.max(0, this.state.teleprompter.activeIndex + 1);
+            if (wordsLabel) wordsLabel.textContent = `${currentWord} / ${totalWords} Wörter`;
+
+            if (!this.state.teleprompter.speechActive) {
+                this.updateTeleprompterHighlight(progress);
+            }
+        }
+
+        updateTeleprompterSpeechStatus(modal = null) {
+            const target = modal || document.getElementById('ska-teleprompter-modal');
+            if (!target) return;
+            const statusEl = target.querySelector('[data-role="teleprompter-speech-status"]');
+            const labelEl = target.querySelector('[data-role="teleprompter-speech-label"]');
+            const metricEl = target.querySelector('[data-role="teleprompter-speech-metric"]');
+            if (!statusEl || !labelEl || !metricEl) return;
+
+            const enabled = !!this.state.teleprompter.speechEnabled;
+            const active = !!this.state.teleprompter.speechActive;
+            statusEl.classList.toggle('is-active', enabled);
+            statusEl.classList.toggle('is-live', active);
+            labelEl.textContent = enabled
+                ? (active ? 'Sprechtempo-Follow aktiv' : 'Sprechtempo-Follow bereit')
+                : 'Sprechtempo-Follow aus';
+
+            const matchRatio = this.state.teleprompter.speechWordCount
+                ? Math.min(1, (this.state.teleprompter.speechIndex || 0) / this.state.teleprompter.speechWordCount)
+                : 0;
+            const matchLabel = matchRatio > 0 ? `${Math.round(matchRatio * 100)}%` : '--';
+            const confidence = this.state.teleprompter.speechConfidence;
+            const confidenceLabel = confidence ? `Conf ${confidence.toFixed(2)}` : 'Conf --';
+            metricEl.textContent = `Match: ${matchLabel} · ${confidenceLabel}`;
+        }
+
+        toggleTeleprompterSpeechFollow(enabled) {
+            this.state.teleprompter.speechEnabled = enabled;
+            if (enabled) {
+                const started = this.startTeleprompterSpeechRecognition();
+                if (!started) {
+                    this.state.teleprompter.speechEnabled = false;
+                }
+            } else {
+                this.stopTeleprompterSpeechRecognition();
+            }
+            const modal = document.getElementById('ska-teleprompter-modal');
+            const toggle = modal ? modal.querySelector('[data-role="teleprompter-speech-toggle"]') : null;
+            if (toggle) toggle.checked = this.state.teleprompter.speechEnabled;
+            this.updateTeleprompterSpeechStatus(modal);
+        }
+
+        adjustTeleprompterSpeed(delta) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            const speedInput = modal.querySelector('[data-role="teleprompter-speed"]');
+            const speedLabel = modal.querySelector('[data-role="teleprompter-speed-label"]');
+            const current = this.state.teleprompter.wpm || 120;
+            const next = Math.max(80, Math.min(240, current + delta));
+            this.state.teleprompter.wpm = next;
+            if (speedInput) speedInput.value = String(next);
+            if (speedLabel) speedLabel.textContent = `${next} WPM`;
+            this.updateTeleprompterGuide(modal);
+        }
+
+        adjustTeleprompterFontSize(delta) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            const textEl = modal.querySelector('[data-role-teleprompter-text]');
+            const fontInput = modal.querySelector('[data-role="teleprompter-font"]');
+            const fontLabel = modal.querySelector('[data-role="teleprompter-font-label"]');
+            const current = this.state.teleprompter.fontSize || 36;
+            const next = Math.max(20, Math.min(64, current + delta));
+            this.state.teleprompter.fontSize = next;
+            if (fontInput) fontInput.value = String(next);
+            if (fontLabel) fontLabel.textContent = `${next}px`;
+            if (textEl) textEl.style.fontSize = `${next}px`;
+        }
+
+        bindTeleprompterHotkeys(modal = null) {
+            if (this.state.teleprompter.keyHandler) return;
+            const handler = (event) => {
+                const target = event.target;
+                if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+                if (!document.getElementById('ska-teleprompter-modal')?.classList.contains('is-open')) return;
+
+                const key = event.key;
+                if (key === ' ') {
+                    event.preventDefault();
+                    const btn = document.querySelector('[data-action="teleprompter-toggle"]');
+                    if (btn) btn.click();
+                } else if (key === 'ArrowUp') {
+                    event.preventDefault();
+                    this.adjustTeleprompterSpeed(2);
+                } else if (key === 'ArrowDown') {
+                    event.preventDefault();
+                    this.adjustTeleprompterSpeed(-2);
+                } else if (key === '+' || key === '=') {
+                    event.preventDefault();
+                    this.adjustTeleprompterFontSize(2);
+                } else if (key === '-') {
+                    event.preventDefault();
+                    this.adjustTeleprompterFontSize(-2);
+                } else if (key.toLowerCase() === 'm') {
+                    event.preventDefault();
+                    const toggle = document.querySelector('[data-action="teleprompter-mirror"]');
+                    if (toggle) {
+                        toggle.click();
+                    }
+                } else if (key === 'Escape') {
+                    event.preventDefault();
+                    this.closeTeleprompterModal();
+                }
+            };
+            this.state.teleprompter.keyHandler = handler;
+            document.addEventListener('keydown', handler);
+        }
+
+        detachTeleprompterHotkeys() {
+            if (!this.state.teleprompter.keyHandler) return;
+            document.removeEventListener('keydown', this.state.teleprompter.keyHandler);
+            this.state.teleprompter.keyHandler = null;
+        }
+
+        bindTeleprompterFullscreenListener() {
+            if (this.state.teleprompter.fullscreenHandler) return;
+            const handler = () => {
+                const modal = document.getElementById('ska-teleprompter-modal');
+                if (!modal) return;
+                const isFull = !!document.fullscreenElement;
+                modal.classList.toggle('is-fullscreen', isFull);
+            };
+            this.state.teleprompter.fullscreenHandler = handler;
+            document.addEventListener('fullscreenchange', handler);
+            handler();
+        }
+
+        detachTeleprompterFullscreenListener() {
+            if (!this.state.teleprompter.fullscreenHandler) return;
+            document.removeEventListener('fullscreenchange', this.state.teleprompter.fullscreenHandler);
+            this.state.teleprompter.fullscreenHandler = null;
+        }
+
+        toggleTeleprompterFullscreen() {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            if (!document.fullscreenElement) {
+                modal.requestFullscreen?.();
+            } else {
+                document.exitFullscreen?.();
+            }
+        }
+
+        exitTeleprompterFullscreen() {
+            if (document.fullscreenElement) {
+                document.exitFullscreen?.();
+            }
+        }
+
+        startTeleprompterCountdown(onDone) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            if (!modal) return;
+            const countdownEl = modal.querySelector('[data-role="teleprompter-countdown"]');
+            if (!countdownEl) return;
+            this.stopTeleprompterCountdown();
+            let remaining = 3;
+            this.state.teleprompter.countdownActive = true;
+            this.state.teleprompter.countdownValue = remaining;
+            countdownEl.textContent = `${remaining}`;
+            countdownEl.classList.add('is-visible');
+            countdownEl.setAttribute('aria-hidden', 'false');
+            this.state.teleprompter.countdownTimerId = setInterval(() => {
+                remaining -= 1;
+                if (remaining <= 0) {
+                    this.stopTeleprompterCountdown();
+                    if (typeof onDone === 'function') onDone();
+                    return;
+                }
+                this.state.teleprompter.countdownValue = remaining;
+                countdownEl.textContent = `${remaining}`;
+            }, 1000);
+        }
+
+        stopTeleprompterCountdown() {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            const countdownEl = modal ? modal.querySelector('[data-role="teleprompter-countdown"]') : null;
+            if (this.state.teleprompter.countdownTimerId) {
+                clearInterval(this.state.teleprompter.countdownTimerId);
+            }
+            this.state.teleprompter.countdownTimerId = null;
+            this.state.teleprompter.countdownActive = false;
+            if (countdownEl) {
+                countdownEl.classList.remove('is-visible');
+                countdownEl.setAttribute('aria-hidden', 'true');
+                countdownEl.textContent = '';
+            }
+        }
+
+        updateTeleprompterCalibrationStatus(message, isActive) {
+            const modal = document.getElementById('ska-teleprompter-modal');
+            const status = modal ? modal.querySelector('[data-role="teleprompter-calibration-status"]') : null;
+            if (!status) return;
+            const label = status.querySelector('.teleprompter-calibration-label');
+            if (label) label.textContent = message;
+            status.classList.toggle('is-active', !!isActive);
+        }
+
+        startTeleprompterCalibration() {
+            if (this.state.teleprompter.calibration.active) return;
+            const ctor = this.getSpeechRecognitionCtor();
+            if (!ctor) {
+                this.updateTeleprompterCalibrationStatus('Kalibrierung: Browser nicht unterstützt', false);
+                return;
+            }
+            const wasEnabled = this.state.teleprompter.speechEnabled;
+            if (!wasEnabled) {
+                this.state.teleprompter.calibration.startedSpeech = true;
+                this.toggleTeleprompterSpeechFollow(true);
+            } else {
+                this.state.teleprompter.calibration.startedSpeech = false;
+            }
+            this.state.teleprompter.calibration.active = true;
+            this.state.teleprompter.calibration.startWordCount = this.state.teleprompter.speechWordCount || 0;
+            this.updateTeleprompterCalibrationStatus('Kalibrierung läuft: 15s vorlesen…', true);
+            this.state.teleprompter.calibration.timerId = setTimeout(() => {
+                const total = Math.max(0, (this.state.teleprompter.speechWordCount || 0) - this.state.teleprompter.calibration.startWordCount);
+                const wpm = Math.round((total / 15) * 60);
+                if (wpm > 0) {
+                    this.adjustTeleprompterSpeed(wpm - (this.state.teleprompter.wpm || 0));
+                    this.updateTeleprompterCalibrationStatus(`Kalibrierung fertig: ${wpm} WPM`, false);
+                } else {
+                    this.updateTeleprompterCalibrationStatus('Kalibrierung: Kein Tempo erkannt', false);
+                }
+                this.stopTeleprompterCalibration(false);
+            }, 15000);
+        }
+
+        stopTeleprompterCalibration(resetLabel = true) {
+            if (this.state.teleprompter.calibration.timerId) {
+                clearTimeout(this.state.teleprompter.calibration.timerId);
+            }
+            if (this.state.teleprompter.calibration.startedSpeech) {
+                this.toggleTeleprompterSpeechFollow(false);
+            }
+            this.state.teleprompter.calibration.timerId = null;
+            this.state.teleprompter.calibration.active = false;
+            this.state.teleprompter.calibration.startedSpeech = false;
+            if (resetLabel) {
+                this.updateTeleprompterCalibrationStatus('Kalibrierung: Bereit', false);
+            } else {
+                const modal = document.getElementById('ska-teleprompter-modal');
+                const status = modal ? modal.querySelector('[data-role="teleprompter-calibration-status"]') : null;
+                if (status) status.classList.remove('is-active');
+            }
         }
 
         updatePacingUI(progress = null) {
@@ -5715,12 +6242,25 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
+                if (this.state.teleprompter.countdownActive) {
+                    this.stopTeleprompterCountdown();
+                    btn.textContent = 'Start';
+                    return true;
+                }
                 if (this.state.teleprompter.playing) {
                     this.pauseTeleprompter();
                     btn.textContent = 'Start';
                 } else {
-                    const started = this.startTeleprompter();
-                    btn.textContent = started ? 'Pause' : 'Start';
+                    if (this.state.teleprompter.countdownEnabled) {
+                        btn.textContent = 'Countdown…';
+                        this.startTeleprompterCountdown(() => {
+                            const started = this.startTeleprompter();
+                            btn.textContent = started ? 'Pause' : 'Start';
+                        });
+                    } else {
+                        const started = this.startTeleprompter();
+                        btn.textContent = started ? 'Pause' : 'Start';
+                    }
                 }
                 return true;
             }
@@ -5730,6 +6270,7 @@
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
+                this.stopTeleprompterCountdown();
                 this.resetTeleprompter();
                 const modal = document.getElementById('ska-teleprompter-modal');
                 const startBtn = modal ? modal.querySelector('[data-action="teleprompter-toggle"]') : null;
@@ -5749,6 +6290,24 @@
                 return true;
             }
 
+            if (act === 'teleprompter-fullscreen') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                this.toggleTeleprompterFullscreen();
+                return true;
+            }
+
+            if (act === 'teleprompter-calibrate') {
+                if (!this.isPremiumActive()) {
+                    this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
+                    return true;
+                }
+                this.startTeleprompterCalibration();
+                return true;
+            }
+
             if (act === 'teleprompter-bigger' || act === 'teleprompter-smaller') {
                 if (!this.isPremiumActive()) {
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
@@ -5759,7 +6318,7 @@
                 if (textEl) {
                     const current = parseFloat(window.getComputedStyle(textEl).fontSize);
                     const next = act === 'teleprompter-bigger' ? current + 2 : current - 2;
-                    textEl.style.fontSize = `${Math.max(16, Math.min(36, next))}px`;
+                    textEl.style.fontSize = `${Math.max(20, Math.min(64, next))}px`;
                 }
                 return true;
             }
@@ -8170,10 +8729,24 @@
             const secs = (read.speakingWordCount / wpm) * 60;
             const hint = read.wordCount > 0 ? `Scroll-Dauer: ${SA_Utils.formatMin(secs)} (${wpm} WPM)` : 'Zu wenig Text für den Teleprompter.';
             const isPremium = this.isPremiumActive();
+            const teaser = !isPremium ? `
+                <div class="ska-teleprompter-teaser">
+                    <div class="ska-teleprompter-teaser-header">
+                        <span class="ska-teleprompter-teaser-badge">Premium Preview</span>
+                        <strong>Studio-Teleprompter mit Hotkeys & Tempo-Guide</strong>
+                    </div>
+                    <ul class="ska-teleprompter-teaser-list">
+                        <li>Fullscreen-Studioansicht mit hochkontrastivem Lesemodus.</li>
+                        <li>Tempo-Guide mit Restzeit, WPM/SPS und Fortschritt.</li>
+                        <li>Marker-Unterstützung für Pausen & dynamisches Tempo.</li>
+                    </ul>
+                    <a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>
+                </div>` : '';
             const h = `
-                <div style="display:flex; flex-direction:column; gap:0.8rem;">
-                    <p style="color:#64748b; font-size:0.9rem; margin:0;">${hint}</p>
-                    <button class="ska-btn ska-btn--primary" style="justify-content:center;" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter starten</button>
+                <div class="ska-teleprompter-card">
+                    <p class="ska-teleprompter-hint">${hint}</p>
+                    <button class="ska-btn ska-btn--primary ska-teleprompter-start" data-action="open-teleprompter" ${isPremium ? '' : 'disabled'}>Teleprompter starten</button>
+                    ${teaser}
                 </div>
                 ${this.renderTipSection('teleprompter', read.wordCount > 0)}`;
             this.updateCard('teleprompter', h, targetGrid, '', '', true);
