@@ -6585,7 +6585,6 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
-                            this.emptyCheckoutCart();
                         }
                     });
                     return;
@@ -6617,7 +6616,6 @@
                         if (modal.id === 'ska-checkout-modal') {
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
-                            this.emptyCheckoutCart();
                         }
                     });
                     e.preventDefault(); 
@@ -9551,7 +9549,7 @@
 
         getPremiumCheckoutUrl(planId = this.state.premiumPricePlan) {
             const productId = this.getPremiumCheckoutProductId(planId);
-            return `/?add-to-cart=${productId}`;
+            return this.getCheckoutModalUrl(productId);
         }
 
         getPremiumCheckoutProductId(planId = this.state.premiumPricePlan) {
@@ -9575,6 +9573,18 @@
                 minimumFractionDigits: fractionDigits,
                 maximumFractionDigits: fractionDigits
             }).format(numberValue);
+        }
+
+        getCheckoutModalUrl(productId) {
+            const params = new URLSearchParams({
+                view: 'checkout_modal',
+                iframe_mode: '1',
+                embedded_checkout: '1'
+            });
+            if (productId) {
+                params.set('product_id', String(productId));
+            }
+            return `/kasse/?${params.toString()}`;
         }
 
         getCheckoutPlanMetaByProductId(productId) {
@@ -9615,7 +9625,7 @@
                 ...plan,
                 vatLabel: `${this.formatCurrencyValue(vatAmount)} €`,
                 totalLabel: `${this.formatCurrencyValue(totalAmount)} €${cycleSuffix}`,
-                checkoutUrl: `/kasse/?add-to-cart=${plan.productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`
+                checkoutUrl: this.getCheckoutModalUrl(plan.productId)
             };
         }
 
@@ -9687,6 +9697,10 @@
                 checkoutUrl: planMeta.checkoutUrl
             };
             this.updateCheckoutModalContent(details, String(planMeta.productId));
+            const checkoutModal = document.getElementById('ska-checkout-modal');
+            if (checkoutModal) {
+                this.prefetchCheckoutCart(planMeta.productId, checkoutModal);
+            }
             if (planMeta.planId) {
                 this.state.premiumPricePlan = planMeta.planId;
                 this.updatePremiumPlanUI();
@@ -9715,14 +9729,7 @@
         startCheckoutFlow(details = null) {
             const checkoutDetails = details || this.getCheckoutSummaryDetails();
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-            this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
-            this.prefetchCheckoutCart(productId);
-        }
-
-        emptyCheckoutCart() {
-            return fetch('/?empty_cart=1', { method: 'GET' })
-                .then(() => console.log('Warenkorb bereinigt'))
-                .catch((err) => console.error(err));
+            this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle, productId);
         }
 
         preloadCheckoutIframe() {
@@ -9730,7 +9737,8 @@
             if (!modal) return;
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
-            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal');
+            const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
+            iframe.setAttribute('src', this.getCheckoutModalUrl(productId));
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
         }
@@ -9740,22 +9748,13 @@
             if (!checkoutModal) return;
             const iframe = checkoutModal.querySelector('#ska-checkout-iframe');
             const loading = checkoutModal.querySelector('[data-role="checkout-loading"]');
-            const addToCartUrl = `/?add-to-cart=${productId}`;
-            this.emptyCheckoutCart()
-                .then(() => fetch(addToCartUrl, { method: 'GET', credentials: 'same-origin' }))
-                .then(() => {
-                    if (!iframe) return;
-                    this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
-                })
-                .catch(() => {
-                    if (!iframe) return;
-                    this.bindCheckoutIframe(iframe, loading, checkoutModal);
-                    iframe.setAttribute('src', `/kasse/?add-to-cart=${productId}&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal`);
-                });
+            if (!iframe) return;
+            if (loading) loading.style.display = 'flex';
+            this.bindCheckoutIframe(iframe, loading, checkoutModal);
+            iframe.setAttribute('src', this.getCheckoutModalUrl(productId));
         }
 
-        openCheckoutModal(productTitle, price, cycle) {
+        openCheckoutModal(productTitle, price, cycle, productId = null) {
             const checkoutDetails = this.getCheckoutDetails(productTitle, price, cycle);
             this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
             const modal = document.getElementById('ska-checkout-modal');
@@ -9765,12 +9764,13 @@
             const loading = modal.querySelector('[data-role="checkout-loading"]');
             const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
             if (loading && !iframeLoaded) {
-                loading.style.display = 'none';
+                loading.style.display = 'flex';
             }
             if (iframe) {
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
-            iframe.setAttribute('src', '/kasse/?checkout=1&embedded_checkout=1&is_modal=1&iframe_mode=1&view=checkout_modal');
+                    const fallbackProductId = productId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
+                    iframe.setAttribute('src', this.getCheckoutModalUrl(fallbackProductId));
                 }
             }
             SA_Utils.openModal(modal);
