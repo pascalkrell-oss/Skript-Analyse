@@ -10527,7 +10527,7 @@
 
         getPremiumCheckoutUrl(planId = this.state.premiumPricePlan) {
             const productId = this.getPremiumCheckoutProductId(planId);
-            return this.getCheckoutModalUrl(productId);
+            return this.getCheckoutModalUrl(productId, planId);
         }
 
         getPremiumCheckoutProductId(planId = this.state.premiumPricePlan) {
@@ -10553,12 +10553,25 @@
             }).format(numberValue);
         }
 
-        getCheckoutModalUrl(productId) {
+        getCheckoutPlanParam(productId, planId = null) {
+            const planKey = planId || this.getCheckoutPlanMetaByProductId(productId)?.planId;
+            const planMap = {
+                flex: 'monthly',
+                pro: 'yearly',
+                studio: 'lifetime'
+            };
+            return planMap[planKey] || '';
+        }
+
+        getCheckoutModalUrl(productId, planId = null) {
             const params = new URLSearchParams({
                 view: 'checkout_modal',
-                iframe_mode: '1',
-                embedded_checkout: '1'
+                ska_iframe: '1'
             });
+            const planParam = this.getCheckoutPlanParam(productId, planId);
+            if (planParam) {
+                params.set('ska_plan', planParam);
+            }
             if (productId) {
                 params.set('product_id', String(productId));
             }
@@ -10603,7 +10616,7 @@
                 ...plan,
                 vatLabel: `${this.formatCurrencyValue(vatAmount)} €`,
                 totalLabel: `${this.formatCurrencyValue(totalAmount)} €${cycleSuffix}`,
-                checkoutUrl: this.getCheckoutModalUrl(plan.productId)
+                checkoutUrl: this.getCheckoutModalUrl(plan.productId, plan.planId)
             };
         }
 
@@ -10716,7 +10729,7 @@
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-            iframe.setAttribute('src', this.getCheckoutModalUrl(productId));
+            iframe.setAttribute('src', this.getCheckoutModalUrl(productId, this.state.premiumPricePlan));
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
         }
@@ -10729,7 +10742,8 @@
             if (!iframe) return;
             if (loading) loading.style.display = 'flex';
             this.bindCheckoutIframe(iframe, loading, checkoutModal);
-            iframe.setAttribute('src', this.getCheckoutModalUrl(productId));
+            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
+            iframe.setAttribute('src', this.getCheckoutModalUrl(productId, planMeta?.planId));
         }
 
         openCheckoutModal(productTitle, price, cycle, productId = null) {
@@ -10748,7 +10762,7 @@
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
                     const fallbackProductId = productId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-                    iframe.setAttribute('src', this.getCheckoutModalUrl(fallbackProductId));
+                    iframe.setAttribute('src', this.getCheckoutModalUrl(fallbackProductId, this.state.premiumPricePlan));
                 }
             }
             SA_Utils.openModal(modal);

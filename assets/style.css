@@ -2451,6 +2451,19 @@ body.skript-analyse-active .skript-analyse-container {
     min-height: 600px;
     border: none;
 }
+.ska-embedded-checkout .site-header,
+.ska-embedded-checkout #masthead,
+.ska-embedded-checkout .header-cart,
+.ska-embedded-checkout .mini-cart,
+.ska-embedded-checkout .wc-block-mini-cart,
+.ska-embedded-checkout .woocommerce-mini-cart,
+.ska-embedded-checkout .woocommerce-mini-cart__empty-message,
+.ska-embedded-checkout .cart-contents,
+.ska-embedded-checkout .woocommerce-cart-link,
+.ska-embedded-checkout .site-header-cart,
+.ska-embedded-checkout .storefront-handheld-footer-bar {
+    display: none !important;
+}
 .ska-spinner {
     display: flex;
     align-items: center;
