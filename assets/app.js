@@ -229,18 +229,18 @@
             'erfahrung', 'meinungen', 'zeitungen', 'kleidungen', 'wohnungen', 'nutzungen', 'rechnungen', 'lösungen', 'beziehungen', 'erfahrungen'
         ],
         PROFILE_DEFAULTS: {
-            general: { label: 'Allgemein', wpm: 180, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { keywordFocus: true, phonetics: true } },
-            author: { label: 'Autor:in', wpm: 230, numberMode: 'digit', ignorePauseMarkers: true, commaPause: 0, periodPause: 0, paragraphPause: 0.5, sentenceWarningLimit: 25, criticalSentenceLimit: 30, hardSegmentLimit: 24, features: { keywordFocus: true, phonetics: false, immersion: true } },
-            speaker: { label: 'Sprecher:in', wpm: 145, numberMode: 'word', commaPause: 0.35, periodPause: 0.7, paragraphPause: 1, sentenceWarningLimit: 22, hardSegmentLimit: 18, breathLabel: 'Keine Atempunkte', features: { keywordFocus: false, phonetics: true } },
-            director: { label: 'Regie', wpm: 140, numberMode: 'word', commaPause: 0.3, periodPause: 0.6, paragraphPause: 1, pauseUnit: 'ms', sentenceWarningLimit: 25, hardSegmentLimit: 18, features: { keywordFocus: false, phonetics: true } },
-            agency: { label: 'Agentur', wpm: 160, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { keywordFocus: false, phonetics: false } },
-            marketing: { label: 'Marketing', wpm: 200, numberMode: 'digit', commaPause: 0.15, periodPause: 0.4, paragraphPause: 0.8, sentenceWarningLimit: 16, criticalSentenceLimit: 20, hardSegmentLimit: 18, sentimentTarget: 'positive', powerWordsCheck: true, features: { keywordFocus: true, phonetics: false } }
+            general: { label: 'Allgemein', wpm: 180, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { phonetics: true } },
+            author: { label: 'Autor:in', wpm: 230, numberMode: 'digit', ignorePauseMarkers: true, commaPause: 0, periodPause: 0, paragraphPause: 0.5, sentenceWarningLimit: 25, criticalSentenceLimit: 30, hardSegmentLimit: 24, features: { phonetics: false, immersion: true } },
+            speaker: { label: 'Sprecher:in', wpm: 145, numberMode: 'word', commaPause: 0.35, periodPause: 0.7, paragraphPause: 1, sentenceWarningLimit: 22, hardSegmentLimit: 18, breathLabel: 'Keine Atempunkte', features: { phonetics: true } },
+            director: { label: 'Regie', wpm: 140, numberMode: 'word', commaPause: 0.3, periodPause: 0.6, paragraphPause: 1, pauseUnit: 'ms', sentenceWarningLimit: 25, hardSegmentLimit: 18, features: { phonetics: true } },
+            agency: { label: 'Agentur', wpm: 160, numberMode: 'digit', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, sentenceWarningLimit: 25, hardSegmentLimit: 20, features: { phonetics: false } },
+            marketing: { label: 'Marketing', wpm: 200, numberMode: 'digit', commaPause: 0.15, periodPause: 0.4, paragraphPause: 0.8, sentenceWarningLimit: 16, criticalSentenceLimit: 20, hardSegmentLimit: 18, sentimentTarget: 'positive', powerWordsCheck: true, features: { phonetics: false } }
         },
         PROFILE_CARDS: {
             general: ['overview', 'char', 'coach', 'rhythm', 'chapter_calc', 'syllable_entropy', 'pronunciation', 'role_dist', 'keyword_focus', 'plosive', 'easy_language', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'rhet_questions', 'depth_check', 'start_var', 'compliance_check', 'breath', 'stumble', 'gender', 'echo', 'adjective', 'adverb', 'passive', 'fillers', 'nominal', 'nominal_chain', 'sentiment_intensity', 'cta', 'anglicism', 'verb_balance', 'bpm', 'vocabulary', 'dialog', 'teleprompter', 'word_sprint', 'pacing'],
             author: ['overview', 'char', 'vocabulary', 'keyword_focus', 'verb_balance', 'rhet_questions', 'depth_check', 'sentiment_intensity', 'redundancy', 'bullshit', 'metaphor', 'immersion', 'audience', 'easy_language', 'adverb', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'word_sprint', 'start_var', 'gender', 'echo', 'nominal', 'nominal_chain'],
-            speaker: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'dialog', 'role_dist'],
-            director: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy', 'sentiment_intensity', 'rhythm'],
+            speaker: ['overview', 'char', 'rhythm', 'syllable_entropy', 'chapter_calc', 'coach', 'pronunciation', 'plosive', 'breath', 'pacing', 'teleprompter', 'bpm', 'rhet_questions', 'stumble', 'dialog', 'role_dist', 'keyword_focus'],
+            director: ['overview', 'char', 'coach', 'role_dist', 'dialog', 'pacing', 'teleprompter', 'bpm', 'breath', 'chapter_calc', 'syllable_entropy', 'sentiment_intensity', 'rhythm', 'keyword_focus'],
             agency: ['overview', 'char', 'chapter_calc', 'sentiment_intensity', 'vocabulary', 'bullshit', 'metaphor', 'audience', 'cta', 'adjective', 'adverb', 'anglicism', 'echo', 'compliance_check', 'keyword_focus'],
             marketing: ['overview', 'char', 'keyword_focus', 'cta', 'bullshit', 'metaphor', 'audience', 'vocabulary', 'adjective', 'adverb', 'echo', 'anglicism', 'chapter_calc', 'syllable_entropy', 'compliance_check', 'sentiment_intensity', 'easy_language', 'rhythm']
         },
@@ -369,10 +369,9 @@
             'anglicism',
             'breath',
             'stumble',
-            'pronunciation',
-            'keyword_focus'
+            'pronunciation'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'bpm', 'rhythm'],
+        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'bpm', 'rhythm', 'keyword_focus'],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'word_sprint'],
@@ -8281,6 +8280,10 @@
                     case 'keyword_focus':
                         if (!active) {
                             this.renderKeywordFocusCard(null, false);
+                            break;
+                        }
+                        if (!this.isPremiumActive()) {
+                            this.updateCard('keyword_focus', this.renderDisabledState(), this.bottomGrid, '', '', true);
                             break;
                         }
                         if (useWorker) {
