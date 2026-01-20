@@ -241,6 +241,56 @@ add_action( 'template_redirect', function() {
         if ( WC()->cart ) {
             $product = wc_get_product( $product_id );
             if ( $product && $product->is_purchasable() ) {
+                $session = WC()->session;
+                if ( $session ) {
+                    $existing_backup = $session->get( 'ska_cart_backup' );
+                    $backup_ts = (int) $session->get( 'ska_cart_backup_ts' );
+                    $is_expired = ! $backup_ts || ( time() - $backup_ts ) > ( 30 * MINUTE_IN_SECONDS );
+                    if ( empty( $existing_backup ) || $is_expired ) {
+                        $items = array();
+                        foreach ( WC()->cart->get_cart() as $cart_item ) {
+                            $cart_item_data = array();
+                            if ( isset( $cart_item['cart_item_data'] ) && is_array( $cart_item['cart_item_data'] ) ) {
+                                $cart_item_data = $cart_item['cart_item_data'];
+                            } else {
+                                $cart_item_data = $cart_item;
+                                $exclude_keys = array(
+                                    'key' => true,
+                                    'product_id' => true,
+                                    'variation_id' => true,
+                                    'variation' => true,
+                                    'quantity' => true,
+                                    'data' => true,
+                                    'data_hash' => true,
+                                    'line_total' => true,
+                                    'line_subtotal' => true,
+                                    'line_tax' => true,
+                                    'line_subtotal_tax' => true,
+                                    'line_tax_data' => true,
+                                    'line_total_tax' => true,
+                                );
+                                foreach ( $exclude_keys as $key => $unused ) {
+                                    unset( $cart_item_data[ $key ] );
+                                }
+                            }
+                            $items[] = array(
+                                'product_id' => isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0,
+                                'variation_id' => isset( $cart_item['variation_id'] ) ? (int) $cart_item['variation_id'] : 0,
+                                'quantity' => isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 1,
+                                'variation' => isset( $cart_item['variation'] ) && is_array( $cart_item['variation'] ) ? $cart_item['variation'] : array(),
+                                'cart_item_data' => $cart_item_data,
+                            );
+                        }
+                        $session->set(
+                            'ska_cart_backup',
+                            array(
+                                'items' => $items,
+                                'coupons' => WC()->cart->get_applied_coupons(),
+                            )
+                        );
+                        $session->set( 'ska_cart_backup_ts', time() );
+                    }
+                }
                 WC()->cart->empty_cart( true );
                 WC()->cart->add_to_cart( $product_id, 1 );
                 if ( method_exists( WC()->cart, 'remove_coupons' ) ) {
@@ -365,6 +415,7 @@ function ska_get_algorithm_tuning_localized_config() {
         'canSaveProjects' => $current_plan === 'premium',
         'ajaxUrl' => admin_url( 'admin-ajax.php' ),
         'ajaxNonce' => wp_create_nonce( 'ska_analysis_nonce' ),
+        'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
     );
 }
 
@@ -429,6 +480,7 @@ function ska_get_localized_config() {
         'pdfFooterText' => ska_get_pdf_footer_text(),
         'planMode' => $plan_mode,
         'currentUserPlan' => ska_get_user_plan_status(),
+        'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
     );
 }
 
@@ -1959,4 +2011,58 @@ function ska_ajax_delete_project() {
     } else {
         wp_send_json_error( 'Fehler.' );
     }
+}
+
+add_action( 'wp_ajax_ska_restore_cart', 'ska_ajax_restore_cart' );
+function ska_ajax_restore_cart() {
+    check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
+
+    if ( ! function_exists( 'WC' ) ) {
+        wp_send_json_success( array( 'restored' => false ) );
+    }
+
+    if ( null === WC()->cart ) {
+        wc_load_cart();
+    }
+
+    $session = WC()->session;
+    if ( ! $session || ! WC()->cart ) {
+        wp_send_json_success( array( 'restored' => false ) );
+    }
+
+    $backup = $session->get( 'ska_cart_backup' );
+    if ( empty( $backup ) || empty( $backup['items'] ) ) {
+        wp_send_json_success( array( 'restored' => false ) );
+    }
+
+    WC()->cart->empty_cart( true );
+    foreach ( $backup['items'] as $item ) {
+        $product_id = isset( $item['product_id'] ) ? (int) $item['product_id'] : 0;
+        $quantity = isset( $item['quantity'] ) ? (int) $item['quantity'] : 1;
+        $variation_id = isset( $item['variation_id'] ) ? (int) $item['variation_id'] : 0;
+        $variation = isset( $item['variation'] ) && is_array( $item['variation'] ) ? $item['variation'] : array();
+        $cart_item_data = isset( $item['cart_item_data'] ) && is_array( $item['cart_item_data'] ) ? $item['cart_item_data'] : array();
+        if ( $product_id ) {
+            WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation, $cart_item_data );
+        }
+    }
+
+    $coupons = isset( $backup['coupons'] ) && is_array( $backup['coupons'] ) ? $backup['coupons'] : array();
+    foreach ( $coupons as $coupon ) {
+        WC()->cart->apply_coupon( $coupon );
+    }
+    WC()->cart->calculate_totals();
+
+    $session->set( 'ska_cart_backup', null );
+    $session->set( 'ska_cart_backup_ts', null );
+
+    wp_send_json_success( array( 'restored' => true ) );
+}
+
+add_action( 'wp_ajax_ska_get_plan_status', 'ska_ajax_get_plan_status' );
+function ska_ajax_get_plan_status() {
+    check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
+
+    $plan_status = function_exists( 'ska_get_user_plan_status' ) ? ska_get_user_plan_status() : 'basis';
+    wp_send_json_success( array( 'planStatus' => $plan_status ) );
 }
