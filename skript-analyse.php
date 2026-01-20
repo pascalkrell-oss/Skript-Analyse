@@ -2062,3 +2062,115 @@ function ska_ajax_create_upgrade_order() {
         )
     );
 }
+
+/**
+ * SKA: Modernes Styling für den "Pay for Order" Endpoint.
+ * Verwandelt das Standard-WooCommerce Layout in eine zentrierte Payment-Card.
+ */
+add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
+
+function ska_inject_checkout_styles() {
+    // Nur anwenden, wenn wir auf der "Order Pay" Seite sind
+    if ( ! is_checkout() || empty( $_GET['pay_for_order'] ) ) {
+        return;
+    }
+    ?>
+    <style>
+        /* Modernes SaaS Layout Reset */
+        body.woocommerce-order-pay {
+            background-color: #f1f5f9; /* Slate-100 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #0f172a;
+        }
+
+        /* Verstecke störende Theme-Elemente (Header/Footer können je nach Theme variieren, hier ein Versuch den Fokus zu halten) */
+        body.woocommerce-order-pay .site-header,
+        body.woocommerce-order-pay .site-footer,
+        body.woocommerce-order-pay header,
+        body.woocommerce-order-pay footer {
+            opacity: 0.5; /* Dezent im Hintergrund oder ganz ausblenden mit display: none */
+        }
+
+        /* Hauptcontainer zentrieren und als Karte stylen */
+        body.woocommerce-order-pay .woocommerce {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Überschriften */
+        body.woocommerce-order-pay h1,
+        body.woocommerce-order-pay h2,
+        body.woocommerce-order-pay h3 {
+            font-weight: 700;
+            color: #1e293b;
+            text-align: center;
+            border: none !important;
+        }
+
+        /* Bestell-Tabelle aufräumen */
+        table.shop_table {
+            border: none !important;
+            border-radius: 8px;
+            background: #f8fafc;
+            margin-bottom: 2rem !important;
+            width: 100%;
+        }
+        table.shop_table th,
+        table.shop_table td {
+            border: none !important;
+            padding: 12px 16px !important;
+            font-size: 0.95rem;
+        }
+        table.shop_table thead { display: none; } /* Header weg für cleaneren Look */
+        table.shop_table tr { border-bottom: 1px solid #e2e8f0; }
+        table.shop_table tr:last-child { border-bottom: none; }
+
+        /* Payment Box */
+        #payment {
+            background: #fff !important;
+            border-radius: 8px;
+        }
+        #payment ul.payment_methods {
+            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 0 0 20px 0 !important;
+        }
+        #payment div.payment_box {
+            background-color: #f1f5f9 !important;
+            color: #475569 !important;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        /* Der Bezahlen Button - Groß und Auffällig */
+        #place_order {
+            width: 100%;
+            display: block;
+            background-color: #1a93ee !important; /* Plugin Primary Color */
+            color: white !important;
+            padding: 16px 24px !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            border-radius: 8px !important;
+            border: none !important;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+            text-transform: none !important;
+        }
+        #place_order:hover {
+            background-color: #1578c2 !important;
+        }
+
+        /* Links und Texte */
+        .woocommerce-info {
+            display: none; /* "Haben Sie einen Gutschein?" ausblenden für Fokus */
+        }
+    </style>
+    <?php
+}
