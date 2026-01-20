@@ -2066,88 +2066,90 @@ function ska_ajax_create_upgrade_order() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT: FINAL CODE (STRICT SPAM PROTECTION)
+   SKA CHECKOUT: IN-PLACE UPDATE (NO SPAM) & PRICE FIX
    --------------------------------------------------------- */
 
 /**
  * 1. Handler für Plan-Wechsel
- * Logik: Erst suchen, dann erstellen. Verhindert Order-Spam.
+ * Logik: Modifiziert die EXISTIERENDE Order, anstatt eine neue zu erstellen.
  */
 add_action( 'template_redirect', 'ska_handle_plan_switch' );
 
 function ska_handle_plan_switch() {
+    // 1. Parameter prüfen
     if ( empty( $_GET['ska_switch_to'] ) ) {
         return;
     }
 
-    $product_id = absint( $_GET['ska_switch_to'] );
+    $target_product_id = absint( $_GET['ska_switch_to'] );
 
     // Validierung: Monthly (3128), Yearly (3130), Lifetime (3127)
-    if ( ! in_array( $product_id, array( 3128, 3130, 3127 ) ) ) {
+    if ( ! in_array( $target_product_id, array( 3128, 3130, 3127 ) ) ) {
         return;
     }
 
-    // Safety
-    if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_orders' ) ) {
+    if ( ! function_exists( 'WC' ) ) {
         return;
     }
 
-    if ( ! is_user_logged_in() ) {
-        WC()->cart->empty_cart();
-        WC()->cart->add_to_cart( $product_id );
-        wp_redirect( wc_get_checkout_url() );
-        exit;
-    }
+    // 2. Haben wir eine Quell-Order-ID? (Kommt aus dem Link)
+    $current_order_id = isset( $_GET['from_order'] ) ? absint( $_GET['from_order'] ) : 0;
 
+    // User Check
     $user_id = get_current_user_id();
 
-    // --- STRIKTER SPAM SCHUTZ ---
-    // Wir holen ALLE offenen Bestellungen des Users für dieses Produkt
-    $existing_orders = wc_get_orders( array(
-        'limit'       => -1,
-        'status'      => array( 'pending', 'failed', 'on-hold' ),
-        'customer_id' => $user_id,
-        'return'      => 'ids',
-        'type'        => 'shop_order',
-    ) );
+    // --- STRATEGIE A: UPDATE EXISTIERENDE ORDER (0 SPAM) ---
+    if ( $current_order_id && $user_id ) {
+        $order = wc_get_order( $current_order_id );
 
-    $found_order_id = false;
+        // Sicherheitscheck: Gehört die Order dem User und ist sie noch offen?
+        if ( $order && $order->get_customer_id() == $user_id && in_array( $order->get_status(), array( 'pending', 'failed', 'on-hold' ), true ) ) {
 
-    foreach ( $existing_orders as $oid ) {
-        $order_check = wc_get_order( $oid );
-        if ( ! $order_check ) {
-            continue;
-        }
+            // A. Alte Items entfernen
+            $order->remove_order_items( 'line_item' );
 
-        // Enthält diese Order das Produkt?
-        foreach ( $order_check->get_items() as $item ) {
-            if ( $item->get_product_id() == $product_id ) {
-                $found_order_id = $oid;
-                break 2;
-            }
-        }
-    }
+            // B. Neues Produkt hinzufügen
+            $order->add_product( wc_get_product( $target_product_id ), 1 );
 
-    if ( $found_order_id ) {
-        // Existierende Order recyclen!
-        $order = wc_get_order( $found_order_id );
-        if ( $order ) {
+            // C. Neu berechnen
+            $order->calculate_totals();
+            $order->save();
+
+            // D. Zurückleiten zur SELBEN Order
             wp_redirect( $order->get_checkout_payment_url() );
             exit;
         }
     }
-    // --- ENDE SPAM SCHUTZ ---
 
-    // Nur neu erstellen, wenn wirklich nichts da ist
+    // --- STRATEGIE B: FALLBACK (Nur wenn keine Order ID übergeben wurde) ---
+    // Sollte eigentlich nicht passieren, wenn der Link korrekt generiert wird.
+    // Falls doch -> Suche nach existierender Pending Order (wie vorher).
+
+    $existing_orders = wc_get_orders( array(
+        'limit'       => 1,
+        'status'      => array( 'pending', 'failed' ),
+        'customer_id' => $user_id,
+        'return'      => 'ids',
+    ) );
+
+    if ( ! empty( $existing_orders ) ) {
+        $recycle_id = $existing_orders[0];
+        // Redirect zu dieser existierenden Order (und triggere dort ggf. Update via URL Parameter beim nächsten Klick)
+        // Hier machen wir einen "Soft Redirect" zur existierenden Order und hoffen, dass der User dort klickt.
+        // Besser: Wir updaten diese gefundene Order direkt auch.
+        $order = wc_get_order( $recycle_id );
+        $order->remove_order_items( 'line_item' );
+        $order->add_product( wc_get_product( $target_product_id ), 1 );
+        $order->calculate_totals();
+        $order->save();
+        wp_redirect( $order->get_checkout_payment_url() );
+        exit;
+    }
+
+    // --- STRATEGIE C: NEUE ORDER (Nur absoluter Notfall) ---
     if ( function_exists( 'wc_create_order' ) ) {
         $order = wc_create_order();
-
-        if ( is_wp_error( $order ) || ! $order ) {
-            wp_redirect( wc_get_checkout_url() );
-            exit;
-        }
-
-        $order->add_product( wc_get_product( $product_id ), 1 );
+        $order->add_product( wc_get_product( $target_product_id ), 1 );
         $order->set_customer_id( $user_id );
 
         // Address Auto-Fill
@@ -2160,14 +2162,11 @@ function ska_handle_plan_switch() {
             'city'       => get_user_meta( $user_id, 'billing_city', true ),
             'postcode'   => get_user_meta( $user_id, 'billing_postcode', true ),
         );
-
         if ( ! empty( $billing_data['first_name'] ) ) {
             $order->set_address( $billing_data, 'billing' );
         }
 
         $order->calculate_totals();
-        $order->update_status( 'pending', 'Ska Checkout Init' );
-
         wp_redirect( $order->get_checkout_payment_url() );
         exit;
     }
@@ -2183,27 +2182,41 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // Hilfsfunktion: Preis mit MwSt Suffix generieren
-    $get_price_with_tax = function( $pid ) {
-        $p = wc_get_product( $pid );
-        return $p ? $p->get_price_html() . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>' : '';
+    // Aktuelle Order ID holen (WICHTIG für den Update-Link!)
+    global $wp;
+    $current_order_id = isset( $wp->query_vars['order-pay'] ) ? $wp->query_vars['order-pay'] : 0;
+
+    // Links mit Order ID Parameter bauen
+    // Damit weiß der Handler, welche Order er updaten muss
+    $base_switch = home_url( '/?ska_switch_to=' );
+    $url_suffix  = '&from_order=' . $current_order_id;
+
+    $url_m = $base_switch . '3128' . $url_suffix;
+    $url_y = $base_switch . '3130' . $url_suffix;
+    $url_l = $base_switch . '3127' . $url_suffix;
+
+    // Preise holen
+    $p_monthly  = wc_get_product( 3128 );
+    $p_yearly   = wc_get_product( 3130 );
+    $p_lifetime = wc_get_product( 3127 );
+
+    // Hilfsfunktion: Preis inkl. MwSt Hinweis direkt im HTML
+    $get_price_html = function( $p ) {
+        if ( ! $p ) {
+            return '';
+        }
+        // Füge den Hinweis direkt in den HTML String ein, damit er immer da ist
+        return $p->get_price_html() . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
     };
 
-    $price_m = $get_price_with_tax( 3128 );
-    $price_y = $get_price_with_tax( 3130 );
-    $price_l = $get_price_with_tax( 3127 );
+    $price_m = $get_price_html( $p_monthly );
+    $price_y = $get_price_html( $p_yearly );
+    $price_l = $get_price_html( $p_lifetime );
 
-    // Links
-    $url_m = home_url( '/?ska_switch_to=3128' );
-    $url_y = home_url( '/?ska_switch_to=3130' );
-    $url_l = home_url( '/?ska_switch_to=3127' );
-
-    // Current ID Check
-    global $wp;
-    $order_id = isset( $wp->query_vars['order-pay'] ) ? $wp->query_vars['order-pay'] : 0;
+    // Aktives Produkt ermitteln
     $current_pid = 0;
-    if ( $order_id && function_exists( 'wc_get_order' ) ) {
-        $order = wc_get_order( $order_id );
+    if ( $current_order_id && function_exists( 'wc_get_order' ) ) {
+        $order = wc_get_order( $current_order_id );
         if ( $order ) {
             foreach ( $order->get_items() as $item ) {
                 $current_pid = $item->get_product_id();
@@ -2221,7 +2234,7 @@ function ska_inject_checkout_styles() {
         $current_pid = 3128;
     }
 
-    $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
+    $icon_url = '[https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg](https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg)';
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -2230,13 +2243,14 @@ function ska_inject_checkout_styles() {
         const wooContainer = document.querySelector('.woocommerce');
         if (!wooContainer) return;
 
-        // --- DATEN ---
+        // --- PREIS DATEN (HTML String enthält bereits MwSt) ---
         const pricing = {
-            '3128': '<?php echo addslashes( $price_m ); ?>',
-            '3130': '<?php echo addslashes( $price_y ); ?>',
-            '3127': '<?php echo addslashes( $price_l ); ?>'
+            '3128': '<?php echo addslashes($price_m); ?>',
+            '3130': '<?php echo addslashes($price_y); ?>',
+            '3127': '<?php echo addslashes($price_l); ?>'
         };
 
+        // Laufzeit-Texte
         const details = {
             '3128': 'Abrechnung monatlich • Jederzeit kündbar',
             '3130': 'Abrechnung jährlich (12 Monate)',
@@ -2246,11 +2260,10 @@ function ska_inject_checkout_styles() {
         const initialPid = '<?php echo $current_pid; ?>';
         const initialDetail = details[initialPid] || details['3128'];
 
-        // Init: MwSt Hinweis in die Tabelle injecten, falls er fehlt
+        // Initial MwSt Injection (Sicherstellen dass es da ist)
         setTimeout(() => {
             const priceCell = document.querySelector('.product-total .amount')?.closest('td');
             if (priceCell && !priceCell.querySelector('.ska-tax-suffix')) {
-                 // Füge Suffix hinzu, ohne den Betrag zu zerstören
                  priceCell.innerHTML += ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
             }
         }, 50);
@@ -2280,7 +2293,7 @@ function ska_inject_checkout_styles() {
         if (paymentBox) {
             rightCol.appendChild(paymentBox);
             const btn = rightCol.querySelector('#place_order');
-            if (btn) {
+            if(btn) {
                 btn.value = 'Zahlungspflichtig bestellen';
                 btn.textContent = 'Zahlungspflichtig bestellen';
                 btn.classList.add('ska-btn-rounded');
@@ -2298,7 +2311,7 @@ function ska_inject_checkout_styles() {
                 <h2>Skript-Analyse Tool Premium freischalten</h2>
                 <p class="ska-subhead">Maximiere deine Textqualität: Unbegrenzter Zugriff auf alle Profi-Analysen & Export-Funktionen.</p>
             </div>
-
+            
             <div class="ska-plan-switch-container">
                 <div class="ska-plan-switch">
                     <a href="<?php echo $url_m; ?>" data-pid="3128" class="ska-switch-opt <?php echo $cls_m; ?>">Monatlich</a>
@@ -2323,7 +2336,7 @@ function ska_inject_checkout_styles() {
         layoutWrapper.appendChild(leftCol);
         layoutWrapper.appendChild(rightCol);
 
-        wooContainer.innerHTML = '';
+        wooContainer.innerHTML = ''; 
         wooContainer.appendChild(layoutWrapper);
 
         // --- INTERACTION ---
@@ -2333,10 +2346,7 @@ function ska_inject_checkout_styles() {
 
         switches.forEach(btn => {
             btn.addEventListener('click', function(e) {
-                if (this.classList.contains('is-active')) {
-                    e.preventDefault();
-                    return;
-                }
+                if(this.classList.contains('is-active')) { e.preventDefault(); return; }
 
                 // Visual
                 switches.forEach(s => s.classList.remove('is-active'));
@@ -2344,13 +2354,13 @@ function ska_inject_checkout_styles() {
 
                 const pid = this.getAttribute('data-pid');
 
-                // Price Update (Tabelle)
-                if (pricing[pid] && priceDisplay) {
+                // Price Update (Ersetzt den ganzen Zelleninhalt mit dem vorbereiteten HTML inkl. MwSt)
+                if(pricing[pid] && priceDisplay) {
                     priceDisplay.innerHTML = pricing[pid];
                 }
 
-                // Text Update
-                if (details[pid] && detailText) {
+                // Text Update (Nur Laufzeit, MwSt steht ja jetzt im Preis)
+                if(details[pid] && detailText) {
                     detailText.innerHTML = details[pid];
                 }
 
@@ -2373,10 +2383,10 @@ function ska_inject_checkout_styles() {
             font-family: 'Inter', system-ui, sans-serif;
             color: #0f172a;
         }
-        .woocommerce {
-            max-width: 1100px;
-            margin: 120px auto 60px auto !important;
-            padding: 0 20px;
+        .woocommerce { 
+            max-width: 1100px; 
+            margin: 120px auto 60px auto !important; 
+            padding: 0 20px; 
             position: relative;
             display: block !important;
         }
@@ -2418,7 +2428,7 @@ function ska_inject_checkout_styles() {
         .ska-benefits li { position: relative; padding-left: 36px; margin-bottom: 14px; font-size: 1rem; color: #334155; line-height: 1.4; display: block; }
         .ska-benefits li::before {
             content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px;
-            background-color: #1a93ee !important;
+            background-color: #1a93ee !important; 
             -webkit-mask-image: url('<?php echo $icon_url; ?>'); mask-image: url('<?php echo $icon_url; ?>');
             -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
         }
@@ -2441,7 +2451,7 @@ function ska_inject_checkout_styles() {
         .woocommerce-privacy-policy-text, .woocommerce-terms-and-conditions-wrapper, .wc-terms-and-conditions {
             font-size: 0.85rem !important; color: #94a3b8 !important; margin-bottom: 25px !important; margin-top: 20px !important; line-height: 1.5;
         }
-
+        
         .ska-loading-overlay {
             position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8);
             display: flex; justify-content: center; align-items: center; border-radius: 24px; z-index: 50;
