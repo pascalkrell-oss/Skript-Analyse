@@ -3420,16 +3420,12 @@
             this.analysisUtilsRequested = false;
             this.isRestoring = false;
             this.overviewResizeObserver = null;
-            this.checkoutFallbackTimerId = null;
 
             this.loadUIState();
             this.syncProfileSelectOptions();
             this.updatePlanUI();
             this.renderSettingsModal();
             this.renderBenchmarkModal();
-            const checkoutDetails = this.getCheckoutSummaryDetails();
-            this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
-            this.preloadCheckoutIframe();
             this.initAnalysisWorker();
             this.bindEvents();
             
@@ -3437,6 +3433,7 @@
             this.initSynonymTooltip();
             this.renderAnnouncementBanner();
             this.setupGlobalControlSync();
+            this.handleUpgradeReturn();
 
             const savedVersion = SA_Utils.storage.load(SA_CONFIG.SAVED_VERSION_KEY);
             if (savedVersion && savedVersion.trim().length > 0) {
@@ -3537,18 +3534,6 @@
             return '';
         }
 
-        getCheckoutBaseUrl() {
-            if (typeof window !== 'undefined') {
-                if (window.SKA_CONFIG_PHP?.checkoutUrl) {
-                    return window.SKA_CONFIG_PHP.checkoutUrl;
-                }
-                if (window.skriptAnalyseConfig?.checkoutUrl) {
-                    return window.skriptAnalyseConfig.checkoutUrl;
-                }
-            }
-            return window.location.origin;
-        }
-
         fetchPlanStatus() {
             const ajaxUrl = this.getAjaxUrl();
             const nonce = this.getAjaxNonce();
@@ -3583,6 +3568,25 @@
             this.analyze(this.getText());
         }
 
+        handleUpgradeReturn() {
+            if (typeof window === 'undefined') return;
+            const url = new URL(window.location.href);
+            const params = url.searchParams;
+            if (params.get('ska_upgrade') !== 'success') {
+                return;
+            }
+            if (this.isPremiumActive()) {
+                this.showToast('Premium ist aktiv – viel Erfolg!');
+            } else {
+                this.showToast('Premium ist aktiv – viel Erfolg!');
+                this.startPlanStatusPolling();
+            }
+            params.delete('ska_upgrade');
+            params.delete('order_id');
+            url.search = params.toString();
+            window.history.replaceState({}, document.title, url.toString());
+        }
+
         startPlanStatusPolling() {
             if (this.isPremiumActive()) return;
             if (this.state.planStatusPollId) {
@@ -3607,20 +3611,6 @@
                 });
             };
             poll();
-        }
-
-        handleCheckoutSuccess(checkoutModal, iframe) {
-            const modal = checkoutModal || document.getElementById('ska-checkout-modal');
-            if (modal) {
-                SA_Utils.closeModal(modal, () => {
-                    document.body.classList.remove('ska-modal-open');
-                    if (iframe) {
-                        iframe.removeAttribute('src');
-                    }
-                });
-            }
-            this.showToast('Danke! Zahlung bestätigt. Premium wird jetzt freigeschaltet…');
-            this.startPlanStatusPolling();
         }
 
         setupProjectControls() {
@@ -3806,15 +3796,12 @@
                     button.disabled = false;
                     button.classList.remove('is-disabled');
                     button.removeAttribute('aria-disabled');
-                    if (!button.getAttribute('onclick')) {
-                        const details = this.getCheckoutSummaryDetails(this.state.premiumPricePlan);
-                        button.setAttribute('onclick', this.getCheckoutOnclick(details));
-                    }
+                    button.dataset.action = 'premium-checkout';
                 } else {
                     button.disabled = true;
                     button.classList.add('is-disabled');
                     button.setAttribute('aria-disabled', 'true');
-                    button.removeAttribute('onclick');
+                    button.removeAttribute('data-action');
                 }
             });
         }
@@ -4846,160 +4833,6 @@
                 document.body.classList.remove('ska-modal-open');
             });
             this.state.wordSprint.originalText = '';
-        }
-
-        renderCheckoutModal(productTitle = '', price = '', cycle = '') {
-            let m = document.getElementById('ska-checkout-modal');
-            const details = this.getCheckoutDetails(productTitle, price, cycle);
-            const selectedPlanId = this.resolveCheckoutPlanId(details.cycle) || this.state.premiumPricePlan;
-            const selectedProductId = String(this.getPremiumCheckoutProductId(selectedPlanId));
-            if (m) {
-                this.updateCheckoutModalContent(details, selectedProductId);
-                return;
-            }
-
-            m = document.createElement('div');
-            m.className = 'skriptanalyse-modal checkout-modal';
-            m.id = 'ska-checkout-modal';
-            m.ariaHidden = 'true';
-            m.innerHTML = `
-                <div class="skriptanalyse-modal-overlay" data-action="close-checkout"></div>
-                <div class="skriptanalyse-modal-content ska-checkout-modal-content modal-content">
-                    <button type="button" class="ska-close-icon" data-action="close-checkout" aria-label="Schließen">&times;</button>
-                    <div class="skriptanalyse-modal-body ska-checkout-modal-body">
-                        <div class="ska-checkout-split-layout">
-                            <div class="ska-checkout-form-col">
-                                <h3>Skript-Analyse Tool - Premium Plan freischalten</h3>
-                                <div class="ska-checkout-plan-switcher">
-                                    <label class="ska-plan-option">
-                                        <input type="radio" name="checkout_plan" value="3128" ${selectedProductId === '3128' ? 'checked' : ''}>
-                                        <span class="ska-plan-label">
-                                            <strong>Monatlich</strong>
-                                            <span>12 € / Monat</span>
-                                        </span>
-                                    </label>
-
-                                    <label class="ska-plan-option">
-                                        <input type="radio" name="checkout_plan" value="3130" ${selectedProductId === '3130' ? 'checked' : ''}>
-                                        <span class="ska-plan-label">
-                                            <strong>Jährlich</strong>
-                                            <span>144 € / Jahr</span>
-                                        </span>
-                                    </label>
-
-                                    <label class="ska-plan-option">
-                                        <input type="radio" name="checkout_plan" value="3127" ${selectedProductId === '3127' ? 'checked' : ''}>
-                                        <span class="ska-plan-label">
-                                            <strong>Lifetime</strong>
-                                            <span>Einmalig 399 €</span>
-                                        </span>
-                                    </label>
-                                </div>
-                                <div id="ska-checkout-iframe-wrapper">
-                                    <div class="ska-checkout-loading" data-role="checkout-loading">
-                                        <span class="ska-checkout-spinner" aria-hidden="true"></span>
-                                        <span>Zahlung wird geladen…</span>
-                                    </div>
-                                    <div class="ska-checkout-fallback" data-role="checkout-fallback" hidden>
-                                        <div class="ska-checkout-fallback-card">
-                                            <strong>Hinweis</strong>
-                                            <p>Dein Zahlungsanbieter blockiert die Anzeige im eingebetteten Fenster. Öffne den Checkout in einem neuen Tab.</p>
-                                            <a class="ska-btn ska-btn--primary" data-role="checkout-fallback-link" href="${details.checkoutUrl}" target="_blank" rel="noopener">Checkout im neuen Tab öffnen</a>
-                                        </div>
-                                    </div>
-                                    <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
-                                </div>
-                            </div>
-                            <div class="ska-checkout-summary-col">
-                                <div class="ska-checkout-product-card">
-                                    <div class="ska-ssl-badge-small">🔒 SSL-Verschlüsselt</div>
-                                    <h4>Bestellübersicht</h4>
-                                    <div class="ska-checkout-item">
-                                        <span class="ska-item-name" data-role="checkout-product-title">${details.productTitle}</span>
-                                        <span class="ska-item-price" data-role="checkout-price">${details.price}</span>
-                                    </div>
-                                    <div class="ska-checkout-price-breakdown">
-                                        <div class="ska-checkout-line">
-                                            <span>Preis</span>
-                                            <span data-role="checkout-base-price">${details.price}</span>
-                                        </div>
-                                        <div class="ska-checkout-line">
-                                            <span>MwSt. (19%)</span>
-                                            <span class="ska-checkout-tax" data-role="checkout-vat">${details.vat}</span>
-                                        </div>
-                                        <div class="ska-checkout-total">
-                                            <span>Gesamt</span>
-                                            <strong data-role="checkout-total">${details.total}</strong>
-                                        </div>
-                                    </div>
-                                    <div class="ska-checkout-cycle" data-role="checkout-cycle">Abrechnung: ${details.cycle}</div>
-                                    <div class="ska-checkout-cta">
-                                        <a class="ska-btn ska-btn--primary" data-role="checkout-link" href="${details.checkoutUrl}" target="_blank" rel="noopener">Checkout öffnen</a>
-                                    </div>
-
-                                    <hr class="ska-checkout-divider">
-
-                                    <ul class="ska-checkout-benefits">
-                                        <li>Voller Zugriff auf alle 30+ Analysen</li>
-                                        <li>Unbegrenzte Projekte anlegen</li>
-                                        <li>Cloud-Speicher & Export</li>
-                                        <li>14-Tage Geld-zurück-Garantie</li>
-                                    </ul>
-                                </div>
-
-                                <div class="ska-trust-elements">
-                                    <div class="ska-payment-icons" aria-label="Akzeptierte Zahlungsmethoden">
-                                        <svg class="ska-payment-icon ska-payment-icon--visa" viewBox="0 0 64 36" role="img" aria-label="Visa">
-                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
-                                            <text x="32" y="23" text-anchor="middle">VISA</text>
-                                        </svg>
-                                        <svg class="ska-payment-icon ska-payment-icon--mastercard" viewBox="0 0 64 36" role="img" aria-label="Mastercard">
-                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
-                                            <circle cx="26" cy="18" r="8"></circle>
-                                            <circle cx="38" cy="18" r="8"></circle>
-                                        </svg>
-                                        <svg class="ska-payment-icon ska-payment-icon--paypal" viewBox="0 0 64 36" role="img" aria-label="PayPal">
-                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
-                                            <text x="32" y="23" text-anchor="middle">PayPal</text>
-                                        </svg>
-                                        <svg class="ska-payment-icon ska-payment-icon--sepa" viewBox="0 0 64 36" role="img" aria-label="SEPA">
-                                            <rect x="0.5" y="0.5" width="63" height="35" rx="6" fill="none" stroke="currentColor"></rect>
-                                            <text x="32" y="23" text-anchor="middle">SEPA</text>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            document.body.appendChild(m);
-            this.setupCheckoutPlanSwitch(m);
-        }
-
-        updateCheckoutModalContent(details, selectedProductId) {
-            const modal = document.getElementById('ska-checkout-modal');
-            if (!modal) return;
-            const nameEl = modal.querySelector('[data-role="checkout-product-title"]');
-            const priceEl = modal.querySelector('[data-role="checkout-price"]');
-            const cycleEl = modal.querySelector('[data-role="checkout-cycle"]');
-            const basePriceEl = modal.querySelector('[data-role="checkout-base-price"]');
-            const vatEl = modal.querySelector('[data-role="checkout-vat"]');
-            const totalEl = modal.querySelector('[data-role="checkout-total"]');
-            const checkoutLinkEl = modal.querySelector('[data-role="checkout-link"]');
-            const fallbackLinkEl = modal.querySelector('[data-role="checkout-fallback-link"]');
-            if (nameEl) nameEl.textContent = details.productTitle;
-            if (priceEl) priceEl.textContent = details.price;
-            if (cycleEl) cycleEl.textContent = `Abrechnung: ${details.cycle}`;
-            if (basePriceEl) basePriceEl.textContent = details.price;
-            if (vatEl) vatEl.textContent = details.vat;
-            if (totalEl) totalEl.textContent = details.total;
-            if (checkoutLinkEl) checkoutLinkEl.setAttribute('href', details.checkoutUrl);
-            if (fallbackLinkEl) fallbackLinkEl.setAttribute('href', details.checkoutUrl);
-
-            const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
-            planInputs.forEach((input) => {
-                input.checked = input.value === selectedProductId;
-            });
         }
 
         openToolModal(toolId) {
@@ -7531,10 +7364,6 @@
                             this.state.benchmark.running = false;
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
-                        if (modal.id === 'ska-checkout-modal') {
-                            const iframe = modal.querySelector('#ska-checkout-iframe');
-                            if (iframe) iframe.removeAttribute('src');
-                        }
                     });
                     return;
                 }
@@ -7562,10 +7391,6 @@
                             this.state.benchmark.running = false;
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
-                        if (modal.id === 'ska-checkout-modal') {
-                            const iframe = modal.querySelector('#ska-checkout-iframe');
-                            if (iframe) iframe.removeAttribute('src');
-                        }
                     });
                     e.preventDefault(); 
                 }
@@ -10687,11 +10512,6 @@
             ];
         }
 
-        getPremiumCheckoutUrl(planId = this.state.premiumPricePlan) {
-            const productId = this.getPremiumCheckoutProductId(planId);
-            return this.getCheckoutModalUrl(productId, planId);
-        }
-
         getPremiumCheckoutProductId(planId = this.state.premiumPricePlan) {
             const productMap = {
                 flex: 3128,
@@ -10715,301 +10535,61 @@
             }).format(numberValue);
         }
 
-        getCheckoutPlanParam(productId, planId = null) {
-            const planKey = planId || this.getCheckoutPlanMetaByProductId(productId)?.planId;
-            const planMap = {
-                flex: 'monthly',
-                pro: 'yearly',
-                studio: 'lifetime'
-            };
-            return planMap[planKey] || '';
-        }
-
-        getCheckoutModalUrl(productId, planId = null) {
-            const baseUrl = this.getCheckoutBaseUrl();
-            let url;
-            try {
-                url = new URL(baseUrl, window.location.origin);
-            } catch (error) {
-                url = new URL(window.location.origin);
-            }
-            const params = url.searchParams;
-            params.set('view', 'checkout_modal');
-            params.set('ska_iframe', '1');
-            const planParam = this.getCheckoutPlanParam(productId, planId);
-            if (planParam) {
-                params.set('ska_plan', planParam);
-            }
-            if (productId) {
-                params.set('product_id', String(productId));
-            }
-            url.search = params.toString();
-            return url.toString();
-        }
-
-        getCheckoutPlanMetaByProductId(productId) {
-            const planKey = String(productId);
-            const checkoutPlans = {
-                '3128': {
-                    productId: '3128',
-                    planId: 'flex',
-                    title: 'Premium (Monatlich)',
-                    cycle: 'Monatlich',
-                    priceLabel: '12 € / Monat',
-                    priceValue: 12
-                },
-                '3130': {
-                    productId: '3130',
-                    planId: 'pro',
-                    title: 'Premium (Jährlich)',
-                    cycle: 'Jährlich',
-                    priceLabel: '144 € / Jahr',
-                    priceValue: 144
-                },
-                '3127': {
-                    productId: '3127',
-                    planId: 'studio',
-                    title: 'Premium (Lifetime)',
-                    cycle: 'Lifetime',
-                    priceLabel: '399 €',
-                    priceValue: 399
-                }
-            };
-            const plan = checkoutPlans[planKey] || checkoutPlans['3128'];
-            const vatAmount = plan.priceValue * 0.19;
-            const totalAmount = plan.priceValue + vatAmount;
-            const cycleSuffix = plan.cycle === 'Monatlich'
-                ? ' / Monat'
-                : (plan.cycle === 'Jährlich' ? ' / Jahr' : '');
-            return {
-                ...plan,
-                vatLabel: `${this.formatCurrencyValue(vatAmount)} €`,
-                totalLabel: `${this.formatCurrencyValue(totalAmount)} €${cycleSuffix}`,
-                checkoutUrl: this.getCheckoutModalUrl(plan.productId, plan.planId)
-            };
-        }
-
-        getCheckoutSummaryDetails(planId = this.state.premiumPricePlan) {
-            const premiumPlans = this.getPremiumPlans();
-            const selectedPlan = premiumPlans.find(plan => plan.id === planId) || premiumPlans[0];
-            const cycle = selectedPlan.label || 'Monatlich';
-            const productId = String(this.getPremiumCheckoutProductId(selectedPlan.id));
-            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
-            return {
-                productTitle: planMeta.title,
-                price: planMeta.priceLabel,
-                cycle: planMeta.cycle || cycle,
-                vat: planMeta.vatLabel,
-                total: planMeta.totalLabel,
-                checkoutUrl: planMeta.checkoutUrl
-            };
-        }
-
-        getCheckoutDetails(productTitle, price, cycle) {
-            const fallback = this.getCheckoutSummaryDetails();
-            return {
-                productTitle: productTitle || fallback.productTitle,
-                price: price || fallback.price,
-                cycle: cycle || fallback.cycle,
-                vat: fallback.vat,
-                total: fallback.total,
-                checkoutUrl: fallback.checkoutUrl
-            };
-        }
-
-        getCheckoutOnclick(details) {
-            const escapeAttr = (value) => String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            return `openCheckout('${escapeAttr(details.productTitle)}', '${escapeAttr(details.price)}', '${escapeAttr(details.cycle)}')`;
-        }
-
-        resolveCheckoutPlanId(cycle = '') {
-            const normalized = String(cycle).toLowerCase();
-            if (normalized.includes('monat')) return 'flex';
-            if (normalized.includes('jahr')) return 'pro';
-            if (normalized.includes('life')) return 'studio';
-            return null;
-        }
-
-        setupCheckoutPlanSwitch(modal) {
-            if (!modal || modal.dataset.checkoutPlanSwitchBound === 'true') return;
-            modal.addEventListener('change', (event) => {
-                const target = event.target;
-                if (!target || !target.matches('input[name="checkout_plan"]')) return;
-                this.handleCheckoutPlanSelection(target.value);
-            });
-            modal.dataset.checkoutPlanSwitchBound = 'true';
-        }
-
-        handleCheckoutPlanSelection(productId) {
-            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
-            if (!planMeta) return;
-            const details = {
-                productTitle: planMeta.title,
-                price: planMeta.priceLabel,
-                cycle: planMeta.cycle,
-                vat: planMeta.vatLabel,
-                total: planMeta.totalLabel,
-                checkoutUrl: planMeta.checkoutUrl
-            };
-            this.updateCheckoutModalContent(details, String(planMeta.productId));
-            const checkoutModal = document.getElementById('ska-checkout-modal');
-            if (checkoutModal) {
-                this.prefetchCheckoutCart(planMeta.productId, checkoutModal);
-            }
-            if (planMeta.planId) {
-                this.state.premiumPricePlan = planMeta.planId;
-                this.updatePremiumPlanUI();
-            }
-        }
-
         getCheckoutPlanDescription() {
             return 'Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an. Klar strukturiert, zuverlässig und jederzeit kündbar.';
         }
 
-        openCheckout(productTitle, price, cycle) {
+        getUpgradeReturnUrl() {
+            if (typeof window === 'undefined') return '';
+            const url = new URL(window.location.href);
+            url.hash = '';
+            return url.toString();
+        }
+
+        createUpgradeOrder(productId, planKey) {
+            const ajaxUrl = this.getAjaxUrl();
+            const nonce = this.getAjaxNonce();
+            if (!ajaxUrl || !nonce) {
+                return Promise.reject(new Error('AJAX nicht verfügbar.'));
+            }
+            const payload = new FormData();
+            payload.append('action', 'ska_create_upgrade_order');
+            payload.append('nonce', nonce);
+            payload.append('product_id', String(productId));
+            if (planKey) {
+                payload.append('plan_key', String(planKey));
+            }
+            const returnUrl = this.getUpgradeReturnUrl();
+            if (returnUrl) {
+                payload.append('return_url', returnUrl);
+            }
+            return fetch(ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: payload
+            }).then((response) => response.json());
+        }
+
+        startCheckoutFlow() {
             if (!this.isUnlockButtonEnabled()) {
-                return false;
+                return;
             }
             this.trackMetric('unlock_click');
-            const details = this.getCheckoutDetails(productTitle, price, cycle);
-            const resolvedPlan = this.resolveCheckoutPlanId(details.cycle);
-            if (resolvedPlan) {
-                this.state.premiumPricePlan = resolvedPlan;
-                this.updatePremiumPlanUI();
-            }
-            this.startCheckoutFlow(details);
-            return false;
-        }
-
-        startCheckoutFlow(details = null) {
-            const checkoutDetails = details || this.getCheckoutSummaryDetails();
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-            this.openCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle, productId);
-        }
-
-        preloadCheckoutIframe() {
-            const modal = document.getElementById('ska-checkout-modal');
-            if (!modal) return;
-            const iframe = modal.querySelector('#ska-checkout-iframe');
-            if (!iframe || iframe.getAttribute('src')) return;
-            const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-            iframe.dataset.checkoutProductId = String(productId);
-            iframe.dataset.checkoutPlanId = this.state.premiumPricePlan;
-            iframe.setAttribute('src', this.getCheckoutModalUrl(productId, this.state.premiumPricePlan));
-            iframe.dataset.checkoutPreloaded = 'true';
-            this.bindCheckoutIframe(iframe, null, modal);
-        }
-
-        prefetchCheckoutCart(productId, modal = null) {
-            const checkoutModal = modal || document.getElementById('ska-checkout-modal');
-            if (!checkoutModal) return;
-            const iframe = checkoutModal.querySelector('#ska-checkout-iframe');
-            const loading = checkoutModal.querySelector('[data-role="checkout-loading"]');
-            if (!iframe) return;
-            if (loading) loading.style.display = 'flex';
-            this.bindCheckoutIframe(iframe, loading, checkoutModal);
-            const planMeta = this.getCheckoutPlanMetaByProductId(productId);
-            iframe.dataset.checkoutProductId = String(planMeta?.productId || productId);
-            iframe.dataset.checkoutPlanId = planMeta?.planId || this.state.premiumPricePlan;
-            iframe.setAttribute('src', this.getCheckoutModalUrl(productId, planMeta?.planId));
-        }
-
-        openCheckoutModal(productTitle, price, cycle, productId = null) {
-            const checkoutDetails = this.getCheckoutDetails(productTitle, price, cycle);
-            this.renderCheckoutModal(checkoutDetails.productTitle, checkoutDetails.price, checkoutDetails.cycle);
-            const modal = document.getElementById('ska-checkout-modal');
-            if (!modal) return;
-            modal.style.zIndex = '999999';
-            const iframe = modal.querySelector('#ska-checkout-iframe');
-            const loading = modal.querySelector('[data-role="checkout-loading"]');
-            if (iframe) {
-                iframe.dataset.checkoutSuccessHandled = 'false';
-            }
-            const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
-            if (loading && !iframeLoaded) {
-                loading.style.display = 'flex';
-            }
-            if (iframe) {
-                this.bindCheckoutIframe(iframe, loading, modal);
-                if (!iframe.getAttribute('src')) {
-                    const fallbackProductId = productId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
-                    iframe.dataset.checkoutProductId = String(fallbackProductId);
-                    iframe.dataset.checkoutPlanId = this.state.premiumPricePlan;
-                    iframe.setAttribute('src', this.getCheckoutModalUrl(fallbackProductId, this.state.premiumPricePlan));
-                }
-            }
-            SA_Utils.openModal(modal);
-            document.body.classList.add('ska-modal-open');
-        }
-
-        bindCheckoutIframe(iframe, loading, modal = null) {
-            if (!iframe) return;
-            const checkoutModal = modal || document.getElementById('ska-checkout-modal');
-            if (checkoutModal) {
-                const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
-                if (fallback) {
-                    fallback.hidden = true;
-                }
-            }
-            iframe.dataset.checkoutLoaded = 'false';
-            if (this.checkoutFallbackTimerId) {
-                clearTimeout(this.checkoutFallbackTimerId);
-            }
-            const fallbackUrl = this.getCheckoutModalUrl(
-                iframe.dataset.checkoutProductId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan),
-                iframe.dataset.checkoutPlanId || this.state.premiumPricePlan
-            );
-            this.checkoutFallbackTimerId = setTimeout(() => {
-                let currentUrl = '';
-                let blocked = false;
-                try {
-                    currentUrl = iframe.contentWindow?.location?.href || '';
-                    blocked = !currentUrl || currentUrl === 'about:blank';
-                } catch (error) {
-                    blocked = true;
-                }
-                if (blocked && checkoutModal) {
-                    const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
-                    const fallbackLink = checkoutModal.querySelector('[data-role="checkout-fallback-link"]');
-                    if (fallbackLink) fallbackLink.setAttribute('href', fallbackUrl);
-                    if (fallback) fallback.hidden = false;
-                }
-            }, 2500);
-            iframe.onload = () => {
-                if (loading) {
-                    loading.style.display = 'none';
-                }
-                iframe.dataset.checkoutLoaded = 'true';
-                if (this.checkoutFallbackTimerId) {
-                    clearTimeout(this.checkoutFallbackTimerId);
-                    this.checkoutFallbackTimerId = null;
-                }
-                let currentUrl = '';
-                try {
-                    currentUrl = iframe.contentWindow?.location?.href || '';
-                } catch (error) {
-                    return;
-                }
-                if (!currentUrl || currentUrl === 'about:blank') {
-                    if (!checkoutModal) return;
-                    const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
-                    const fallbackLink = checkoutModal.querySelector('[data-role="checkout-fallback-link"]');
-                    if (fallbackLink) fallbackLink.setAttribute('href', fallbackUrl);
-                    if (fallback) fallback.hidden = false;
-                    return;
-                }
-                if (/order-received|thank-you|danke/i.test(currentUrl)) {
-                    if (!checkoutModal) return;
-                    if (iframe.dataset.checkoutSuccessHandled === 'true') return;
-                    iframe.dataset.checkoutSuccessHandled = 'true';
-                    this.handleCheckoutSuccess(checkoutModal, iframe);
-                }
-            };
+            const planKey = this.state.premiumPricePlan;
+            this.showToast('Checkout wird vorbereitet…');
+            this.createUpgradeOrder(productId, planKey)
+                .then((data) => {
+                    if (!data || !data.success || !data.data?.pay_url) {
+                        const message = data?.data?.message || 'Checkout konnte nicht gestartet werden.';
+                        this.showToast(message, true);
+                        return;
+                    }
+                    window.location.href = data.data.pay_url;
+                })
+                .catch(() => {
+                    this.showToast('Checkout konnte nicht gestartet werden.', true);
+                });
         }
 
         updatePremiumPlanUI() {
@@ -11033,11 +10613,6 @@
             if (noteEl) {
                 const savings = selectedPlan.savings ? `Du sparst ${selectedPlan.savings}` : '';
                 noteEl.innerHTML = `${selectedPlan.note} <span class="ska-premium-upgrade-savings${selectedPlan.savings ? '' : ' is-hidden'}">${savings}</span>`;
-            }
-            const checkoutButton = card.querySelector('.ska-premium-checkout-btn');
-            if (checkoutButton) {
-                const checkoutDetails = this.getCheckoutSummaryDetails(selectedPlan.id);
-                checkoutButton.setAttribute('onclick', this.getCheckoutOnclick(checkoutDetails));
             }
             this.applyUnlockButtonState(card);
             const planButtons = card.querySelectorAll('[data-role="premium-plan"]');
@@ -11065,7 +10640,6 @@
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const formattedFreePrice = this.formatPriceValue(freePrice);
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
-            const checkoutDetails = this.getCheckoutSummaryDetails(selectedPlan.id);
             const planDescription = this.getCheckoutPlanDescription();
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
@@ -11191,7 +10765,7 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <button type="button" class="ska-btn ska-btn--primary ska-premium-checkout-btn" onclick="${this.getCheckoutOnclick(checkoutDetails)}">Jetzt Premium freischalten</button>
+                            <button type="button" class="ska-btn ska-btn--primary ska-premium-checkout-btn" data-action="premium-checkout">Jetzt Premium freischalten</button>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
@@ -12665,34 +12239,9 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        let isIframe = false;
-        if (typeof window !== 'undefined') {
-            try {
-                isIframe = window.self !== window.top;
-            } catch (error) {
-                isIframe = true;
-            }
-        }
-        if (isIframe && document.body) {
-            document.body.classList.add('is-iframe-mode');
-            document.body.classList.add('iframe-mode');
-        }
-        if (isIframe) {
-            document.documentElement.classList.add('is-iframe-mode');
-        }
         const instances = Array.from(document.querySelectorAll('.skriptanalyse-app')).map(el => new SkriptAnalyseWidget(el));
         if (typeof window !== 'undefined') {
             window.SKA_WIDGETS = instances;
-            window.openCheckout = (productTitle, price, cycle) => {
-                const instance = instances[0];
-                if (!instance) return false;
-                return instance.openCheckout(productTitle, price, cycle);
-            };
-            window.updateCheckoutContext = (productId) => {
-                const instance = instances[0];
-                if (!instance) return;
-                instance.handleCheckoutPlanSelection(productId);
-            };
         }
 
         const adminRoot = document.getElementById('ska-admin-app');
