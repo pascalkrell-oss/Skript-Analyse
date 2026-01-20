@@ -4201,3 +4201,148 @@ html.is-iframe-mode .admin-bar {
     color: #dc2626;
     font-size: 0.85rem;
 }
+
+/* Upgrade Checkout (order-pay/order-received) */
+body.ska-upgrade-checkout {
+    background: #f8fafc;
+}
+body.ska-upgrade-checkout header,
+body.ska-upgrade-checkout footer,
+body.ska-upgrade-checkout #masthead,
+body.ska-upgrade-checkout #colophon,
+body.ska-upgrade-checkout .site-header,
+body.ska-upgrade-checkout .site-footer,
+body.ska-upgrade-checkout .elementor-location-header,
+body.ska-upgrade-checkout .elementor-location-footer,
+body.ska-upgrade-checkout nav {
+    display: none !important;
+}
+body.ska-upgrade-checkout .woocommerce {
+    max-width: 980px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 24px 50px -30px rgba(15, 23, 42, 0.35);
+}
+body.ska-upgrade-checkout .woocommerce h1,
+body.ska-upgrade-checkout .woocommerce h2,
+body.ska-upgrade-checkout .woocommerce h3 {
+    color: #0f172a;
+    font-weight: 700;
+}
+body.ska-upgrade-checkout .woocommerce .woocommerce-info,
+body.ska-upgrade-checkout .woocommerce .woocommerce-message {
+    border-radius: 12px;
+    border-color: #bae6fd;
+    background: #f0f9ff;
+    color: #0f172a;
+}
+body.ska-upgrade-checkout .woocommerce form .form-row input.input-text,
+body.ska-upgrade-checkout .woocommerce form .form-row select,
+body.ska-upgrade-checkout .woocommerce form .form-row textarea {
+    border-radius: 10px;
+    border: 1px solid #cbd5f5;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.95rem;
+    box-shadow: none;
+}
+body.ska-upgrade-checkout .woocommerce form .form-row input.input-text:focus,
+body.ska-upgrade-checkout .woocommerce form .form-row select:focus,
+body.ska-upgrade-checkout .woocommerce form .form-row textarea:focus {
+    border-color: #1a93ee;
+    box-shadow: 0 0 0 3px rgba(26, 147, 238, 0.15);
+}
+body.ska-upgrade-checkout .woocommerce #payment,
+body.ska-upgrade-checkout .woocommerce .woocommerce-checkout-payment {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    background: #f8fafc;
+}
+body.ska-upgrade-checkout .woocommerce #payment ul.payment_methods li,
+body.ska-upgrade-checkout .woocommerce .payment_methods li {
+    margin-bottom: 0.75rem;
+}
+body.ska-upgrade-checkout .woocommerce #payment button.button,
+body.ska-upgrade-checkout .woocommerce button.button,
+body.ska-upgrade-checkout .woocommerce #place_order {
+    background: #1a93ee;
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    padding: 0.85rem 1.8rem;
+    box-shadow: 0 16px 28px -20px rgba(26, 147, 238, 0.6);
+}
+body.ska-upgrade-checkout .woocommerce #payment button.button:hover,
+body.ska-upgrade-checkout .woocommerce button.button:hover,
+body.ska-upgrade-checkout .woocommerce #place_order:hover {
+    background: #147ac7;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-intro {
+    margin-bottom: 1.8rem;
+    padding-bottom: 1.4rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-hero h1 {
+    font-size: 2rem;
+    margin-bottom: 0.4rem;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-hero p {
+    color: #475569;
+    max-width: 640px;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0;
+    font-weight: 600;
+    color: #94a3b8;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li {
+    position: relative;
+    padding-left: 1.6rem;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: #cbd5e1;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li.is-complete,
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li.is-active {
+    color: #0f172a;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li.is-complete::before {
+    background: #16a34a;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-steps li.is-active::before {
+    background: #1a93ee;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-trust {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+    color: #475569;
+}
+body.ska-upgrade-checkout .ska-upgrade-checkout-trust strong {
+    color: #0f172a;
+}
+@media (max-width: 768px) {
+    body.ska-upgrade-checkout .woocommerce {
+        margin: 1.5rem auto;
+        padding: 1.5rem;
+    }
+    body.ska-upgrade-checkout .ska-upgrade-checkout-steps {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

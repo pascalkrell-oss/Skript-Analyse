@@ -11,31 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
 
-function ska_is_iframe_checkout_context() {
-    return isset( $_GET['ska_iframe'] ) && $_GET['ska_iframe'] === '1';
-}
-
-add_filter( 'woocommerce_session_name', function( $name ) {
-    if ( ska_is_iframe_checkout_context() ) {
-        return $name . '_ska_iframe';
-    }
-    return $name;
-}, 20 );
-
-add_filter( 'woocommerce_cart_hash_key', function( $key ) {
-    if ( ska_is_iframe_checkout_context() ) {
-        return $key . '_ska_iframe';
-    }
-    return $key;
-}, 20 );
-
-add_filter( 'woocommerce_cart_cookie', function( $cookie ) {
-    if ( ska_is_iframe_checkout_context() ) {
-        return $cookie . '_ska_iframe';
-    }
-    return $cookie;
-}, 20 );
-
 function ska_normalize_plan_status( $value ) {
     $value = strtolower( (string) $value );
     if ( $value === 'premium' ) {
@@ -244,66 +219,6 @@ function ska_register_assets() {
 add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
 
-add_action( 'template_redirect', function() {
-    $is_checkout_modal = isset( $_GET['view'] ) && $_GET['view'] === 'checkout_modal';
-    $is_iframe_checkout = ska_is_iframe_checkout_context();
-    $is_legacy_iframe = isset( $_GET['iframe_mode'] ) && $_GET['iframe_mode'] === '1' && isset( $_GET['embedded_checkout'] );
-    if ( ! $is_checkout_modal && ! $is_legacy_iframe ) {
-        return;
-    }
-
-    $product_id = 0;
-    if ( isset( $_GET['product_id'] ) ) {
-        $product_id = absint( wp_unslash( $_GET['product_id'] ) );
-    } elseif ( isset( $_GET['add-to-cart'] ) ) {
-        $product_id = absint( wp_unslash( $_GET['add-to-cart'] ) );
-    }
-
-    if ( $product_id && $is_iframe_checkout && function_exists( 'WC' ) ) {
-        if ( null === WC()->cart ) {
-            wc_load_cart();
-        }
-        if ( WC()->cart ) {
-            $product = wc_get_product( $product_id );
-            if ( $product && $product->is_purchasable() ) {
-                WC()->cart->empty_cart( true );
-                WC()->cart->add_to_cart( $product_id, 1 );
-                if ( method_exists( WC()->cart, 'remove_coupons' ) ) {
-                    WC()->cart->remove_coupons();
-                }
-                if ( method_exists( WC()->cart, 'fees_api' ) ) {
-                    WC()->cart->fees_api()->remove_all_fees();
-                }
-                WC()->cart->calculate_totals();
-            }
-        }
-    }
-
-    $checkout_html = '';
-    if ( function_exists( 'do_shortcode' ) ) {
-        $checkout_html = do_shortcode( '[woocommerce_checkout]' );
-    }
-
-    $style_url = esc_url( SKA_URL . 'assets/style.css?ver=' . SKA_VER );
-    $script_url = esc_url( SKA_URL . 'assets/app.js?ver=' . SKA_VER );
-
-    echo '<!doctype html>';
-    echo '<html lang="de">';
-    echo '<head>';
-    echo '<meta charset="utf-8">';
-    echo '<meta name="viewport" content="width=device-width, initial-scale=1">';
-    echo '<link rel="stylesheet" href="' . $style_url . '">';
-    do_action( 'wp_head' );
-    echo '</head>';
-    echo '<body ';
-    body_class( 'ska-clean-checkout ska-embedded-checkout' );
-    echo '>';
-    echo $checkout_html;
-    echo '<script src="' . $script_url . '" defer></script>';
-    do_action( 'wp_footer' );
-    echo '</body></html>';
-    exit;
-} );
 
 function ska_has_manual_access( $user_id ) {
     $until = (int) get_user_meta( $user_id, 'ska_manual_access_until', true );
@@ -397,6 +312,85 @@ function ska_get_algorithm_tuning_localized_config() {
 function ska_localize_algorithm_tuning_config( $handle ) {
     wp_localize_script( $handle, 'skriptAnalyseConfig', ska_get_algorithm_tuning_localized_config() );
 }
+
+function ska_is_allowed_upgrade_product( $product ) {
+    if ( ! $product ) {
+        return false;
+    }
+    if ( ! $product->is_purchasable() ) {
+        return false;
+    }
+    if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ) ) {
+        return true;
+    }
+    if ( method_exists( $product, 'is_type' ) && $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription', 'simple-subscription' ) ) ) {
+        return true;
+    }
+    return false;
+}
+
+function ska_get_upgrade_order_id_from_query() {
+    if ( ! function_exists( 'is_wc_endpoint_url' ) ) {
+        return 0;
+    }
+    $order_id = 0;
+    if ( is_wc_endpoint_url( 'order-pay' ) ) {
+        $order_id = absint( get_query_var( 'order-pay' ) );
+    } elseif ( is_wc_endpoint_url( 'order-received' ) ) {
+        $order_id = absint( get_query_var( 'order-received' ) );
+    }
+    return $order_id;
+}
+
+add_filter( 'woocommerce_get_return_url', function( $return_url, $order ) {
+    if ( ! $order ) {
+        return $return_url;
+    }
+    $meta = $order->get_meta( '_ska_return_url' );
+    return $meta ? $meta : $return_url;
+}, 10, 2 );
+
+add_filter( 'body_class', function( $classes ) {
+    $order_id = ska_get_upgrade_order_id_from_query();
+    if ( ! $order_id ) {
+        return $classes;
+    }
+    $order = wc_get_order( $order_id );
+    if ( $order && $order->get_meta( '_ska_upgrade_order' ) ) {
+        $classes[] = 'ska-upgrade-checkout';
+    }
+    return $classes;
+} );
+
+function ska_render_upgrade_checkout_intro() {
+    if ( ! function_exists( 'wc_get_order' ) ) {
+        return;
+    }
+    $order_id = absint( get_query_var( 'order-pay' ) );
+    if ( ! $order_id ) {
+        return;
+    }
+    $order = wc_get_order( $order_id );
+    if ( ! $order || ! $order->get_meta( '_ska_upgrade_order' ) ) {
+        return;
+    }
+    echo '<section class="ska-upgrade-checkout-intro">';
+    echo '<div class="ska-upgrade-checkout-hero">';
+    echo '<h1>Premium-Upgrade abschließen</h1>';
+    echo '<p>Nur noch ein Schritt: Wähle deine Zahlungsmethode und schalte alle Premium-Analysen frei.</p>';
+    echo '</div>';
+    echo '<ol class="ska-upgrade-checkout-steps">';
+    echo '<li class="is-complete">Plan wählen</li>';
+    echo '<li class="is-active">Zahlung</li>';
+    echo '<li>Fertig</li>';
+    echo '</ol>';
+    echo '<div class="ska-upgrade-checkout-trust">';
+    echo '<strong>Sicher bezahlen</strong>';
+    echo '<span>SSL-verschlüsselt · jederzeit kündbar · sofortiger Zugriff</span>';
+    echo '</div>';
+    echo '</section>';
+}
+add_action( 'woocommerce_before_pay', 'ska_render_upgrade_checkout_intro', 5 );
 
 function ska_get_localized_config() {
     $markers_config = [
@@ -1994,4 +1988,62 @@ function ska_ajax_get_plan_status() {
 
     $plan_status = function_exists( 'ska_get_user_plan_status' ) ? ska_get_user_plan_status() : 'basis';
     wp_send_json_success( array( 'planStatus' => $plan_status ) );
+}
+
+add_action( 'wp_ajax_ska_create_upgrade_order', 'ska_ajax_create_upgrade_order' );
+function ska_ajax_create_upgrade_order() {
+    check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
+
+    if ( ! function_exists( 'wc_create_order' ) ) {
+        wp_send_json_error( array( 'message' => 'WooCommerce nicht verfügbar.' ) );
+    }
+
+    if ( ! is_user_logged_in() ) {
+        wp_send_json_error( array( 'message' => 'Bitte zuerst einloggen.' ) );
+    }
+
+    $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
+    $plan_key = isset( $_POST['plan_key'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_key'] ) ) : '';
+    $raw_return_url = isset( $_POST['return_url'] ) ? esc_url_raw( wp_unslash( $_POST['return_url'] ) ) : '';
+
+    if ( ! $product_id ) {
+        wp_send_json_error( array( 'message' => 'Ungültiges Produkt.' ) );
+    }
+
+    $product = wc_get_product( $product_id );
+    if ( ! ska_is_allowed_upgrade_product( $product ) ) {
+        wp_send_json_error( array( 'message' => 'Produkt nicht verfügbar.' ) );
+    }
+
+    $order = wc_create_order();
+    if ( is_wp_error( $order ) || ! $order ) {
+        wp_send_json_error( array( 'message' => 'Bestellung konnte nicht erstellt werden.' ) );
+    }
+
+    $order->add_product( $product, 1 );
+    $order->set_customer_id( get_current_user_id() );
+    $order->calculate_totals();
+    $order->set_status( 'pending' );
+    $order->update_meta_data( '_ska_upgrade_order', 1 );
+    if ( $plan_key ) {
+        $order->update_meta_data( '_ska_plan_key', $plan_key );
+    }
+    $base_return_url = $raw_return_url ? wp_validate_redirect( $raw_return_url, home_url( '/' ) ) : home_url( '/' );
+    $return_url = add_query_arg(
+        array(
+            'ska_upgrade' => 'success',
+            'order_id' => $order->get_id(),
+        ),
+        $base_return_url
+    );
+    $order->update_meta_data( '_ska_return_url', $return_url );
+    $order->save();
+
+    wp_send_json_success(
+        array(
+            'order_id' => $order->get_id(),
+            'pay_url' => $order->get_checkout_payment_url(),
+            'return_url' => $return_url,
+        )
+    );
 }
