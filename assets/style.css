@@ -173,6 +173,36 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-filterbar-body { display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.6rem; margin-top: 0.6rem; border-top: 1px solid var(--ska-border); width: 100%; transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1), padding 0.55s cubic-bezier(0.4, 0, 0.2, 1), margin 0.55s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
 .ska-analysis-filterbar.is-expanded .ska-filterbar-body { max-height: 1000px; opacity: 1; }
 .ska-analysis-filterbar.is-collapsed .ska-filterbar-body { max-height: 0; opacity: 0; padding: 0; margin: 0; overflow: hidden; }
+.ska-layout-control { position: relative; display: inline-flex; align-items: center; }
+.ska-layout-control .ska-btn { gap: 0.4rem; }
+.ska-layout-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 260px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.18);
+    padding: 12px;
+    z-index: 50;
+}
+.ska-layout-dropdown.hidden { display: none; }
+.ska-layout-dropdown ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ska-layout-dropdown .ska-opt-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #0f172a;
+    font-size: 0.9rem;
+}
+.ska-layout-dropdown .ska-opt-item label:hover { background: #f8fafc; }
+.ska-layout-dropdown .ska-opt-item input { margin: 0; }
+.ska-layout-dropdown .ska-opt-item.is-locked label { cursor: not-allowed; opacity: 0.6; }
+.ska-layout-dropdown .ska-lock-icon { margin-left: auto; font-size: 0.9rem; }
 .ska-filter-pill { border: 1px solid var(--ska-border); background: #fff; padding: 0 0.75rem; border-radius: 999px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; height: 34px; min-height: 34px; transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }

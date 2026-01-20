@@ -7825,84 +7825,80 @@
 
         renderFilterBar() {
             if (!this.filterBar) return;
-            const profile = this.normalizeProfile(this.settings.role);
-            const isGeneralProfile = profile === 'general';
-            const allowed = !isGeneralProfile && profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
-            const toolCards = SA_CONFIG.TOOL_CARDS || [];
-            const layoutOrder = this.getLayoutOrder(profile);
-            const items = layoutOrder.filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id));
-            const filterByProfile = !isGeneralProfile && profile ? this.state.filterByProfile : false;
-            const title = 'Analyseboxen auswählen';
-            const isExpanded = !this.state.filterCollapsed;
-            this.filterBar.classList.toggle('is-expanded', isExpanded);
-            this.filterBar.classList.toggle('is-collapsed', this.state.filterCollapsed);
-            const collapseLabel = this.state.filterCollapsed ? 'Ausklappen' : 'Einklappen';
-            const filteredItems = items.filter((id) => {
-                if (!allowed) return true;
-                if (!filterByProfile) return true;
-                return allowed.has(id);
+            this.filterBar.innerHTML = '';
+            this.filterBar.classList.add('is-compact');
+            this.filterBar.appendChild(this.renderLayoutButton());
+        }
+
+        renderLayoutButton() {
+            const container = document.createElement('div');
+            container.className = 'ska-layout-control';
+            
+            const btn = document.createElement('button');
+            btn.className = 'ska-btn ska-btn-outline ska-btn-rounded';
+            btn.innerHTML = '<span class="icon">⚙️</span> Layout anpassen';
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'ska-layout-dropdown hidden';
+            
+            const list = document.createElement('ul');
+            const allCards = this.getAllCardKeys();
+            
+            allCards.forEach(key => {
+                const isPremiumFeature = this.isPremiumCard(key);
+                const isUnlocked = this.isCardUnlocked(key);
+                const isActive = !this.state.hiddenCards.has(key);
+                
+                const li = document.createElement('li');
+                li.className = isUnlocked ? 'ska-opt-item' : 'ska-opt-item is-locked';
+                
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = isActive;
+                input.disabled = !isUnlocked;
+                
+                input.addEventListener('change', (e) => {
+                    this.toggleCard(key, e.target.checked);
+                });
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = this.getCardTitle(key);
+                
+                label.appendChild(input);
+                label.appendChild(textSpan);
+                
+                if (!isUnlocked && isPremiumFeature) {
+                    const lockIcon = document.createElement('span');
+                    lockIcon.className = 'ska-lock-icon';
+                    lockIcon.textContent = '🔒';
+                    label.appendChild(lockIcon);
+                }
+                
+                li.appendChild(label);
+                list.appendChild(li);
             });
-            const isPremium = this.isPremiumActive();
-            const freeItems = !isPremium ? filteredItems.filter(id => this.isCardUnlocked(id)) : filteredItems;
-            const premiumItems = !isPremium ? [...new Set(filteredItems.filter(id => !this.isCardUnlocked(id)))] : [];
-            const premiumLabel = !isPremium && premiumItems.length ? `
-                <div class="ska-filterbar-premium-label">
-                    <span>Premium-Vorschau</span>
-                </div>` : '';
-            const premiumPreview = !isPremium && premiumItems.length ? `
-                <div class="ska-filterbar-premium-preview">
-                    ${premiumItems.map(id => {
-                        return `<label class="ska-filter-pill is-off is-locked"><input type="checkbox" disabled><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
-                    }).join('')}
-                </div>` : '';
-            const profileFilterLabel = filterByProfile ? 'Alle Boxen anzeigen' : 'Nur Profil spezifische Boxen anzeigen';
-            const profileFilterLink = `
-                <button class="ska-filterbar-profile-link ${filterByProfile ? 'is-active' : ''}" type="button" data-action="toggle-profile-filter">
-                    ${profileFilterLabel}
-                </button>`;
-            const layoutButton = isPremium
-                ? `<button class="ska-filterbar-toggle" data-action="open-layout-modal">Layout anpassen</button>`
-                : `<button class="ska-filterbar-toggle is-locked" data-action="open-layout-modal">Layout anpassen <span class="ska-premium-pill">Premium</span></button>`;
-            const html = `
-                <div class="ska-filterbar-header">
-                    <span>${title}</span>
-                    <div class="ska-filterbar-actions">
-                        ${layoutButton}
-                        <button class="ska-filterbar-toggle ska-filterbar-collapse" data-action="toggle-filter-collapse">${collapseLabel}</button>
-                    </div>
-                </div>
-                <div class="ska-filterbar-profile-row">
-                    ${profileFilterLink}
-                </div>
-                <div class="ska-filterbar-body">
-                    <div class="ska-filterbar-bulk">
-                        <div class="ska-filterbar-bulk-actions">
-                            <button class="ska-filterbar-bulk-btn" data-action="filter-select-all">Alle auswählen</button>
-                            <button class="ska-filterbar-bulk-btn" data-action="filter-deselect-all">Alle abwählen</button>
-                        </div>
-                    </div>
-                    ${freeItems.map(id => {
-                        const locked = !this.isCardUnlocked(id);
-                        let checked = !this.state.hiddenCards.has(id);
-                        if (allowed && !allowed.has(id)) {
-                            checked = checked && this.state.selectedExtraCards.has(id);
-                        }
-                        if (locked) checked = false;
-                        return `<label class="ska-filter-pill ${checked ? '' : 'is-off'} ${checked ? 'checked' : ''} ${locked ? 'is-locked' : ''}"><input type="checkbox" data-action="toggle-card" data-card="${id}" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''}><span>${SA_CONFIG.CARD_TITLES[id]}</span></label>`;
-                    }).join('')}
-                    ${premiumLabel}
-                    ${premiumPreview}
-                </div>`;
-            this.filterBar.innerHTML = html;
-            const profileLinkEl = this.filterBar.querySelector('.ska-filterbar-profile-link');
-            const profileRowEl = this.filterBar.querySelector('.ska-filterbar-profile-row');
-            const shouldShowProfile = !isGeneralProfile && isExpanded;
-            if (profileLinkEl) {
-                profileLinkEl.style.display = shouldShowProfile ? 'inline-flex' : 'none';
+            
+            dropdown.appendChild(list);
+            container.appendChild(btn);
+            container.appendChild(dropdown);
+            
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+            });
+            
+            if (this.layoutDropdownCloseHandler) {
+                document.removeEventListener('click', this.layoutDropdownCloseHandler);
             }
-            if (profileRowEl) {
-                profileRowEl.style.display = shouldShowProfile ? 'flex' : 'none';
-            }
+            this.layoutDropdownCloseHandler = (e) => {
+                if (!container.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            };
+            document.addEventListener('click', this.layoutDropdownCloseHandler);
+
+            return container;
         }
 
         ensureLayoutModal() {
@@ -10391,6 +10387,16 @@
                 delete this.settings.layoutOrderByProfile[normalized];
             }
             this.saveUIState();
+        }
+
+        getAllCardKeys() {
+            const profile = this.normalizeProfile(this.settings.role);
+            const toolCards = SA_CONFIG.TOOL_CARDS || [];
+            return this.getLayoutOrder(profile).filter(id => SA_CONFIG.CARD_TITLES[id] && !toolCards.includes(id) && this.isCardAvailable(id));
+        }
+
+        getCardTitle(id) {
+            return SA_CONFIG.CARD_TITLES[id] || id;
         }
 
         getEffectiveSettings() {
