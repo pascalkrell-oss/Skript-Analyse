@@ -2437,6 +2437,29 @@ body.skript-analyse-active .skript-analyse-container {
     font-size: 0.9rem;
     color: #475569;
 }
+.ska-checkout-fallback {
+    display: flex;
+    justify-content: center;
+    padding: 1.5rem 1.75rem 0;
+}
+.ska-checkout-fallback-card {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    max-width: 520px;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+    color: #9a3412;
+    display: grid;
+    gap: 0.75rem;
+}
+.ska-checkout-fallback-card strong {
+    font-size: 0.95rem;
+}
+.ska-checkout-fallback-card p {
+    margin: 0;
+    font-size: 0.9rem;
+}
 .ska-checkout-spinner {
     width: 22px;
     height: 22px;
