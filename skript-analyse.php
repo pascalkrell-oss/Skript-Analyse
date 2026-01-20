@@ -430,6 +430,11 @@ function ska_get_localized_config() {
         $plan_mode = $simulation_mode === 'premium' ? 'premium' : 'free';
     }
 
+    $unlock_enabled = true;
+    if ( current_user_can( 'manage_options' ) ) {
+        $unlock_enabled = ska_is_unlock_button_enabled();
+    }
+
     return array(
         'markers' => $markers_config,
         'pro' => $pro_mode,
@@ -442,7 +447,7 @@ function ska_get_localized_config() {
         'ajaxNonce' => wp_create_nonce( 'ska_analysis_nonce' ),
         'masquerade' => $masquerade,
         'globalAnnouncement' => ska_get_global_announcement(),
-        'unlockButtonEnabled' => ska_is_unlock_button_enabled(),
+        'unlockButtonEnabled' => $unlock_enabled,
         'algorithmTuning' => ska_get_algorithm_tuning_settings(),
         'maintenanceMode' => ska_is_maintenance_mode_enabled(),
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
@@ -1991,15 +1996,12 @@ function ska_ajax_get_plan_status() {
 }
 
 add_action( 'wp_ajax_ska_create_upgrade_order', 'ska_ajax_create_upgrade_order' );
+add_action( 'wp_ajax_nopriv_ska_create_upgrade_order', 'ska_ajax_create_upgrade_order' );
 function ska_ajax_create_upgrade_order() {
     check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
 
     if ( ! function_exists( 'wc_create_order' ) ) {
         wp_send_json_error( array( 'message' => 'WooCommerce nicht verfügbar.' ) );
-    }
-
-    if ( ! is_user_logged_in() ) {
-        wp_send_json_error( array( 'message' => 'Bitte zuerst einloggen.' ) );
     }
 
     $product_id = isset( $_POST['product_id'] ) ? absint( wp_unslash( $_POST['product_id'] ) ) : 0;
@@ -2021,7 +2023,10 @@ function ska_ajax_create_upgrade_order() {
     }
 
     $order->add_product( $product, 1 );
-    $order->set_customer_id( get_current_user_id() );
+    $customer_id = get_current_user_id();
+    if ( $customer_id ) {
+        $order->set_customer_id( $customer_id );
+    }
     $order->calculate_totals();
     $order->set_status( 'pending' );
     $order->update_meta_data( '_ska_upgrade_order', 1 );
