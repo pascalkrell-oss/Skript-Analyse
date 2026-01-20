@@ -533,7 +533,7 @@
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
                 { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
                 { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
-                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Studio" },
+                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Highlight" },
                 { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her.", featured: true, badge: "Highlight" },
                 { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true, badge: "Highlight" },
                 { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen.", featured: true, badge: "Highlight" },
@@ -3354,6 +3354,8 @@
                 filterByProfile: false,
                 planMode: initialPlanMode,
                 unlockButtonEnabled: unlockButtonEnabled,
+                checkoutRestoreInFlight: false,
+                planStatusPollId: null,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
                 teleprompter: {
@@ -3513,7 +3515,7 @@
         }
 
         getUserPlanStatus() {
-            return CURRENT_USER_PLAN;
+            return this.state && this.state.planMode ? this.state.planMode : CURRENT_USER_PLAN;
         }
 
         getAjaxUrl() {
@@ -3533,6 +3535,114 @@
                 }
             }
             return '';
+        }
+
+        getCheckoutBaseUrl() {
+            if (typeof window !== 'undefined') {
+                if (window.SKA_CONFIG_PHP?.checkoutUrl) {
+                    return window.SKA_CONFIG_PHP.checkoutUrl;
+                }
+                if (window.skriptAnalyseConfig?.checkoutUrl) {
+                    return window.skriptAnalyseConfig.checkoutUrl;
+                }
+            }
+            return '/kasse/';
+        }
+
+        restoreCheckoutCart() {
+            if (this.state.checkoutRestoreInFlight) return Promise.resolve(false);
+            const ajaxUrl = this.getAjaxUrl();
+            const nonce = this.getAjaxNonce();
+            if (!ajaxUrl || !nonce) return Promise.resolve(false);
+            this.state.checkoutRestoreInFlight = true;
+            const payload = new FormData();
+            payload.append('action', 'ska_restore_cart');
+            payload.append('nonce', nonce);
+            return fetch(ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: payload
+            }).then((response) => response.json())
+                .then((data) => Boolean(data && data.success))
+                .catch(() => false)
+                .finally(() => {
+                    this.state.checkoutRestoreInFlight = false;
+                });
+        }
+
+        fetchPlanStatus() {
+            const ajaxUrl = this.getAjaxUrl();
+            const nonce = this.getAjaxNonce();
+            if (!ajaxUrl || !nonce) return Promise.resolve(null);
+            const payload = new FormData();
+            payload.append('action', 'ska_get_plan_status');
+            payload.append('nonce', nonce);
+            return fetch(ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: payload
+            }).then((response) => response.json())
+                .then((data) => (data && data.success && data.data ? data.data.planStatus : null))
+                .catch(() => null);
+        }
+
+        applyPremiumActivation() {
+            if (this.isPremiumActive()) return;
+            this.state.planMode = 'premium';
+            if (typeof window !== 'undefined') {
+                if (window.SKA_CONFIG_PHP) {
+                    window.SKA_CONFIG_PHP.currentUserPlan = 'premium';
+                }
+                if (window.skriptAnalyseConfig) {
+                    window.skriptAnalyseConfig.currentUserPlan = 'premium';
+                }
+            }
+            this.updatePlanUI();
+            this.renderUpgradePanel();
+            this.renderFilterBar();
+            this.renderHiddenPanel();
+            this.analyze(this.getText());
+        }
+
+        startPlanStatusPolling() {
+            if (this.isPremiumActive()) return;
+            if (this.state.planStatusPollId) {
+                clearTimeout(this.state.planStatusPollId);
+                this.state.planStatusPollId = null;
+            }
+            const pollStart = Date.now();
+            const poll = () => {
+                this.fetchPlanStatus().then((status) => {
+                    if (status === 'premium') {
+                        this.applyPremiumActivation();
+                        this.showToast('Premium aktiv. Viel Erfolg!');
+                        this.state.planStatusPollId = null;
+                        return;
+                    }
+                    if (Date.now() - pollStart >= 60000) {
+                        this.showToast('Premium wird in Kürze aktiviert. Bitte Seite später neu laden.');
+                        this.state.planStatusPollId = null;
+                        return;
+                    }
+                    this.state.planStatusPollId = setTimeout(poll, 2000);
+                });
+            };
+            poll();
+        }
+
+        handleCheckoutSuccess(checkoutModal, iframe) {
+            const modal = checkoutModal || document.getElementById('ska-checkout-modal');
+            if (modal) {
+                SA_Utils.closeModal(modal, () => {
+                    document.body.classList.remove('ska-modal-open');
+                    if (iframe) {
+                        iframe.removeAttribute('src');
+                    }
+                });
+            }
+            this.restoreCheckoutCart();
+            this.showToast('Danke! Zahlung bestätigt. Premium wird jetzt freigeschaltet…');
+            this.startPlanStatusPolling();
         }
 
         setupProjectControls() {
@@ -7435,6 +7545,7 @@
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                         if (modal.id === 'ska-checkout-modal') {
+                            this.restoreCheckoutCart();
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
                         }
@@ -7466,6 +7577,7 @@
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                         if (modal.id === 'ska-checkout-modal') {
+                            this.restoreCheckoutCart();
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
                         }
@@ -10629,10 +10741,16 @@
         }
 
         getCheckoutModalUrl(productId, planId = null) {
-            const params = new URLSearchParams({
-                view: 'checkout_modal',
-                ska_iframe: '1'
-            });
+            const baseUrl = this.getCheckoutBaseUrl();
+            let url;
+            try {
+                url = new URL(baseUrl, window.location.origin);
+            } catch (error) {
+                url = new URL('/kasse/', window.location.origin);
+            }
+            const params = url.searchParams;
+            params.set('view', 'checkout_modal');
+            params.set('ska_iframe', '1');
             const planParam = this.getCheckoutPlanParam(productId, planId);
             if (planParam) {
                 params.set('ska_plan', planParam);
@@ -10640,7 +10758,8 @@
             if (productId) {
                 params.set('product_id', String(productId));
             }
-            return `/kasse/?${params.toString()}`;
+            url.search = params.toString();
+            return url.toString();
         }
 
         getCheckoutPlanMetaByProductId(productId) {
@@ -10819,6 +10938,9 @@
             modal.style.zIndex = '999999';
             const iframe = modal.querySelector('#ska-checkout-iframe');
             const loading = modal.querySelector('[data-role="checkout-loading"]');
+            if (iframe) {
+                iframe.dataset.checkoutSuccessHandled = 'false';
+            }
             const iframeLoaded = iframe && (iframe.dataset.checkoutLoaded === 'true');
             if (loading && !iframeLoaded) {
                 loading.style.display = 'flex';
@@ -10850,11 +10972,9 @@
                 }
                 if (/order-received|thank-you|danke/i.test(currentUrl)) {
                     if (!checkoutModal) return;
-                    SA_Utils.closeModal(checkoutModal, () => {
-                        document.body.classList.remove('ska-modal-open');
-                        iframe.removeAttribute('src');
-                    });
-                    window.location.reload();
+                    if (iframe.dataset.checkoutSuccessHandled === 'true') return;
+                    iframe.dataset.checkoutSuccessHandled = 'true';
+                    this.handleCheckoutSuccess(checkoutModal, iframe);
                 }
             };
         }
