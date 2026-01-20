@@ -2008,21 +2008,19 @@ function ska_ajax_get_plan_status() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT: ROBUST CART FLOW (FINAL)
+   SKA CHECKOUT: CART FLOW & NATIVE STYLING (FINAL STABLE)
    --------------------------------------------------------- */
 
 /**
- * 1. AJAX Handler: Start Checkout
- * Legt Produkt in den Warenkorb und gibt Checkout-URL zurück. Erstellt KEINE Order.
- * Liest sowohl $_POST als auch JSON-Input, um Fehler zu vermeiden.
+ * 1. AJAX Handler: "Freischalten" Button
+ * Legt Produkt in den Warenkorb und sendet URL zur Kasse.
  */
 add_action( 'wp_ajax_ska_create_upgrade_order', 'ska_create_upgrade_order' );
 add_action( 'wp_ajax_nopriv_ska_create_upgrade_order', 'ska_create_upgrade_order' );
 
 function ska_create_upgrade_order() {
-    // 1. Produkt ID sicher ermitteln (POST oder JSON)
     $product_id = 0;
-
+    // Support für JSON und POST
     if ( ! empty( $_POST['product_id'] ) ) {
         $product_id = absint( $_POST['product_id'] );
     } else {
@@ -2033,30 +2031,20 @@ function ska_create_upgrade_order() {
     }
 
     if ( ! $product_id ) {
-        wp_send_json_error( array( 'message' => 'Produkt-ID fehlt.' ) );
+        wp_send_json_error( array( 'message' => 'Fehler: Keine Produkt-ID.' ) );
     }
 
-    // 2. WooCommerce Check & Warenkorb Befüllung
     if ( function_exists( 'WC' ) && WC()->cart ) {
-        try {
-            WC()->cart->empty_cart();
-            WC()->cart->add_to_cart( $product_id );
-
-            // Erfolg: URL zur Kasse zurückgeben
-            wp_send_json_success( array(
-                'pay_url' => wc_get_checkout_url(),
-            ) );
-        } catch ( Exception $e ) {
-            wp_send_json_error( array( 'message' => $e->getMessage() ) );
-        }
+        WC()->cart->empty_cart();
+        WC()->cart->add_to_cart( $product_id );
+        wp_send_json_success( array( 'pay_url' => wc_get_checkout_url() ) );
     } else {
-        wp_send_json_error( array( 'message' => 'Warenkorb nicht verfügbar.' ) );
+        wp_send_json_error( array( 'message' => 'Warenkorb Fehler.' ) );
     }
 }
 
 /**
- * 2. Handler für Plan-Wechsel (im Checkout)
- * Tauscht das Produkt im Warenkorb aus und lädt die Kasse neu.
+ * 2. Plan-Switcher Handler
  */
 add_action( 'template_redirect', 'ska_handle_plan_switch' );
 
@@ -2066,8 +2054,6 @@ function ska_handle_plan_switch() {
     }
 
     $product_id = absint( $_GET['ska_switch_to'] );
-
-    // Validierung: Monthly (3128), Yearly (3130), Lifetime (3127)
     if ( ! in_array( $product_id, array( 3128, 3130, 3127 ) ) ) {
         return;
     }
@@ -2075,218 +2061,219 @@ function ska_handle_plan_switch() {
     if ( function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->empty_cart();
         WC()->cart->add_to_cart( $product_id );
-
-        // Reload zur Kasse
         wp_redirect( wc_get_checkout_url() );
         exit;
     }
 }
 
 /**
- * 3. Layout Injection & Styling
- * Passt den Standard-Checkout visuell an (2-Spalten, Icons, MwSt).
+ * 3. Header & Switcher via HOOK injizieren (Stabilste Methode)
  */
-add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
+add_action( 'woocommerce_before_checkout_form', 'ska_render_custom_checkout_header', 5 );
 
-function ska_inject_checkout_styles() {
-    // Nur auf Checkout Page, nicht Order Received
-    if ( ! is_checkout() || is_order_received_page() ) {
-        return;
-    }
-
-    // Prüfen, ob eines unserer Produkte im Cart ist
+function ska_render_custom_checkout_header() {
+    // Nur anzeigen, wenn eines unserer Produkte im Cart ist
+    $is_ska = false;
     $current_pid = 0;
-    if ( function_exists( 'WC' ) && WC()->cart ) {
+
+    if ( WC()->cart ) {
         foreach ( WC()->cart->get_cart() as $cart_item ) {
-            $current_pid = $cart_item['product_id'];
-            break;
+            if ( in_array( $cart_item['product_id'], array( 3128, 3130, 3127 ) ) ) {
+                $is_ska = true;
+                $current_pid = $cart_item['product_id'];
+                break;
+            }
         }
     }
 
-    // Wenn fremdes Produkt, Layout normal lassen
-    if ( ! in_array( $current_pid, array( 3128, 3130, 3127 ) ) ) {
+    if ( ! $is_ska ) {
         return;
     }
 
-    // Hilfsfunktion: Preis HTML + MwSt Suffix direkt generieren
-    $get_price_html = function( $pid ) {
-        $p = wc_get_product( $pid );
-        // Hinweis: Wir fügen das Suffix hart in den String ein für JS-Ersetzung
-        return $p ? $p->get_price_html() . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>' : '';
-    };
-
-    $price_m = $get_price_html( 3128 );
-    $price_y = $get_price_html( 3130 );
-    $price_l = $get_price_html( 3127 );
-
-    // Switch URLs
     $url_m = home_url( '/?ska_switch_to=3128' );
     $url_y = home_url( '/?ska_switch_to=3130' );
     $url_l = home_url( '/?ska_switch_to=3127' );
 
-    // Active State
     $cls_m = ( $current_pid == 3128 ) ? 'is-active' : '';
     $cls_y = ( $current_pid == 3130 ) ? 'is-active' : '';
     $cls_l = ( $current_pid == 3127 ) ? 'is-active' : '';
 
-    $icon_url = '[https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg](https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg)';
+    $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
+
+    $details_text = 'Abrechnung monatlich • Jederzeit kündbar';
+    if ( $current_pid == 3130 ) {
+        $details_text = 'Abrechnung jährlich (12 Monate)';
+    }
+    if ( $current_pid == 3127 ) {
+        $details_text = 'Einmalige Zahlung • Lebenslanger Zugriff';
+    }
+
+    ?>
+    <div class="ska-checkout-header-area">
+        <div class="ska-trust-badges">
+            <div class="trust-pill"><span class="icon">🔒</span> SSL Verschlüsselt</div>
+            <div class="trust-pill"><span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie</div>
+        </div>
+
+        <div class="ska-brand-header">
+            <h2>Skript-Analyse Tool Premium freischalten</h2>
+            <p class="ska-subhead">Maximiere deine Textqualität: Unbegrenzter Zugriff auf alle Profi-Analysen & Export-Funktionen.</p>
+        </div>
+
+        <div class="ska-plan-switch-container">
+            <div class="ska-plan-switch">
+                <a href="<?php echo $url_m; ?>" class="ska-switch-opt <?php echo $cls_m; ?>">Monatlich</a>
+                <a href="<?php echo $url_y; ?>" class="ska-switch-opt <?php echo $cls_y; ?>">Jährlich <span class="badge">-20%</span></a>
+                <a href="<?php echo $url_l; ?>" class="ska-switch-opt <?php echo $cls_l; ?>">Lifetime</a>
+            </div>
+            <div class="ska-plan-details-text"><?php echo $details_text; ?></div>
+        </div>
+
+        <div class="ska-benefits">
+            <ul>
+                <li>Unlimitierte Analysen</li>
+                <li>Export als PDF & Word</li>
+                <li>Erweiterter Grammatik-Check</li>
+                <li>Bevorzugter Support</li>
+                <li>Alle zukünftigen Updates</li>
+            </ul>
+        </div>
+
+        <style>
+            .ska-benefits li::before {
+                background-color: #1a93ee !important;
+                -webkit-mask-image: url('<?php echo $icon_url; ?>');
+                mask-image: url('<?php echo $icon_url; ?>');
+                -webkit-mask-size: contain;
+                mask-size: contain;
+                -webkit-mask-repeat: no-repeat;
+                mask-repeat: no-repeat;
+            }
+        </style>
+    </div>
+    <?php
+}
+
+/**
+ * 4. CSS Grid Layout & JS Tweaks
+ */
+add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
+
+function ska_inject_checkout_styles() {
+    if ( ! is_checkout() || is_order_received_page() ) {
+        return;
+    }
+
+    // Check ob SKA Produkt
+    $has_product = false;
+    if ( WC()->cart ) {
+        foreach ( WC()->cart->get_cart() as $item ) {
+            if ( in_array( $item['product_id'], array( 3128, 3130, 3127 ) ) ) {
+                $has_product = true;
+            }
+        }
+    }
+    if ( ! $has_product ) {
+        return;
+    }
+
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const checkoutForm = document.querySelector('form.checkout');
-        if (!checkoutForm) return;
-
-        // --- PREIS & TEXT DATEN ---
-        const pricing = {
-            '3128': '<?php echo addslashes($price_m); ?>',
-            '3130': '<?php echo addslashes($price_y); ?>',
-            '3127': '<?php echo addslashes($price_l); ?>'
-        };
-        const details = {
-            '3128': 'Abrechnung monatlich • Jederzeit kündbar',
-            '3130': 'Abrechnung jährlich (12 Monate)',
-            '3127': 'Einmalige Zahlung • Lebenslanger Zugriff'
-        };
-        const initialPid = '<?php echo $current_pid; ?>';
-        const initialDetail = details[initialPid] || details['3128'];
-
-        // --- DOM UMBAU (Split Layout) ---
-        const layoutWrapper = document.createElement('div');
-        layoutWrapper.className = 'ska-checkout-grid';
-
-        const leftCol = document.createElement('div');
-        leftCol.className = 'ska-col-left';
-
-        const rightCol = document.createElement('div');
-        rightCol.className = 'ska-col-right';
-
-        // Existierende Woo Elemente finden
-        const col2Set = document.querySelector('.col2-set') || document.getElementById('customer_details');
-        const orderReview = document.getElementById('order_review');
-        const orderReviewHeading = document.getElementById('order_review_heading');
-
-        // Custom Header HTML
-        const contentLeftHeader = `
-            <div class="ska-trust-badges">
-                <div class="trust-pill"><span class="icon">🔒</span> SSL Verschlüsselt</div>
-                <div class="trust-pill"><span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie</div>
-            </div>
-
-            <div class="ska-brand-header">
-                <h2>Skript-Analyse Tool Premium freischalten</h2>
-                <p class="ska-subhead">Maximiere deine Textqualität: Unbegrenzter Zugriff auf alle Profi-Analysen & Export-Funktionen.</p>
-            </div>
-
-            <div class="ska-plan-switch-container">
-                <div class="ska-plan-switch">
-                    <a href="<?php echo $url_m; ?>" data-pid="3128" class="ska-switch-opt <?php echo $cls_m; ?>">Monatlich</a>
-                    <a href="<?php echo $url_y; ?>" data-pid="3130" class="ska-switch-opt <?php echo $cls_y; ?>">Jährlich <span class="badge">-20%</span></a>
-                    <a href="<?php echo $url_l; ?>" data-pid="3127" class="ska-switch-opt <?php echo $cls_l; ?>">Lifetime</a>
-                </div>
-                <div id="ska-plan-details" class="ska-plan-details-text">${initialDetail}</div>
-            </div>
-
-            <div class="ska-benefits">
-                <ul>
-                    <li>Unlimitierte Analysen</li>
-                    <li>Export als PDF & Word</li>
-                    <li>Erweiterter Grammatik-Check</li>
-                    <li>Bevorzugter Support</li>
-                    <li>Alle zukünftigen Updates</li>
-                </ul>
-            </div>
-
-            <div class="ska-billing-fields-wrapper"></div>
-        `;
-
-        leftCol.innerHTML = contentLeftHeader;
-
-        // Adressfelder verschieben
-        if (col2Set) {
-            leftCol.querySelector('.ska-billing-fields-wrapper').appendChild(col2Set);
-        }
-
-        // Payment verschieben
-        if (orderReview) {
-            rightCol.appendChild(orderReview);
-        }
-        if (orderReviewHeading) orderReviewHeading.style.display = 'none';
-
-        layoutWrapper.appendChild(leftCol);
-        layoutWrapper.appendChild(rightCol);
-
-        // Ins Formular injecten
-        checkoutForm.innerHTML = '';
-        checkoutForm.appendChild(layoutWrapper);
-
-        // --- INTERACTION & RE-INJECTION ---
-        // Wenn WooCommerce per AJAX updated (z.B. bei Land-Wechsel), müssen wir unsere Tweaks erneuern
-        jQuery(document.body).on('updated_checkout', function(){
-            // MwSt Suffix wieder anhängen, falls es überschrieben wurde
-            const priceCell = document.querySelector('.product-total .amount')?.closest('td');
-            if (priceCell && !priceCell.querySelector('.ska-tax-suffix')) {
-                 priceCell.innerHTML += ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
-            }
+        // MwSt Helper
+        const appendTax = () => {
+            const amounts = document.querySelectorAll('.product-total .amount, .order-total .amount');
+            amounts.forEach(el => {
+                const cell = el.closest('td') || el.closest('.product-total');
+                if (cell && !cell.querySelector('.ska-tax-suffix')) {
+                    el.insertAdjacentHTML('afterend', ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>');
+                }
+            });
             // Button Style
             const btn = document.querySelector('#place_order');
             if (btn) {
-                btn.value = 'Zahlungspflichtig bestellen';
                 btn.textContent = 'Zahlungspflichtig bestellen';
                 btn.classList.add('ska-btn-rounded');
             }
-        });
+        };
 
-        // Trigger einmalig manuell nach Start
-        setTimeout(() => { jQuery(document.body).trigger('updated_checkout'); }, 200);
+        appendTax();
+        jQuery(document.body).on('updated_checkout', appendTax);
 
-        // Switcher Logik (Nur Links, aber mit Loading Effekt)
-        const switches = document.querySelectorAll('.ska-switch-opt');
-        switches.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                if (this.classList.contains('is-active')) { e.preventDefault(); return; }
-
-                rightCol.style.position = 'relative';
-                const overlay = document.createElement('div');
-                overlay.className = 'ska-loading-overlay';
-                overlay.innerHTML = '<div class="ska-spinner"></div>';
-                rightCol.appendChild(overlay);
+        // Loading State bei Switch
+        document.querySelectorAll('.ska-switch-opt').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (!el.classList.contains('is-active')) {
+                    document.body.style.opacity = '0.5';
+                    document.body.style.cursor = 'wait';
+                } else {
+                    e.preventDefault();
+                }
             });
         });
     });
     </script>
 
     <style>
+        /* HIDE Defaults */
         .entry-title, .page-title, h1.wp-block-post-title { display: none !important; }
+        .woocommerce-billing-fields h3 { font-size: 1.2rem; margin-top: 0; }
 
-        body.woocommerce-checkout {
-            background-color: #f8fafc;
-            font-family: 'Inter', system-ui, sans-serif;
-            color: #0f172a;
-        }
-        .woocommerce {
+        /* GRID LAYOUT SETUP */
+        body.woocommerce-checkout .woocommerce {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 50px;
             max-width: 1100px;
             margin: 120px auto 60px auto !important;
             padding: 0 20px;
-            position: relative;
-            display: block !important;
-        }
-        .ska-checkout-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 50px; align-items: start; }
-
-        /* MwSt */
-        .ska-tax-suffix {
-            display: inline-block; font-size: 0.75rem; color: #64748b; font-weight: 400; margin-left: 5px;
+            align-items: start;
         }
 
-        /* HEADER & BADGES */
+        /* 1. Header Area (Linke Spalte oben) */
+        .ska-checkout-header-area {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+
+        /* 2. Login/Coupons (Volle Breite ganz oben) */
+        .woocommerce-form-login-toggle, .woocommerce-form-coupon-toggle, .woocommerce-error, .woocommerce-message {
+            grid-column: 1 / -1;
+        }
+
+        /* 3. Das Checkout Formular (Muss contents sein damit Kinder im Grid sind) */
+        form.checkout.woocommerce-checkout {
+            display: contents;
+        }
+
+        /* 4. Linke Spalte (Adressen) - unter Header */
+        #customer_details, .col2-set {
+            grid-column: 1 / 2;
+            grid-row: 2 / 3;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* 5. Rechte Spalte (Payment) - Spannt über Header und Adressen */
+        #order_review_heading, #order_review {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+            background: white;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+            border: 1px solid #f1f5f9;
+        }
+        #order_review_heading { display: none; }
+
+        /* STYLES */
+        body { background-color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; color: #0f172a; }
+        .ska-tax-suffix { font-size: 0.75rem; color: #64748b; font-weight: normal; }
+
+        /* HEADER ELEMENTS */
         .ska-trust-badges { display: flex; gap: 12px; margin-bottom: 20px; }
-        .trust-pill {
-            display: flex; align-items: center; gap: 6px;
-            background: #f1f5f9; border: 1px solid #e2e8f0;
-            padding: 6px 12px; border-radius: 6px;
-            font-size: 0.8rem; color: #94a3b8; font-weight: 500;
-        }
-        .trust-pill .icon { font-size: 0.9rem; opacity: 0.8; }
-        .ska-brand-header h2 { font-size: 36px; line-height: 1.15; color: #0f172a; font-weight: 800; margin-bottom: 15px; border: none; text-align: left; }
+        .trust-pill { display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
+        .ska-brand-header h2 { font-size: 36px; line-height: 1.15; color: #0f172a; font-weight: 800; margin-bottom: 15px; border: none; text-align: left; margin-top: 0; }
         .ska-brand-header .ska-subhead { font-size: 1.1rem; color: #475569; margin-bottom: 35px; line-height: 1.5; }
 
         /* SWITCHER */
@@ -2298,21 +2285,12 @@ function ska_inject_checkout_styles() {
         .badge { background: #22c55e; color: white; font-size: 0.7rem; padding: 2px 7px; border-radius: 99px; margin-left: 5px; font-weight: 700; vertical-align: middle; }
         .ska-plan-details-text { margin-top: 12px; font-size: 0.85rem; color: #64748b; padding-left: 10px; }
 
-        /* BENEFITS & ICON */
+        /* BENEFITS */
         .ska-benefits ul { list-style: none !important; padding: 0; margin: 0 0 30px 0; }
         .ska-benefits li { position: relative; padding-left: 36px; margin-bottom: 14px; font-size: 1rem; color: #334155; line-height: 1.4; display: block; }
-        .ska-benefits li::before {
-            content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px;
-            background-color: #1a93ee !important;
-            -webkit-mask-image: url('<?php echo $icon_url; ?>'); mask-image: url('<?php echo $icon_url; ?>');
-            -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-        }
+        .ska-benefits li::before { content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px; }
 
-        /* BILLING & BUTTONS */
-        .ska-billing-fields-wrapper { margin-top: 30px; }
-        .ska-billing-fields-wrapper .col2-set { width: 100%; float: none; }
-        .ska-col-right { background: white; padding: 35px; border-radius: 24px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); border: 1px solid #f1f5f9; }
-
+        /* BUTTONS & TABLE */
         table.shop_table { width: 100%; border: none; margin: 0; }
         table.shop_table td, table.shop_table th { border: none; padding: 8px 0; text-align: left; background: transparent !important; }
         table.shop_table tr { border-bottom: 1px solid #f1f5f9; }
@@ -2329,20 +2307,15 @@ function ska_inject_checkout_styles() {
             font-size: 0.85rem !important; color: #94a3b8 !important; margin-bottom: 25px !important; margin-top: 20px !important; line-height: 1.5;
         }
 
-        .ska-loading-overlay {
-            position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8);
-            display: flex; justify-content: center; align-items: center; border-radius: 24px; z-index: 50;
-        }
-        .ska-spinner {
-            width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #1a93ee;
-            border-radius: 50%; animation: ska-spin 1s linear infinite;
-        }
-        @keyframes ska-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
+        /* MOBILE RESPONSIVE */
         @media (max-width: 900px) {
-            .woocommerce { margin-top: 80px !important; }
-            .ska-checkout-grid { grid-template-columns: 1fr; gap: 30px; }
-            .ska-col-right { order: 2; }
+            body.woocommerce-checkout .woocommerce {
+                grid-template-columns: 1fr;
+                margin-top: 80px !important;
+            }
+            .ska-checkout-header-area { grid-column: 1; grid-row: 1; }
+            #customer_details, .col2-set { grid-column: 1; grid-row: 2; }
+            #order_review { grid-column: 1; grid-row: 3; }
         }
     </style>
     <?php
