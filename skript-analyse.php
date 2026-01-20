@@ -2063,31 +2063,53 @@ function ska_ajax_create_upgrade_order() {
     );
 }
 
-/**
- * SKA: Modernes Styling für den "Pay for Order" Endpoint.
- * Verwandelt das Standard-WooCommerce Layout in eine zentrierte Payment-Card.
- */
 add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
 
 function ska_inject_checkout_styles() {
+    // Nur auf der Pay-Seite ausführen
     if ( ! is_checkout() || empty( $_GET['pay_for_order'] ) ) {
         return;
     }
+
+    // 1. URLs für die Plan-Wechsel (Erstellt neuen Checkout)
+    $url_monthly  = home_url( '/checkout/?add-to-cart=3128' ); 
+    $url_yearly   = home_url( '/checkout/?add-to-cart=3130' );
+    $url_lifetime = home_url( '/checkout/?add-to-cart=3127' );
+
+    // 2. Aktiven Plan erkennen (welches Produkt ist in DIESER Order?)
+    global $wp;
+    $order_id = $wp->query_vars['order-pay'];
+    $order = wc_get_order( $order_id );
+    $current_product_id = 0;
     
-    $switch_url_monthly = home_url('/?ska_checkout=monthly'); 
-    $switch_url_yearly  = home_url('/?ska_checkout=yearly');
+    if ( $order ) {
+        foreach ( $order->get_items() as $item ) {
+            $current_product_id = $item->get_product_id();
+            break; // Wir gehen von einem Hauptprodukt aus
+        }
+    }
+
+    // CSS Klassen für Active State
+    $cls_m = ( $current_product_id == 3128 ) ? 'is-active' : '';
+    $cls_y = ( $current_product_id == 3130 ) ? 'is-active' : '';
+    $cls_l = ( $current_product_id == 3127 ) ? 'is-active' : '';
+
+    // Fallback: Wenn keines matcht (z.B. altes Produkt), nimm Monthly als Default oder keinen
+    if ( ! $cls_m && ! $cls_y && ! $cls_l ) {
+        $cls_m = 'is-active'; 
+    }
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const body = document.body;
         if (!body.classList.contains('woocommerce-order-pay')) return;
 
-        const form = document.getElementById('order_review');
-        if (!form) return;
-        
+        const rightColContainer = document.getElementById('customer_details') || document.getElementById('order_review'); 
+        // Falls Theme anders strukturiert ist, suchen wir generisch:
         const wooContainer = document.querySelector('.woocommerce');
-        
-        // Neues Layout-Gerüst
+        if (!wooContainer) return;
+
+        // Grid Wrapper erstellen
         const layoutWrapper = document.createElement('div');
         layoutWrapper.className = 'ska-checkout-grid';
         
@@ -2097,7 +2119,9 @@ function ska_inject_checkout_styles() {
         const rightCol = document.createElement('div');
         rightCol.className = 'ska-col-right';
         
-        // Inhalte verschieben
+        // --- INHALTE VERSCHIEBEN ---
+        
+        // 1. Order Table (Zusammenfassung) nach links
         const orderTable = document.querySelector('table.shop_table');
         if (orderTable) {
              const summaryBox = document.createElement('div');
@@ -2107,148 +2131,269 @@ function ska_inject_checkout_styles() {
              leftCol.appendChild(summaryBox);
         }
 
+        // 2. Payment Box nach rechts
         const paymentBox = document.getElementById('payment');
         if (paymentBox) {
             rightCol.appendChild(paymentBox);
+            
+            // Button Text & Style anpassen
             const btn = rightCol.querySelector('#place_order');
             if(btn) {
-                btn.textContent = 'Jetzt Premium freischalten';
+                btn.value = 'Zahlungspflichtig bestellen';
+                btn.textContent = 'Zahlungspflichtig bestellen';
                 btn.classList.add('ska-btn-rounded');
             }
         }
 
-        // Linke Spalte Content
+        // --- HTML GENERIEREN (Linke Seite) ---
         const contentLeft = `
             <div class="ska-brand-header">
-                <h2>Erhalte Zugriff auf alle Analysen & Funktionen</h2>
-                <p class="ska-subhead">Entfessle das volle Potenzial deiner Texte mit professionellen Werkzeugen.</p>
+                <h2>Skript-Analyse Tool Premium freischalten</h2>
+                <p class="ska-subhead">Maximiere deine Textqualität: Unbegrenzter Zugriff auf alle Profi-Analysen & Export-Funktionen.</p>
             </div>
             
-            <div class="ska-plan-switch">
-                <a href="<?php echo $switch_url_monthly; ?>" class="ska-switch-opt">Monatlich</a>
-                <a href="<?php echo $switch_url_yearly; ?>" class="ska-switch-opt is-active">Jährlich <span class="badge">-20%</span></a>
+            <div class="ska-plan-switch-container">
+                <div class="ska-plan-switch">
+                    <a href="<?php echo $url_monthly; ?>" class="ska-switch-opt <?php echo $cls_m; ?>">Monatlich</a>
+                    <a href="<?php echo $url_yearly; ?>" class="ska-switch-opt <?php echo $cls_y; ?>">Jährlich <span class="badge">-20%</span></a>
+                    <a href="<?php echo $url_lifetime; ?>" class="ska-switch-opt <?php echo $cls_l; ?>">Lifetime</a>
+                </div>
+            </div>
+
+            <div class="ska-trust-badges">
+                <div class="trust-pill">
+                    <span class="icon">🔒</span> SSL Verschlüsselt
+                </div>
+                <div class="trust-pill">
+                    <span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie
+                </div>
             </div>
 
             <div class="ska-benefits">
                 <ul>
-                    <li><span class="icon">✓</span> Unlimitierte Analysen</li>
-                    <li><span class="icon">✓</span> Export als PDF & Word</li>
-                    <li><span class="icon">✓</span> Erweiterter Grammatik-Check</li>
-                    <li><span class="icon">✓</span> Bevorzugter Support</li>
+                    <li>Unlimitierte Analysen</li>
+                    <li>Export als PDF & Word</li>
+                    <li>Erweiterter Grammatik-Check</li>
+                    <li>Bevorzugter Support</li>
+                    <li>Alle zukünftigen Updates</li>
                 </ul>
-            </div>
-            
-            <div class="ska-trust">
-                <div class="trust-item">🔒 SSL Verschlüsselt</div>
-                <div class="trust-item">🛡 30 Tage Geld-zurück-Garantie</div>
             </div>
         `;
         
         leftCol.insertAdjacentHTML('afterbegin', contentLeft);
+
+        // Grid zusammensetzen
         layoutWrapper.appendChild(leftCol);
         layoutWrapper.appendChild(rightCol);
         
+        // Altes HTML ersetzen
         wooContainer.innerHTML = ''; 
         wooContainer.appendChild(layoutWrapper);
     });
     </script>
 
     <style>
-        /* Modern Reset */
+        /* TITELEI AUSBLENDEN */
+        .entry-title, 
+        .woocommerce-order-pay .page-title,
+        h1.wp-block-post-title { 
+            display: none !important; 
+        }
+
+        /* LAYOUT RESET */
         body.woocommerce-order-pay {
             background-color: #f8fafc;
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: #0f172a;
         }
-        
-        /* Container nicht floating, sondern mit Abstand im Flow */
+
+        /* Container Fixierung (Kein Fly) */
         .woocommerce { 
             max-width: 1100px; 
-            margin: 80px auto 40px auto !important; /* Genug Abstand zum Header */
+            margin: 60px auto !important; 
             padding: 0 20px; 
             position: relative;
+            display: block !important;
         }
 
         .ska-checkout-grid {
             display: grid;
-            grid-template-columns: 1fr 0.8fr;
-            gap: 60px;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 50px;
             align-items: start;
         }
 
-        /* TYPO */
+        /* HEADER & TYPO */
         .ska-brand-header h2 { 
             font-size: 36px; 
-            line-height: 1.2;
+            line-height: 1.15;
             color: #0f172a; 
             font-weight: 800; 
             margin-bottom: 15px;
+            border: none;
+            text-align: left;
         }
         .ska-brand-header .ska-subhead { 
             font-size: 1.1rem;
             color: #475569; 
-            margin-bottom: 40px;
+            margin-bottom: 35px;
             line-height: 1.5;
         }
 
-        /* BUTTONS (ROUND) */
-        .ska-switch-opt { border-radius: 99px; }
-        .badge { border-radius: 99px; }
+        /* SWITCHER */
+        .ska-plan-switch-container { margin-bottom: 25px; }
+        .ska-plan-switch {
+            display: inline-flex;
+            background: #e2e8f0;
+            padding: 5px;
+            border-radius: 99px;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        .ska-switch-opt {
+            padding: 10px 22px;
+            text-decoration: none !important;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 99px;
+            transition: all 0.2s;
+            border: none;
+            display: inline-block;
+        }
+        .ska-switch-opt:hover { color: #334155; background: rgba(255,255,255,0.5); }
+        .ska-switch-opt.is-active {
+            background: white !important;
+            color: #0f172a !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .badge {
+            background: #22c55e;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 99px;
+            margin-left: 5px;
+            vertical-align: middle;
+            font-weight: 700;
+        }
 
-        body.woocommerce-order-pay button,
-        body.woocommerce-order-pay .button,
-        body.woocommerce-order-pay input[type="submit"] {
-            border-radius: 99px !important;
+        /* TRUST BADGES */
+        .ska-trust-badges {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+        }
+        .trust-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        /* BENEFITS LIST & ICON */
+        .ska-benefits ul { 
+            list-style: none !important; 
+            padding: 0; 
+            margin: 0 0 30px 0; 
+        }
+        .ska-benefits li { 
+            position: relative;
+            padding-left: 36px;
+            margin-bottom: 14px; 
+            font-size: 1rem; 
+            color: #334155; 
+            line-height: 1.4;
+            display: block;
+        }
+        /* Custom SVG Checkmark */
+        .ska-benefits li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 2px;
+            width: 22px;
+            height: 22px;
+            background-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+        }
+
+        /* SUMMARY BOX */
+        .ska-summary-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        .ska-summary-box h3 { 
+            margin-top: 0; 
+            font-size: 0.9rem; 
+            text-transform: uppercase; 
+            color: #94a3b8; 
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+        table.shop_table { width: 100%; border: none; margin: 0; }
+        table.shop_table td, table.shop_table th { border: none; padding: 8px 0; text-align: left; }
+        table.shop_table tr { border-bottom: 1px solid #f1f5f9; }
+        table.shop_table tr:last-child { border-bottom: none; }
+
+        /* RECHTE SPALTE (PAYMENT) */
+        .ska-col-right {
+            background: white;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+            border: 1px solid #f1f5f9;
         }
         
+        #payment ul.payment_methods { border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; }
+        #payment div.payment_box {
+            background-color: #f8fafc;
+            color: #475569;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            padding: 15px;
+        }
+
+        /* PRIMARY BUTTON */
         #place_order, .ska-btn-rounded {
             border-radius: 99px !important;
-            padding: 18px 32px !important;
+            padding: 20px 32px !important;
             font-weight: 700 !important;
+            font-size: 1.1rem !important;
             background-color: #1a93ee !important;
             color: white !important;
             border: none !important;
             width: 100%;
+            margin-top: 25px;
             cursor: pointer;
-            transition: transform 0.2s;
+            box-shadow: 0 10px 20px -5px rgba(26, 147, 238, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        #place_order:hover { transform: scale(1.02); }
+        #place_order:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 15px 25px -5px rgba(26, 147, 238, 0.4);
+            background-color: #1578c2 !important; 
+        }
 
-        /* Restliche Styles (Switch, Boxen etc.) */
-        .ska-plan-switch {
-            display: inline-flex;
-            background: #e2e8f0;
-            padding: 4px;
-            border-radius: 99px;
-            margin-bottom: 40px;
-        }
-        .ska-switch-opt {
-            padding: 10px 24px;
-            text-decoration: none;
-            color: #64748b;
-            font-weight: 600;
-        }
-        .ska-switch-opt.is-active {
-            background: white;
-            color: #0f172a;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .ska-col-right {
-            background: white;
-            padding: 40px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
-        }
-        
-        /* Mobile */
+        /* MOBILE OPTIMIERUNG */
         @media (max-width: 900px) {
-            .ska-checkout-grid { grid-template-columns: 1fr; }
+            .ska-checkout-grid { grid-template-columns: 1fr; gap: 30px; }
+            .ska-col-right { order: 2; } /* Payment unter Info */
             .ska-brand-header h2 { font-size: 28px; }
+            .ska-plan-switch { width: 100%; justify-content: center; }
         }
-        
-        /* Header/Footer ausblenden optional, aber Platz lassen */
-        body.woocommerce-order-pay .site-header { margin-bottom: 0; }
     </style>
     <?php
 }
