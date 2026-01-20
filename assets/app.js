@@ -3792,16 +3792,15 @@
             const enabled = this.isUnlockButtonEnabled();
             buttons.forEach((button) => {
                 if (!button) return;
+                button.dataset.action = 'premium-checkout';
                 if (enabled) {
                     button.disabled = false;
                     button.classList.remove('is-disabled');
                     button.removeAttribute('aria-disabled');
-                    button.dataset.action = 'premium-checkout';
                 } else {
-                    button.disabled = true;
+                    button.disabled = false;
                     button.classList.add('is-disabled');
                     button.setAttribute('aria-disabled', 'true');
-                    button.removeAttribute('data-action');
                 }
             });
         }
@@ -5994,9 +5993,10 @@
                     event.preventDefault();
                 }
                 if (!this.isUnlockButtonEnabled()) {
+                    this.showToast('Checkout ist aktuell deaktiviert. Bitte später erneut versuchen.', true);
                     return true;
                 }
-                this.startCheckoutFlow();
+                this.startCheckoutFlow(btn);
                 return true;
             }
             if (act === 'premium-info') {
@@ -10570,25 +10570,54 @@
             }).then((response) => response.json());
         }
 
-        startCheckoutFlow() {
+        setCheckoutButtonLoading(button, isLoading) {
+            if (!button) return;
+            if (isLoading) {
+                if (button.dataset.loading === 'true') return;
+                button.dataset.loading = 'true';
+                button.dataset.originalLabel = button.innerHTML;
+                button.classList.add('is-loading');
+                button.setAttribute('aria-busy', 'true');
+                button.disabled = true;
+                button.innerHTML = '<span class="ska-checkout-spinner" aria-hidden="true"></span><span>Checkout wird vorbereitet…</span>';
+                return;
+            }
+            if (button.dataset.loading !== 'true') return;
+            button.classList.remove('is-loading');
+            button.removeAttribute('aria-busy');
+            if (button.dataset.originalLabel) {
+                button.innerHTML = button.dataset.originalLabel;
+                delete button.dataset.originalLabel;
+            }
+            delete button.dataset.loading;
+            button.disabled = false;
+        }
+
+        startCheckoutFlow(button = null) {
             if (!this.isUnlockButtonEnabled()) {
                 return;
             }
             this.trackMetric('unlock_click');
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
             const planKey = this.state.premiumPricePlan;
+            const checkoutButton = button || (this.root ? this.root.querySelector('.ska-premium-checkout-btn') : null);
             this.showToast('Checkout wird vorbereitet…');
+            this.setCheckoutButtonLoading(checkoutButton, true);
             this.createUpgradeOrder(productId, planKey)
                 .then((data) => {
                     if (!data || !data.success || !data.data?.pay_url) {
-                        const message = data?.data?.message || 'Checkout konnte nicht gestartet werden.';
+                        const message = data?.data?.message || data?.message || 'Checkout konnte nicht gestartet werden.';
                         this.showToast(message, true);
                         return;
                     }
                     window.location.href = data.data.pay_url;
                 })
-                .catch(() => {
-                    this.showToast('Checkout konnte nicht gestartet werden.', true);
+                .catch((error) => {
+                    const message = error && error.message ? error.message : 'Checkout konnte nicht gestartet werden.';
+                    this.showToast(message, true);
+                })
+                .finally(() => {
+                    this.setCheckoutButtonLoading(checkoutButton, false);
                 });
         }
 
