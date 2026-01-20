@@ -3354,7 +3354,6 @@
                 filterByProfile: false,
                 planMode: initialPlanMode,
                 unlockButtonEnabled: unlockButtonEnabled,
-                checkoutRestoreInFlight: false,
                 planStatusPollId: null,
                 premiumPricePlan: 'pro',
                 benchmark: { running: false, start: 0, elapsed: 0, wpm: 0, timerId: null },
@@ -3421,6 +3420,7 @@
             this.analysisUtilsRequested = false;
             this.isRestoring = false;
             this.overviewResizeObserver = null;
+            this.checkoutFallbackTimerId = null;
 
             this.loadUIState();
             this.syncProfileSelectOptions();
@@ -3546,28 +3546,7 @@
                     return window.skriptAnalyseConfig.checkoutUrl;
                 }
             }
-            return '/kasse/';
-        }
-
-        restoreCheckoutCart() {
-            if (this.state.checkoutRestoreInFlight) return Promise.resolve(false);
-            const ajaxUrl = this.getAjaxUrl();
-            const nonce = this.getAjaxNonce();
-            if (!ajaxUrl || !nonce) return Promise.resolve(false);
-            this.state.checkoutRestoreInFlight = true;
-            const payload = new FormData();
-            payload.append('action', 'ska_restore_cart');
-            payload.append('nonce', nonce);
-            return fetch(ajaxUrl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                body: payload
-            }).then((response) => response.json())
-                .then((data) => Boolean(data && data.success))
-                .catch(() => false)
-                .finally(() => {
-                    this.state.checkoutRestoreInFlight = false;
-                });
+            return window.location.origin;
         }
 
         fetchPlanStatus() {
@@ -3640,7 +3619,6 @@
                     }
                 });
             }
-            this.restoreCheckoutCart();
             this.showToast('Danke! Zahlung bestätigt. Premium wird jetzt freigeschaltet…');
             this.startPlanStatusPolling();
         }
@@ -4922,6 +4900,13 @@
                                         <span class="ska-checkout-spinner" aria-hidden="true"></span>
                                         <span>Zahlung wird geladen…</span>
                                     </div>
+                                    <div class="ska-checkout-fallback" data-role="checkout-fallback" hidden>
+                                        <div class="ska-checkout-fallback-card">
+                                            <strong>Hinweis</strong>
+                                            <p>Dein Zahlungsanbieter blockiert die Anzeige im eingebetteten Fenster. Öffne den Checkout in einem neuen Tab.</p>
+                                            <a class="ska-btn ska-btn--primary" data-role="checkout-fallback-link" href="${details.checkoutUrl}" target="_blank" rel="noopener">Checkout im neuen Tab öffnen</a>
+                                        </div>
+                                    </div>
                                     <iframe id="ska-checkout-iframe" class="ska-checkout-iframe" title="Checkout"></iframe>
                                 </div>
                             </div>
@@ -5001,6 +4986,7 @@
             const vatEl = modal.querySelector('[data-role="checkout-vat"]');
             const totalEl = modal.querySelector('[data-role="checkout-total"]');
             const checkoutLinkEl = modal.querySelector('[data-role="checkout-link"]');
+            const fallbackLinkEl = modal.querySelector('[data-role="checkout-fallback-link"]');
             if (nameEl) nameEl.textContent = details.productTitle;
             if (priceEl) priceEl.textContent = details.price;
             if (cycleEl) cycleEl.textContent = `Abrechnung: ${details.cycle}`;
@@ -5008,6 +4994,7 @@
             if (vatEl) vatEl.textContent = details.vat;
             if (totalEl) totalEl.textContent = details.total;
             if (checkoutLinkEl) checkoutLinkEl.setAttribute('href', details.checkoutUrl);
+            if (fallbackLinkEl) fallbackLinkEl.setAttribute('href', details.checkoutUrl);
 
             const planInputs = modal.querySelectorAll('input[name="checkout_plan"]');
             planInputs.forEach((input) => {
@@ -7545,7 +7532,6 @@
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                         if (modal.id === 'ska-checkout-modal') {
-                            this.restoreCheckoutCart();
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
                         }
@@ -7577,7 +7563,6 @@
                         }
                         if (modal.id === 'ska-sprint-editor-modal') this.stopWordSprint();
                         if (modal.id === 'ska-checkout-modal') {
-                            this.restoreCheckoutCart();
                             const iframe = modal.querySelector('#ska-checkout-iframe');
                             if (iframe) iframe.removeAttribute('src');
                         }
@@ -10746,7 +10731,7 @@
             try {
                 url = new URL(baseUrl, window.location.origin);
             } catch (error) {
-                url = new URL('/kasse/', window.location.origin);
+                url = new URL(window.location.origin);
             }
             const params = url.searchParams;
             params.set('view', 'checkout_modal');
@@ -10913,6 +10898,8 @@
             const iframe = modal.querySelector('#ska-checkout-iframe');
             if (!iframe || iframe.getAttribute('src')) return;
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
+            iframe.dataset.checkoutProductId = String(productId);
+            iframe.dataset.checkoutPlanId = this.state.premiumPricePlan;
             iframe.setAttribute('src', this.getCheckoutModalUrl(productId, this.state.premiumPricePlan));
             iframe.dataset.checkoutPreloaded = 'true';
             this.bindCheckoutIframe(iframe, null, modal);
@@ -10927,6 +10914,8 @@
             if (loading) loading.style.display = 'flex';
             this.bindCheckoutIframe(iframe, loading, checkoutModal);
             const planMeta = this.getCheckoutPlanMetaByProductId(productId);
+            iframe.dataset.checkoutProductId = String(planMeta?.productId || productId);
+            iframe.dataset.checkoutPlanId = planMeta?.planId || this.state.premiumPricePlan;
             iframe.setAttribute('src', this.getCheckoutModalUrl(productId, planMeta?.planId));
         }
 
@@ -10949,6 +10938,8 @@
                 this.bindCheckoutIframe(iframe, loading, modal);
                 if (!iframe.getAttribute('src')) {
                     const fallbackProductId = productId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
+                    iframe.dataset.checkoutProductId = String(fallbackProductId);
+                    iframe.dataset.checkoutPlanId = this.state.premiumPricePlan;
                     iframe.setAttribute('src', this.getCheckoutModalUrl(fallbackProductId, this.state.premiumPricePlan));
                 }
             }
@@ -10959,15 +10950,57 @@
         bindCheckoutIframe(iframe, loading, modal = null) {
             if (!iframe) return;
             const checkoutModal = modal || document.getElementById('ska-checkout-modal');
+            if (checkoutModal) {
+                const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
+                if (fallback) {
+                    fallback.hidden = true;
+                }
+            }
+            iframe.dataset.checkoutLoaded = 'false';
+            if (this.checkoutFallbackTimerId) {
+                clearTimeout(this.checkoutFallbackTimerId);
+            }
+            const fallbackUrl = this.getCheckoutModalUrl(
+                iframe.dataset.checkoutProductId || this.getPremiumCheckoutProductId(this.state.premiumPricePlan),
+                iframe.dataset.checkoutPlanId || this.state.premiumPricePlan
+            );
+            this.checkoutFallbackTimerId = setTimeout(() => {
+                let currentUrl = '';
+                let blocked = false;
+                try {
+                    currentUrl = iframe.contentWindow?.location?.href || '';
+                    blocked = !currentUrl || currentUrl === 'about:blank';
+                } catch (error) {
+                    blocked = true;
+                }
+                if (blocked && checkoutModal) {
+                    const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
+                    const fallbackLink = checkoutModal.querySelector('[data-role="checkout-fallback-link"]');
+                    if (fallbackLink) fallbackLink.setAttribute('href', fallbackUrl);
+                    if (fallback) fallback.hidden = false;
+                }
+            }, 2500);
             iframe.onload = () => {
                 if (loading) {
                     loading.style.display = 'none';
                 }
                 iframe.dataset.checkoutLoaded = 'true';
+                if (this.checkoutFallbackTimerId) {
+                    clearTimeout(this.checkoutFallbackTimerId);
+                    this.checkoutFallbackTimerId = null;
+                }
                 let currentUrl = '';
                 try {
                     currentUrl = iframe.contentWindow?.location?.href || '';
                 } catch (error) {
+                    return;
+                }
+                if (!currentUrl || currentUrl === 'about:blank') {
+                    if (!checkoutModal) return;
+                    const fallback = checkoutModal.querySelector('[data-role="checkout-fallback"]');
+                    const fallbackLink = checkoutModal.querySelector('[data-role="checkout-fallback-link"]');
+                    if (fallbackLink) fallbackLink.setAttribute('href', fallbackUrl);
+                    if (fallback) fallback.hidden = false;
                     return;
                 }
                 if (/order-received|thank-you|danke/i.test(currentUrl)) {

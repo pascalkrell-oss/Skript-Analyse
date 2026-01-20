@@ -11,6 +11,31 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
 
+function ska_is_iframe_checkout_context() {
+    return isset( $_GET['ska_iframe'] ) && $_GET['ska_iframe'] === '1';
+}
+
+add_filter( 'woocommerce_session_name', function( $name ) {
+    if ( ska_is_iframe_checkout_context() ) {
+        return $name . '_ska_iframe';
+    }
+    return $name;
+}, 20 );
+
+add_filter( 'woocommerce_cart_hash_key', function( $key ) {
+    if ( ska_is_iframe_checkout_context() ) {
+        return $key . '_ska_iframe';
+    }
+    return $key;
+}, 20 );
+
+add_filter( 'woocommerce_cart_cookie', function( $cookie ) {
+    if ( ska_is_iframe_checkout_context() ) {
+        return $cookie . '_ska_iframe';
+    }
+    return $cookie;
+}, 20 );
+
 function ska_normalize_plan_status( $value ) {
     $value = strtolower( (string) $value );
     if ( $value === 'premium' ) {
@@ -221,9 +246,9 @@ add_action( 'wp_enqueue_scripts', 'ska_register_assets' );
 
 add_action( 'template_redirect', function() {
     $is_checkout_modal = isset( $_GET['view'] ) && $_GET['view'] === 'checkout_modal';
-    $is_iframe_checkout = isset( $_GET['ska_iframe'] ) && $_GET['ska_iframe'] === '1';
+    $is_iframe_checkout = ska_is_iframe_checkout_context();
     $is_legacy_iframe = isset( $_GET['iframe_mode'] ) && $_GET['iframe_mode'] === '1' && isset( $_GET['embedded_checkout'] );
-    if ( ! $is_checkout_modal && ! $is_iframe_checkout && ! $is_legacy_iframe ) {
+    if ( ! $is_checkout_modal && ! $is_legacy_iframe ) {
         return;
     }
 
@@ -234,63 +259,13 @@ add_action( 'template_redirect', function() {
         $product_id = absint( wp_unslash( $_GET['add-to-cart'] ) );
     }
 
-    if ( $product_id && function_exists( 'WC' ) ) {
+    if ( $product_id && $is_iframe_checkout && function_exists( 'WC' ) ) {
         if ( null === WC()->cart ) {
             wc_load_cart();
         }
         if ( WC()->cart ) {
             $product = wc_get_product( $product_id );
             if ( $product && $product->is_purchasable() ) {
-                $session = WC()->session;
-                if ( $session ) {
-                    $existing_backup = $session->get( 'ska_cart_backup' );
-                    $backup_ts = (int) $session->get( 'ska_cart_backup_ts' );
-                    $is_expired = ! $backup_ts || ( time() - $backup_ts ) > ( 30 * MINUTE_IN_SECONDS );
-                    if ( empty( $existing_backup ) || $is_expired ) {
-                        $items = array();
-                        foreach ( WC()->cart->get_cart() as $cart_item ) {
-                            $cart_item_data = array();
-                            if ( isset( $cart_item['cart_item_data'] ) && is_array( $cart_item['cart_item_data'] ) ) {
-                                $cart_item_data = $cart_item['cart_item_data'];
-                            } else {
-                                $cart_item_data = $cart_item;
-                                $exclude_keys = array(
-                                    'key' => true,
-                                    'product_id' => true,
-                                    'variation_id' => true,
-                                    'variation' => true,
-                                    'quantity' => true,
-                                    'data' => true,
-                                    'data_hash' => true,
-                                    'line_total' => true,
-                                    'line_subtotal' => true,
-                                    'line_tax' => true,
-                                    'line_subtotal_tax' => true,
-                                    'line_tax_data' => true,
-                                    'line_total_tax' => true,
-                                );
-                                foreach ( $exclude_keys as $key => $unused ) {
-                                    unset( $cart_item_data[ $key ] );
-                                }
-                            }
-                            $items[] = array(
-                                'product_id' => isset( $cart_item['product_id'] ) ? (int) $cart_item['product_id'] : 0,
-                                'variation_id' => isset( $cart_item['variation_id'] ) ? (int) $cart_item['variation_id'] : 0,
-                                'quantity' => isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 1,
-                                'variation' => isset( $cart_item['variation'] ) && is_array( $cart_item['variation'] ) ? $cart_item['variation'] : array(),
-                                'cart_item_data' => $cart_item_data,
-                            );
-                        }
-                        $session->set(
-                            'ska_cart_backup',
-                            array(
-                                'items' => $items,
-                                'coupons' => WC()->cart->get_applied_coupons(),
-                            )
-                        );
-                        $session->set( 'ska_cart_backup_ts', time() );
-                    }
-                }
                 WC()->cart->empty_cart( true );
                 WC()->cart->add_to_cart( $product_id, 1 );
                 if ( method_exists( WC()->cart, 'remove_coupons' ) ) {
@@ -2011,52 +1986,6 @@ function ska_ajax_delete_project() {
     } else {
         wp_send_json_error( 'Fehler.' );
     }
-}
-
-add_action( 'wp_ajax_ska_restore_cart', 'ska_ajax_restore_cart' );
-function ska_ajax_restore_cart() {
-    check_ajax_referer( 'ska_analysis_nonce', 'nonce' );
-
-    if ( ! function_exists( 'WC' ) ) {
-        wp_send_json_success( array( 'restored' => false ) );
-    }
-
-    if ( null === WC()->cart ) {
-        wc_load_cart();
-    }
-
-    $session = WC()->session;
-    if ( ! $session || ! WC()->cart ) {
-        wp_send_json_success( array( 'restored' => false ) );
-    }
-
-    $backup = $session->get( 'ska_cart_backup' );
-    if ( empty( $backup ) || empty( $backup['items'] ) ) {
-        wp_send_json_success( array( 'restored' => false ) );
-    }
-
-    WC()->cart->empty_cart( true );
-    foreach ( $backup['items'] as $item ) {
-        $product_id = isset( $item['product_id'] ) ? (int) $item['product_id'] : 0;
-        $quantity = isset( $item['quantity'] ) ? (int) $item['quantity'] : 1;
-        $variation_id = isset( $item['variation_id'] ) ? (int) $item['variation_id'] : 0;
-        $variation = isset( $item['variation'] ) && is_array( $item['variation'] ) ? $item['variation'] : array();
-        $cart_item_data = isset( $item['cart_item_data'] ) && is_array( $item['cart_item_data'] ) ? $item['cart_item_data'] : array();
-        if ( $product_id ) {
-            WC()->cart->add_to_cart( $product_id, $quantity, $variation_id, $variation, $cart_item_data );
-        }
-    }
-
-    $coupons = isset( $backup['coupons'] ) && is_array( $backup['coupons'] ) ? $backup['coupons'] : array();
-    foreach ( $coupons as $coupon ) {
-        WC()->cart->apply_coupon( $coupon );
-    }
-    WC()->cart->calculate_totals();
-
-    $session->set( 'ska_cart_backup', null );
-    $session->set( 'ska_cart_backup_ts', null );
-
-    wp_send_json_success( array( 'restored' => true ) );
 }
 
 add_action( 'wp_ajax_ska_get_plan_status', 'ska_ajax_get_plan_status' );
