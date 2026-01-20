@@ -2008,12 +2008,11 @@ function ska_ajax_get_plan_status() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT: FORCE GRID LAYOUT & CART FLOW (THEME OVERRIDE)
+   SKA CHECKOUT: NUCLEAR GRID LAYOUT & DIRECT FLOW (FINAL)
    --------------------------------------------------------- */
 
 /**
- * 1. AJAX Handler: Start Checkout
- * Leert Warenkorb, fügt Produkt hinzu, Redirect zur Kasse.
+ * 1. AJAX Handler: Add to Cart & Redirect (Keine Order ID!)
  */
 add_action( 'wp_ajax_ska_create_upgrade_order', 'ska_create_upgrade_order' );
 add_action( 'wp_ajax_nopriv_ska_create_upgrade_order', 'ska_create_upgrade_order' );
@@ -2030,15 +2029,16 @@ function ska_create_upgrade_order() {
     }
 
     if ( ! $product_id ) {
-        wp_send_json_error( array( 'message' => 'Produkt ID fehlt' ) );
+        wp_send_json_error( array( 'message' => 'Produkt ID fehlt.' ) );
     }
 
     if ( function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->empty_cart();
         WC()->cart->add_to_cart( $product_id );
+        // Erzwinge URL zur Kasse
         wp_send_json_success( array( 'pay_url' => wc_get_checkout_url() ) );
     } else {
-        wp_send_json_error( array( 'message' => 'Shop Fehler' ) );
+        wp_send_json_error( array( 'message' => 'Warenkorb Fehler.' ) );
     }
 }
 
@@ -2065,12 +2065,12 @@ function ska_handle_plan_switch() {
 }
 
 /**
- * 3. Header Injection (Wird über dem Formular ausgegeben)
+ * 3. Header Content Injection (Wird ins Grid integriert)
  */
-add_action( 'woocommerce_before_checkout_form', 'ska_render_forced_checkout_header', 5 );
+add_action( 'woocommerce_before_checkout_form', 'ska_render_force_header', 5 );
 
-function ska_render_forced_checkout_header() {
-    // Prüfen ob SKA Produkt
+function ska_render_force_header() {
+    // Check ob SKA Produkt
     $current_pid = 0;
     if ( WC()->cart ) {
         foreach ( WC()->cart->get_cart() as $item ) {
@@ -2084,7 +2084,6 @@ function ska_render_forced_checkout_header() {
         return;
     }
 
-    // Daten
     $url_m = home_url( '/?ska_switch_to=3128' );
     $url_y = home_url( '/?ska_switch_to=3130' );
     $url_l = home_url( '/?ska_switch_to=3127' );
@@ -2103,8 +2102,7 @@ function ska_render_forced_checkout_header() {
 
     $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
     ?>
-
-    <div id="ska_custom_header_content" style="display:none;">
+    <div class="ska-checkout-header-wrapper">
         <div class="ska-trust-badges">
             <div class="trust-pill"><span class="icon">🔒</span> SSL Verschlüsselt</div>
             <div class="trust-pill"><span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie</div>
@@ -2145,39 +2143,11 @@ function ska_render_forced_checkout_header() {
             }
         </style>
     </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const headerContent = document.getElementById('ska_custom_header_content');
-        const checkoutForm = document.querySelector('form.checkout');
-
-        if (headerContent && checkoutForm) {
-            // Erstelle Wrapper in der Form, falls nicht existent
-            let wrapper = document.getElementById('ska_left_col_wrapper');
-            if (!wrapper) {
-                wrapper = document.createElement('div');
-                wrapper.id = 'ska_left_col_wrapper';
-                // Füge es ganz am Anfang der Form ein
-                checkoutForm.insertBefore(wrapper, checkoutForm.firstChild);
-            }
-
-            // Inhalt sichtbar machen und verschieben
-            headerContent.style.display = 'block';
-            wrapper.appendChild(headerContent);
-
-            // Adressfelder auch in diesen Wrapper verschieben
-            const col2Set = document.querySelector('.col2-set') || document.getElementById('customer_details');
-            if (col2Set) {
-                wrapper.appendChild(col2Set);
-            }
-        }
-    });
-    </script>
     <?php
 }
 
 /**
- * 4. CSS Force & Brutto Preise
+ * 4. CSS Grid Force & Brutto Preise Script
  */
 add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
 
@@ -2186,7 +2156,7 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // Check SKA Product
+    // Check Product
     $has_product = false;
     if ( WC()->cart ) {
         foreach ( WC()->cart->get_cart() as $item ) {
@@ -2199,13 +2169,15 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // Brutto Preise vorbereiten
+    // Brutto Preise berechnen
     $get_gross = function( $pid ) {
         $product = wc_get_product( $pid );
         if ( ! $product ) {
             return '';
         }
-        return wc_price( wc_get_price_including_tax( $product ) ) . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
+        // Preis inkl Steuer holen und formatieren
+        $price = wc_get_price_including_tax( $product );
+        return wc_price( $price ) . ' <small class="ska-tax-note">(inkl. MwSt.)</small>';
     };
     $p_m = $get_gross( 3128 );
     $p_y = $get_gross( 3130 );
@@ -2219,29 +2191,32 @@ function ska_inject_checkout_styles() {
             '3127': '<?php echo addslashes( $p_l ); ?>'
         };
 
+        // UI Update Loop (Wegen AJAX Reloads von WooCommerce)
         const updateUI = () => {
-            // Button
+            // Button Style
             const btn = document.querySelector('#place_order');
             if (btn) {
                 btn.textContent = 'Zahlungspflichtig bestellen';
                 btn.classList.add('ska-btn-rounded');
             }
-            // MwSt Suffix & Brutto Update in Tabelle
-            const amounts = document.querySelectorAll('.product-total .amount, .order-total .amount');
-            amounts.forEach(el => {
-                const cell = el.closest('td');
-                // Versuche, den Preis direkt zu ersetzen, wenn wir das aktive Produkt kennen
-                // (Hier etwas generisch gehalten, um Konflikte zu meiden)
-                if (cell && !cell.querySelector('.ska-tax-suffix')) {
-                    el.insertAdjacentHTML('afterend', ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>');
-                }
-            });
+
+            // Preise in der Tabelle überschreiben (falls sichtbar) oder in Total injecten
+            // Wir suchen nach .amount Elementen und setzen den Brutto Preis falls passend
+            // Hier simple Logik: Wenn wir die Total-Zeile finden, hängen wir MwSt Text an, falls nicht da.
+            // Besser: Wir nutzen die serverseitig berechneten Strings für Konsistenz.
+
+            // Da wir die Tabelle verstecken (siehe CSS), ist das wichtigste der Endbetrag im Button oder Payment Area.
+            // Woo zeigt Total oft unten an.
+            const totalAmount = document.querySelector('.order-total .amount');
+            if (totalAmount && !totalAmount.innerHTML.includes('MwSt')) {
+                totalAmount.innerHTML += ' <span class="ska-tax-note" style="font-size:0.6em; color:#777;">(inkl. MwSt.)</span>';
+            }
         };
 
         updateUI();
         jQuery(document.body).on('updated_checkout', updateUI);
 
-        // Switcher Visuals
+        // Switcher Loading
         document.querySelectorAll('.ska-switch-opt').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (!el.classList.contains('is-active')) {
@@ -2254,36 +2229,53 @@ function ska_inject_checkout_styles() {
     </script>
 
     <style>
-        /* HIDE Defaults & Title */
-        .entry-title, .page-title, h1.wp-block-post-title { display: none !important; }
+        /* HIDE Defaults & Theme Noise */
+        .entry-title, .page-title, h1.wp-block-post-title, .woocommerce-billing-fields > h3 { display: none !important; }
 
-        /* THEME OVERRIDE: Container */
+        /* THEME OVERRIDE: Container Reset */
+        body.woocommerce-checkout { background-color: #f8fafc !important; }
         .woocommerce {
             max-width: 1100px !important;
             margin: 100px auto 60px auto !important;
             width: 100% !important;
             padding: 0 20px !important;
+            display: block !important;
         }
 
-        /* GRID FORCE */
+        /* FORCE GRID LAYOUT ON FORM */
         form.checkout.woocommerce-checkout {
             display: grid !important;
             grid-template-columns: 1.2fr 0.8fr !important;
-            gap: 50px !important;
+            gap: 60px !important;
             align-items: start !important;
         }
 
-        /* LEFT COL (Wrapper via JS erstellt) */
-        #ska_left_col_wrapper {
+        /* --- LEFT COLUMN: Header & Address --- */
+
+        /* 1. Header (injiziert) */
+        .ska-checkout-header-wrapper {
             grid-column: 1 / 2 !important;
             grid-row: 1 / 2 !important;
-            width: 100% !important;
+            margin-bottom: 30px !important;
         }
 
-        /* RIGHT COL (Payment) */
+        /* 2. Adressen (Woo Standard Container) */
+        #customer_details, .col2-set {
+            grid-column: 1 / 2 !important;
+            grid-row: 2 / 3 !important;
+            width: 100% !important;
+            float: none !important;
+            margin: 0 !important;
+            display: block !important;
+        }
+        .col-1, .col-2 { max-width: 100% !important; width: 100% !important; float: none !important; }
+
+        /* --- RIGHT COLUMN: Payment --- */
+
+        /* Payment Box Sticky */
         #order_review_heading, #order_review {
             grid-column: 2 / 3 !important;
-            grid-row: 1 / 2 !important;
+            grid-row: 1 / 3 !important;
             width: 100% !important;
             background: white !important;
             padding: 35px !important;
@@ -2291,61 +2283,69 @@ function ska_inject_checkout_styles() {
             box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08) !important;
             border: 1px solid #f1f5f9 !important;
             margin-top: 0 !important;
+            position: sticky !important;
+            top: 20px !important;
         }
         #order_review_heading { display: none !important; }
 
-        /* Login etc. full width top */
-        .woocommerce-form-login-toggle, .woocommerce-form-coupon-toggle, .woocommerce-error, .woocommerce-message {
-            grid-column: 1 / -1 !important;
-            width: 100% !important;
-        }
-
-        /* Table Cleanup inside Payment Box */
+        /* WARENKORB TABELLE VERSTECKEN */
+        /* Wir blenden die detaillierte Tabelle aus, weil sie "Warenkorb-Feeling" gibt. */
+        /* Wir lassen nur das Payment Plugin und den Total sichtbar */
         #order_review table.shop_table {
             border: none !important;
-            margin: 0 0 20px 0 !important;
         }
-        #order_review table.shop_table thead { display: none !important; }
-        #order_review table.shop_table td, #order_review table.shop_table th {
-            border: none !important;
-            padding: 8px 0 !important;
-            background: transparent !important;
+        #order_review table.shop_table thead,
+        #order_review table.shop_table .cart_item {
+            display: none !important; /* Produkte ausblenden */
         }
-        #order_review table.shop_table tr {
-            border-bottom: 1px solid #f1f5f9 !important;
-        }
-        #order_review table.shop_table tr:last-child {
-            border-bottom: none !important;
+        #order_review table.shop_table tfoot th { display: none !important; } /* Labels weg */
+        #order_review table.shop_table tfoot tr { display: block !important; border: none !important; text-align: center !important; }
+        #order_review table.shop_table tfoot td { display: block !important; width: 100% !important; text-align: center !important; font-size: 1.5rem !important; font-weight: bold !important; color: #0f172a !important; padding: 0 0 20px 0 !important; }
+
+        /* Payment Methods Styling */
+        #payment { background: transparent !important; }
+        #payment ul.payment_methods { border-bottom: 1px solid #eee !important; padding-bottom: 20px !important; }
+
+        /* Login Message Full Width Top */
+        .woocommerce-form-login-toggle, .woocommerce-form-coupon-toggle, .woocommerce-error, .woocommerce-message {
+            grid-column: 1 / -1 !important; width: 100% !important;
         }
 
         /* UI Elements */
-        .ska-tax-suffix { font-size: 0.75rem; color: #64748b; font-weight: normal; }
         .ska-trust-badges { display: flex; gap: 12px; margin-bottom: 20px; }
         .trust-pill { display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
-        .ska-brand-header h2 { font-size: 32px; line-height: 1.2; color: #0f172a; font-weight: 800; margin: 0 0 15px 0; border: none; }
+        .ska-brand-header h2 { font-family: sans-serif; font-size: 32px; line-height: 1.2; color: #0f172a; font-weight: 800; margin: 0 0 15px 0; border: none; }
         .ska-brand-header .ska-subhead { font-size: 1.1rem; color: #475569; margin-bottom: 35px; line-height: 1.5; }
+
         .ska-plan-switch-container { margin-bottom: 25px; }
         .ska-plan-switch { display: inline-flex; background: #e2e8f0; padding: 5px; border-radius: 99px; flex-wrap: wrap; gap: 2px; }
-        .ska-switch-opt { padding: 10px 22px; text-decoration: none !important; color: #64748b; font-weight: 600; font-size: 0.95rem; border-radius: 99px; transition: all 0.2s; border: none; display: inline-block; }
+        .ska-switch-opt { padding: 12px 24px; text-decoration: none !important; color: #64748b; font-weight: 600; font-size: 0.95rem; border-radius: 99px; transition: all 0.2s; border: none; display: inline-block; cursor: pointer; }
         .ska-switch-opt:hover { color: #334155; background: rgba(255,255,255,0.5); }
         .ska-switch-opt.is-active { background: white !important; color: #0f172a !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .badge { background: #22c55e; color: white; font-size: 0.7rem; padding: 2px 7px; border-radius: 99px; margin-left: 5px; font-weight: 700; vertical-align: middle; }
         .ska-plan-details-text { margin-top: 12px; font-size: 0.85rem; color: #64748b; padding-left: 10px; }
-        .ska-benefits ul { list-style: none !important; padding: 0; margin: 0 0 30px 0; }
-        .ska-benefits li { position: relative; padding-left: 36px; margin-bottom: 14px; font-size: 1rem; color: #334155; line-height: 1.4; display: block; }
-        .ska-benefits li::before { content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px; }
+
+        .ska-benefits ul { list-style: none !important; padding: 0 !important; margin: 0 0 40px 0 !important; }
+        .ska-benefits li { position: relative; padding-left: 36px !important; margin-bottom: 14px !important; font-size: 1rem !important; color: #334155 !important; line-height: 1.4 !important; }
+        .ska-benefits li::before {
+            content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px;
+            background-color: #1a93ee !important;
+            -webkit-mask-image: url('<?php echo $icon_url; ?>'); mask-image: url('<?php echo $icon_url; ?>');
+            -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+        }
 
         #place_order {
-            border-radius: 99px !important; padding: 14px 24px !important; font-weight: 700 !important; font-size: 1rem !important;
-            background-color: #1a93ee !important; color: white !important; border: none !important; width: 100%; cursor: pointer;
-            box-shadow: none !important; float: none !important;
+            width: 100% !important;
+            border-radius: 99px !important; padding: 16px 24px !important; font-weight: 700 !important; font-size: 1.1rem !important;
+            background-color: #1a93ee !important; color: white !important; border: none !important; margin-top: 20px !important; float: none !important;
         }
         #place_order:hover { background-color: #1578c2 !important; }
 
         @media (max-width: 900px) {
             form.checkout.woocommerce-checkout { grid-template-columns: 1fr !important; margin-top: 80px !important; }
-            #ska_left_col_wrapper { grid-column: 1 !important; grid-row: 1 !important; }
-            #order_review { grid-column: 1 !important; grid-row: 2 !important; position: static !important; }
+            .ska-checkout-header-wrapper { grid-column: 1 !important; grid-row: 1 !important; }
+            #customer_details { grid-column: 1 !important; grid-row: 2 !important; }
+            #order_review { grid-column: 1 !important; grid-row: 3 !important; position: static !important; }
         }
     </style>
     <?php
