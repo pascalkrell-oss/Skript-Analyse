@@ -2066,12 +2066,12 @@ function ska_ajax_create_upgrade_order() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT FIX & OPTIMIERUNG
+   SKA CHECKOUT: HANDLER & LAYOUT (FINAL FIX v2)
    --------------------------------------------------------- */
 
 /**
  * 1. Handler für Plan-Wechsel
- * Beinhaltet Spam-Schutz (verhindert Order-Duplikate) & Sicherheits-Checks.
+ * Beinhaltet Spam-Schutz (Recycling existierender Pending-Orders).
  */
 add_action( 'template_redirect', 'ska_handle_plan_switch' );
 
@@ -2082,18 +2082,18 @@ function ska_handle_plan_switch() {
     }
 
     $product_id = absint( $_GET['ska_switch_to'] );
-
+    
     // Validierung: Monthly (3128), Yearly (3130), Lifetime (3127)
     if ( ! in_array( $product_id, array( 3128, 3130, 3127 ) ) ) {
         return;
     }
 
-    // Safety: WooCommerce muss aktiv sein
+    // Safety: WooCommerce Check
     if ( ! function_exists( 'WC' ) || ! function_exists( 'wc_get_orders' ) ) {
         return;
     }
 
-    // Fallback: Nicht eingeloggt -> Warenkorb
+    // Fallback: Nicht eingeloggt -> Warenkorb Flow
     if ( ! is_user_logged_in() ) {
         WC()->cart->empty_cart();
         WC()->cart->add_to_cart( $product_id );
@@ -2104,11 +2104,11 @@ function ska_handle_plan_switch() {
     $user_id = get_current_user_id();
 
     // --- SPAM SCHUTZ START ---
-    // Prüfen, ob bereits eine offene Bestellung ('pending') für dieses Produkt existiert.
-    // Wenn ja, leiten wir dorthin, statt eine neue zu erstellen.
+    // Wir suchen nach einer existierenden, unbezahlten Order für dieses Produkt.
+    // Wenn eine existiert, nutzen wir sie erneut, statt eine neue DB-Eintragung zu machen.
     $existing_orders = wc_get_orders( array(
-        'limit'       => 3, // Sicherheitshalber die letzten paar prüfen
-        'status'      => 'pending',
+        'limit'       => 5, 
+        'status'      => array( 'pending', 'failed' ), // Auch fehlgeschlagene Versuche recyclen
         'customer_id' => $user_id,
         'return'      => 'ids',
     ) );
@@ -2119,9 +2119,10 @@ function ska_handle_plan_switch() {
         foreach ( $existing_orders as $oid ) {
             $order_check = wc_get_order( $oid );
             if ( ! $order_check ) {
-                continue;
+                continue; 
             }
-
+            
+            // Prüfen ob das gewünschte Produkt in dieser Order ist
             foreach ( $order_check->get_items() as $item ) {
                 if ( $item->get_product_id() == $product_id ) {
                     $found_order_id = $oid;
@@ -2132,8 +2133,11 @@ function ska_handle_plan_switch() {
     }
 
     if ( $found_order_id ) {
+        // Recycelte Order nutzen -> Weiterleitung
         $order = wc_get_order( $found_order_id );
         if ( $order ) {
+            // Timestamp aktualisieren, damit sie "frisch" wirkt (optional)
+            wp_update_post( array( 'ID' => $found_order_id, 'post_date' => current_time( 'mysql' ) ) );
             wp_redirect( $order->get_checkout_payment_url() );
             exit;
         }
@@ -2143,17 +2147,16 @@ function ska_handle_plan_switch() {
     // Keine existierende Order gefunden -> Neue anlegen
     if ( function_exists( 'wc_create_order' ) ) {
         $order = wc_create_order();
-
+        
         if ( is_wp_error( $order ) || ! $order ) {
-            // Fehlerfall: Zurück zum normalen Checkout
-            wp_redirect( wc_get_checkout_url() );
+            wp_redirect( wc_get_checkout_url() ); 
             exit;
         }
 
         $order->add_product( wc_get_product( $product_id ), 1 );
         $order->set_customer_id( $user_id );
 
-        // Adressdaten kopieren (User Experience: Keine Felder ausfüllen)
+        // Adressdaten übernehmen (Auto-Fill)
         $billing_data = array(
             'first_name' => get_user_meta( $user_id, 'billing_first_name', true ),
             'last_name'  => get_user_meta( $user_id, 'billing_last_name', true ),
@@ -2163,14 +2166,13 @@ function ska_handle_plan_switch() {
             'city'       => get_user_meta( $user_id, 'billing_city', true ),
             'postcode'   => get_user_meta( $user_id, 'billing_postcode', true ),
         );
-
-        // Nur setzen wenn Daten da sind, verhindert Fehler
+        
         if ( ! empty( $billing_data['first_name'] ) ) {
             $order->set_address( $billing_data, 'billing' );
         }
 
         $order->calculate_totals();
-        $order->update_status( 'pending', 'Plan Switch initiated via SKA.' );
+        $order->update_status( 'pending', 'Ska Checkout Init' );
 
         // Weiterleitung zur Bezahlseite
         wp_redirect( $order->get_checkout_payment_url() );
@@ -2189,17 +2191,18 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // Safety Checks für Product Objects
+    // Safety Checks
     $p_monthly  = function_exists( 'wc_get_product' ) ? wc_get_product( 3128 ) : false;
     $p_yearly   = function_exists( 'wc_get_product' ) ? wc_get_product( 3130 ) : false;
     $p_lifetime = function_exists( 'wc_get_product' ) ? wc_get_product( 3127 ) : false;
 
+    // Preise holen
     $price_m = $p_monthly ? $p_monthly->get_price_html() : '';
     $price_y = $p_yearly ? $p_yearly->get_price_html() : '';
     $price_l = $p_lifetime ? $p_lifetime->get_price_html() : '';
 
     // Switch URLs
-    $url_m = home_url( '/?ska_switch_to=3128' );
+    $url_m = home_url( '/?ska_switch_to=3128' ); 
     $url_y = home_url( '/?ska_switch_to=3130' );
     $url_l = home_url( '/?ska_switch_to=3127' );
 
@@ -2207,7 +2210,7 @@ function ska_inject_checkout_styles() {
     global $wp;
     $order_id = isset( $wp->query_vars['order-pay'] ) ? $wp->query_vars['order-pay'] : 0;
     $current_pid = 0;
-
+    
     if ( $order_id && function_exists( 'wc_get_order' ) ) {
         $order = wc_get_order( $order_id );
         if ( $order ) {
@@ -2221,38 +2224,37 @@ function ska_inject_checkout_styles() {
     $cls_m = ( $current_pid == 3128 ) ? 'is-active' : '';
     $cls_y = ( $current_pid == 3130 ) ? 'is-active' : '';
     $cls_l = ( $current_pid == 3127 ) ? 'is-active' : '';
-
-    if ( ! $cls_m && ! $cls_y && ! $cls_l ) {
-        $cls_m = 'is-active';
-        $current_pid = 3128;
+    
+    if ( ! $cls_m && ! $cls_y && ! $cls_l ) { 
+        $cls_m = 'is-active'; 
+        $current_pid = 3128; 
     }
-
-    $icon_url = '[https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg](https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg)';
+    
+    $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const body = document.body;
-        // Sicherheitscheck: Sind wir auf der richtigen Seite?
+        // Check
         if (!body.classList.contains('woocommerce-order-pay')) return;
-        
         const wooContainer = document.querySelector('.woocommerce');
         if (!wooContainer) return;
 
         // --- PREIS & TEXT DATEN ---
         const pricing = {
-            3128: '<?php echo addslashes( $price_m ); ?>',
-            3130: '<?php echo addslashes( $price_y ); ?>',
-            3127: '<?php echo addslashes( $price_l ); ?>'
+            '3128': '<?php echo addslashes( $price_m ); ?>',
+            '3130': '<?php echo addslashes( $price_y ); ?>',
+            '3127': '<?php echo addslashes( $price_l ); ?>'
         };
         
         const details = {
-            3128: 'Abrechnung monatlich • Jederzeit kündbar • <strong>Inkl. MwSt.</strong>',
-            3130: 'Abrechnung jährlich (12 Monate) • <strong>Inkl. MwSt.</strong>',
-            3127: 'Einmalige Zahlung • Lebenslanger Zugriff • <strong>Inkl. MwSt.</strong>'
+            '3128': 'Abrechnung monatlich • Jederzeit kündbar • <strong>Inkl. MwSt.</strong>',
+            '3130': 'Abrechnung jährlich (12 Monate) • <strong>Inkl. MwSt.</strong>',
+            '3127': 'Einmalige Zahlung • Lebenslanger Zugriff • <strong>Inkl. MwSt.</strong>'
         };
         
         const initialPid = '<?php echo $current_pid; ?>';
-        const initialDetail = details[initialPid] || details[3128];
+        const initialDetail = details[initialPid] || details['3128'];
 
         // --- LAYOUT BAUEN ---
         const layoutWrapper = document.createElement('div');
@@ -2322,10 +2324,10 @@ function ska_inject_checkout_styles() {
         layoutWrapper.appendChild(leftCol);
         layoutWrapper.appendChild(rightCol);
         
-        wooContainer.innerHTML = '';
+        wooContainer.innerHTML = ''; 
         wooContainer.appendChild(layoutWrapper);
 
-        // --- INTERACTION LOGIK ---
+        // --- INTERACTION LOGIK (Live Update) ---
         const switches = document.querySelectorAll('.ska-switch-opt');
         const priceDisplay = document.querySelector('.product-total .amount') || document.querySelector('.order-total .amount');
         const detailText = document.getElementById('ska-plan-details');
@@ -2333,35 +2335,35 @@ function ska_inject_checkout_styles() {
         switches.forEach(btn => {
             btn.addEventListener('click', function(e) {
                 if (this.classList.contains('is-active')) {
-                    e.preventDefault();
-                    return;
+                    e.preventDefault(); 
+                    return; 
                 }
                 
-                // Visual Update
+                // 1. Visuelles Feedback
                 switches.forEach(s => s.classList.remove('is-active'));
                 this.classList.add('is-active');
 
                 const pid = this.getAttribute('data-pid');
                 
-                // Price Update
+                // 2. Preis Update (Tabelle)
                 if (pricing[pid] && priceDisplay) {
                     const cell = priceDisplay.closest('td');
                     if (cell) cell.innerHTML = pricing[pid];
                 }
 
-                // Text Update
+                // 3. Text Update (MwSt) - Mit innerHTML für <strong>
                 if (details[pid] && detailText) {
                     detailText.innerHTML = details[pid];
                 }
 
-                // Loading Spinner
+                // 4. Loading Spinner über Payment Box
                 rightCol.style.position = 'relative';
                 const overlay = document.createElement('div');
                 overlay.className = 'ska-loading-overlay';
                 overlay.innerHTML = '<div class="ska-spinner"></div>';
                 rightCol.appendChild(overlay);
 
-                // Redirect passiert automatisch durch href...
+                // 5. Redirect passiert automatisch durch href...
             });
         });
     });
@@ -2377,10 +2379,10 @@ function ska_inject_checkout_styles() {
             font-family: 'Inter', system-ui, sans-serif;
             color: #0f172a;
         }
-        .woocommerce {
-            max-width: 1100px;
-            margin: 120px auto 60px auto !important;
-            padding: 0 20px;
+        .woocommerce { 
+            max-width: 1100px; 
+            margin: 120px auto 60px auto !important; /* 120px Abstand */
+            padding: 0 20px; 
             position: relative;
             display: block !important;
         }
@@ -2399,11 +2401,11 @@ function ska_inject_checkout_styles() {
         .trust-pill .icon { font-size: 0.9rem; opacity: 0.8; }
 
         /* HEADER */
-        .ska-brand-header h2 {
-            font-size: 36px; line-height: 1.15; color: #0f172a; font-weight: 800;
+        .ska-brand-header h2 { 
+            font-size: 36px; line-height: 1.15; color: #0f172a; font-weight: 800; 
             margin-bottom: 15px; border: none; text-align: left;
         }
-        .ska-brand-header .ska-subhead {
+        .ska-brand-header .ska-subhead { 
             font-size: 1.1rem; color: #475569; margin-bottom: 35px; line-height: 1.5;
         }
 
@@ -2430,24 +2432,24 @@ function ska_inject_checkout_styles() {
             margin-top: 12px; font-size: 0.85rem; color: #64748b; padding-left: 10px;
         }
 
-        /* BENEFITS & ICON COLOR FIX */
+        /* BENEFITS & ICON COLOR FIX (CSS Mask) */
         .ska-benefits ul { list-style: none !important; padding: 0; margin: 0 0 30px 0; }
-        .ska-benefits li {
-            position: relative;
-            padding-left: 36px;
-            margin-bottom: 14px;
-            font-size: 1rem;
-            color: #334155;
-            line-height: 1.4;
+        .ska-benefits li { 
+            position: relative; 
+            padding-left: 36px; 
+            margin-bottom: 14px; 
+            font-size: 1rem; 
+            color: #334155; 
+            line-height: 1.4; 
             display: block;
         }
         /* CSS Maske um SVG einzufärben */
         .ska-benefits li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 22px;
+            content: ''; 
+            position: absolute; 
+            left: 0; 
+            top: 2px; 
+            width: 22px; 
             height: 22px;
             background-color: #1a93ee !important; /* Brand Blue */
             -webkit-mask-image: url('<?php echo $icon_url; ?>');
@@ -2467,13 +2469,14 @@ function ska_inject_checkout_styles() {
             background: #fff; padding: 20px; border-radius: 16px;
             border: 1px solid #e2e8f0; margin-bottom: 20px;
         }
-        .ska-summary-box h3 {
+        .ska-summary-box h3 { 
             margin-top: 0; font-size: 0.9rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 10px;
         }
         table.shop_table { width: 100%; border: none; margin: 0; }
         table.shop_table td, table.shop_table th { border: none; padding: 8px 0; text-align: left; }
         table.shop_table tr { border-bottom: 1px solid #f1f5f9; }
 
+        /* Button Optimierungen (Flat, No Lift) */
         #place_order, .ska-btn-rounded {
             border-radius: 99px !important;
             padding: 14px 24px !important;
@@ -2490,7 +2493,7 @@ function ska_inject_checkout_styles() {
         }
         #place_order:hover { background-color: #1578c2 !important; }
 
-        /* Legal Text */
+        /* Privacy Text Klein */
         .woocommerce-privacy-policy-text, .woocommerce-terms-and-conditions-wrapper, .wc-terms-and-conditions {
             font-size: 0.85rem !important; color: #94a3b8 !important;
             margin-bottom: 25px !important; margin-top: 20px !important; line-height: 1.5;
