@@ -13,7 +13,7 @@ define( 'SKA_VER', '4.75.9' );
 
 /**
  * SKA: Handle Plan Switch Request.
- * Leert den Warenkorb, fügt das neue Produkt hinzu und leitet zur Kasse.
+ * Erstellt eine neue Order und leitet direkt zum "Pay Link", um den Flow nicht zu unterbrechen.
  * URL: /?ska_switch_to=1234
  */
 add_action( 'template_redirect', 'ska_handle_plan_switch' );
@@ -24,24 +24,49 @@ function ska_handle_plan_switch() {
     }
 
     $product_id = absint( $_GET['ska_switch_to'] );
-
-    // Sicherheit: Nur erlaubte IDs (optional, aber gut)
-    // 3128 = Monthly, 3130 = Yearly, 3127 = Lifetime
-    if ( ! in_array( $product_id, array( 3128, 3130, 3127 ), true ) ) {
+    
+    // Validierung: Nur erlaubte IDs
+    if ( ! in_array( $product_id, array( 3128, 3130, 3127 ) ) ) {
         return;
     }
 
-    if ( function_exists( 'WC' ) ) {
-        // 1. Warenkorb leeren für sauberen Wechsel
-        WC()->cart->empty_cart();
-
-        // 2. Neues Produkt hinzufügen
-        WC()->cart->add_to_cart( $product_id );
-
-        // 3. Zur Kasse leiten (holt automatisch die richtige URL, egal ob /checkout oder /kasse)
-        wp_redirect( wc_get_checkout_url() );
-        exit;
+    if ( ! is_user_logged_in() ) {
+        // Fallback: Zum Login oder normalen Warenkorb, falls Session abgelaufen
+        if ( function_exists( 'WC' ) ) {
+            WC()->cart->empty_cart();
+            WC()->cart->add_to_cart( $product_id );
+            wp_redirect( wc_get_checkout_url() );
+            exit;
+        }
     }
+
+    $user_id = get_current_user_id();
+
+    // 1. Neue Order erstellen
+    $order = wc_create_order();
+    $order->add_product( wc_get_product( $product_id ), 1 );
+    $order->set_customer_id( $user_id );
+
+    // 2. Adressdaten vom User übernehmen (Wichtig für Pay-Page!)
+    // Wir holen die gespeicherte Billing-Address des Users
+    $billing_data = array(
+        'first_name' => get_user_meta( $user_id, 'billing_first_name', true ),
+        'last_name'  => get_user_meta( $user_id, 'billing_last_name', true ),
+        'email'      => get_user_meta( $user_id, 'billing_email', true ) ?: wp_get_current_user()->user_email,
+        'country'    => get_user_meta( $user_id, 'billing_country', true ) ?: 'DE',
+        'address_1'  => get_user_meta( $user_id, 'billing_address_1', true ),
+        'city'       => get_user_meta( $user_id, 'billing_city', true ),
+        'postcode'   => get_user_meta( $user_id, 'billing_postcode', true ),
+    );
+    $order->set_address( $billing_data, 'billing' );
+
+    // Summen berechnen & Status setzen
+    $order->calculate_totals();
+    $order->update_status( 'pending', 'Plan Switch initiated via SKA.' );
+
+    // 3. Weiterleitung direkt zur Bezahl-Seite der neuen Order
+    wp_redirect( $order->get_checkout_payment_url() );
+    exit;
 }
 
 function ska_normalize_plan_status( $value ) {
@@ -2104,35 +2129,32 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // --- NEUE URLs (nutzen den Handler oben) ---
-    $url_monthly  = home_url( '/?ska_switch_to=3128' );
+    // URLs triggern nun den Handler oben
+    $url_monthly  = home_url( '/?ska_switch_to=3128' ); 
     $url_yearly   = home_url( '/?ska_switch_to=3130' );
     $url_lifetime = home_url( '/?ska_switch_to=3127' );
 
     // Aktiven Plan erkennen
     global $wp;
-    $order_id = isset( $wp->query_vars['order-pay'] ) ? $wp->query_vars['order-pay'] : 0;
+    $order_id = isset($wp->query_vars['order-pay']) ? $wp->query_vars['order-pay'] : 0;
     $current_product_id = 0;
-
-    if ( $order_id && function_exists( 'wc_get_order' ) ) {
+    
+    if ( $order_id && function_exists('wc_get_order') ) {
         $order = wc_get_order( $order_id );
         if ( $order ) {
             foreach ( $order->get_items() as $item ) {
                 $current_product_id = $item->get_product_id();
-                break;
+                break; 
             }
         }
     }
 
-    // Active State Logik
     $cls_m = ( $current_product_id == 3128 ) ? 'is-active' : '';
     $cls_y = ( $current_product_id == 3130 ) ? 'is-active' : '';
     $cls_l = ( $current_product_id == 3127 ) ? 'is-active' : '';
-
-    // Fallback falls Produkt unbekannt (Default Monthly)
-    if ( ! $cls_m && ! $cls_y && ! $cls_l ) {
-        $cls_m = 'is-active';
-    }
+    
+    // Default Fallback
+    if ( ! $cls_m && ! $cls_y && ! $cls_l ) { $cls_m = 'is-active'; }
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -2152,7 +2174,7 @@ function ska_inject_checkout_styles() {
         const rightCol = document.createElement('div');
         rightCol.className = 'ska-col-right';
         
-        // --- 1. Order Table verschieben ---
+        // Move Elements
         const orderTable = document.querySelector('table.shop_table');
         if (orderTable) {
              const summaryBox = document.createElement('div');
@@ -2162,12 +2184,9 @@ function ska_inject_checkout_styles() {
              leftCol.appendChild(summaryBox);
         }
 
-        // --- 2. Payment Box verschieben ---
         const paymentBox = document.getElementById('payment');
         if (paymentBox) {
             rightCol.appendChild(paymentBox);
-            
-            // Button Styling
             const btn = rightCol.querySelector('#place_order');
             if(btn) {
                 btn.value = 'Zahlungspflichtig bestellen';
@@ -2176,7 +2195,7 @@ function ska_inject_checkout_styles() {
             }
         }
 
-        // --- 3. Linke Spalte HTML ---
+        // Left Content
         const contentLeft = `
             <div class="ska-brand-header">
                 <h2>Skript-Analyse Tool Premium freischalten</h2>
@@ -2192,12 +2211,8 @@ function ska_inject_checkout_styles() {
             </div>
 
             <div class="ska-trust-badges">
-                <div class="trust-pill">
-                    <span class="icon">🔒</span> SSL Verschlüsselt
-                </div>
-                <div class="trust-pill">
-                    <span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie
-                </div>
+                <div class="trust-pill"><span class="icon">🔒</span> SSL Verschlüsselt</div>
+                <div class="trust-pill"><span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie</div>
             </div>
 
             <div class="ska-benefits">
@@ -2215,19 +2230,17 @@ function ska_inject_checkout_styles() {
         layoutWrapper.appendChild(leftCol);
         layoutWrapper.appendChild(rightCol);
         
-        wooContainer.innerHTML = '';
+        wooContainer.innerHTML = ''; 
         wooContainer.appendChild(layoutWrapper);
     });
     </script>
 
     <style>
-        /* TITELEI AUSBLENDEN */
         .entry-title, .woocommerce-order-pay .page-title, h1.wp-block-post-title { display: none !important; }
 
-        /* BASIC SETUP */
         body.woocommerce-order-pay {
             background-color: #f8fafc;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             color: #0f172a;
         }
         .woocommerce { 
@@ -2238,7 +2251,6 @@ function ska_inject_checkout_styles() {
             display: block !important;
         }
 
-        /* GRID */
         .ska-checkout-grid {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
@@ -2246,7 +2258,6 @@ function ska_inject_checkout_styles() {
             align-items: start;
         }
 
-        /* TYPOGRAPHY */
         .ska-brand-header h2 { 
             font-size: 36px; 
             line-height: 1.15;
@@ -2254,7 +2265,6 @@ function ska_inject_checkout_styles() {
             font-weight: 800; 
             margin-bottom: 15px;
             border: none;
-            text-align: left;
         }
         .ska-brand-header .ska-subhead { 
             font-size: 1.1rem;
@@ -2263,7 +2273,6 @@ function ska_inject_checkout_styles() {
             line-height: 1.5;
         }
 
-        /* SWITCHER */
         .ska-plan-switch-container { margin-bottom: 25px; }
         .ska-plan-switch {
             display: inline-flex;
@@ -2297,76 +2306,39 @@ function ska_inject_checkout_styles() {
             padding: 2px 7px;
             border-radius: 99px;
             margin-left: 5px;
-            vertical-align: middle;
             font-weight: 700;
         }
 
-        /* TRUST BADGES */
-        .ska-trust-badges {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 35px;
-            flex-wrap: wrap;
-        }
+        .ska-trust-badges { display: flex; gap: 15px; margin-bottom: 35px; flex-wrap: wrap; }
         .trust-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            padding: 8px 16px;
-            border-radius: 99px;
-            font-size: 0.85rem;
-            color: #475569;
-            font-weight: 500;
+            display: flex; align-items: center; gap: 8px;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+            padding: 8px 16px; border-radius: 99px;
+            font-size: 0.85rem; color: #475569; font-weight: 500;
         }
 
-        /* BULLETS & ICON */
         .ska-benefits ul { list-style: none !important; padding: 0; margin: 0 0 30px 0; }
         .ska-benefits li { 
-            position: relative;
-            padding-left: 36px;
-            margin-bottom: 14px; 
-            font-size: 1rem; 
-            color: #334155; 
-            line-height: 1.4;
-            display: block;
+            position: relative; padding-left: 36px; margin-bottom: 14px; 
+            font-size: 1rem; color: #334155; line-height: 1.4; display: block;
         }
         .ska-benefits li::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 2px;
-            width: 22px;
-            height: 22px;
-            background-image: url('https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg');
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
+            content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px;
+            background-image: url('[https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg](https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg)');
+            background-repeat: no-repeat; background-position: center; background-size: contain;
         }
 
-        /* RIGHT COL & BUTTON */
         .ska-col-right {
-            background: white;
-            padding: 35px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
-            border: 1px solid #f1f5f9;
+            background: white; padding: 35px; border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); border: 1px solid #f1f5f9;
         }
         .ska-summary-box {
-            background: #fff;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 20px;
+            background: #fff; padding: 20px; border-radius: 16px;
+            border: 1px solid #e2e8f0; margin-bottom: 20px;
         }
         .ska-summary-box h3 { 
-            margin-top: 0; 
-            font-size: 0.9rem; 
-            text-transform: uppercase; 
-            color: #94a3b8; 
-            letter-spacing: 0.05em;
-            margin-bottom: 10px;
+            margin-top: 0; font-size: 0.9rem; text-transform: uppercase; 
+            color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 10px;
         }
         
         table.shop_table { width: 100%; border: none; margin: 0; }
@@ -2374,18 +2346,11 @@ function ska_inject_checkout_styles() {
         table.shop_table tr { border-bottom: 1px solid #f1f5f9; }
         
         #place_order, .ska-btn-rounded {
-            border-radius: 99px !important;
-            padding: 20px 32px !important;
-            font-weight: 700 !important;
-            font-size: 1.1rem !important;
-            background-color: #1a93ee !important;
-            color: white !important;
-            border: none !important;
-            width: 100%;
-            margin-top: 25px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px -5px rgba(26, 147, 238, 0.3);
-            transition: transform 0.2s;
+            border-radius: 99px !important; padding: 20px 32px !important;
+            font-weight: 700 !important; font-size: 1.1rem !important;
+            background-color: #1a93ee !important; color: white !important;
+            border: none !important; width: 100%; margin-top: 25px; cursor: pointer;
+            box-shadow: 0 10px 20px -5px rgba(26, 147, 238, 0.3); transition: transform 0.2s;
         }
         #place_order:hover { transform: translateY(-2px); background-color: #1578c2 !important; }
 
