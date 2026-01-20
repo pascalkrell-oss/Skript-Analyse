@@ -10594,26 +10594,41 @@
         }
 
         startCheckoutFlow(button = null) {
+            console.log('SKA: Starting checkout flow...');
+
             if (!this.isUnlockButtonEnabled()) {
+                console.warn('SKA: Checkout disabled by config.');
+                this.showToast('Checkout ist aktuell deaktiviert.', true);
                 return;
             }
+
+            // Tracking & Setup
             this.trackMetric('unlock_click');
             const productId = this.getPremiumCheckoutProductId(this.state.premiumPricePlan);
             const planKey = this.state.premiumPricePlan;
             const checkoutButton = button || (this.root ? this.root.querySelector('.ska-premium-checkout-btn') : null);
-            this.showToast('Checkout wird vorbereitet…');
+
+            // UI Feedback: Sofort anzeigen, dass etwas passiert
+            this.showToast('Checkout wird vorbereitet… einen Moment.');
             this.setCheckoutButtonLoading(checkoutButton, true);
+
             this.createUpgradeOrder(productId, planKey)
                 .then((data) => {
+                    console.log('SKA: Order creation response', data);
+
+                    // Validierung der Antwort
                     if (!data || !data.success || !data.data?.pay_url) {
-                        const message = data?.data?.message || data?.message || 'Checkout konnte nicht gestartet werden.';
+                        const message = data?.data?.message || data?.message || 'Fehler beim Starten des Checkouts.';
                         this.showToast(message, true);
                         return;
                     }
+
+                    // Erfolg: Weiterleitung
                     window.location.href = data.data.pay_url;
                 })
                 .catch((error) => {
-                    const message = error && error.message ? error.message : 'Checkout konnte nicht gestartet werden.';
+                    console.error('SKA: Checkout Error', error);
+                    const message = error && error.message ? error.message : 'Verbindungsfehler. Bitte erneut versuchen.';
                     this.showToast(message, true);
                 })
                 .finally(() => {
