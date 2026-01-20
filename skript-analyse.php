@@ -2008,12 +2008,12 @@ function ska_ajax_get_plan_status() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT: FINAL DIRECT FLOW & BRUTTO PRICES
+   SKA CHECKOUT: FORCE GRID LAYOUT & CART FLOW (THEME OVERRIDE)
    --------------------------------------------------------- */
 
 /**
- * 1. AJAX Handler: "Freischalten"
- * Leert Cart, fügt Produkt hinzu, gibt Checkout-URL zurück.
+ * 1. AJAX Handler: Start Checkout
+ * Leert Warenkorb, fügt Produkt hinzu, Redirect zur Kasse.
  */
 add_action( 'wp_ajax_ska_create_upgrade_order', 'ska_create_upgrade_order' );
 add_action( 'wp_ajax_nopriv_ska_create_upgrade_order', 'ska_create_upgrade_order' );
@@ -2036,7 +2036,6 @@ function ska_create_upgrade_order() {
     if ( function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->empty_cart();
         WC()->cart->add_to_cart( $product_id );
-        // Erzwinge Redirect zur Kasse
         wp_send_json_success( array( 'pay_url' => wc_get_checkout_url() ) );
     } else {
         wp_send_json_error( array( 'message' => 'Shop Fehler' ) );
@@ -2044,7 +2043,7 @@ function ska_create_upgrade_order() {
 }
 
 /**
- * 2. Switcher Handler
+ * 2. Switcher Handler (Redirect)
  */
 add_action( 'template_redirect', 'ska_handle_plan_switch' );
 
@@ -2052,32 +2051,31 @@ function ska_handle_plan_switch() {
     if ( empty( $_GET['ska_switch_to'] ) ) {
         return;
     }
-
-    $product_id = absint( $_GET['ska_switch_to'] );
-    if ( ! in_array( $product_id, array( 3128, 3130, 3127 ) ) ) {
+    $pid = absint( $_GET['ska_switch_to'] );
+    if ( ! in_array( $pid, array( 3128, 3130, 3127 ) ) ) {
         return;
     }
 
     if ( function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->empty_cart();
-        WC()->cart->add_to_cart( $product_id );
+        WC()->cart->add_to_cart( $pid );
         wp_redirect( wc_get_checkout_url() );
         exit;
     }
 }
 
 /**
- * 3. Header Injection (Links über Adressen)
+ * 3. Header Injection (Wird über dem Formular ausgegeben)
  */
-add_action( 'woocommerce_before_checkout_form', 'ska_render_checkout_top_content', 5 );
+add_action( 'woocommerce_before_checkout_form', 'ska_render_forced_checkout_header', 5 );
 
-function ska_render_checkout_top_content() {
-    // Check if valid product
+function ska_render_forced_checkout_header() {
+    // Prüfen ob SKA Produkt
     $current_pid = 0;
     if ( WC()->cart ) {
-        foreach ( WC()->cart->get_cart() as $cart_item ) {
-            if ( in_array( $cart_item['product_id'], array( 3128, 3130, 3127 ) ) ) {
-                $current_pid = $cart_item['product_id'];
+        foreach ( WC()->cart->get_cart() as $item ) {
+            if ( in_array( $item['product_id'], array( 3128, 3130, 3127 ) ) ) {
+                $current_pid = $item['product_id'];
                 break;
             }
         }
@@ -2086,6 +2084,7 @@ function ska_render_checkout_top_content() {
         return;
     }
 
+    // Daten
     $url_m = home_url( '/?ska_switch_to=3128' );
     $url_y = home_url( '/?ska_switch_to=3130' );
     $url_l = home_url( '/?ska_switch_to=3127' );
@@ -2094,18 +2093,18 @@ function ska_render_checkout_top_content() {
     $cls_y = ( $current_pid == 3130 ) ? 'is-active' : '';
     $cls_l = ( $current_pid == 3127 ) ? 'is-active' : '';
 
-    $details_text = 'Abrechnung monatlich • Jederzeit kündbar';
+    $details = 'Abrechnung monatlich • Jederzeit kündbar';
     if ( $current_pid == 3130 ) {
-        $details_text = 'Abrechnung jährlich (12 Monate)';
+        $details = 'Abrechnung jährlich (12 Monate)';
     }
     if ( $current_pid == 3127 ) {
-        $details_text = 'Einmalige Zahlung • Lebenslanger Zugriff';
+        $details = 'Einmalige Zahlung • Lebenslanger Zugriff';
     }
 
     $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
-
     ?>
-    <div class="ska-checkout-header-wrapper">
+
+    <div id="ska_custom_header_content" style="display:none;">
         <div class="ska-trust-badges">
             <div class="trust-pill"><span class="icon">🔒</span> SSL Verschlüsselt</div>
             <div class="trust-pill"><span class="icon">🛡</span> 30 Tage Geld-zurück-Garantie</div>
@@ -2122,7 +2121,7 @@ function ska_render_checkout_top_content() {
                 <a href="<?php echo $url_y; ?>" class="ska-switch-opt <?php echo $cls_y; ?>">Jährlich <span class="badge">-20%</span></a>
                 <a href="<?php echo $url_l; ?>" class="ska-switch-opt <?php echo $cls_l; ?>">Lifetime</a>
             </div>
-            <div class="ska-plan-details-text"><?php echo $details_text; ?></div>
+            <div class="ska-plan-details-text"><?php echo $details; ?></div>
         </div>
 
         <div class="ska-benefits">
@@ -2146,11 +2145,39 @@ function ska_render_checkout_top_content() {
             }
         </style>
     </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const headerContent = document.getElementById('ska_custom_header_content');
+        const checkoutForm = document.querySelector('form.checkout');
+
+        if (headerContent && checkoutForm) {
+            // Erstelle Wrapper in der Form, falls nicht existent
+            let wrapper = document.getElementById('ska_left_col_wrapper');
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.id = 'ska_left_col_wrapper';
+                // Füge es ganz am Anfang der Form ein
+                checkoutForm.insertBefore(wrapper, checkoutForm.firstChild);
+            }
+
+            // Inhalt sichtbar machen und verschieben
+            headerContent.style.display = 'block';
+            wrapper.appendChild(headerContent);
+
+            // Adressfelder auch in diesen Wrapper verschieben
+            const col2Set = document.querySelector('.col2-set') || document.getElementById('customer_details');
+            if (col2Set) {
+                wrapper.appendChild(col2Set);
+            }
+        }
+    });
+    </script>
     <?php
 }
 
 /**
- * 4. Styles & Brutto-Preise Script
+ * 4. CSS Force & Brutto Preise
  */
 add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
 
@@ -2159,7 +2186,7 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // Check Product
+    // Check SKA Product
     $has_product = false;
     if ( WC()->cart ) {
         foreach ( WC()->cart->get_cart() as $item ) {
@@ -2172,46 +2199,39 @@ function ska_inject_checkout_styles() {
         return;
     }
 
-    // PREISE BERECHNEN (BRUTTO)
-    // Wir nutzen wc_get_price_including_tax und wc_price zur Formatierung
-    $get_gross_price_html = function( $pid ) {
+    // Brutto Preise vorbereiten
+    $get_gross = function( $pid ) {
         $product = wc_get_product( $pid );
         if ( ! $product ) {
             return '';
         }
-        $price = wc_get_price_including_tax( $product );
-        return wc_price( $price ) . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
+        return wc_price( wc_get_price_including_tax( $product ) ) . ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>';
     };
-
-    $price_m = $get_gross_price_html( 3128 );
-    $price_y = $get_gross_price_html( 3130 );
-    $price_l = $get_gross_price_html( 3127 );
-
+    $p_m = $get_gross( 3128 );
+    $p_y = $get_gross( 3130 );
+    $p_l = $get_gross( 3127 );
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const pricing = {
-            '3128': '<?php echo addslashes( $price_m ); ?>',
-            '3130': '<?php echo addslashes( $price_y ); ?>',
-            '3127': '<?php echo addslashes( $price_l ); ?>'
-        };
-        const details = {
-            '3128': 'Abrechnung monatlich • Jederzeit kündbar',
-            '3130': 'Abrechnung jährlich (12 Monate)',
-            '3127': 'Einmalige Zahlung • Lebenslanger Zugriff'
+            '3128': '<?php echo addslashes( $p_m ); ?>',
+            '3130': '<?php echo addslashes( $p_y ); ?>',
+            '3127': '<?php echo addslashes( $p_l ); ?>'
         };
 
         const updateUI = () => {
-            // Button Style
+            // Button
             const btn = document.querySelector('#place_order');
             if (btn) {
                 btn.textContent = 'Zahlungspflichtig bestellen';
                 btn.classList.add('ska-btn-rounded');
             }
-            // MwSt Suffix in Order Review Tabelle
+            // MwSt Suffix & Brutto Update in Tabelle
             const amounts = document.querySelectorAll('.product-total .amount, .order-total .amount');
             amounts.forEach(el => {
                 const cell = el.closest('td');
+                // Versuche, den Preis direkt zu ersetzen, wenn wir das aktive Produkt kennen
+                // (Hier etwas generisch gehalten, um Konflikte zu meiden)
                 if (cell && !cell.querySelector('.ska-tax-suffix')) {
                     el.insertAdjacentHTML('afterend', ' <span class="ska-tax-suffix">(inkl. MwSt.)</span>');
                 }
@@ -2221,20 +2241,12 @@ function ska_inject_checkout_styles() {
         updateUI();
         jQuery(document.body).on('updated_checkout', updateUI);
 
-        // Switcher Logik (Preise auch in der Tabelle updaten, falls möglich)
+        // Switcher Visuals
         document.querySelectorAll('.ska-switch-opt').forEach(el => {
             el.addEventListener('click', (e) => {
                 if (!el.classList.contains('is-active')) {
                     document.body.style.opacity = '0.5';
                     document.body.style.cursor = 'wait';
-
-                    // Optional: Visual Feedback sofort
-                    const pid = el.getAttribute('data-pid');
-                    const detailEl = document.querySelector('.ska-plan-details-text');
-                    if (detailEl && details[pid]) {
-                        detailEl.textContent = details[pid];
-                    }
-
                 } else { e.preventDefault(); }
             });
         });
@@ -2242,65 +2254,76 @@ function ska_inject_checkout_styles() {
     </script>
 
     <style>
-        /* HIDE Defaults */
+        /* HIDE Defaults & Title */
         .entry-title, .page-title, h1.wp-block-post-title { display: none !important; }
 
-        /* LAYOUT FIX: Grid auf dem Formular erzwingen */
+        /* THEME OVERRIDE: Container */
+        .woocommerce {
+            max-width: 1100px !important;
+            margin: 100px auto 60px auto !important;
+            width: 100% !important;
+            padding: 0 20px !important;
+        }
+
+        /* GRID FORCE */
         form.checkout.woocommerce-checkout {
             display: grid !important;
             grid-template-columns: 1.2fr 0.8fr !important;
             gap: 50px !important;
-            max-width: 1100px;
-            margin: 60px auto !important;
-            align-items: start;
+            align-items: start !important;
         }
 
-        /* 1. Header Wrapper (Linke Spalte, Oben) */
-        .ska-checkout-header-wrapper {
-            grid-column: 1 / 2;
-            grid-row: 1 / 2;
-            margin-bottom: 30px;
-        }
-
-        /* 2. Adressen (Linke Spalte, Unten) */
-        #customer_details, .col2-set {
+        /* LEFT COL (Wrapper via JS erstellt) */
+        #ska_left_col_wrapper {
             grid-column: 1 / 2 !important;
-            grid-row: 2 / 3 !important;
+            grid-row: 1 / 2 !important;
             width: 100% !important;
-            float: none !important;
-            margin: 0 !important;
         }
 
-        /* 3. Payment (Rechte Spalte, Sticky) */
+        /* RIGHT COL (Payment) */
         #order_review_heading, #order_review {
             grid-column: 2 / 3 !important;
-            grid-row: 1 / 3 !important; /* Spannt über die ganze rechte Seite */
-            position: sticky;
-            top: 20px;
-            background: white;
-            padding: 35px;
-            border-radius: 24px;
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
-            border: 1px solid #f1f5f9;
+            grid-row: 1 / 2 !important;
             width: 100% !important;
-            float: none !important;
-            clear: none !important;
+            background: white !important;
+            padding: 35px !important;
+            border-radius: 24px !important;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08) !important;
+            border: 1px solid #f1f5f9 !important;
+            margin-top: 0 !important;
         }
-        #order_review_heading { display: none; }
+        #order_review_heading { display: none !important; }
 
-        /* Aufräumen */
-        .woocommerce-additional-fields { margin-top: 20px; }
-        .woocommerce-billing-fields h3 { margin-top: 0; font-size: 1.2rem; }
+        /* Login etc. full width top */
+        .woocommerce-form-login-toggle, .woocommerce-form-coupon-toggle, .woocommerce-error, .woocommerce-message {
+            grid-column: 1 / -1 !important;
+            width: 100% !important;
+        }
 
-        /* Design Styles */
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: #0f172a; }
+        /* Table Cleanup inside Payment Box */
+        #order_review table.shop_table {
+            border: none !important;
+            margin: 0 0 20px 0 !important;
+        }
+        #order_review table.shop_table thead { display: none !important; }
+        #order_review table.shop_table td, #order_review table.shop_table th {
+            border: none !important;
+            padding: 8px 0 !important;
+            background: transparent !important;
+        }
+        #order_review table.shop_table tr {
+            border-bottom: 1px solid #f1f5f9 !important;
+        }
+        #order_review table.shop_table tr:last-child {
+            border-bottom: none !important;
+        }
+
+        /* UI Elements */
         .ska-tax-suffix { font-size: 0.75rem; color: #64748b; font-weight: normal; }
-
         .ska-trust-badges { display: flex; gap: 12px; margin-bottom: 20px; }
         .trust-pill { display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
         .ska-brand-header h2 { font-size: 32px; line-height: 1.2; color: #0f172a; font-weight: 800; margin: 0 0 15px 0; border: none; }
         .ska-brand-header .ska-subhead { font-size: 1.1rem; color: #475569; margin-bottom: 35px; line-height: 1.5; }
-
         .ska-plan-switch-container { margin-bottom: 25px; }
         .ska-plan-switch { display: inline-flex; background: #e2e8f0; padding: 5px; border-radius: 99px; flex-wrap: wrap; gap: 2px; }
         .ska-switch-opt { padding: 10px 22px; text-decoration: none !important; color: #64748b; font-weight: 600; font-size: 0.95rem; border-radius: 99px; transition: all 0.2s; border: none; display: inline-block; }
@@ -2308,28 +2331,21 @@ function ska_inject_checkout_styles() {
         .ska-switch-opt.is-active { background: white !important; color: #0f172a !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .badge { background: #22c55e; color: white; font-size: 0.7rem; padding: 2px 7px; border-radius: 99px; margin-left: 5px; font-weight: 700; vertical-align: middle; }
         .ska-plan-details-text { margin-top: 12px; font-size: 0.85rem; color: #64748b; padding-left: 10px; }
-
         .ska-benefits ul { list-style: none !important; padding: 0; margin: 0 0 30px 0; }
         .ska-benefits li { position: relative; padding-left: 36px; margin-bottom: 14px; font-size: 1rem; color: #334155; line-height: 1.4; display: block; }
         .ska-benefits li::before { content: ''; position: absolute; left: 0; top: 2px; width: 22px; height: 22px; }
 
-        table.shop_table { width: 100%; border: none; margin: 0; }
-        table.shop_table td, table.shop_table th { border: none; padding: 8px 0; text-align: left; background: transparent !important; }
-        table.shop_table tr { border-bottom: 1px solid #f1f5f9; }
-        table.shop_table thead { display: none; }
-
-        #place_order, .ska-btn-rounded {
+        #place_order {
             border-radius: 99px !important; padding: 14px 24px !important; font-weight: 700 !important; font-size: 1rem !important;
             background-color: #1a93ee !important; color: white !important; border: none !important; width: 100%; cursor: pointer;
-            box-shadow: none !important; transition: background-color 0.2s ease !important; transform: none !important; float: none !important;
+            box-shadow: none !important; float: none !important;
         }
         #place_order:hover { background-color: #1578c2 !important; }
 
         @media (max-width: 900px) {
             form.checkout.woocommerce-checkout { grid-template-columns: 1fr !important; margin-top: 80px !important; }
-            .ska-checkout-header-wrapper { grid-column: 1; grid-row: 1; }
-            #customer_details, .col2-set { grid-column: 1; grid-row: 2 !important; }
-            #order_review { grid-column: 1; grid-row: 3 !important; position: static; }
+            #ska_left_col_wrapper { grid-column: 1 !important; grid-row: 1 !important; }
+            #order_review { grid-column: 1 !important; grid-row: 2 !important; position: static !important; }
         }
     </style>
     <?php
