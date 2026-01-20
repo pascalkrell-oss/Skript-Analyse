@@ -2070,107 +2070,185 @@ function ska_ajax_create_upgrade_order() {
 add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
 
 function ska_inject_checkout_styles() {
-    // Nur anwenden, wenn wir auf der "Order Pay" Seite sind
     if ( ! is_checkout() || empty( $_GET['pay_for_order'] ) ) {
         return;
     }
+    
+    $switch_url_monthly = home_url('/?ska_checkout=monthly'); 
+    $switch_url_yearly  = home_url('/?ska_checkout=yearly');
     ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const body = document.body;
+        if (!body.classList.contains('woocommerce-order-pay')) return;
+
+        const form = document.getElementById('order_review');
+        if (!form) return;
+        
+        const wooContainer = document.querySelector('.woocommerce');
+        
+        // Neues Layout-Gerüst
+        const layoutWrapper = document.createElement('div');
+        layoutWrapper.className = 'ska-checkout-grid';
+        
+        const leftCol = document.createElement('div');
+        leftCol.className = 'ska-col-left';
+        
+        const rightCol = document.createElement('div');
+        rightCol.className = 'ska-col-right';
+        
+        // Inhalte verschieben
+        const orderTable = document.querySelector('table.shop_table');
+        if (orderTable) {
+             const summaryBox = document.createElement('div');
+             summaryBox.className = 'ska-summary-box';
+             summaryBox.innerHTML = '<h3>Deine Auswahl</h3>';
+             summaryBox.appendChild(orderTable);
+             leftCol.appendChild(summaryBox);
+        }
+
+        const paymentBox = document.getElementById('payment');
+        if (paymentBox) {
+            rightCol.appendChild(paymentBox);
+            const btn = rightCol.querySelector('#place_order');
+            if(btn) {
+                btn.textContent = 'Jetzt Premium freischalten';
+                btn.classList.add('ska-btn-rounded');
+            }
+        }
+
+        // Linke Spalte Content
+        const contentLeft = `
+            <div class="ska-brand-header">
+                <h2>Erhalte Zugriff auf alle Analysen & Funktionen</h2>
+                <p class="ska-subhead">Entfessle das volle Potenzial deiner Texte mit professionellen Werkzeugen.</p>
+            </div>
+            
+            <div class="ska-plan-switch">
+                <a href="<?php echo $switch_url_monthly; ?>" class="ska-switch-opt">Monatlich</a>
+                <a href="<?php echo $switch_url_yearly; ?>" class="ska-switch-opt is-active">Jährlich <span class="badge">-20%</span></a>
+            </div>
+
+            <div class="ska-benefits">
+                <ul>
+                    <li><span class="icon">✓</span> Unlimitierte Analysen</li>
+                    <li><span class="icon">✓</span> Export als PDF & Word</li>
+                    <li><span class="icon">✓</span> Erweiterter Grammatik-Check</li>
+                    <li><span class="icon">✓</span> Bevorzugter Support</li>
+                </ul>
+            </div>
+            
+            <div class="ska-trust">
+                <div class="trust-item">🔒 SSL Verschlüsselt</div>
+                <div class="trust-item">🛡 30 Tage Geld-zurück-Garantie</div>
+            </div>
+        `;
+        
+        leftCol.insertAdjacentHTML('afterbegin', contentLeft);
+        layoutWrapper.appendChild(leftCol);
+        layoutWrapper.appendChild(rightCol);
+        
+        wooContainer.innerHTML = ''; 
+        wooContainer.appendChild(layoutWrapper);
+    });
+    </script>
+
     <style>
-        /* Modernes SaaS Layout Reset */
+        /* Modern Reset */
         body.woocommerce-order-pay {
-            background-color: #f1f5f9; /* Slate-100 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: #0f172a;
         }
-
-        /* Verstecke störende Theme-Elemente (Header/Footer können je nach Theme variieren, hier ein Versuch den Fokus zu halten) */
-        body.woocommerce-order-pay .site-header,
-        body.woocommerce-order-pay .site-footer,
-        body.woocommerce-order-pay header,
-        body.woocommerce-order-pay footer {
-            opacity: 0.5; /* Dezent im Hintergrund oder ganz ausblenden mit display: none */
-        }
-
-        /* Hauptcontainer zentrieren und als Karte stylen */
-        body.woocommerce-order-pay .woocommerce {
-            max-width: 600px;
-            margin: 40px auto;
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        
+        /* Container nicht floating, sondern mit Abstand im Flow */
+        .woocommerce { 
+            max-width: 1100px; 
+            margin: 80px auto 40px auto !important; /* Genug Abstand zum Header */
+            padding: 0 20px; 
             position: relative;
-            z-index: 100;
         }
 
-        /* Überschriften */
-        body.woocommerce-order-pay h1,
-        body.woocommerce-order-pay h2,
-        body.woocommerce-order-pay h3 {
-            font-weight: 700;
-            color: #1e293b;
-            text-align: center;
-            border: none !important;
+        .ska-checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 0.8fr;
+            gap: 60px;
+            align-items: start;
         }
 
-        /* Bestell-Tabelle aufräumen */
-        table.shop_table {
-            border: none !important;
-            border-radius: 8px;
-            background: #f8fafc;
-            margin-bottom: 2rem !important;
-            width: 100%;
+        /* TYPO */
+        .ska-brand-header h2 { 
+            font-size: 36px; 
+            line-height: 1.2;
+            color: #0f172a; 
+            font-weight: 800; 
+            margin-bottom: 15px;
         }
-        table.shop_table th,
-        table.shop_table td {
-            border: none !important;
-            padding: 12px 16px !important;
-            font-size: 0.95rem;
-        }
-        table.shop_table thead { display: none; } /* Header weg für cleaneren Look */
-        table.shop_table tr { border-bottom: 1px solid #e2e8f0; }
-        table.shop_table tr:last-child { border-bottom: none; }
-
-        /* Payment Box */
-        #payment {
-            background: #fff !important;
-            border-radius: 8px;
-        }
-        #payment ul.payment_methods {
-            border-bottom: 1px solid #e2e8f0 !important;
-            padding: 0 0 20px 0 !important;
-        }
-        #payment div.payment_box {
-            background-color: #f1f5f9 !important;
-            color: #475569 !important;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        .ska-brand-header .ska-subhead { 
+            font-size: 1.1rem;
+            color: #475569; 
+            margin-bottom: 40px;
+            line-height: 1.5;
         }
 
-        /* Der Bezahlen Button - Groß und Auffällig */
-        #place_order {
-            width: 100%;
-            display: block;
-            background-color: #1a93ee !important; /* Plugin Primary Color */
+        /* BUTTONS (ROUND) */
+        .ska-switch-opt { border-radius: 99px; }
+        .badge { border-radius: 99px; }
+
+        body.woocommerce-order-pay button,
+        body.woocommerce-order-pay .button,
+        body.woocommerce-order-pay input[type="submit"] {
+            border-radius: 99px !important;
+        }
+        
+        #place_order, .ska-btn-rounded {
+            border-radius: 99px !important;
+            padding: 18px 32px !important;
+            font-weight: 700 !important;
+            background-color: #1a93ee !important;
             color: white !important;
-            padding: 16px 24px !important;
-            font-size: 1.1rem !important;
-            font-weight: 600 !important;
-            border-radius: 8px !important;
             border: none !important;
+            width: 100%;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 20px;
-            text-transform: none !important;
+            transition: transform 0.2s;
         }
-        #place_order:hover {
-            background-color: #1578c2 !important;
-        }
+        #place_order:hover { transform: scale(1.02); }
 
-        /* Links und Texte */
-        .woocommerce-info {
-            display: none; /* "Haben Sie einen Gutschein?" ausblenden für Fokus */
+        /* Restliche Styles (Switch, Boxen etc.) */
+        .ska-plan-switch {
+            display: inline-flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 99px;
+            margin-bottom: 40px;
         }
+        .ska-switch-opt {
+            padding: 10px 24px;
+            text-decoration: none;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .ska-switch-opt.is-active {
+            background: white;
+            color: #0f172a;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .ska-col-right {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+        }
+        
+        /* Mobile */
+        @media (max-width: 900px) {
+            .ska-checkout-grid { grid-template-columns: 1fr; }
+            .ska-brand-header h2 { font-size: 28px; }
+        }
+        
+        /* Header/Footer ausblenden optional, aber Platz lassen */
+        body.woocommerce-order-pay .site-header { margin-bottom: 0; }
     </style>
     <?php
 }
