@@ -320,12 +320,22 @@ function ska_is_allowed_upgrade_product( $product ) {
     if ( ! $product->is_purchasable() ) {
         return false;
     }
+
+    // 1. Allow Subscriptions (WooCommerce Subscriptions Plugin)
     if ( function_exists( 'wcs_is_subscription' ) && wcs_is_subscription( $product ) ) {
         return true;
     }
+
+    // 2. Allow manual check for subscription types
     if ( method_exists( $product, 'is_type' ) && $product->is_type( array( 'subscription', 'subscription_variation', 'variable-subscription', 'simple-subscription' ) ) ) {
         return true;
     }
+
+    // 3. FIX: Allow simple and variable products (e.g. for Lifetime deals)
+    if ( method_exists( $product, 'is_type' ) && $product->is_type( array( 'simple', 'variable' ) ) ) {
+        return true;
+    }
+
     return false;
 }
 
