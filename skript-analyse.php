@@ -453,63 +453,15 @@ function ska_shortcode() {
         
         <header class="ska-header">
             <div class="ska-header-content">
-                <h2>Jetzt Skript analysieren</h2>
-                <p class="ska-intro-text">Füge Deinen Text ein und erhalte eine professionelle Einschätzung zu Länge, Tempo, Zielgruppe, Füllwörtern und Struktur. Optimiere Dein Skript für wirkungsvolles Sprechen oder bessere Lesbarkeit – perfekt für Autoren, Sprecher und Redakteure.</p>
-                <div class="ska-header-separator"></div>
-                <div class="ska-bookmark-hint">
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="opacity:0.7"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>
-                    Tipp: Speichere diese Seite als Lesezeichen (Strg+D), um jederzeit schnellen Zugriff zu haben.
+                <div class="ska-header-title">
+                    <h2>Skript-Analyse</h2>
+                    <p class="ska-header-subtitle">Professionelles Skript-Review für Enterprise-Teams.</p>
                 </div>
             </div>
             <div class="ska-status-bar">
-                 <span class="ska-status-badge"><span class="ska-dot"></span><span data-role-plan-label>100% Kostenlos & Sicher</span></span>
+                <span class="ska-status-badge"><span class="ska-dot"></span><span data-role-plan-label>100% Kostenlos & Sicher</span></span>
             </div>
         </header>
-
-        <div class="ska-toolbar">
-            <div class="ska-toolbar-group">
-                <div class="ska-select-wrapper">
-                    <label>Profil</label>
-                    <div class="ska-custom-select-wrapper">
-                        <select class="ska-select" data-role-select>
-                            <option value="">🧭 Allgemein</option>
-                            <option value="sprecher">🎙️ Sprecher:in</option>
-                            <option value="autor">✍️ Autor:in</option>
-                            <option value="regie">🎬 Regie</option>
-                            <option value="agentur">🏢 Agentur</option>
-                            <option value="marketing">📈 Marketing</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="ska-select-wrapper">
-                    <label>Genre</label>
-                    <div class="ska-custom-select-wrapper">
-                        <select class="ska-select" data-filter="usecase">
-                            <option value="auto">⚡ Auto-Detect</option>
-                            <option value="werbung">📣 Werbespot</option>
-                            <option value="imagefilm">🎞️ Imagefilm</option>
-                            <option value="erklaer">🧠 Erklärvideo</option>
-                            <option value="hoerbuch">🎧 Hörbuch</option>
-                            <option value="podcast">🎙️ Podcast</option>
-                            <option value="social">📱 Social Media</option>
-                            <option value="elearning">🧑‍🏫 E-Learning</option>
-                            <option value="buch">📖 Buch/Roman</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="button" class="ska-btn ska-btn--ghost ska-settings-btn-inline" data-action="open-settings" title="Einstellungen">
-                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </button>
-            </div>
-            
-            <div class="ska-toolbar-actions">
-                <button type="button" class="ska-btn ska-btn--secondary" data-action="open-help">
-                    Anleitung & Hilfe
-                </button>
-                <button type="button" class="ska-btn ska-btn--primary" data-action="open-reset">Projekt zurücksetzen</button>
-            </div>
-        </div>
 
         <div class="ska-grid is-empty">
             <div class="ska-editor-panel">
@@ -534,6 +486,50 @@ function ska_shortcode() {
                             <div class="ska-tool-tooltip ska-tool-tooltip--premium">Premium: Versionen speichern & vergleichen.</div>
                         </div>
                         <div class="skriptanalyse-input-actions"></div> 
+                    </div>
+                </div>
+                <div class="ska-toolbar">
+                    <div class="ska-toolbar-group">
+                        <div class="ska-select-wrapper">
+                            <label>Profil</label>
+                            <div class="ska-custom-select-wrapper">
+                                <select class="ska-select" data-role-select>
+                                    <option value="">🧭 Allgemein</option>
+                                    <option value="sprecher">🎙️ Sprecher:in</option>
+                                    <option value="autor">✍️ Autor:in</option>
+                                    <option value="regie">🎬 Regie</option>
+                                    <option value="agentur">🏢 Agentur</option>
+                                    <option value="marketing">📈 Marketing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="ska-select-wrapper">
+                            <label>Genre</label>
+                            <div class="ska-custom-select-wrapper">
+                                <select class="ska-select" data-filter="usecase">
+                                    <option value="auto">⚡ Auto-Detect</option>
+                                    <option value="werbung">📣 Werbespot</option>
+                                    <option value="imagefilm">🎞️ Imagefilm</option>
+                                    <option value="erklaer">🧠 Erklärvideo</option>
+                                    <option value="hoerbuch">🎧 Hörbuch</option>
+                                    <option value="podcast">🎙️ Podcast</option>
+                                    <option value="social">📱 Social Media</option>
+                                    <option value="elearning">🧑‍🏫 E-Learning</option>
+                                    <option value="buch">📖 Buch/Roman</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="ska-btn ska-btn--ghost ska-settings-btn-inline" data-action="open-settings" title="Einstellungen">
+                            <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="ska-toolbar-actions">
+                        <button type="button" class="ska-btn ska-btn--secondary" data-action="open-help">
+                            Anleitung & Hilfe
+                        </button>
+                        <button type="button" class="ska-btn ska-btn--primary" data-action="open-reset">Projekt zurücksetzen</button>
                     </div>
                 </div>
                 <div class="ska-editor-formatting" role="toolbar" aria-label="Textformatierung">
