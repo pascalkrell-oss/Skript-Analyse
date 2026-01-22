@@ -10,7 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
-$premium_product_id = 12345;
+$premium_product_monthly_id = 123;
+$premium_product_yearly_id = 456;
+$premium_product_id = $premium_product_monthly_id;
 
 
 function ska_normalize_plan_status( $value ) {
@@ -376,7 +378,7 @@ add_filter( 'body_class', function( $classes ) {
 } );
 
 function ska_get_localized_config() {
-    global $premium_product_id;
+    global $premium_product_id, $premium_product_monthly_id, $premium_product_yearly_id;
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
         ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
@@ -420,7 +422,7 @@ function ska_get_localized_config() {
     }
 
     $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
-    $premium_cart_url = add_query_arg( 'add-to-cart', $premium_product_id, $cart_url );
+    $premium_cart_url = add_query_arg( 'add-to-cart', $premium_product_monthly_id, $cart_url );
 
     return array(
         'markers' => $markers_config,
@@ -443,7 +445,10 @@ function ska_get_localized_config() {
         'currentUserPlan' => ska_get_user_plan_status(),
         'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
         'premiumProductId' => (int) $premium_product_id,
+        'premiumProductMonthlyId' => (int) $premium_product_monthly_id,
+        'premiumProductYearlyId' => (int) $premium_product_yearly_id,
         'premiumCartUrl' => $premium_cart_url,
+        'cartUrl' => $cart_url,
     );
 }
 
