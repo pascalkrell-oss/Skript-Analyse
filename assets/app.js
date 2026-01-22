@@ -10531,12 +10531,51 @@
         }
 
         getPremiumCheckoutProductId(planId = this.state.premiumPricePlan) {
-            const productMap = {
-                flex: 3128,
-                pro: 3130,
-                studio: 3127
+            const productIds = this.getPremiumProductIds();
+            const isYearly = planId === 'pro' || planId === 'yearly';
+            if (isYearly) {
+                return productIds.yearly || productIds.monthly;
+            }
+            return productIds.monthly || productIds.yearly;
+        }
+
+        getPremiumProductIds(button = null) {
+            const checkoutButton = button || (this.root ? this.root.querySelector('#ska-premium-checkout-btn') : null);
+            const monthlyId = checkoutButton ? Number(checkoutButton.dataset.productMonthly) : NaN;
+            const yearlyId = checkoutButton ? Number(checkoutButton.dataset.productYearly) : NaN;
+            const configMonthlyId = Number(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductMonthlyId);
+            const configYearlyId = Number(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductYearlyId);
+            return {
+                monthly: Number.isFinite(monthlyId) ? monthlyId : (Number.isFinite(configMonthlyId) ? configMonthlyId : 0),
+                yearly: Number.isFinite(yearlyId) ? yearlyId : (Number.isFinite(configYearlyId) ? configYearlyId : 0)
             };
-            return productMap[planId] || productMap.flex;
+        }
+
+        getPremiumCheckoutUrl(productId) {
+            if (!productId) return '#';
+            const baseUrl = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.cartUrl) ? SKA_CONFIG_PHP.cartUrl : '/warenkorb/';
+            try {
+                const url = new URL(baseUrl, window.location.origin);
+                url.searchParams.set('add-to-cart', String(productId));
+                return url.toString();
+            } catch (error) {
+                return `/warenkorb/?add-to-cart=${encodeURIComponent(String(productId))}`;
+            }
+        }
+
+        updatePremiumCheckoutLink(button = null, planId = this.state.premiumPricePlan) {
+            const checkoutButton = button || (this.root ? this.root.querySelector('#ska-premium-checkout-btn') : null);
+            if (!checkoutButton) return;
+            const productIds = this.getPremiumProductIds(checkoutButton);
+            const isYearly = planId === 'pro' || planId === 'yearly';
+            const productId = isYearly ? (productIds.yearly || productIds.monthly) : (productIds.monthly || productIds.yearly);
+            const nextUrl = this.getPremiumCheckoutUrl(productId);
+            if (checkoutButton.classList.contains('is-disabled') || checkoutButton.getAttribute('aria-disabled') === 'true') {
+                checkoutButton.dataset.href = nextUrl;
+                checkoutButton.removeAttribute('href');
+                return;
+            }
+            checkoutButton.setAttribute('href', nextUrl);
         }
 
         formatPriceValue(priceRaw) {
@@ -10677,6 +10716,7 @@
                 noteEl.innerHTML = `${selectedPlan.note} <span class="ska-premium-upgrade-savings${selectedPlan.savings ? '' : ' is-hidden'}">${savings}</span>`;
             }
             this.applyUnlockButtonState(card);
+            this.updatePremiumCheckoutLink(card.querySelector('#ska-premium-checkout-btn'), selectedPlan.id);
             const planButtons = card.querySelectorAll('[data-role="premium-plan"]');
             planButtons.forEach((button) => {
                 button.classList.toggle('is-active', button.dataset.plan === selectedPlan.id);
@@ -10754,7 +10794,8 @@
                     }
                 };
             }
-            const premiumCartUrl = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumCartUrl) ? SKA_CONFIG_PHP.premiumCartUrl : '#';
+            const premiumProductMonthlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductMonthlyId) ? SKA_CONFIG_PHP.premiumProductMonthlyId : 123;
+            const premiumProductYearlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductYearlyId) ? SKA_CONFIG_PHP.premiumProductYearlyId : 456;
             const html = `
                 <div class="ska-premium-upgrade-ribbon ska-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -10828,7 +10869,7 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <a class="ska-btn ska-btn--accent ska-premium-checkout-btn" href="${premiumCartUrl}">Jetzt Premium freischalten</a>
+                            <a class="ska-btn ska-btn--accent ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
@@ -10845,6 +10886,7 @@
             }
             const grid = container.querySelector('.ska-premium-upgrade-grid');
             this.applyUnlockButtonState(container);
+            this.updatePremiumCheckoutLink(container.querySelector('#ska-premium-checkout-btn'), selectedPlan.id);
             this.setupPremiumUpgradeScroll(grid);
         }
 
