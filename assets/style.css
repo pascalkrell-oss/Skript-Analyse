@@ -110,6 +110,8 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-btn--compact { height: 34px; padding: 0 0.9rem; font-size: 0.8rem; }
 .ska-btn--primary { background: var(--ska-primary); color: white; }
 .ska-btn--primary:hover { background: var(--ska-primary-hover); transform: none; }
+.ska-btn--accent { background: var(--ska-accent); color: white; }
+.ska-btn--accent:hover { background: #ea580c; transform: none; }
 .ska-btn--secondary { background: var(--ska-surface-alt); color: var(--ska-text-main); border: 1px solid var(--ska-border); }
 .ska-btn--secondary:hover { background: #e2e8f0; color: var(--ska-text-main); }
 .ska-btn--ghost { background: transparent; color: var(--ska-text-muted); padding: 0 0.6rem; height: var(--ska-toolbar-control-height, 42px); }
@@ -119,6 +121,7 @@ body.skript-analyse-active .skript-analyse-container {
     opacity: 0.5;
     cursor: not-allowed;
     box-shadow: none;
+    pointer-events: none;
 }
 .ska-btn.is-disabled:hover,
 .ska-btn:disabled:hover {
@@ -354,6 +357,12 @@ body.skript-analyse-active .skript-analyse-container {
 .skriptanalyse-card { background: var(--ska-surface); border-radius: var(--ska-radius-md); box-shadow: var(--ska-shadow); border: 1px solid var(--ska-border); transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.35s ease, margin 0.35s ease, padding 0.35s ease, border-width 0.35s ease, box-shadow 0.3s ease; display: flex; flex-direction: column; height: auto; overflow: visible; position: relative; margin-bottom: 0; }
 .skriptanalyse-card:hover { z-index: 200 !important; }
 .skriptanalyse-card.is-minimized { align-self: flex-start; height: auto; min-height: 0; }
+.ska-grid .ska-card,
+.ska-grid .skriptanalyse-card,
+.skriptanalyse-analysis-bottom-grid .skriptanalyse-card,
+.ska-tools-grid .skriptanalyse-card {
+    height: 100%;
+}
 .skriptanalyse-card.is-locked .ska-card-body-content { filter: blur(8px); pointer-events: none; }
 .skriptanalyse-card.is-dismissing { opacity: 0; transform: translateY(-8px); margin: 0 !important; padding: 0 !important; border-width: 0 !important; pointer-events: none; }
 .ska-premium-inline { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; flex-direction: column; gap: 0.5rem; align-items: center; background: rgba(15, 20, 26, 0.95); border: 1px solid rgba(56, 189, 248, 0.65); border-radius: 18px; padding: 1rem 1.2rem; box-shadow: 0 18px 36px -20px rgba(15, 23, 42, 0.6); text-align: center; color: #f8fafc; }
@@ -656,10 +665,10 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-premium-upgrade-hover-badge strong { display: block; font-size: 0.75rem; color: #0f172a; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .ska-premium-upgrade-hover-badge ul { margin: 0; padding-left: 1rem; display: grid; gap: 0.3rem; font-size: 0.78rem; }
 .ska-premium-upgrade-hover:hover .ska-premium-upgrade-hover-badge { display: block; }
-.ska-premium-upgrade-cta { position: relative; margin-top: auto; display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; padding-top: 0.75rem; }
+.ska-premium-upgrade-cta { position: relative; margin-top: auto; display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; padding-top: 30px; }
 .ska-premium-upgrade-cta .ska-btn--primary { order: 2; }
 .ska-premium-upgrade-cta .ska-btn--secondary { order: 1; }
-.ska-premium-upgrade-cta .ska-btn { transform: translateY(0); box-shadow: 0 12px 24px -18px rgba(2, 132, 199, 0.5); }
+.ska-premium-upgrade-cta .ska-btn { transform: translateY(0); box-shadow: 0 12px 24px -18px rgba(2, 132, 199, 0.5); width: 100%; height: 50px; justify-content: center; }
 .ska-premium-upgrade-footer { display: flex; flex-direction: column; gap: 0.95rem; align-items: center; font-size: 0.9rem; margin-top: 1.8rem; }
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-footer {
     margin-top: 3rem !important; /* Deutlich mehr Luft nach oben */
@@ -1926,6 +1935,20 @@ body.skript-analyse-active .skript-analyse-container {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    padding-top: 30px;
+}
+.ska-card-actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding-top: 30px;
+}
+.ska-card-footer .ska-btn,
+.ska-card-actions .ska-btn {
+    width: 100%;
+    height: 50px;
+    justify-content: center;
 }
 .ska-card-footer-title {
     font-size: 0.72rem;

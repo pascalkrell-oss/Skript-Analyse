@@ -3792,13 +3792,25 @@
             const enabled = this.isUnlockButtonEnabled();
             buttons.forEach((button) => {
                 if (!button) return;
-                button.dataset.action = 'premium-checkout';
+                const isLink = button.tagName && button.tagName.toLowerCase() === 'a';
                 if (enabled) {
-                    button.disabled = false;
+                    if (!isLink) {
+                        button.disabled = false;
+                    } else if (button.dataset.href) {
+                        button.setAttribute('href', button.dataset.href);
+                        delete button.dataset.href;
+                    }
                     button.classList.remove('is-disabled');
                     button.removeAttribute('aria-disabled');
                 } else {
-                    button.disabled = false;
+                    if (isLink) {
+                        if (!button.dataset.href) {
+                            button.dataset.href = button.getAttribute('href') || '';
+                        }
+                        button.removeAttribute('href');
+                    } else {
+                        button.disabled = true;
+                    }
                     button.classList.add('is-disabled');
                     button.setAttribute('aria-disabled', 'true');
                 }
@@ -10742,6 +10754,7 @@
                     }
                 };
             }
+            const premiumCartUrl = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumCartUrl) ? SKA_CONFIG_PHP.premiumCartUrl : '#';
             const html = `
                 <div class="ska-premium-upgrade-ribbon ska-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -10815,7 +10828,7 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <button type="button" class="ska-btn ska-btn--primary ska-premium-checkout-btn" data-action="premium-checkout">Jetzt Premium freischalten</button>
+                            <a class="ska-btn ska-btn--accent ska-premium-checkout-btn" href="${premiumCartUrl}">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>

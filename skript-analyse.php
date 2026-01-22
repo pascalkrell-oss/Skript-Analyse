@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
+$premium_product_id = 12345;
 
 
 function ska_normalize_plan_status( $value ) {
@@ -375,6 +376,7 @@ add_filter( 'body_class', function( $classes ) {
 } );
 
 function ska_get_localized_config() {
+    global $premium_product_id;
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
         ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
@@ -417,6 +419,9 @@ function ska_get_localized_config() {
         $unlock_enabled = ska_is_unlock_button_enabled();
     }
 
+    $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
+    $premium_cart_url = add_query_arg( 'add-to-cart', $premium_product_id, $cart_url );
+
     return array(
         'markers' => $markers_config,
         'pro' => $pro_mode,
@@ -437,6 +442,8 @@ function ska_get_localized_config() {
         'planMode' => $plan_mode,
         'currentUserPlan' => ska_get_user_plan_status(),
         'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
+        'premiumProductId' => (int) $premium_product_id,
+        'premiumCartUrl' => $premium_cart_url,
     );
 }
 
