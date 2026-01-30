@@ -447,7 +447,9 @@ body.skript-analyse-active .skript-analyse-container {
     color: #0f172a;
 }
 .ska-premium-upgrade-cta .ska-btn--primary:hover {
+    background: var(--ska-primary-hover);
     color: #ffffff;
+    transform: none;
 }
 .ska-premium-teaser-note {
     margin: 0.9rem 0 1.3rem;
@@ -469,7 +471,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-premium-upgrade-icon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; background: transparent; color: #0f172a; font-size: 1rem; }
 .ska-premium-upgrade-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.4rem; align-items: start; margin-top: 0.9rem; }
 .ska-premium-upgrade-col { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 2rem; font-size: 0.9rem; color: #475569; text-align: left; position: relative; margin-bottom: 0.6rem; display: flex; flex-direction: column; overflow: visible; }
-.ska-premium-upgrade-col.is-premium { background: #f0f9ff; border-color: #bae6fd; box-shadow: none; transform: scale(1.02); padding-bottom: 1.6rem; }
+.ska-premium-upgrade-col.is-premium { background: #ffffff; border-color: rgba(26, 147, 238, 0.35); border-width: 2px; box-shadow: none; transform: scale(1.02); padding-bottom: 1.6rem; }
 .ska-premium-upgrade-col.is-free { margin-top: 20px; }
 .ska-premium-upgrade-title { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; font-size: 26px; margin-bottom: 0.8rem; color: #0f172a; }
 .ska-premium-upgrade-header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
@@ -666,9 +668,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-premium-upgrade-hover-badge ul { margin: 0; padding-left: 1rem; display: grid; gap: 0.3rem; font-size: 0.78rem; }
 .ska-premium-upgrade-hover:hover .ska-premium-upgrade-hover-badge { display: block; }
 .ska-premium-upgrade-cta { position: relative; margin-top: auto; display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap; padding-top: 30px; }
-.ska-premium-upgrade-cta .ska-btn--primary { order: 2; }
-.ska-premium-upgrade-cta .ska-btn--secondary { order: 1; }
-.ska-premium-upgrade-cta .ska-btn { transform: translateY(0); box-shadow: 0 12px 24px -18px rgba(2, 132, 199, 0.5); width: 100%; height: 50px; justify-content: center; }
+.ska-premium-upgrade-cta .ska-btn { transform: translateY(0); box-shadow: 0 12px 24px -18px rgba(2, 132, 199, 0.5); width: auto; height: 50px; justify-content: center; flex: 1 1 0; min-width: 180px; }
 .ska-premium-upgrade-footer { display: flex; flex-direction: column; gap: 0.95rem; align-items: center; font-size: 0.9rem; margin-top: 1.8rem; }
 .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-footer {
     margin-top: 3rem !important; /* Deutlich mehr Luft nach oben */
