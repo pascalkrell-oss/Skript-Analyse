@@ -10869,7 +10869,7 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <a class="ska-btn ska-btn--accent ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
+                            <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
                         </div>
                     </div>
