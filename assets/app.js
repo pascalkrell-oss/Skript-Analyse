@@ -531,31 +531,31 @@
         premium: {
             tools: [
                 { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
-                { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität." },
-                { name: "Cloud-Speicher", desc: "Speichere deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud." },
-                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true, badge: "Highlight" },
-                { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her.", featured: true, badge: "Highlight" },
-                { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true, badge: "Highlight" },
-                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen.", featured: true, badge: "Highlight" },
+                { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität.", featured: true },
+                { name: "Projekte speichern/laden", desc: "Speichere und lade deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud.", featured: true },
+                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true },
+                { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her." },
+                { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true },
+                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
                 { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
                 { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
-                { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen." },
-                { name: "Sprech-Pacing", desc: "Perfektes Timing vor der Aufnahme: Sieh schon während des Schreibens exakt, wie viele Sekunden oder Minuten dein Text gesprochen dauern wird.", featured: true, badge: "Highlight" }
+                { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen.", featured: true },
+                { name: "Sprech-Pacing", desc: "Perfektes Timing vor der Aufnahme: Sieh schon während des Schreibens exakt, wie viele Sekunden oder Minuten dein Text gesprochen dauern wird." }
             ],
             analysis: [
                 { name: "Regie-Anweisung", desc: "Erkennt technische Anweisungen und formatiert sie korrekt für Sprecher." },
-                { name: "Satz-Rhythmus", desc: "Hypnotischer Lesefluss: Visualisiert die 'Melodie' deines Textes, damit deine Leser nicht durch monotone Satzlängen einschlafen.", featured: true, badge: "Highlight" },
-                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen." },
+                { name: "Satz-Rhythmus", desc: "Hypnotischer Lesefluss: Visualisiert die 'Melodie' deines Textes, damit deine Leser nicht durch monotone Satzlängen einschlafen.", featured: true },
+                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen.", featured: true },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
                 { name: "Rollen-Verteilung", desc: "Analysiert, wie viel Sprechanteil verschiedene Charaktere oder Rollen haben." },
                 { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen." },
                 { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
                 { name: "Leichte Sprache", desc: "Prüft deinen Text auf Barrierefreiheit (B1/B2 Level) und Verständlichkeit." },
-                { name: "Semantische Redundanz", desc: "Lösche das Überflüssige: Findet Wort-Doppelungen und aufgeblähte Phrasen – macht deinen Text sofort straffer und schneller lesbar.", featured: true, badge: "Highlight" },
-                { name: "Buzzword-Check", desc: "Schluss mit Bla-Bla: Entlarvt hohle Marketing-Floskeln und sorgt für authentische, glaubwürdige Kommunikation, der man vertraut.", featured: true, badge: "Highlight" },
+                { name: "Semantische Redundanz", desc: "Lösche das Überflüssige: Findet Wort-Doppelungen und aufgeblähte Phrasen – macht deinen Text sofort straffer und schneller lesbar." },
+                { name: "Buzzword-Check", desc: "Schluss mit Bla-Bla: Entlarvt hohle Marketing-Floskeln und sorgt für authentische, glaubwürdige Kommunikation, der man vertraut." },
                 { name: "Metaphern & Phrasen", desc: "Analysiert die Bildsprache und prüft, ob Metaphern stimmig sind." },
-                { name: "Immersion & Show, don't tell", desc: "Der Bestseller-Effekt: Das System zeigt dir gnadenlos, wo du nur behauptest, statt echtes Kopfkino beim Leser zu erzeugen.", featured: true, badge: "Highlight" },
-                { name: "Zielgruppen-Filter", desc: "Treffsicher formulieren: Prüft Wortwahl und Komplexität chirurgisch genau auf deine Zielgruppe – damit deine Message auch wirklich verstanden wird.", featured: true, badge: "Highlight" },
+                { name: "Immersion & Show, don't tell", desc: "Der Bestseller-Effekt: Das System zeigt dir gnadenlos, wo du nur behauptest, statt echtes Kopfkino beim Leser zu erzeugen." },
+                { name: "Zielgruppen-Filter", desc: "Treffsicher formulieren: Prüft Wortwahl und Komplexität chirurgisch genau auf deine Zielgruppe – damit deine Message auch wirklich verstanden wird." },
                 { name: "Rhetorische Fragen", desc: "Zählt Fragen im Text und bewertet deren Wirkung auf den Zuhörer." },
                 { name: "Satz-Verschachtelung", desc: "Warnt vor zu komplexen Schachtelsätzen, die beim Hören schwer verständlich sind." },
                 { name: "Satzanfang-Varianz", desc: "Prüft, ob zu viele Sätze mit dem gleichen Wort beginnen (z.B. 'Dann... Dann...')." },
@@ -568,7 +568,7 @@
                 { name: "Bürokratie-Filter", desc: "Findet typisches Beamtendeutsch und Nominalstil, der schwer zu hören ist." },
                 { name: "Nominal-Ketten", desc: "Warnt vor aneinandergereihten Substantiven ('Donaudampfschifffahrt...')." },
                 { name: "Stimmungs-Intensität", desc: "Misst die emotionale Stärke deiner Worte auf einer Skala." },
-                { name: "Call to Action", desc: "Prüft, ob eine klare Handlungsaufforderung am Ende des Textes steht." },
+                { name: "Call to Action", desc: "Prüft, ob eine klare Handlungsaufforderung am Ende des Textes steht.", featured: true },
                 { name: "Verb-Fokus", desc: "Analysiert die Kraft deiner Verben – das Herzstück guter Texte." },
                 { name: "Audio-BPM-Matching", desc: "Hilft dir, den Text rhythmisch auf einen Musik-Takt (BPM) zu schreiben." },
                 { name: "Wortschatz-Reichtum", desc: "Misst die Diversität deines Vokabulars (Type-Token-Ratio)." },
@@ -10700,6 +10700,10 @@
             const premiumPlans = this.getPremiumPlans();
             const freePrice = '0,00';
             const selectedPlan = premiumPlans.find(plan => plan.id === this.state.premiumPricePlan) || premiumPlans[0];
+            const cancelBadge = card.querySelector('[data-role="premium-cancel-badge"]');
+            if (cancelBadge) {
+                cancelBadge.classList.toggle('is-hidden', selectedPlan.id === 'studio');
+            }
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
             const priceValueEl = card.querySelector('[data-role="premium-price"] .ska-premium-upgrade-price-value');
@@ -10757,12 +10761,9 @@
                     const hiddenClass = isHidden ? 'ska-hidden-feature' : '';
                     const styleAttr = isHidden ? 'style="display:none"' : '';
                     const featuredClass = item.featured ? 'is-featured' : '';
-                    const badgeLabel = item.badge ? String(item.badge) : 'Highlight';
-                    const badgeHTML = item.featured ? `<em class="ska-feature-badge">${badgeLabel}</em>` : '';
                     return `
                     <li class="${hiddenClass} ${featuredClass}" ${styleAttr} data-tooltip="${item.desc}">
-                        <span>${item.name}</span>
-                        ${badgeHTML}
+                        <span class="ska-feature-name">${item.featured ? `<strong>${item.name}</strong>` : item.name}</span>
                     </li>`;
                 }).join('');
                 const buttonHTML = hasMore ? `
@@ -10838,7 +10839,7 @@
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-header-row">
                             <div class="ska-premium-upgrade-title">Premium</div>
-                            <span class="ska-premium-upgrade-badge">Monatlich kündbar</span>
+                            <span class="ska-premium-upgrade-badge" data-role="premium-cancel-badge">Monatlich kündbar</span>
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--premium" data-role="premium-price">
                             <span class="ska-premium-upgrade-price-label">${priceLabel}</span>
@@ -10869,8 +10870,8 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
+                            <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
                         </div>
                     </div>
                 </div>`;

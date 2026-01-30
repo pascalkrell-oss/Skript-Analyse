@@ -465,18 +465,27 @@ body.skript-analyse-active .skript-analyse-container {
     letter-spacing: 0.05em;
     grid-column: 1 / -1;
 }
-.ska-premium-upgrade-header strong { font-family: "Rubik", system-ui, -apple-system, sans-serif; font-size: 28px; font-weight: 700; line-height: 37.5px; display: block; color: var(--ska-primary); }
+.ska-premium-upgrade-header strong { font-family: "Rubik", system-ui, -apple-system, sans-serif; font-size: 35px; font-weight: 700; line-height: 1.2; display: block; color: #0f172a; }
 .ska-premium-upgrade-header span { font-size: 0.95rem; color: #475569; margin-top: 0.4rem; display: block; }
 .ska-premium-upgrade-titleline { display: inline-flex; align-items: center; gap: 0.85rem; justify-content: center; }
 .ska-premium-upgrade-icon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 0; background: transparent; color: #0f172a; font-size: 1rem; }
 .ska-premium-upgrade-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 1.4rem; align-items: start; margin-top: 0.9rem; }
 .ska-premium-upgrade-col { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 18px; padding: 2rem; font-size: 0.9rem; color: #475569; text-align: left; position: relative; margin-bottom: 0.6rem; display: flex; flex-direction: column; overflow: visible; }
-.ska-premium-upgrade-col.is-premium { background: #ffffff; border-color: rgba(26, 147, 238, 0.35); border-width: 2px; box-shadow: none; transform: scale(1.02); padding-bottom: 1.6rem; }
+.ska-premium-upgrade-col.is-premium {
+    border: 2px solid transparent;
+    background: linear-gradient(#ffffff, #ffffff) padding-box,
+        linear-gradient(135deg, rgba(56, 189, 248, 0.65), rgba(2, 132, 199, 0.85)) border-box;
+    border-radius: 18px;
+    box-shadow: none;
+    transform: scale(1.02);
+    padding-bottom: 1.6rem;
+}
 .ska-premium-upgrade-col.is-free { margin-top: 20px; }
 .ska-premium-upgrade-title { text-transform: uppercase; letter-spacing: 0.08em; font-weight: 800; font-size: 26px; margin-bottom: 0.8rem; color: #0f172a; }
 .ska-premium-upgrade-header-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.8rem; }
 .ska-premium-upgrade-header-row .ska-premium-upgrade-title { margin-bottom: 0; }
 .ska-premium-upgrade-badge { background: #0f172a; color: #f8fafc; font-size: 0.7rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; justify-content: center; text-align: center; animation: ska-fade-in 0.25s ease both; white-space: nowrap; min-width: 130px; line-height: 1; }
+.ska-premium-upgrade-badge.is-hidden { display: none !important; }
 .ska-premium-upgrade-badge--free { background: #dcfce7; color: #16a34a; }
 .ska-premium-upgrade-price { font-size: 40px; font-weight: 800; color: #0284c7; margin: 0.35rem 0 0.55rem; animation: ska-fade-in 0.25s ease both; display: flex !important; align-items: baseline !important; justify-content: flex-start !important; text-align: left !important; flex-wrap: wrap; gap: 0.45rem; line-height: 1; }
 .ska-premium-upgrade-price-prefix { font-size: 0.78rem; font-weight: 700; color: #64748b; letter-spacing: 0.01em; text-transform: uppercase; }
