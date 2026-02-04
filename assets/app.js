@@ -23,7 +23,8 @@
     const SKRIPT_ANALYSE_CONFIG = (typeof window !== 'undefined' && window.skriptAnalyseConfig)
         ? window.skriptAnalyseConfig
         : {};
-    const CURRENT_USER_PLAN = SKRIPT_ANALYSE_CONFIG.currentUserPlan === 'premium' ? 'premium' : 'basis';
+    const HAS_PREMIUM_ACCESS = Boolean(typeof window !== 'undefined' && window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.hasPremium);
+    const CURRENT_USER_PLAN = HAS_PREMIUM_ACCESS ? 'premium' : 'basis';
     const ALGORITHM_TUNING_CONFIG = SKRIPT_ANALYSE_CONFIG.algorithmTuning || {};
 
     // CONFIG
@@ -3543,6 +3544,9 @@
             if (this.isFreeOnlyMode()) {
                 return 'basis';
             }
+            if (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.hasPremium) {
+                return 'premium';
+            }
             return this.state && this.state.planMode ? this.state.planMode : CURRENT_USER_PLAN;
         }
 
@@ -3587,6 +3591,8 @@
             if (typeof window !== 'undefined') {
                 if (window.SKA_CONFIG_PHP) {
                     window.SKA_CONFIG_PHP.currentUserPlan = 'premium';
+                    window.SKA_CONFIG_PHP.hasPremium = true;
+                    window.SKA_CONFIG_PHP.isPremium = true;
                 }
                 if (window.skriptAnalyseConfig) {
                     window.skriptAnalyseConfig.currentUserPlan = 'premium';
@@ -8248,6 +8254,7 @@
                 if (this.toolsModalStore) this.toolsModalStore.innerHTML = '';
                 this.compareRow.innerHTML = '';
                 this.compareRow.classList.remove('is-active');
+                this.compareRow.style.display = 'none';
                 this.renderHiddenPanel();
                 if(this.legendContainer) this.legendContainer.innerHTML = '';
                 if (this.filterBar) {
@@ -8438,6 +8445,7 @@
                 if (this.compareRow) {
                     this.compareRow.innerHTML = '';
                     this.compareRow.classList.remove('is-active');
+                    this.compareRow.style.display = 'none';
                 }
             }
             this.renderLegend();
@@ -11175,6 +11183,7 @@
                     </div>
                 </div>`;
             this.compareRow.classList.add('is-active');
+            this.compareRow.style.display = 'block';
         }
 
         updateCard(id, html, parent = this.bottomGrid, extraClass = '', headerExtraHtml = '', isToggleable = true) {

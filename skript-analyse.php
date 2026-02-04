@@ -15,6 +15,156 @@ $premium_product_yearly_id = 3130;
 $premium_product_lifetime_id = 3127;
 $premium_product_id = $premium_product_monthly_id;
 
+function ska_user_has_lifetime_access( $user_id ) {
+    if ( ! $user_id ) {
+        return false;
+    }
+
+    $flag = (int) get_user_meta( $user_id, 'ska_lifetime_access', true );
+    if ( $flag === 1 ) {
+        return true;
+    }
+
+    if ( ! function_exists( 'wc_get_orders' ) ) {
+        return false;
+    }
+
+    $orders = wc_get_orders( array(
+        'customer_id' => $user_id,
+        'status' => array( 'processing', 'completed' ),
+        'limit' => -1,
+    ) );
+
+    if ( empty( $orders ) ) {
+        return false;
+    }
+
+    global $premium_product_lifetime_id;
+    foreach ( $orders as $order ) {
+        foreach ( $order->get_items() as $item ) {
+            $product_id = $item->get_product_id();
+            if ( (int) $product_id === (int) $premium_product_lifetime_id ) {
+                update_user_meta( $user_id, 'ska_lifetime_access', 1 );
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function ska_user_has_active_subscription_access( $user_id ) {
+    if ( ! $user_id ) {
+        return false;
+    }
+
+    global $premium_product_monthly_id, $premium_product_yearly_id;
+    $product_ids = array( (int) $premium_product_monthly_id, (int) $premium_product_yearly_id );
+
+    if ( function_exists( 'wcs_user_has_subscription' ) ) {
+        foreach ( $product_ids as $product_id ) {
+            if ( wcs_user_has_subscription( $user_id, $product_id, 'active' ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if ( function_exists( 'wcs_get_users_subscriptions' ) ) {
+        $subscriptions = wcs_get_users_subscriptions( $user_id );
+        foreach ( $subscriptions as $subscription ) {
+            if ( ! is_object( $subscription ) || ! method_exists( $subscription, 'has_status' ) ) {
+                continue;
+            }
+            if ( ! $subscription->has_status( 'active' ) ) {
+                continue;
+            }
+            if ( method_exists( $subscription, 'get_items' ) ) {
+                foreach ( $subscription->get_items() as $item ) {
+                    $product_id = $item->get_product_id();
+                    if ( in_array( (int) $product_id, $product_ids, true ) ) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    if ( function_exists( 'ywsbs_get_subscriptions' ) ) {
+        $subscriptions = ywsbs_get_subscriptions( array(
+            'user_id' => $user_id,
+            'status' => 'active',
+            'subscriptions_per_page' => -1,
+        ) );
+        foreach ( $subscriptions as $subscription ) {
+            if ( ! is_object( $subscription ) ) {
+                continue;
+            }
+            if ( method_exists( $subscription, 'get_status' ) && $subscription->get_status() !== 'active' ) {
+                continue;
+            }
+            if ( method_exists( $subscription, 'get_product_id' ) ) {
+                $product_id = (int) $subscription->get_product_id();
+                if ( in_array( $product_id, $product_ids, true ) ) {
+                    return true;
+                }
+            }
+            if ( method_exists( $subscription, 'get_items' ) ) {
+                foreach ( $subscription->get_items() as $item ) {
+                    $product_id = method_exists( $item, 'get_product_id' ) ? $item->get_product_id() : 0;
+                    if ( in_array( (int) $product_id, $product_ids, true ) ) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    // Ohne Subscription-Plugin lässt sich "active" nicht zuverlässig bestimmen.
+    return false;
+}
+
+function ska_user_is_premium( $user_id ) {
+    if ( ! $user_id ) {
+        return false;
+    }
+
+    if ( function_exists( 'ska_has_manual_access' ) && ska_has_manual_access( $user_id ) ) {
+        return true;
+    }
+
+    return ska_user_has_lifetime_access( $user_id ) || ska_user_has_active_subscription_access( $user_id );
+}
+
+function ska_maybe_set_lifetime_access_from_order( $order_id ) {
+    if ( ! $order_id || ! function_exists( 'wc_get_order' ) ) {
+        return;
+    }
+
+    $order = wc_get_order( $order_id );
+    if ( ! $order ) {
+        return;
+    }
+
+    $user_id = $order->get_user_id();
+    if ( ! $user_id ) {
+        return;
+    }
+
+    global $premium_product_lifetime_id;
+    foreach ( $order->get_items() as $item ) {
+        if ( (int) $item->get_product_id() === (int) $premium_product_lifetime_id ) {
+            update_user_meta( $user_id, 'ska_lifetime_access', 1 );
+            return;
+        }
+    }
+}
+add_action( 'woocommerce_payment_complete', 'ska_maybe_set_lifetime_access_from_order' );
+add_action( 'woocommerce_order_status_completed', 'ska_maybe_set_lifetime_access_from_order' );
+add_action( 'woocommerce_order_status_processing', 'ska_maybe_set_lifetime_access_from_order' );
+
 
 function ska_normalize_plan_status( $value ) {
     $value = strtolower( (string) $value );
@@ -69,9 +219,8 @@ function ska_get_user_plan_status( $user_id = 0 ) {
         }
     }
 
-    // SCHRITT 2: Echter Status aus der Datenbank
-    $plan = get_user_meta( $user_id, 'sa_plan_status', true );
-    if ( $plan === 'premium' ) {
+    // SCHRITT 2: Echter Status aus dem Zugriff (Abo/Lifetime)
+    if ( $user_id && ska_user_is_premium( $user_id ) ) {
         return 'premium';
     }
 
@@ -235,7 +384,7 @@ function ska_has_manual_access( $user_id ) {
 }
 
 function ska_get_user_plan( $user_id ) {
-    if ( ska_has_manual_access( $user_id ) ) {
+    if ( ska_has_manual_access( $user_id ) || ska_user_is_premium( $user_id ) ) {
         return 'premium';
     }
     $plan = get_user_meta( $user_id, 'ska_plan', true );
@@ -388,25 +537,6 @@ function ska_get_upgrade_order_id_from_query() {
     return $order_id;
 }
 
-add_filter( 'woocommerce_get_return_url', function( $return_url, $order ) {
-    if ( ! $order ) {
-        return $return_url;
-    }
-    $meta = $order->get_meta( '_ska_return_url' );
-    return $meta ? $meta : $return_url;
-}, 10, 2 );
-
-add_filter( 'body_class', function( $classes ) {
-    $order_id = ska_get_upgrade_order_id_from_query();
-    if ( ! $order_id ) {
-        return $classes;
-    }
-    $order = wc_get_order( $order_id );
-    if ( $order && $order->get_meta( '_ska_upgrade_order' ) ) {
-        $classes[] = 'ska-upgrade-checkout';
-    }
-    return $classes;
-} );
 
 function ska_get_premium_product_ids() {
     global $premium_product_monthly_id, $premium_product_yearly_id, $premium_product_lifetime_id;
@@ -514,6 +644,17 @@ function ska_get_localized_config() {
         $unlock_enabled = ska_is_unlock_button_enabled();
     }
 
+    $user_id = get_current_user_id();
+    $has_premium = $user_id ? ska_user_is_premium( $user_id ) : false;
+    $premium_source = null;
+    if ( $has_premium ) {
+        if ( ska_user_has_lifetime_access( $user_id ) ) {
+            $premium_source = 'lifetime';
+        } elseif ( ska_user_has_active_subscription_access( $user_id ) ) {
+            $premium_source = 'subscription';
+        }
+    }
+
     $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
     $premium_cart_url = add_query_arg( 'add-to-cart', $premium_product_monthly_id, $cart_url );
 
@@ -539,6 +680,9 @@ function ska_get_localized_config() {
         'disabledTools' => ska_get_disabled_tools(),
         'planMode' => $plan_mode,
         'currentUserPlan' => ska_get_user_plan_status(),
+        'hasPremium' => $has_premium,
+        'isPremium' => $has_premium,
+        'premiumSource' => $premium_source,
         'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
         'premiumProductId' => (int) $premium_product_id,
         'premiumProductMonthlyId' => (int) $premium_product_monthly_id,
@@ -2071,7 +2215,7 @@ function ska_ajax_get_plan_status() {
 }
 
 /* ---------------------------------------------------------
-   SKA CHECKOUT: MODERN SPLIT LAYOUT & HEADER FIX
+   SKA CHECKOUT: CART FLOW
    --------------------------------------------------------- */
 
 /* 1. AJAX Handler (Cart Flow - No Order Spam) */
@@ -2113,258 +2257,4 @@ function ska_handle_plan_switch() {
         wp_redirect( $cart_url );
         exit;
     }
-}
-
-/* 3. Custom Content Injection (In die RECHTE Spalte verschoben) */
-// Wir nutzen diesen Hook, um unsere Inhalte DIREKT ÜBER der Order Review Box zu platzieren.
-add_action( 'woocommerce_checkout_before_order_review', 'ska_render_modern_summary_header' );
-
-function ska_render_modern_summary_header() {
-    $current_pid = 0;
-    if ( WC()->cart ) {
-        foreach ( WC()->cart->get_cart() as $item ) {
-            if ( in_array( $item['product_id'], array( 3128, 3130, 3127 ), true ) ) {
-                $current_pid = $item['product_id'];
-                break;
-            }
-        }
-    }
-    if ( ! $current_pid ) {
-        return;
-    }
-
-    $url_m = home_url( '/?ska_switch_to=3128' );
-    $url_y = home_url( '/?ska_switch_to=3130' );
-    $url_l = home_url( '/?ska_switch_to=3127' );
-
-    $cls_m = ( $current_pid == 3128 ) ? 'is-active' : '';
-    $cls_y = ( $current_pid == 3130 ) ? 'is-active' : '';
-    $cls_l = ( $current_pid == 3127 ) ? 'is-active' : '';
-
-    $details = 'Abrechnung monatlich • Jederzeit kündbar';
-    if ( $current_pid == 3130 ) {
-        $details = 'Abrechnung jährlich (12 Monate)';
-    }
-    if ( $current_pid == 3127 ) {
-        $details = 'Einmalige Zahlung • Lebenslanger Zugriff';
-    }
-
-    $icon_url = 'https://dev.pascal-krell.de/wp-content/uploads/2025/08/check-mark-icon.svg';
-    ?>
-    <div class="ska-summary-header-wrapper">
-        <div class="ska-brand-header-small">
-            <h3>Deine Auswahl</h3>
-        </div>
-
-        <div class="ska-plan-switch-container">
-            <div class="ska-plan-switch">
-                <a href="<?php echo $url_m; ?>" class="ska-switch-opt <?php echo $cls_m; ?>">Monatlich</a>
-                <a href="<?php echo $url_y; ?>" class="ska-switch-opt <?php echo $cls_y; ?>">Jährlich <span class="badge">-20%</span></a>
-                <a href="<?php echo $url_l; ?>" class="ska-switch-opt <?php echo $cls_l; ?>">Lifetime</a>
-            </div>
-            <div class="ska-plan-details-text"><?php echo $details; ?></div>
-        </div>
-
-        <div class="ska-trust-badges-small">
-            <div class="trust-pill-small">🔒 SSL Verschlüsselt</div>
-            <div class="trust-pill-small">🛡 30 Tage Garantie</div>
-        </div>
-
-        <div class="ska-benefits-small">
-            <ul>
-                <li>Unlimitierte Analysen</li>
-                <li>Export als PDF & Word</li>
-                <li>Alle zukünftigen Updates</li>
-            </ul>
-        </div>
-        <style>
-            .ska-benefits-small li::before {
-                background-color: #1a93ee !important;
-                -webkit-mask-image: url('<?php echo $icon_url; ?>'); mask-image: url('<?php echo $icon_url; ?>');
-                -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-            }
-        </style>
-        <hr class="ska-divider">
-    </div>
-    <?php
-}
-
-/* 4. CSS & JS (Modern Layout & Brutto Prices) */
-add_action( 'wp_head', 'ska_inject_checkout_styles', 99 );
-
-function ska_inject_checkout_styles() {
-    // FIX: Header Cart Alignment (Global, auch wenn nicht im Checkout)
-    ?>
-    <style>
-        /* Versucht, generische Header-Warenkorb-Elemente zu treffen */
-        .site-header .cart-contents,
-        .ast-header-woo-cart .ast-cart-menu-wrap,
-        .et-cart-info {
-            display: flex !important;
-            align-items: center !important;
-        }
-        .site-header .cart-contents .amount,
-        .ast-header-woo-cart .amount {
-            margin-top: 0 !important;
-            line-height: 1 !important;
-            display: inline-block !important;
-        }
-    </style>
-    <?php
-
-    if ( ! is_checkout() || is_order_received_page() ) {
-        return;
-    }
-
-    $has_product = false;
-    if ( WC()->cart ) {
-        foreach ( WC()->cart->get_cart() as $item ) {
-            if ( in_array( $item['product_id'], array( 3128, 3130, 3127 ), true ) ) {
-                $has_product = true;
-            }
-        }
-    }
-    if ( ! $has_product ) {
-        return;
-    }
-
-    // Brutto Preise berechnen
-    $get_gross = function( $pid ) {
-        $p = wc_get_product( $pid );
-        if ( ! $p ) {
-            return '';
-        }
-        return wc_price( wc_get_price_including_tax( $p ) );
-    };
-    $p_m = $get_gross( 3128 );
-    $p_y = $get_gross( 3130 );
-    $p_l = $get_gross( 3127 );
-    ?>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const pricing = {
-            '3128': '<?php echo addslashes( $p_m ); ?>',
-            '3130': '<?php echo addslashes( $p_y ); ?>',
-            '3127': '<?php echo addslashes( $p_l ); ?>'
-        };
-
-        const updateUI = () => {
-            const btn = document.querySelector('#place_order');
-            if (btn) {
-                btn.textContent = 'Zahlungspflichtig bestellen';
-                btn.classList.add('ska-btn-rounded');
-            }
-            // Brutto-Preise erzwingen: Wir suchen die Beträge in der (versteckten) Tabelle
-            // und im Total und hängen den Hinweis an, damit der Betrag korrekt wirkt.
-            const amounts = document.querySelectorAll('#order_review .amount');
-            amounts.forEach(el => {
-                // Nur anhängen, wenn noch nicht da
-                if (!el.innerHTML.includes('MwSt')) {
-                    el.insertAdjacentHTML('afterend', ' <small class="ska-gross-note">(inkl. MwSt.)</small>');
-                }
-            });
-        };
-
-        updateUI();
-        jQuery(document.body).on('updated_checkout', updateUI);
-
-        document.querySelectorAll('.ska-switch-opt').forEach(el => {
-            el.addEventListener('click', (e) => {
-                if (!el.classList.contains('is-active')) {
-                    document.body.style.opacity = '0.5';
-                    document.body.style.cursor = 'wait';
-                } else { e.preventDefault(); }
-            });
-        });
-    });
-    </script>
-
-    <style>
-        /* CLEANUP */
-        .entry-title, .page-title, h1.wp-block-post-title { display: none !important; }
-        body.woocommerce-checkout { background-color: #f8fafc !important; }
-
-        /* MODERN CHECKOUT GRID LAYOUT */
-        .woocommerce {
-            max-width: 1200px !important; margin: 60px auto !important;
-            padding: 0 20px !important;
-        }
-
-        form.checkout.woocommerce-checkout {
-            display: grid !important;
-            grid-template-columns: 1.5fr 1fr !important; /* Linke Spalte breiter */
-            gap: 60px !important;
-            align-items: start !important;
-        }
-
-        /* LINKS: Adressfelder & Co. */
-        #customer_details {
-            grid-column: 1 / 2 !important;
-            width: 100% !important;
-        }
-        .woocommerce-billing-fields h3 { font-size: 1.5rem !important; margin-bottom: 25px !important; font-weight: 700 !important; color: #0f172a !important; }
-        .woocommerce-additional-fields { display: none !important; } /* Notizen ausblenden für Cleaner Look */
-
-        /* RECHTS: Zusammenfassung & Payment (Sticky Card) */
-        #order_review_heading { display: none !important; }
-        #order_review {
-            grid-column: 2 / 3 !important;
-            background: white !important;
-            padding: 40px !important;
-            border-radius: 24px !important;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1) !important;
-            border: 1px solid #f1f5f9 !important;
-            position: sticky !important;
-            top: 30px !important;
-        }
-
-        /* Login Messages etc. */
-        .woocommerce-form-login-toggle, .woocommerce-form-coupon-toggle, .woocommerce-error, .woocommerce-message {
-            grid-column: 1 / -1 !important; margin-bottom: 30px !important;
-        }
-
-        /* CUSTOM SUMMARY STYLES (Rechte Spalte) */
-        .ska-brand-header-small h3 { margin: 0 0 20px 0 !important; font-size: 1.2rem !important; color: #0f172a; }
-        .ska-divider { border: none; border-top: 1px solid #eee; margin: 25px 0; }
-
-        .ska-plan-switch-container { margin-bottom: 20px; }
-        .ska-plan-switch { display: flex; background: #e2e8f0; padding: 4px; border-radius: 12px; width: 100%; }
-        .ska-switch-opt { flex: 1; text-align: center; padding: 10px 5px; text-decoration: none !important; color: #64748b; font-weight: 600; font-size: 0.9rem; border-radius: 10px; transition: all 0.2s; border: none; display: inline-block; cursor: pointer; }
-        .ska-switch-opt.is-active { background: white !important; color: #0f172a !important; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .badge { background: #22c55e; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 99px; margin-left: 4px; font-weight: 700; vertical-align: middle; }
-        .ska-plan-details-text { margin-top: 12px; font-size: 0.85rem; color: #64748b; text-align: center; }
-
-        .ska-trust-badges-small { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        .trust-pill-small { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
-
-        .ska-benefits-small ul { list-style: none !important; padding: 0 !important; margin: 0 !important; }
-        .ska-benefits-small li { position: relative; padding-left: 28px !important; margin-bottom: 8px !important; font-size: 0.9rem !important; color: #334155 !important; line-height: 1.3 !important; }
-        .ska-benefits-small li::before { content: ''; position: absolute; left: 0; top: 3px; width: 16px; height: 16px; }
-
-        /* WARENKORB TABELLE & PAYMENT */
-        #order_review table.shop_table { border: none !important; margin-bottom: 20px !important; }
-        #order_review table.shop_table thead,
-        #order_review table.shop_table .cart_item,
-        #order_review table.shop_table tfoot th { display: none !important; } /* Details ausblenden */
-
-        #order_review table.shop_table tfoot tr { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee !important; padding: 10px 0 !important; }
-        #order_review table.shop_table tfoot tr.order-total { border-bottom: none !important; padding-top: 20px !important; }
-
-        #order_review table.shop_table tfoot td { display: block !important; text-align: right !important; font-weight: 700 !important; color: #0f172a !important; }
-        #order_review table.shop_table tfoot tr.order-total td { font-size: 1.8rem !important; }
-        .ska-gross-note { font-size: 0.7rem; font-weight: normal; color: #94a3b8; display: block; }
-
-        #payment { background: transparent !important; }
-        #payment ul.payment_methods { border-bottom: none !important; padding-bottom: 20px !important; }
-        #place_order {
-            width: 100% !important; border-radius: 99px !important; padding: 18px !important; font-weight: 700 !important; font-size: 1.1rem !important;
-            background-color: #1a93ee !important; color: white !important; border: none !important; margin-top: 10px !important;
-        }
-
-        @media (max-width: 1000px) {
-            form.checkout.woocommerce-checkout { grid-template-columns: 1fr !important; gap: 40px !important; }
-            #order_review { position: static !important; order: -1; /* Zusammenfassung zuerst auf Mobile */ }
-        }
-    </style>
-    <?php
 }
