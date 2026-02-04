@@ -512,9 +512,11 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .skriptanalyse-card.is-locked .ska-card-body-content { filter: blur(8px); pointer-events: none; }
 .skriptanalyse-card.is-dismissing { opacity: 0; transform: translateY(-8px); margin: 0 !important; padding: 0 !important; border-width: 0 !important; pointer-events: none; }
-.ska-premium-inline { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; flex-direction: column; gap: 0.5rem; align-items: center; background: rgba(15, 20, 26, 0.95); border: 1px solid rgba(56, 189, 248, 0.65); border-radius: 18px; padding: 1rem 1.2rem; box-shadow: 0 18px 36px -20px rgba(15, 23, 42, 0.6); text-align: center; color: #f8fafc; }
+.ska-premium-inline { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; flex-direction: column; gap: 0.5rem; align-items: center; background: rgba(15, 20, 26, 0.95); border: 1px solid rgba(56, 189, 248, 0.65); border-radius: 18px; padding: 1rem 1.2rem; box-shadow: 0 18px 36px -20px rgba(15, 23, 42, 0.65); text-align: center; color: #f8fafc; z-index: 50; }
 .ska-premium-inline strong { font-size: 1.05rem; color: #f8fafc; }
 .ska-premium-inline span { font-size: 0.85rem; color: #cbd5f5; }
+.ska-premium-inline .ska-btn--primary { background: var(--ska-primary); color: #fff; border: none; }
+.ska-premium-inline .ska-btn--primary:hover { background: #1676c4; color: #fff; }
 .ska-premium-lock-banner-wrap {
     width: 100%;
     margin-bottom: 0.85rem;
