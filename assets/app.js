@@ -515,174 +515,310 @@
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
     };
 
+    const SKA_FREE_CARDS = new Set([
+        'overview',
+        'char',
+        'fillers',
+        'anglicism',
+        'breath',
+        'stumble',
+        'pronunciation'
+    ]);
+
     const SKA_PRO_TIPS = {
         overview: [
             'Nutze den Überblick als Start: Wenn Zeit & Verständlichkeit passen, sind 80% der Arbeit erledigt.',
-            'Stell Genre + Zielzeit zuerst ein, damit die Analyse einen klaren Rahmen hat.'
+            'Stell Genre + Zielzeit zuerst ein, damit die Analyse einen klaren Rahmen hat.',
+            'Achte auf Ausreißer bei Flesch/LIX – sie zeigen sofort, wo der Text zu sperrig ist.',
+            'Prüfe die Warnhinweise zuerst, bevor du in Detail-Boxen gehst.',
+            'Nutze den Überblick als Checkliste: Tempo, Verständlichkeit, Stilwerte in Balance.'
         ],
         char: [
             'Halte Ansprache, Stimmung und Zielgruppe im selben Ton – das wirkt sofort professioneller.',
-            'Wenn du einen Stilwert verändern willst, ändere zuerst Satzlängen – das bringt die größte Wirkung.'
+            'Wenn du einen Stilwert verändern willst, ändere zuerst Satzlängen – das bringt die größte Wirkung.',
+            'Streue positiv/negativ geladene Wörter gezielt, statt sie zufällig zu mischen.',
+            'Prüfe den Ton am Anfang: Er prägt die Erwartung für den ganzen Text.',
+            'Formuliere zentrale Aussagen im gewünschten Stil – der Rest folgt dann leichter.'
         ],
         coach: [
             'Baue klare Betonungswörter ein – sie geben Sprecher:innen Halt und Rhythmus.',
-            'Setze bewusst Pausenmarker (…/—), wenn ein Satz klanglich geführt werden soll.'
+            'Setze bewusst Pausenmarker (…/—), wenn ein Satz klanglich geführt werden soll.',
+            'Kürze Hinweise auf ein Stichwort pro Satz – sonst wirken sie hektisch.',
+            'Nutze Regie-Anweisungen nur dort, wo sie die Wirkung wirklich verbessern.',
+            'Platziere Anweisungen vor dem Satz, auf den sie sich beziehen.'
         ],
         rhythm: [
             'Verteile kurze und mittlere Sätze, bevor du lange Sätze einsetzt – so bleibt der Flow stabil.',
-            'Nutze rhythmische „Dreierketten“ (kurz-mittel-kurz), um Kernaussagen zu betonen.'
+            'Nutze rhythmische „Dreierketten“ (kurz-mittel-kurz), um Kernaussagen zu betonen.',
+            'Baue bewusst Kontraste ein: Nach langen Sätzen wirkt ein kurzer besonders stark.',
+            'Prüfe die Peaks: Wo der Rhythmus ausreißt, entsteht oft Sprechstress.',
+            'Lies die Passage im Takt mit – wenn du stolperst, rhythmisch nachschärfen.'
         ],
         chapter_calc: [
             'Setze Kapitelüberschriften als eigene Zeile – das macht die Berechnung präzise.',
-            'Plane pro Kapitel eine kleine Sprechpause ein, damit der Erzählfluss sauber bleibt.'
+            'Plane pro Kapitel eine kleine Sprechpause ein, damit der Erzählfluss sauber bleibt.',
+            'Nutze konsistente Kapitel-Formate („Kapitel 1“, „Kapitel I“) für saubere Erkennung.',
+            'Vermeide zu lange Kapitel ohne Zäsur – kürzere Abschnitte wirken angenehmer.',
+            'Nutze die Gesamtzeit, um Aufnahme-Slots realistisch zu planen.'
         ],
         syllable_entropy: [
             'Wechsle lange Fachwörter mit kurzen Wörtern ab – das glättet Silben-Cluster.',
-            'Kürze Wortketten, wenn mehrere Silben hintereinander „z“ oder „sch“ enthalten.'
+            'Kürze Wortketten, wenn mehrere Silben hintereinander „z“ oder „sch“ enthalten.',
+            'Positioniere schwierige Wörter nicht direkt hintereinander – baue Puffer ein.',
+            'Teste die Passage laut: Wenn die Zunge stockt, Silbenfluss glätten.',
+            'Achte auf Gleichklang bei Endungen – Variation reduziert Silbenrauschen.'
         ],
         pronunciation: [
             'Schwierige Namen einmal phonetisch notieren und im Skript fixieren.',
-            'Zahlen ausschreiben, wenn sie im Fluss stolpern (z. B. „27“ → „siebenundzwanzig“).'
+            'Zahlen ausschreiben, wenn sie im Fluss stolpern (z. B. „27“ → „siebenundzwanzig“).',
+            'Abkürzungen laut ausschreiben, wenn sie nicht allgemein bekannt sind.',
+            'Prüfe Fremdwörter: Eine deutsche Alternative klingt oft flüssiger.',
+            'Platziere schwierige Wörter nicht am Satzende – dort fallen sie am stärksten auf.'
         ],
         role_dist: [
             'Halte Sprecherwechsel sichtbar (Absatz oder klare Rollenlabels).',
-            'Gib Dialogen kurze Intro-Sätze, damit der Hörer sofort weiß, wer spricht.'
+            'Gib Dialogen kurze Intro-Sätze, damit der Hörer sofort weiß, wer spricht.',
+            'Halte Rollen-Labels konsistent (Großschreibung, Doppelpunkte).',
+            'Wechsle Sprecher in sinnvollen Sinnabschnitten, nicht mitten im Satz.',
+            'Prüfe die Balance: zu viele Rollenwechsel machen unruhig.'
         ],
         keyword_focus: [
             'Leitbegriffe früh setzen (erster Absatz) – dort wirken sie am stärksten.',
-            'Wiederhole Fokuswörter nicht direkt nacheinander, sondern in sinnvollen Abständen.'
+            'Wiederhole Fokuswörter nicht direkt nacheinander, sondern in sinnvollen Abständen.',
+            'Nutze Synonyme sparsam, damit der Fokus nicht verwässert.',
+            'Platziere Fokusbegriffe in Überschriften oder ersten Sätzen.',
+            'Prüfe: Wenn zwei Wörter gleich stark sind, eines priorisieren.'
         ],
         plosive: [
             'Zwischen harten Plosiven kurze Pausen oder ein Füllwort setzen.',
-            'Bei Mikrofon-Nähe mit weichen Konsonanten mischen (B/P mit M/N).'
+            'Bei Mikrofon-Nähe mit weichen Konsonanten mischen (B/P mit M/N).',
+            'Vermeide Plosiv-Cluster in Produktnamen direkt hintereinander.',
+            'Nutze Vokal-Anfänge vor Plosiven, um die Kante zu entschärfen.',
+            'Testlesung nah am Mikro zeigt sofort, welche Stellen knallen.'
         ],
         easy_language: [
             'Ein Satz = eine Idee. Streiche Nebensätze, wenn möglich.',
-            'Vermeide Nominalstil – Verben machen Texte sofort verständlicher.'
+            'Vermeide Nominalstil – Verben machen Texte sofort verständlicher.',
+            'Nutze kurze, bekannte Wörter statt Fachbegriffe.',
+            'Formuliere aktiv und direkt, ohne Schachtelsätze.',
+            'Prüfe jeden Satz auf Lesbarkeit – wenn du stolperst, vereinfachen.'
         ],
         redundancy: [
             'Wiederhole nur Schlüsselbegriffe – alle anderen Dopplungen streichen.',
-            'Wenn zwei Sätze dasselbe sagen, entscheide dich für den stärkeren.'
+            'Wenn zwei Sätze dasselbe sagen, entscheide dich für den stärkeren.',
+            'Prüfe Absätze auf Synonyme, die inhaltlich identisch sind.',
+            'Vermeide Wiederholungen direkt in aufeinanderfolgenden Sätzen.',
+            'Nutze Dopplungen nur, wenn sie bewusst als Stilmittel gesetzt sind.'
         ],
         bullshit: [
             'Ersetze Buzzwords durch konkrete Nutzenformulierungen.',
-            'Prüfe jedes Schlagwort: Was bedeutet es messbar? Wenn nichts, weg damit.'
+            'Prüfe jedes Schlagwort: Was bedeutet es messbar? Wenn nichts, weg damit.',
+            'Nutze Beispiele oder Zahlen, um Aussagen greifbar zu machen.',
+            'Streiche Floskeln wie „state of the art“, wenn sie nichts belegen.',
+            'Sprich wie zu einer echten Person – nicht wie in einer Präsentation.'
         ],
         metaphor: [
             'Nutze Bilder, die zur Zielgruppe passen (Fachpublikum ≠ Kinder).',
-            'Ein starkes Bild pro Absatz wirkt besser als viele kleine.'
+            'Ein starkes Bild pro Absatz wirkt besser als viele kleine.',
+            'Vermeide abgenutzte Metaphern – sie wirken beliebig.',
+            'Teste Metaphern laut: Passen sie zum Ton und zur Marke?',
+            'Halte Bildsprache konsistent, statt mehrere Bilder zu mischen.'
         ],
         immersion: [
             'Streiche Wahrnehmungs-Filter („er sah“, „sie fühlte“) für mehr Nähe.',
-            'Lass die Handlung sprechen – zeige, statt zu erklären.'
+            'Lass die Handlung sprechen – zeige, statt zu erklären.',
+            'Nutze starke Verben, um Bilder im Kopf sofort anzustoßen.',
+            'Reduziere erklärende Einschübe, die die Szene verlangsamen.',
+            'Prüfe jeden Satz: Ist er Handlung oder Erklärung?'
         ],
         audience: [
             'Passe Satzlänge und Wortwahl an die Zielgruppe an, nicht nur den Ton.',
-            'Vermeide Abkürzungen, wenn die Zielgruppe sie nicht täglich nutzt.'
+            'Vermeide Abkürzungen, wenn die Zielgruppe sie nicht täglich nutzt.',
+            'Nutze Beispiele aus der Lebenswelt der Zielgruppe.',
+            'Halte Fachbegriffe kurz und erkläre sie direkt im Satz.',
+            'Prüfe: Würde deine Zielgruppe das so selbst sagen?'
         ],
         rhet_questions: [
             'Setze Fragen dort, wo du aktiv die Aufmerksamkeit zurückholen willst.',
-            'Beantworte rhetorische Fragen direkt – sonst wirkt es unsicher.'
+            'Beantworte rhetorische Fragen direkt – sonst wirkt es unsicher.',
+            'Nutze Fragen sparsam – eine pro Abschnitt reicht oft.',
+            'Formuliere Fragen kurz, damit sie beim Hören direkt greifen.',
+            'Nutze Fragen als Übergang, um neue Themen elegant einzuleiten.'
         ],
         depth_check: [
             'Zwei Nebensätze sind genug – alles darüber teilen.',
-            'Komplexe Sätze laut lesen: Wenn du dich verhaspelst, kürzen.'
+            'Komplexe Sätze laut lesen: Wenn du dich verhaspelst, kürzen.',
+            'Baue lange Sätze in Haupt- und Nebensätze mit klarer Struktur um.',
+            'Setze Punkte statt Kommas, wenn die Aussage wechselt.',
+            'Entferne Nebeninfos, die nicht direkt zur Kernaussage beitragen.'
         ],
         start_var: [
             'Starte Sätze abwechselnd mit Verb, Zeitangabe oder Objekt.',
-            'Vermeide „Dann… Dann…“ – rhythmisch wirkt Variation deutlich besser.'
+            'Vermeide „Dann… Dann…“ – rhythmisch wirkt Variation deutlich besser.',
+            'Nutze kurze Einleitungswörter („Heute“, „Jetzt“) gezielt als Akzent.',
+            'Prüfe Absatzanfänge: Variiere besonders dort, wo neue Gedanken starten.',
+            'Setze bewusste Wiederholung nur als Stilmittel (z. B. Anapher).'
         ],
         compliance_check: [
             'Pflichttexte exakt übernehmen – jede Abweichung wird kritisch.',
-            'Satzzeichen im Pflichttext konsistent halten (Punkt/Komma nicht ändern).'
+            'Satzzeichen im Pflichttext konsistent halten (Punkt/Komma nicht ändern).',
+            'Pflichtpassagen am Ende final prüfen – nach dem letzten Edit.',
+            'Nutze eine eigene Zeile pro Pflichttext für klare Treffer.',
+            'Vermeide zusätzliche Leerzeichen oder Umbrüche im Pflichttext.'
         ],
         breath: [
             'Setze Atempunkte nach Sinnabschnitten, nicht nur nach Kommas.',
-            'Wenn ein Satz „zu lang“ wirkt: teile ihn an der inhaltlichen Zäsur.'
+            'Wenn ein Satz „zu lang“ wirkt: teile ihn an der inhaltlichen Zäsur.',
+            'Nutze kurze Hauptsätze als Atemanker zwischen langen Passagen.',
+            'Streiche Einschübe, die den Atemfluss unnötig unterbrechen.',
+            'Sprich den Satz einmal laut: Wenn die Luft nicht reicht, kürzen.'
         ],
         stumble: [
             'Tausche Wortungetüme gegen kürzere Synonyme.',
-            'Sprich Zungenbrecher dreimal schnell – wenn’s stockt: ändern.'
+            'Sprich Zungenbrecher dreimal schnell – wenn’s stockt: ändern.',
+            'Vermeide ähnliche Silbenfolgen direkt hintereinander.',
+            'Setze Bindestriche, wenn sie die Betonung klarer machen.',
+            'Prüfe besonders Fachbegriffe – dort entstehen die meisten Stolperer.'
         ],
         gender: [
             'Partizipien („Mitarbeitende“) wirken neutral und flüssig.',
-            'Vermeide Doppelnennungen in jedem Satz – setze sie gezielt ein.'
+            'Vermeide Doppelnennungen in jedem Satz – setze sie gezielt ein.',
+            'Nutze Sammelbegriffe („Team“, „Publikum“) für flüssigen Klang.',
+            'Prüfe Komposita: Oft reicht eine neutrale Form („Führungskraft“).',
+            'Halte die gewählte Lösung im Text durchgehend konsistent.'
         ],
         echo: [
             'Synonyme nutzen, damit Wiederholungen nicht hörbar werden.',
-            'Wenn ein Wort wichtig ist, wiederhole es bewusst – sonst variieren.'
+            'Wenn ein Wort wichtig ist, wiederhole es bewusst – sonst variieren.',
+            'Prüfe Wortabstände: Gleiche Wörter in aufeinanderfolgenden Sätzen vermeiden.',
+            'Streiche Füllsätze, die nur Wiederholungen erzeugen.',
+            'Nutze Pronomen oder Umschreibungen, wenn es stilistisch passt.'
         ],
         adjective: [
             'Ein starkes Adjektiv schlägt drei schwache.',
-            'Streiche Adjektive, die keine neue Information liefern.'
+            'Streiche Adjektive, die keine neue Information liefern.',
+            'Setze Adjektive gezielt vor Kernnomen, nicht vor jedes Substantiv.',
+            'Nutze bildhafte Substantive statt Adjektiv-Ketten.',
+            'Prüfe Endungen (-ig/-lich): Häufungen wirken schnell werblich.'
         ],
         adverb: [
             'Ersetze Adverbien durch starke Verben („schnell gehen“ → „eilen“).',
-            'Adverbien nur dort, wo sie den Ton wirklich verändern.'
+            'Adverbien nur dort, wo sie den Ton wirklich verändern.',
+            'Streiche „eigentlich“, „irgendwie“, „sozusagen“ konsequent.',
+            'Nutze Adverbien sparsam als Betonung, nicht als Lückenfüller.',
+            'Prüfe jedes Adverb: Verändert es die Aussage?'
         ],
         passive: [
             'Aktive Formulierungen wirken klarer und kürzer.',
-            'Passiv nur, wenn der Handelnde bewusst verborgen bleiben soll.'
+            'Passiv nur, wenn der Handelnde bewusst verborgen bleiben soll.',
+            'Suche nach „wird/werden“ – dort steckt oft ein Passiv.',
+            'Aktiv = mehr Verantwortung und Dynamik im Text.',
+            'Streiche unnötige Hilfsverben, wenn das Verb allein reicht.'
         ],
         fillers: [
             'Füllwörter streichen, wenn sie keine neue Bedeutung tragen.',
-            'Laut lesen: Störwörter fallen beim Sprechen sofort auf.'
+            'Laut lesen: Störwörter fallen beim Sprechen sofort auf.',
+            'Ersetze Füllwörter durch eine kurze Pause – wirkt souveräner.',
+            'Streiche zuerst „eigentlich“, „irgendwie“, „quasi“ – sie verwässern.',
+            'Weniger Füllwörter = klarere Betonung der Kernbotschaft.'
         ],
         nominal: [
             'Verben nach vorn holen – das macht Sätze lebendiger.',
-            'Nominalstil in kurzen Sätzen besonders hart: hier konsequent abbauen.'
+            'Nominalstil in kurzen Sätzen besonders hart: hier konsequent abbauen.',
+            'Suche nach „-ung/-heit/-keit“ und prüfe Verbalformen.',
+            'Aktive Verben schaffen Tempo und wirken sprechbarer.',
+            'Prüfe, ob ein Substantiv wirklich nötig ist oder ein Verb reicht.'
         ],
         nominal_chain: [
             'Nominalketten in zwei Sätze teilen – das löst 80% der Schwere.',
-            'Präpositionen statt Genitivketten machen Texte hörbarer.'
+            'Präpositionen statt Genitivketten machen Texte hörbarer.',
+            'Setze Verben zwischen die Substantive, um Luft zu schaffen.',
+            'Vermeide Ketten aus drei oder mehr Hauptwörtern.',
+            'Teste den Satz laut – wenn er hakt, Kette auflösen.'
         ],
         sentiment_intensity: [
             'Emotionale Peaks gezielt setzen – nicht jedes Wort aufdrehen.',
-            'Kontrast wirkt: ruhige Passagen lassen Highlights stärker wirken.'
+            'Kontrast wirkt: ruhige Passagen lassen Highlights stärker wirken.',
+            'Achte auf gleichmäßige Wellen statt plötzlicher Sprünge.',
+            'Setze positive Wörter dort, wo du Wirkung erzeugen willst.',
+            'Übertreibungen nur, wenn du sie auch belegen kannst.'
         ],
         cta: [
             'CTA im letzten Drittel platzieren, damit der Text darauf zuläuft.',
-            'Ein CTA pro Abschnitt – sonst verwässert die Handlung.'
+            'Ein CTA pro Abschnitt – sonst verwässert die Handlung.',
+            'Nutze klare Verben („Hol dir“, „Teste“, „Starte“).',
+            'Halte den CTA kurz und sprechbar – keine Schachtelsätze.',
+            'Kombiniere Nutzen + Handlung in einem Satz.'
         ],
         anglicism: [
             'Englische Begriffe nur dort, wo sie im Alltag wirklich üblich sind.',
-            'Wenn’s ohne Englisch funktioniert, ist Deutsch oft klarer fürs Ohr.'
+            'Wenn’s ohne Englisch funktioniert, ist Deutsch oft klarer fürs Ohr.',
+            'Prüfe, ob die Zielgruppe die Begriffe spontan versteht.',
+            'Vermeide gemischte Begriffe („upgraden“, „downloaden“) im Fließtext.',
+            'Nutze deutsche Alternativen, wenn sie kürzer und klarer sind.'
         ],
         verb_balance: [
             'Mehr Verben erzeugen Dynamik und Handlung.',
-            'Nominalstil bremst – ersetze „Umsetzung“ durch „umsetzen“.'
+            'Nominalstil bremst – ersetze „Umsetzung“ durch „umsetzen“.',
+            'Setze starke Verben am Satzanfang für mehr Energie.',
+            'Vermeide Hilfsverben, wenn ein Hauptverb reicht.',
+            'Prüfe jeden Satz: Wo kann ein Verb das Substantiv ersetzen?'
         ],
         bpm: [
             'Tempo der Musik an Satzlänge koppeln – lange Sätze brauchen Luft.',
-            'Ruhige Passagen profitieren von niedrigerem BPM.'
+            'Ruhige Passagen profitieren von niedrigerem BPM.',
+            'Für schnelle Claims eignet sich ein höheres BPM-Fenster.',
+            'Pausen zählen mit – plane sie in die BPM-Entscheidung ein.',
+            'Teste zwei BPM-Varianten und wähle die verständlichere.'
         ],
         vocabulary: [
             'Wortschatz variieren, ohne die Kernbegriffe zu verlieren.',
-            'Setze wiederkehrende Schlüsselwörter bewusst als Markenanker.'
+            'Setze wiederkehrende Schlüsselwörter bewusst als Markenanker.',
+            'Prüfe, ob Wiederholungen Stilmittel sind oder nur Gewohnheit.',
+            'Nutze Synonyme nur, wenn sie die Bedeutung nicht verwässern.',
+            'Halte die Wortwahl passend zur Zielgruppe und Tonalität.'
         ],
         dialog: [
             'Dialoge wirken stärker, wenn Sprecher klar unterscheidbar sind.',
-            'Setze kurze Erzähler-Impulse, um Orientierung zu geben.'
+            'Setze kurze Erzähler-Impulse, um Orientierung zu geben.',
+            'Nutze kurze Sätze im Dialog – das klingt natürlicher.',
+            'Markiere Sprecherwechsel visuell (Absatz, Label).',
+            'Vermeide zu lange Monologe ohne Reaktion.'
         ],
         teleprompter: [
             'Zeilenlänge so halten, dass die Augen ruhig wandern.',
-            'Tempo kalibrieren und dann konstant halten – das gibt Sicherheit.'
+            'Tempo kalibrieren und dann konstant halten – das gibt Sicherheit.',
+            'Setze größere Schrift, wenn du weiter vom Screen stehst.',
+            'Vermeide harte Zeilenumbrüche in Satzmitte.',
+            'Teste den Prompter einmal komplett durch, bevor du aufnimmst.'
         ],
         pacing: [
             'Pacing im Probe-Tempo testen, bevor du aufnimmst.',
-            'Pausen bewusst markieren – sie zählen real in die Zeit.'
+            'Pausen bewusst markieren – sie zählen real in die Zeit.',
+            'Übe mit dem Balken, bis dein Sprechen ruhig mitläuft.',
+            'Passe Zielzeiten an das Genre an, nicht an die Laune.',
+            'Kurze Passagen zuerst üben – dann längere Texte.'
         ],
         word_sprint: [
             'Kurze Sprints (10–15 Min.) liefern die beste Fokus-Qualität.',
-            'Wortziel leicht über dem Alltag ansetzen – das motiviert.'
+            'Wortziel leicht über dem Alltag ansetzen – das motiviert.',
+            'Schalte Ablenkungen aus und arbeite nur am aktuellen Abschnitt.',
+            'Notiere offene Fragen nach dem Sprint – erst danach recherchieren.',
+            'Mehrere kurze Sprints sind effektiver als ein langer.'
         ],
         compare: [
             'Vergleiche nur eine Änderung pro Durchlauf – so siehst du klare Effekte.',
-            'Notiere das Ziel vor dem Vergleich, damit du objektiv bleibst.'
+            'Notiere das Ziel vor dem Vergleich, damit du objektiv bleibst.',
+            'Nutze Versionsnamen mit Datum und Fokus („03-CTA-klarer“).',
+            'Bewerte zuerst Lesbarkeit, dann Stil – in dieser Reihenfolge.',
+            'Halte die Vergleichstexte möglichst ähnlich lang.'
         ],
         default: [
             'Fokussiere pro Durchgang auf ein Thema – so wird der Text spürbar besser.',
-            'Laut lesen ist der schnellste Qualitätscheck für jede Analyse.'
+            'Laut lesen ist der schnellste Qualitätscheck für jede Analyse.',
+            'Behandle Hinweise als To-do-Liste und arbeite sie nacheinander ab.',
+            'Kurze Testpassagen zuerst optimieren, dann den ganzen Text.',
+            'Weniger ist mehr: Streiche jeden Satz, der nichts Neues bringt.'
         ]
     };
 
@@ -6129,6 +6265,27 @@
                 this.openProjectManagerModal();
                 return true;
             }
+            if (act === 'close-project-manager') {
+                this.closeProjectManagerModal();
+                return true;
+            }
+            if (act === 'project-upsell-upgrade') {
+                if (event) {
+                    event.preventDefault();
+                }
+                if (!this.isPremiumActive()) {
+                    this.closeProjectManagerModal();
+                    const upgradeBox = document.getElementById('ska-premium-upgrade') || document.querySelector('.ska-premium-upgrade-card');
+                    if (upgradeBox && upgradeBox.scrollIntoView) {
+                        upgradeBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        upgradeBox.classList.add('is-highlighted');
+                        window.setTimeout(() => {
+                            upgradeBox.classList.remove('is-highlighted');
+                        }, 1400);
+                    }
+                }
+                return true;
+            }
             if (act === 'refresh-projects') {
                 this.refreshProjectsList();
                 return true;
@@ -6968,7 +7125,7 @@
                             <div class="ska-project-manager__upsell-text">
                                 <strong>Speichere deine Skripte & Projekte dauerhaft mit einem Premium-Plan.</strong>
                                 <span>Greife jederzeit auf alle Projekte zu und verwalte Versionen zentral.</span>
-                                <a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>
+                                <a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade" data-action="project-upsell-upgrade">Premium freischalten</a>
                             </div>
                         </div>
                         <div class="ska-project-manager__list" data-role="project-manager-list"></div>
@@ -7014,6 +7171,11 @@
             if (this.projectManagerModal) {
                 SA_Utils.openModal(this.projectManagerModal);
             }
+        }
+
+        closeProjectManagerModal() {
+            if (!this.projectManagerModal) return;
+            SA_Utils.closeModal(this.projectManagerModal);
         }
 
         refreshProjectsList() {
@@ -8023,11 +8185,6 @@
                 pacing: '⏱️',
                 word_sprint: '✍️'
             };
-            const toolHints = {
-                teleprompter: 'Premium: Teleprompter freischalten.',
-                pacing: 'Premium: Sprech-Pacing freischalten.',
-                word_sprint: 'Premium: Schreib-Sprint freischalten.'
-            };
             const toolCtaLabels = {
                 teleprompter: 'Teleprompter starten',
                 pacing: 'Jetzt Timing verbessern',
@@ -8038,22 +8195,19 @@
                 const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id] || id);
                 const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
                 const locked = !this.isCardUnlocked(id);
-                const showPremiumHints = !this.isFreeOnlyMode();
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
                 const action = id === 'teleprompter'
                     ? 'open-teleprompter'
                     : (id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal');
                 const toolAttr = `data-tool-id="${id}"`;
-                const hint = locked && showPremiumHints ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
                 return `
                     <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
                         <div class="ska-tool-tile-header">
                             <strong>${icon}${title}</strong>
-                            ${locked && showPremiumHints ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
+                            ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
                         </div>
                         <p>${description}</p>
                         <span class="ska-tool-tile-cta">${toolCtaLabels[id] || 'Werkzeug öffnen'}</span>
-                        ${hint}
                     </button>
                 `;
             }).join('');
@@ -8127,11 +8281,15 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-layout-modal"></div>
                 <div class="skriptanalyse-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-layout-modal" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header">
-                        <h3>Layout anpassen</h3>
+                    <div class="ska-modal-header ska-layout-modal-header">
+                        <div class="ska-layout-modal-title">Boxen-Layout anpassen</div>
+                        <div class="ska-layout-modal-subtitle">Sichtbarkeit & Reihenfolge deiner Analyseboxen</div>
+                        <div class="ska-layout-modal-hint">
+                            <span class="ska-layout-modal-hint-icon">💡</span>
+                            <span>Tipp: In der Free-Version kannst du Boxen ein- und ausblenden. Die Reihenfolge per Drag & Drop ist in Premium verfügbar.</span>
+                        </div>
                     </div>
                     <div class="skriptanalyse-modal-body">
-                        <div class="ska-layout-modal-note">Hinweis: Als Free User kannst du Boxen ein-/ausblenden. Drag & Drop (Reihenfolge) ist Premium.</div>
                         <p class="ska-layout-intro">Passe Sichtbarkeit und Reihenfolge an. Neue Boxen werden automatisch am Ende ergänzt.</p>
                         <div data-role="layout-grid" class="ska-layout-grid"></div>
                     </div>
@@ -8307,13 +8465,14 @@
             const applyVisibility = (card) => {
                 const id = card.dataset.cardId;
                 if (!id) return;
+                const isFreeWhitelisted = SKA_FREE_CARDS.has(id);
                 const isChecked = (() => {
                     if (toolCards.has(id)) return true;
                     if (!allowed) return !this.state.hiddenCards.has(id);
-                    if (allowed.has(id)) return !this.state.hiddenCards.has(id);
+                    if (allowed.has(id) || isFreeWhitelisted) return !this.state.hiddenCards.has(id);
                     return this.state.selectedExtraCards.has(id);
                 })();
-                const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id) && !isChecked;
+                const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id) && !isFreeWhitelisted && !isChecked;
                 const hideBySelection = !isChecked;
                 const hideByPlan = !isPlanVisible(id) || !this.isCardAvailable(id);
                 card.classList.toggle('is-hidden-profile', hideByProfile || hideBySelection);
@@ -10749,11 +10908,15 @@
         }
 
         isCardAvailable(id) {
-            if (this.isFreeOnlyMode()) {
-                return !this.isPremiumCard(id);
-            }
             if (this.getDisabledCards().includes(id)) return false;
             if (this.getDisabledTools().includes(id)) return false;
+            const isFreeWhitelisted = SKA_FREE_CARDS.has(id);
+            if (this.isFreeOnlyMode()) {
+                return isFreeWhitelisted;
+            }
+            if (!this.isPremiumActive() && isFreeWhitelisted) {
+                return true;
+            }
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
@@ -10772,9 +10935,9 @@
 
         isCardUnlocked(id) {
             if (this.isFreeOnlyMode()) {
-                return SA_CONFIG.FREE_CARDS.includes(id);
+                return SKA_FREE_CARDS.has(id);
             }
-            return this.isPremiumActive() || SA_CONFIG.FREE_CARDS.includes(id);
+            return this.isPremiumActive() || SKA_FREE_CARDS.has(id);
         }
 
         isCardTeaser(id) {
