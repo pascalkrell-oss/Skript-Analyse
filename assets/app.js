@@ -7104,6 +7104,12 @@
                         saveBtn.disabled = !isPremium;
                         saveBtn.classList.toggle('is-disabled', !isPremium);
                         saveBtn.setAttribute('aria-disabled', String(!isPremium));
+                        saveBtn.classList.toggle('ska-premium-hoverhint', !isPremium);
+                        if (!isPremium) {
+                            saveBtn.setAttribute('data-tooltip', 'Nur mit Premium möglich');
+                        } else {
+                            saveBtn.removeAttribute('data-tooltip');
+                        }
                         if (tooltip) {
                             tooltip.textContent = isPremium
                                 ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
@@ -7154,7 +7160,7 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-project-manager"></div>
                 <div class="skriptanalyse-modal-content ska-project-manager-modal__content">
                     <button type="button" class="ska-close-icon" data-action="close-project-manager" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header"><h3>Speichere Deine Projekte dauerhaft mit einer Premium-Mitgliedschaft.</h3></div>
+                    <div class="ska-modal-header" data-role="project-manager-title"><h3>Meine gespeicherten Projekte</h3></div>
                     <div class="skriptanalyse-modal-body">
                         <div class="ska-project-manager__save" data-role="project-save-panel">
                             <div class="ska-project-manager__save-header">
@@ -7173,8 +7179,7 @@
                         <div class="ska-project-manager__upsell" data-role="project-upsell">
                             <div class="ska-project-manager__upsell-icon">⭐</div>
                             <div class="ska-project-manager__upsell-text">
-                                <strong>Speichere deine Skripte & Projekte dauerhaft mit einem Premium-Plan.</strong>
-                                <span>Greife jederzeit auf alle Projekte zu und verwalte Versionen zentral.</span>
+                                <strong>Speichere Deine Projekte dauerhaft mit einer Premium-Mitgliedschaft.</strong>
                                 <a class="ska-btn ska-btn--primary ska-btn--compact ska-projects-upgrade-btn" href="#ska-premium-upgrade" data-action="project-upsell-upgrade">Premium freischalten</a>
                             </div>
                         </div>
@@ -7188,6 +7193,7 @@
             `;
             document.body.appendChild(modal);
             this.projectManagerModal = modal;
+            this.projectManagerTitle = modal.querySelector('[data-role="project-manager-title"]');
             this.projectManagerList = modal.querySelector('[data-role="project-manager-list"]');
             this.projectManagerUpsell = modal.querySelector('[data-role="project-upsell"]');
             this.projectManagerEmpty = modal.querySelector('[data-role="project-manager-empty"]');
@@ -7200,6 +7206,9 @@
         openProjectManagerModal(context = 'manage') {
             this.ensureProjectManagerModal();
             const isPremium = this.isPremiumActive();
+            if (this.projectManagerTitle) {
+                this.projectManagerTitle.hidden = !isPremium;
+            }
             if (this.projectManagerUpsell) {
                 this.projectManagerUpsell.hidden = isPremium || !this.isUpsellAllowed();
                 this.projectManagerUpsell.dataset.context = context;
@@ -8258,14 +8267,16 @@
                     ? 'open-teleprompter'
                     : (id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal');
                 const toolAttr = `data-tool-id="${id}"`;
+                const showPremiumHint = !this.isPremiumActive() && ['teleprompter', 'word_sprint', 'pacing'].includes(id);
                 return `
-                    <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
+                    <button class="ska-tool-tile ${locked ? 'is-locked' : ''} ${showPremiumHint ? 'ska-tool--premiumlocked' : ''}" data-action="${action}" ${toolAttr}>
                         <div class="ska-tool-tile-header">
                             <strong>${icon}${title}</strong>
                             ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
                         </div>
                         <p>${description}</p>
                         <span class="ska-tool-tile-cta">${toolCtaLabels[id] || 'Werkzeug öffnen'}</span>
+                        ${showPremiumHint ? '<div class="ska-tool-premium-hint">Premium-Funktion – mit Mitgliedschaft freischalten</div>' : ''}
                     </button>
                 `;
             }).join('');
@@ -8347,10 +8358,10 @@
                     <button type="button" class="ska-close-icon" data-action="close-layout-modal" aria-label="Schließen">&times;</button>
                     <div class="ska-modal-header ska-layout-modal-header">
                         <div class="ska-layout-modal-title">Boxen-Layout anpassen</div>
-                        <div class="ska-layout-modal-subtitle">Sichtbarkeit & Reihenfolge deiner Analyseboxen</div>
+                        <div class="ska-layout-modal-subtitle">Sichtbarkeit & Reihenfolge Deiner Analyseboxen</div>
                         <div class="ska-layout-modal-hint">
                             <span class="ska-layout-modal-hint-icon">💡</span>
-                            <span>Tipp: In der Free-Version kannst du Boxen ein- und ausblenden. Die Reihenfolge per Drag & Drop ist in Premium verfügbar.</span>
+                            <span>Tipp: In der Free-Version kannst du deine kostenlosen Boxen ein-/ausblenden und sortieren. Premium-Boxen sind mit einer Premium-Mitgliedschaft verfügbar.</span>
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body">
@@ -8397,6 +8408,7 @@
                 if (!draggingItem) return;
                 const target = event.target.closest('[data-card-id]');
                 if (!target || target === draggingItem) return;
+                if (!this.isPremiumActive() && !SKA_FREE_CARDS.has(target.dataset.cardId)) return;
                 event.preventDefault();
                 const rect = target.getBoundingClientRect();
                 const shouldInsertBefore = event.clientY < rect.top + rect.height / 2;
@@ -8416,17 +8428,18 @@
             const sortedItems = isPremiumPlan
                 ? items
                 : [
-                    ...items.filter(id => this.isCardUnlocked(id)),
-                    ...items.filter(id => !this.isCardUnlocked(id))
+                    ...items.filter(id => SKA_FREE_CARDS.has(id)),
+                    ...items.filter(id => !SKA_FREE_CARDS.has(id))
                 ];
             grid.innerHTML = '';
             sortedItems.forEach((id) => {
                 const isUnlocked = this.isCardUnlocked(id);
                 const isVisible = !this.state.hiddenCards.has(id);
-                const canDrag = isPremiumPlan && isUnlocked;
+                const isFreeCard = SKA_FREE_CARDS.has(id);
+                const canDrag = isPremiumPlan ? isUnlocked : (isUnlocked && isFreeCard);
 
                 const item = document.createElement('div');
-                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}${isPremiumPlan ? '' : ' ska-layout-item--dnd-locked'}`;
+                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}${!isPremiumPlan && !isFreeCard ? ' ska-layout-item--dnd-locked' : ''}`;
                 item.dataset.cardId = id;
                 item.setAttribute('draggable', canDrag ? 'true' : 'false');
 
@@ -8434,12 +8447,8 @@
                 handle.className = 'ska-layout-handle';
                 handle.setAttribute('aria-hidden', 'true');
                 handle.textContent = '⋮⋮';
-                if (!isPremiumPlan) {
+                if (!canDrag) {
                     handle.classList.add('is-disabled');
-                    const dndLock = document.createElement('span');
-                    dndLock.className = 'ska-layout-dnd-lock';
-                    dndLock.textContent = '🔒 Premium';
-                    handle.appendChild(dndLock);
                 }
 
                 const title = document.createElement('span');
@@ -8464,15 +8473,14 @@
                 toggle.appendChild(checkbox);
                 toggle.appendChild(toggleLabel);
 
-                if (!isUnlocked) {
-                    const lockIcon = document.createElement('span');
-                    lockIcon.className = 'ska-layout-lock';
-                    lockIcon.textContent = '🔒';
-                    toggle.appendChild(lockIcon);
-                }
-
                 item.appendChild(handle);
                 item.appendChild(title);
+                if (!isUnlocked) {
+                    const badge = document.createElement('span');
+                    badge.className = 'ska-layout-item-badge-premium';
+                    badge.textContent = 'Premium';
+                    item.appendChild(badge);
+                }
                 item.appendChild(toggle);
                 grid.appendChild(item);
             });
@@ -11670,7 +11678,6 @@
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
-            const showPremiumNotice = !isToolCard && isLocked && id !== 'overview';
             const showLockOverlay = isLocked && !isToolCard && id !== 'overview' && !this.isFreeOnlyMode();
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
@@ -11679,8 +11686,7 @@
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
             const resolvedHtml = html;
             const finalHtml = resolvedHtml;
-            const premiumNoticeHtml = showPremiumNotice ? this.renderPremiumLockedNotice(id) : '';
-            const bodyHtml = `${showPremiumNotice ? `<div class="ska-premium-lock-banner-wrap">${premiumNoticeHtml}</div>` : ''}<div class="ska-card-body-content">${finalHtml}</div>`;
+            const bodyHtml = `<div class="ska-card-body-content">${finalHtml}</div>`;
             const proTipHtml = !isToolCard ? this.renderProTipFooter(id) : '';
             const buildProTipFooter = () => {
                 if (!proTipHtml) return null;
