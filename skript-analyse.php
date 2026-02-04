@@ -10,8 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 define( 'SKA_URL', plugin_dir_url( __FILE__ ) );
 define( 'SKA_VER', '4.75.9' );
-$premium_product_monthly_id = 123;
-$premium_product_yearly_id = 456;
+$premium_product_monthly_id = 3128;
+$premium_product_yearly_id = 3130;
+$premium_product_lifetime_id = 3127;
 $premium_product_id = $premium_product_monthly_id;
 
 
@@ -264,6 +265,36 @@ function ska_get_default_analysis_mode() {
     return $mode;
 }
 
+function ska_sanitize_app_mode( $mode ) {
+    $mode = sanitize_key( (string) $mode );
+    $allowed = array( 'free_only', 'freemium', 'force_premium' );
+    return in_array( $mode, $allowed, true ) ? $mode : 'freemium';
+}
+
+function ska_sanitize_option_string_array( $value ) {
+    $value = is_array( $value ) ? $value : array();
+    $clean = array();
+    foreach ( $value as $item ) {
+        $item = sanitize_text_field( (string) $item );
+        if ( $item !== '' ) {
+            $clean[] = $item;
+        }
+    }
+    return array_values( array_unique( $clean ) );
+}
+
+function ska_get_app_mode() {
+    return ska_sanitize_app_mode( get_option( 'ska_app_mode', 'freemium' ) );
+}
+
+function ska_get_disabled_cards() {
+    return ska_sanitize_option_string_array( get_option( 'ska_disabled_cards', array() ) );
+}
+
+function ska_get_disabled_tools() {
+    return ska_sanitize_option_string_array( get_option( 'ska_disabled_tools', array() ) );
+}
+
 function ska_get_pdf_footer_text() {
     $text = get_option( 'ska_pdf_footer_text', '' );
     return is_string( $text ) ? $text : '';
@@ -377,8 +408,70 @@ add_filter( 'body_class', function( $classes ) {
     return $classes;
 } );
 
+function ska_get_premium_product_ids() {
+    global $premium_product_monthly_id, $premium_product_yearly_id, $premium_product_lifetime_id;
+    return array(
+        (int) $premium_product_monthly_id,
+        (int) $premium_product_yearly_id,
+        (int) $premium_product_lifetime_id,
+    );
+}
+
+function ska_is_premium_product_id( $product_id ) {
+    return in_array( (int) $product_id, ska_get_premium_product_ids(), true );
+}
+
+function ska_remove_other_premium_products_from_cart( $keep_key = '', $keep_product_id = 0 ) {
+    if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+        return;
+    }
+    foreach ( WC()->cart->get_cart() as $cart_key => $item ) {
+        if ( empty( $item['product_id'] ) || ! ska_is_premium_product_id( $item['product_id'] ) ) {
+            continue;
+        }
+        if ( $keep_key && $cart_key === $keep_key ) {
+            continue;
+        }
+        if ( $keep_product_id && (int) $item['product_id'] === (int) $keep_product_id ) {
+            continue;
+        }
+        WC()->cart->remove_cart_item( $cart_key );
+    }
+}
+
+function ska_premium_sold_individually( $sold_individually, $product ) {
+    if ( $product && ska_is_premium_product_id( $product->get_id() ) ) {
+        return true;
+    }
+    return $sold_individually;
+}
+add_filter( 'woocommerce_is_sold_individually', 'ska_premium_sold_individually', 10, 2 );
+
+function ska_cleanup_premium_cart_on_add( $cart_item_key, $product_id, $quantity, $variation_id, $variation, $cart_item_data ) {
+    if ( ! ska_is_premium_product_id( $product_id ) ) {
+        return;
+    }
+    ska_remove_other_premium_products_from_cart( $cart_item_key, $product_id );
+}
+add_action( 'woocommerce_add_to_cart', 'ska_cleanup_premium_cart_on_add', 10, 6 );
+
+function ska_force_premium_quantity_one( $cart ) {
+    if ( ! $cart ) {
+        return;
+    }
+    foreach ( $cart->get_cart() as $cart_key => $item ) {
+        if ( empty( $item['product_id'] ) || ! ska_is_premium_product_id( $item['product_id'] ) ) {
+            continue;
+        }
+        if ( $item['quantity'] > 1 ) {
+            $cart->set_quantity( $cart_key, 1, false );
+        }
+    }
+}
+add_action( 'woocommerce_before_calculate_totals', 'ska_force_premium_quantity_one', 10, 1 );
+
 function ska_get_localized_config() {
-    global $premium_product_id, $premium_product_monthly_id, $premium_product_yearly_id;
+    global $premium_product_id, $premium_product_monthly_id, $premium_product_yearly_id, $premium_product_lifetime_id;
     $markers_config = [
         ['label' => '| (Kurze Pause)', 'val' => '|', 'desc' => 'Natürliche Atempause (~0.5 Sek)'],
         ['label' => '1 Sekunde', 'val' => '|1S|', 'desc' => 'Feste Pause von einer Sekunde'],
@@ -441,12 +534,16 @@ function ska_get_localized_config() {
         'maintenanceMode' => ska_is_maintenance_mode_enabled(),
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
         'pdfFooterText' => ska_get_pdf_footer_text(),
+        'appMode' => ska_get_app_mode(),
+        'disabledCards' => ska_get_disabled_cards(),
+        'disabledTools' => ska_get_disabled_tools(),
         'planMode' => $plan_mode,
         'currentUserPlan' => ska_get_user_plan_status(),
         'checkoutUrl' => function_exists( 'wc_get_checkout_url' ) ? wc_get_checkout_url() : site_url( '/kasse/' ),
         'premiumProductId' => (int) $premium_product_id,
         'premiumProductMonthlyId' => (int) $premium_product_monthly_id,
         'premiumProductYearlyId' => (int) $premium_product_yearly_id,
+        'premiumProductLifetimeId' => (int) $premium_product_lifetime_id,
         'premiumCartUrl' => $premium_cart_url,
         'cartUrl' => $cart_url,
     );
@@ -576,7 +673,6 @@ function ska_shortcode() {
                 <div class="ska-tools-header">
                     <div class="ska-tools-title">
                         <h3><span class="ska-tools-title-icon">🧰</span>Werkzeuge</h3>
-                        <p>Teleprompter, Pacing & Marker für die Umsetzung.</p>
                     </div>
                 </div>
                 <div class="ska-tools-grid"></div>
@@ -1544,6 +1640,9 @@ function ska_admin_get_settings( WP_REST_Request $request ) {
         'maintenanceMode' => ska_is_maintenance_mode_enabled(),
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
         'pdfFooterText' => ska_get_pdf_footer_text(),
+        'appMode' => ska_get_app_mode(),
+        'disabledCards' => ska_get_disabled_cards(),
+        'disabledTools' => ska_get_disabled_tools(),
     ) );
 }
 
@@ -1575,6 +1674,22 @@ function ska_admin_update_settings( WP_REST_Request $request ) {
     if ( null !== $pdf_footer_text ) {
         $pdf_footer_text = sanitize_text_field( (string) $pdf_footer_text );
         update_option( 'ska_pdf_footer_text', $pdf_footer_text );
+    }
+
+    $app_mode = $request->get_param( 'appMode' );
+    if ( null !== $app_mode ) {
+        $app_mode = ska_sanitize_app_mode( $app_mode );
+        update_option( 'ska_app_mode', $app_mode );
+    }
+
+    $disabled_cards = $request->get_param( 'disabledCards' );
+    if ( null !== $disabled_cards ) {
+        update_option( 'ska_disabled_cards', ska_sanitize_option_string_array( $disabled_cards ) );
+    }
+
+    $disabled_tools = $request->get_param( 'disabledTools' );
+    if ( null !== $disabled_tools ) {
+        update_option( 'ska_disabled_tools', ska_sanitize_option_string_array( $disabled_tools ) );
     }
 
     $defaults = ska_get_algorithm_tuning_defaults();
@@ -1611,6 +1726,9 @@ function ska_admin_update_settings( WP_REST_Request $request ) {
         'maintenanceMode' => ska_is_maintenance_mode_enabled(),
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
         'pdfFooterText' => ska_get_pdf_footer_text(),
+        'appMode' => ska_get_app_mode(),
+        'disabledCards' => ska_get_disabled_cards(),
+        'disabledTools' => ska_get_disabled_tools(),
     ) );
 }
 
@@ -1971,10 +2089,11 @@ function ska_create_upgrade_order() {
         }
     }
 
-    if ( $product_id && function_exists( 'WC' ) && WC()->cart ) {
-        WC()->cart->empty_cart();
+    if ( $product_id && ska_is_premium_product_id( $product_id ) && function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->add_to_cart( $product_id );
-        wp_send_json_success( array( 'pay_url' => wc_get_checkout_url() ) );
+        ska_remove_other_premium_products_from_cart( '', $product_id );
+        $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
+        wp_send_json_success( array( 'pay_url' => $cart_url ) );
     } else {
         wp_send_json_error( array( 'message' => 'Fehler' ) );
     }
@@ -1987,10 +2106,11 @@ function ska_handle_plan_switch() {
         return;
     }
     $pid = absint( $_GET['ska_switch_to'] );
-    if ( in_array( $pid, array( 3128, 3130, 3127 ), true ) && function_exists( 'WC' ) && WC()->cart ) {
-        WC()->cart->empty_cart();
+    if ( ska_is_premium_product_id( $pid ) && function_exists( 'WC' ) && WC()->cart ) {
         WC()->cart->add_to_cart( $pid );
-        wp_redirect( wc_get_checkout_url() );
+        ska_remove_other_premium_products_from_cart( '', $pid );
+        $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
+        wp_redirect( $cart_url );
         exit;
     }
 }
