@@ -515,6 +515,177 @@
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
     };
 
+    const SKA_PRO_TIPS = {
+        overview: [
+            'Nutze den Überblick als Start: Wenn Zeit & Verständlichkeit passen, sind 80% der Arbeit erledigt.',
+            'Stell Genre + Zielzeit zuerst ein, damit die Analyse einen klaren Rahmen hat.'
+        ],
+        char: [
+            'Halte Ansprache, Stimmung und Zielgruppe im selben Ton – das wirkt sofort professioneller.',
+            'Wenn du einen Stilwert verändern willst, ändere zuerst Satzlängen – das bringt die größte Wirkung.'
+        ],
+        coach: [
+            'Baue klare Betonungswörter ein – sie geben Sprecher:innen Halt und Rhythmus.',
+            'Setze bewusst Pausenmarker (…/—), wenn ein Satz klanglich geführt werden soll.'
+        ],
+        rhythm: [
+            'Verteile kurze und mittlere Sätze, bevor du lange Sätze einsetzt – so bleibt der Flow stabil.',
+            'Nutze rhythmische „Dreierketten“ (kurz-mittel-kurz), um Kernaussagen zu betonen.'
+        ],
+        chapter_calc: [
+            'Setze Kapitelüberschriften als eigene Zeile – das macht die Berechnung präzise.',
+            'Plane pro Kapitel eine kleine Sprechpause ein, damit der Erzählfluss sauber bleibt.'
+        ],
+        syllable_entropy: [
+            'Wechsle lange Fachwörter mit kurzen Wörtern ab – das glättet Silben-Cluster.',
+            'Kürze Wortketten, wenn mehrere Silben hintereinander „z“ oder „sch“ enthalten.'
+        ],
+        pronunciation: [
+            'Schwierige Namen einmal phonetisch notieren und im Skript fixieren.',
+            'Zahlen ausschreiben, wenn sie im Fluss stolpern (z. B. „27“ → „siebenundzwanzig“).'
+        ],
+        role_dist: [
+            'Halte Sprecherwechsel sichtbar (Absatz oder klare Rollenlabels).',
+            'Gib Dialogen kurze Intro-Sätze, damit der Hörer sofort weiß, wer spricht.'
+        ],
+        keyword_focus: [
+            'Leitbegriffe früh setzen (erster Absatz) – dort wirken sie am stärksten.',
+            'Wiederhole Fokuswörter nicht direkt nacheinander, sondern in sinnvollen Abständen.'
+        ],
+        plosive: [
+            'Zwischen harten Plosiven kurze Pausen oder ein Füllwort setzen.',
+            'Bei Mikrofon-Nähe mit weichen Konsonanten mischen (B/P mit M/N).'
+        ],
+        easy_language: [
+            'Ein Satz = eine Idee. Streiche Nebensätze, wenn möglich.',
+            'Vermeide Nominalstil – Verben machen Texte sofort verständlicher.'
+        ],
+        redundancy: [
+            'Wiederhole nur Schlüsselbegriffe – alle anderen Dopplungen streichen.',
+            'Wenn zwei Sätze dasselbe sagen, entscheide dich für den stärkeren.'
+        ],
+        bullshit: [
+            'Ersetze Buzzwords durch konkrete Nutzenformulierungen.',
+            'Prüfe jedes Schlagwort: Was bedeutet es messbar? Wenn nichts, weg damit.'
+        ],
+        metaphor: [
+            'Nutze Bilder, die zur Zielgruppe passen (Fachpublikum ≠ Kinder).',
+            'Ein starkes Bild pro Absatz wirkt besser als viele kleine.'
+        ],
+        immersion: [
+            'Streiche Wahrnehmungs-Filter („er sah“, „sie fühlte“) für mehr Nähe.',
+            'Lass die Handlung sprechen – zeige, statt zu erklären.'
+        ],
+        audience: [
+            'Passe Satzlänge und Wortwahl an die Zielgruppe an, nicht nur den Ton.',
+            'Vermeide Abkürzungen, wenn die Zielgruppe sie nicht täglich nutzt.'
+        ],
+        rhet_questions: [
+            'Setze Fragen dort, wo du aktiv die Aufmerksamkeit zurückholen willst.',
+            'Beantworte rhetorische Fragen direkt – sonst wirkt es unsicher.'
+        ],
+        depth_check: [
+            'Zwei Nebensätze sind genug – alles darüber teilen.',
+            'Komplexe Sätze laut lesen: Wenn du dich verhaspelst, kürzen.'
+        ],
+        start_var: [
+            'Starte Sätze abwechselnd mit Verb, Zeitangabe oder Objekt.',
+            'Vermeide „Dann… Dann…“ – rhythmisch wirkt Variation deutlich besser.'
+        ],
+        compliance_check: [
+            'Pflichttexte exakt übernehmen – jede Abweichung wird kritisch.',
+            'Satzzeichen im Pflichttext konsistent halten (Punkt/Komma nicht ändern).'
+        ],
+        breath: [
+            'Setze Atempunkte nach Sinnabschnitten, nicht nur nach Kommas.',
+            'Wenn ein Satz „zu lang“ wirkt: teile ihn an der inhaltlichen Zäsur.'
+        ],
+        stumble: [
+            'Tausche Wortungetüme gegen kürzere Synonyme.',
+            'Sprich Zungenbrecher dreimal schnell – wenn’s stockt: ändern.'
+        ],
+        gender: [
+            'Partizipien („Mitarbeitende“) wirken neutral und flüssig.',
+            'Vermeide Doppelnennungen in jedem Satz – setze sie gezielt ein.'
+        ],
+        echo: [
+            'Synonyme nutzen, damit Wiederholungen nicht hörbar werden.',
+            'Wenn ein Wort wichtig ist, wiederhole es bewusst – sonst variieren.'
+        ],
+        adjective: [
+            'Ein starkes Adjektiv schlägt drei schwache.',
+            'Streiche Adjektive, die keine neue Information liefern.'
+        ],
+        adverb: [
+            'Ersetze Adverbien durch starke Verben („schnell gehen“ → „eilen“).',
+            'Adverbien nur dort, wo sie den Ton wirklich verändern.'
+        ],
+        passive: [
+            'Aktive Formulierungen wirken klarer und kürzer.',
+            'Passiv nur, wenn der Handelnde bewusst verborgen bleiben soll.'
+        ],
+        fillers: [
+            'Füllwörter streichen, wenn sie keine neue Bedeutung tragen.',
+            'Laut lesen: Störwörter fallen beim Sprechen sofort auf.'
+        ],
+        nominal: [
+            'Verben nach vorn holen – das macht Sätze lebendiger.',
+            'Nominalstil in kurzen Sätzen besonders hart: hier konsequent abbauen.'
+        ],
+        nominal_chain: [
+            'Nominalketten in zwei Sätze teilen – das löst 80% der Schwere.',
+            'Präpositionen statt Genitivketten machen Texte hörbarer.'
+        ],
+        sentiment_intensity: [
+            'Emotionale Peaks gezielt setzen – nicht jedes Wort aufdrehen.',
+            'Kontrast wirkt: ruhige Passagen lassen Highlights stärker wirken.'
+        ],
+        cta: [
+            'CTA im letzten Drittel platzieren, damit der Text darauf zuläuft.',
+            'Ein CTA pro Abschnitt – sonst verwässert die Handlung.'
+        ],
+        anglicism: [
+            'Englische Begriffe nur dort, wo sie im Alltag wirklich üblich sind.',
+            'Wenn’s ohne Englisch funktioniert, ist Deutsch oft klarer fürs Ohr.'
+        ],
+        verb_balance: [
+            'Mehr Verben erzeugen Dynamik und Handlung.',
+            'Nominalstil bremst – ersetze „Umsetzung“ durch „umsetzen“.'
+        ],
+        bpm: [
+            'Tempo der Musik an Satzlänge koppeln – lange Sätze brauchen Luft.',
+            'Ruhige Passagen profitieren von niedrigerem BPM.'
+        ],
+        vocabulary: [
+            'Wortschatz variieren, ohne die Kernbegriffe zu verlieren.',
+            'Setze wiederkehrende Schlüsselwörter bewusst als Markenanker.'
+        ],
+        dialog: [
+            'Dialoge wirken stärker, wenn Sprecher klar unterscheidbar sind.',
+            'Setze kurze Erzähler-Impulse, um Orientierung zu geben.'
+        ],
+        teleprompter: [
+            'Zeilenlänge so halten, dass die Augen ruhig wandern.',
+            'Tempo kalibrieren und dann konstant halten – das gibt Sicherheit.'
+        ],
+        pacing: [
+            'Pacing im Probe-Tempo testen, bevor du aufnimmst.',
+            'Pausen bewusst markieren – sie zählen real in die Zeit.'
+        ],
+        word_sprint: [
+            'Kurze Sprints (10–15 Min.) liefern die beste Fokus-Qualität.',
+            'Wortziel leicht über dem Alltag ansetzen – das motiviert.'
+        ],
+        compare: [
+            'Vergleiche nur eine Änderung pro Durchlauf – so siehst du klare Effekte.',
+            'Notiere das Ziel vor dem Vergleich, damit du objektiv bleibst.'
+        ],
+        default: [
+            'Fokussiere pro Durchgang auf ein Thema – so wird der Text spürbar besser.',
+            'Laut lesen ist der schnellste Qualitätscheck für jede Analyse.'
+        ]
+    };
+
     const UPGRADE_CONTENT = {
         basic: {
             tools: [
@@ -3333,9 +3504,9 @@
             this.initElements();
             if (!this.textarea) return;
 
-            // Sort tips by length (ascending) to ensure short tips are shown first
-            Object.keys(SA_CONFIG.TIPS).forEach(key => {
-                SA_CONFIG.TIPS[key].sort((a, b) => a.length - b.length);
+            // Sort pro tips by length (ascending) to ensure short tips are shown first
+            Object.keys(SKA_PRO_TIPS).forEach(key => {
+                SKA_PRO_TIPS[key].sort((a, b) => a.length - b.length);
             });
 
             if (this.textarea) {
@@ -3356,7 +3527,8 @@
                 savedVersion: '', 
                 currentData: {}, 
                 hiddenCards: new Set(), 
-                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, adverb: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 }, 
+                tipIndices: { fillers: 0, passive: 0, nominal: 0, anglicism: 0, echo: 0, breath: 0, stumble: 0, cta: 0, adjective: 0, adverb: 0, rhythm: 0, syllable_entropy: 0, dialog: 0, gender: 0, start_var: 0, role_dist: 0, nominal_chain: 0, vocabulary: 0, pronunciation: 0, keyword_focus: 0, plosive: 0, redundancy: 0, bpm: 0, easy_language: 0, teleprompter: 0, pacing: 0, bullshit: 0, audience: 0, verb_balance: 0, rhet_questions: 0, depth_check: 0, sentiment_intensity: 0, compliance_check: 0 },
+                proTipIndices: {},
                 excludedCards: new Set(),
                 selectedExtraCards: new Set(),
                 filterCollapsed: true,
@@ -5988,17 +6160,18 @@
                 const card = btn.closest('.skriptanalyse-card') || btn.closest('[data-card-id]');
                 if (card) {
                     const id = card.dataset.cardId;
-                    const tips = SA_CONFIG.TIPS[id];
+                    const tips = SKA_PRO_TIPS[id] || SKA_PRO_TIPS.default || [];
                     if (tips && tips.length > 0) {
-                        const tipP = card.querySelector('.ska-tip-content');
-                        const badge = card.querySelector('.ska-tip-badge span');
+                        const tipP = card.querySelector('.ska-protip-text');
+                        const badge = card.querySelector('.ska-protip-count');
                         if (tipP) {
                             tipP.classList.add('is-changing');
                             setTimeout(() => {
-                                if (typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
-                                this.state.tipIndices[id] = (this.state.tipIndices[id] + 1) % tips.length;
-                                tipP.textContent = tips[this.state.tipIndices[id]];
-                                if (badge) badge.textContent = `${this.state.tipIndices[id] + 1}/${tips.length}`;
+                                if (!this.state.proTipIndices) this.state.proTipIndices = {};
+                                if (typeof this.state.proTipIndices[id] === 'undefined') this.state.proTipIndices[id] = 0;
+                                this.state.proTipIndices[id] = (this.state.proTipIndices[id] + 1) % tips.length;
+                                tipP.textContent = tips[this.state.proTipIndices[id]];
+                                if (badge) badge.textContent = `${this.state.proTipIndices[id] + 1}/${tips.length}`;
                                 tipP.classList.remove('is-changing');
                             }, 300);
                         }
@@ -6016,10 +6189,6 @@
                 return true;
             }
             if (act === 'open-layout-modal') {
-                if (!this.isPremiumActive()) {
-                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
-                    return true;
-                }
                 this.openLayoutModal();
                 return true;
             }
@@ -6028,18 +6197,10 @@
                 return true;
             }
             if (act === 'layout-reset') {
-                if (!this.isPremiumActive()) {
-                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
-                    return true;
-                }
                 this.resetLayoutModalOrder();
                 return true;
             }
             if (act === 'layout-save') {
-                if (!this.isPremiumActive()) {
-                    this.showPremiumNotice('Die Layout-Anpassung ist in der Premium-Version verfügbar.');
-                    return true;
-                }
                 this.saveLayoutModalOrder();
                 return true;
             }
@@ -7927,24 +8088,19 @@
         renderFilterBar() {
             if (!this.filterBar) return;
             this.filterBar.innerHTML = '';
-            this.filterBar.classList.add('is-compact');
-            const left = document.createElement('div');
-            left.className = 'ska-layout-toolbar-left';
-            left.innerHTML = '<span>Analyse-Layout</span><small>Reihenfolge & Sichtbarkeit</small>';
-
-            const right = document.createElement('div');
-            right.className = 'ska-layout-toolbar-right';
-            right.appendChild(this.renderLayoutButton());
-
-            this.filterBar.appendChild(left);
-            this.filterBar.appendChild(right);
+            this.filterBar.classList.remove('is-compact');
+            const wrap = document.createElement('div');
+            wrap.className = 'ska-layout-cta-wrap';
+            wrap.appendChild(this.renderLayoutButton());
+            this.filterBar.appendChild(wrap);
         }
 
         renderLayoutButton() {
             const btn = document.createElement('button');
-            btn.className = 'ska-btn ska-btn-outline ska-btn-rounded';
-            btn.innerHTML = '<span class="icon">⚙️</span> Layout anpassen';
+            btn.className = 'ska-layout-cta-btn';
+            btn.textContent = 'Boxen-Layout anpassen';
             btn.setAttribute('data-action', 'open-layout-modal');
+            btn.setAttribute('type', 'button');
 
             return btn;
         }
@@ -7962,7 +8118,8 @@
                         <h3>Layout anpassen</h3>
                     </div>
                     <div class="skriptanalyse-modal-body">
-                        <p class="ska-layout-intro">Ziehe die Boxen in die gewünschte Reihenfolge. Neue Boxen werden automatisch am Ende ergänzt.</p>
+                        <div class="ska-layout-modal-note">Hinweis: Als Free User kannst du Boxen ein-/ausblenden. Drag & Drop (Reihenfolge) ist Premium.</div>
+                        <p class="ska-layout-intro">Passe Sichtbarkeit und Reihenfolge an. Neue Boxen werden automatisch am Ende ergänzt.</p>
                         <div data-role="layout-grid" class="ska-layout-grid"></div>
                     </div>
                     <div class="ska-modal-footer ska-layout-footer">
@@ -8022,18 +8179,26 @@
             const items = order.filter(id => id !== 'overview' && SA_CONFIG.CARD_TITLES[id] && this.isCardAvailable(id));
             grid.innerHTML = '';
             items.forEach((id) => {
+                const isPremium = this.isPremiumActive();
                 const isUnlocked = this.isCardUnlocked(id);
                 const isVisible = !this.state.hiddenCards.has(id);
+                const canDrag = isPremium && isUnlocked;
 
                 const item = document.createElement('div');
-                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}`;
+                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}${isPremium ? '' : ' ska-layout-item--dnd-locked'}`;
                 item.dataset.cardId = id;
-                item.setAttribute('draggable', isUnlocked ? 'true' : 'false');
+                item.setAttribute('draggable', canDrag ? 'true' : 'false');
 
                 const handle = document.createElement('span');
                 handle.className = 'ska-layout-handle';
                 handle.setAttribute('aria-hidden', 'true');
                 handle.textContent = '⋮⋮';
+                if (!isPremium) {
+                    const dndLock = document.createElement('span');
+                    dndLock.className = 'ska-layout-dnd-lock';
+                    dndLock.textContent = '🔒 Premium';
+                    handle.appendChild(dndLock);
+                }
 
                 const title = document.createElement('span');
                 title.className = 'ska-layout-title';
@@ -8416,15 +8581,11 @@
                             this.updateCard('immersion', this.renderDisabledState(), this.bottomGrid, '', '', true);
                             break;
                         }
-                        if (!this.isAuthorProfile()) {
-                            this.updateCard('immersion', '<p style="color:#64748b; font-size:0.9rem;">Nur im Autor:innen-Profil verfügbar.</p>');
-                            break;
-                        }
                         if (useWorker) {
                             this.updateCard('immersion', this.renderLoadingState('Immersions-Scanner wird berechnet...'), this.bottomGrid, '', '', true);
                             this.requestWorkerTask('immersion', { text: raw })
                                 .then((result) => {
-                                    if (token !== this.state.analysisToken || !isActive('immersion') || !this.isAuthorProfile()) return;
+                                    if (token !== this.state.analysisToken || !isActive('immersion')) return;
                                     const fallback = SA_Logic.analyzeImmersion(raw);
                                     this.renderImmersionCard(result || fallback, true);
                                 });
@@ -8713,6 +8874,7 @@
                 : density <= 3
                     ? { label: 'Okay', color: SA_CONFIG.COLORS.warn }
                     : { label: 'Zu viel Distanz', color: SA_CONFIG.COLORS.error };
+            const profileNote = this.isAuthorProfile() ? '' : '<div class="ska-immersion-profile-note">Optimiert fürs Autor:innen-Profil.</div>';
 
             const regex = SA_Logic.getImmersionRegex();
             const highlightSentence = (sentence) => {
@@ -8731,6 +8893,7 @@
             };
 
             let h = `
+                ${profileNote}
                 <div class="ska-immersion-score">
                     <div class="ska-immersion-score-value">${densityLabel}% Filter-Dichte</div>
                     <div class="ska-immersion-score-status" style="color:${status.color};">${status.label}</div>
@@ -9620,24 +9783,28 @@
             </div>`;
         }
 
-        renderTipSection(id, hasIssues) {
-            if(!hasIssues) return '';
-            const tips = SA_CONFIG.TIPS[id];
-            if(!tips || !tips.length) return '';
-
-            if(typeof this.state.tipIndices[id] === 'undefined') this.state.tipIndices[id] = 0;
-            
-            const cI = this.state.tipIndices[id];
+        renderProTipFooter(cardKey) {
+            const tips = SKA_PRO_TIPS[cardKey] || SKA_PRO_TIPS.default || [];
+            if (!tips.length) return '';
+            if (!this.state.proTipIndices) this.state.proTipIndices = {};
+            if (typeof this.state.proTipIndices[cardKey] === 'undefined') this.state.proTipIndices[cardKey] = 0;
+            const cI = this.state.proTipIndices[cardKey] % tips.length;
             const tip = tips[cI];
-            const tT = tips.length;
-            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
-            const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
-            const cardTemplate = SA_CONFIG.GENRE_CARD_TIPS[id];
-            const genreNote = genreContext && cardTemplate
-                ? `<div class="ska-tip-genre">${genreContext.tipPrefix}: ${cardTemplate} (${genreContext.tipFocus}).</div>`
-                : '';
+            const totalLabel = tips.length > 1 ? `<span class="ska-protip-count">${cI + 1}/${tips.length}</span>` : '';
+            const nextBtn = tips.length > 1 ? '<button class="ska-protip-next" data-action="next-tip" type="button">Nächster Tipp →</button>' : '';
 
-            return `<div class="ska-card-tips"><div class="ska-tip-header"><span class="ska-tip-badge">💡 Profi-Tipp <span style="opacity:0.6; font-weight:400; margin-left:4px;">${cI+1}/${tT}</span></span><button class="ska-tip-next-btn" data-action="next-tip">Nächster Tipp &rarr;</button></div><p class="ska-tip-content">${tip}</p>${genreNote}</div>`;
+            return `
+                <div class="ska-protip-footer" data-protip-key="${cardKey}">
+                    <div class="ska-protip-header">
+                        <div class="ska-protip-badge">💡 PROFI-TIPP ${totalLabel}</div>
+                        ${nextBtn}
+                    </div>
+                    <div class="ska-protip-text">${tip}</div>
+                </div>`;
+        }
+
+        renderTipSection() {
+            return '';
         }
 
         renderFooterInfo(title, text) {
@@ -9741,9 +9908,9 @@
                         </div>
                     </div>
                 </div>
-                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0;">
+                <div style="margin-top:0.85rem; padding:0.9rem; border-radius:10px; background:#f8fafc; border:1px solid #e2e8f0;">
                     <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Tiefe</div>
-                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0.6rem;">
+                    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0.7rem;">
                         <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem;">
                             <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">Satzlänge Ø</div>
                             <div style="font-size:0.95rem; font-weight:700; color:#0f172a;">${r.avgSentence.toFixed(1)} Wörter</div>
@@ -9761,9 +9928,9 @@
                         Rhythmus-Varianz: <strong style="color:${variance < 2.5 ? SA_CONFIG.COLORS.warn : SA_CONFIG.COLORS.success};">${variance.toFixed(2)}</strong> (höher = abwechslungsreicher).
                     </div>
                 </div>
-                <div style="margin-top:1rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
+                <div style="margin-top:0.85rem; padding:0.9rem; border-radius:10px; background:#ffffff; border:1px solid #e2e8f0;">
                     <div style="font-size:0.7rem; text-transform:uppercase; color:#94a3b8; font-weight:700; margin-bottom:0.6rem;">Stil-Dimensionen</div>
-                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;">
+                    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.7rem;">
                         ${[
                             { key: 'simplicity', label: 'Einfachheit', score: dimensions.simplicity },
                             { key: 'structure', label: 'Gliederung', score: dimensions.structure },
@@ -9772,7 +9939,7 @@
                         ].map(item => {
                             const summary = SA_Logic.getDimensionSummary(item.score);
                             return `
-                                <div class="ska-dimension-item" style="border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; background:#f8fafc;">
+                                <div class="ska-dimension-item" style="border:1px solid #e2e8f0; border-radius:8px; padding:0.7rem; background:#f8fafc;">
                                     <span class="ska-tool-tooltip">${dimensionHints[item.key]}</span>
                                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
                                         <span style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:700;">${item.label}</span>
@@ -9787,7 +9954,7 @@
                                 </div>`;
                         }).join('')}
                     </div>
-                    <small style="display:block; margin-top:0.6rem; color:#94a3b8;">(Fahre mit der Maus über die Balken für Details)</small>
+                    <small style="display:block; margin-top:0.5rem; color:#94a3b8;">(Fahre mit der Maus über die Balken für Details)</small>
                 </div>`;
             
             this.updateCard('char', h);
@@ -10589,7 +10756,6 @@
 
             const ratio = d.ratio; 
             const col = SA_CONFIG.COLORS.blue;
-            const infoBox = this.renderFooterInfo('Kurz erklärt', 'Mehr wörtliche Rede in Anführungszeichen erhöht den Dialog-Anteil. Erzählerpassagen ohne direkte Rede senken ihn.');
             
             let label = "Ausgewogen";
             if(ratio > 70) label = "Sehr viel Dialog";
@@ -10616,8 +10782,6 @@
                         <div class="ska-mini-card-value">${(100 - ratio).toFixed(0)}%</div>
                     </div>
                   </div>`;
-            
-            h += `<div class="ska-card-footer">${infoBox}${this.renderTipSection('dialog', true)}</div>`;
             this.updateCard('dialog', h);
         }
 
@@ -10715,7 +10879,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an. Klar strukturiert, zuverlässig und jederzeit kündbar.';
+            return 'Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an.';
         }
 
         getUpgradeReturnUrl() {
@@ -11226,11 +11390,8 @@
 
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
             const resolvedHtml = html;
-            const hasExplainBlock = resolvedHtml.includes('ska-card-info');
-            const shouldAppendExplain = !isToolCard && id !== 'overview' && SA_CONFIG.CARD_DESCRIPTIONS[id] && !hasExplainBlock;
-            const finalHtml = shouldAppendExplain
-                ? `${resolvedHtml}<div class="ska-card-footer">${this.renderFooterInfo('Kurz erklärt', SA_CONFIG.CARD_DESCRIPTIONS[id])}</div>`
-                : resolvedHtml;
+            const finalHtml = resolvedHtml;
+            const proTipHtml = !isToolCard ? this.renderProTipFooter(id) : '';
 
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
@@ -11278,7 +11439,7 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
+                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>${proTipHtml}`;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
@@ -11295,7 +11456,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
+                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>${proTipHtml}`;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
