@@ -23,8 +23,16 @@
     const SKRIPT_ANALYSE_CONFIG = (typeof window !== 'undefined' && window.skriptAnalyseConfig)
         ? window.skriptAnalyseConfig
         : {};
-    const HAS_PREMIUM_ACCESS = Boolean(typeof window !== 'undefined' && window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.hasPremium);
-    const CURRENT_USER_PLAN = HAS_PREMIUM_ACCESS ? 'premium' : 'basis';
+    const normalizePlanStatus = (value) => {
+        const plan = String(value || '').toLowerCase();
+        if (plan === 'premium') return 'premium';
+        if (plan === 'basis' || plan === 'free') return 'basis';
+        return '';
+    };
+    const serverPlan = typeof window !== 'undefined' && window.SKA_CONFIG_PHP
+        ? normalizePlanStatus(window.SKA_CONFIG_PHP.currentUserPlan)
+        : '';
+    const CURRENT_USER_PLAN = serverPlan || (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.hasPremium ? 'premium' : 'basis');
     const ALGORITHM_TUNING_CONFIG = SKRIPT_ANALYSE_CONFIG.algorithmTuning || {};
 
     // CONFIG
@@ -3544,6 +3552,12 @@
             if (this.isFreeOnlyMode()) {
                 return 'basis';
             }
+            if (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.currentUserPlan) {
+                const normalized = normalizePlanStatus(window.SKA_CONFIG_PHP.currentUserPlan);
+                if (normalized) {
+                    return normalized;
+                }
+            }
             if (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.hasPremium) {
                 return 'premium';
             }
@@ -6696,6 +6710,9 @@
                 toggle.checked = this.isPremiumActive();
                 toggle.disabled = isFreeOnly || (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN);
             }
+            if (isFreeOnly) {
+                this.state.filterByProfile = false;
+            }
                 const saveBtn = document.querySelector('[data-action="save-version"]');
                 if (saveBtn && saveBtn instanceof HTMLButtonElement) {
                     const isPremium = this.isPremiumActive();
@@ -7911,21 +7928,25 @@
             if (!this.filterBar) return;
             this.filterBar.innerHTML = '';
             this.filterBar.classList.add('is-compact');
-            this.filterBar.appendChild(this.renderLayoutButton());
+            const left = document.createElement('div');
+            left.className = 'ska-layout-toolbar-left';
+            left.innerHTML = '<span>Analyse-Layout</span><small>Reihenfolge & Sichtbarkeit</small>';
+
+            const right = document.createElement('div');
+            right.className = 'ska-layout-toolbar-right';
+            right.appendChild(this.renderLayoutButton());
+
+            this.filterBar.appendChild(left);
+            this.filterBar.appendChild(right);
         }
 
         renderLayoutButton() {
-            const container = document.createElement('div');
-            container.className = 'ska-layout-control';
-            
             const btn = document.createElement('button');
             btn.className = 'ska-btn ska-btn-outline ska-btn-rounded';
             btn.innerHTML = '<span class="icon">⚙️</span> Layout anpassen';
             btn.setAttribute('data-action', 'open-layout-modal');
 
-            container.appendChild(btn);
-
-            return container;
+            return btn;
         }
 
         ensureLayoutModal() {
@@ -8274,7 +8295,9 @@
             const allowed = profile && SA_CONFIG.PROFILE_CARDS[profile] ? new Set(SA_CONFIG.PROFILE_CARDS[profile]) : null;
             const layoutOrder = this.getLayoutOrder(profile);
             let availableCards = layoutOrder.filter((id) => this.isCardAvailable(id));
-            if (!this.isPremiumActive()) {
+            if (this.isFreeOnlyMode()) {
+                availableCards = layoutOrder.filter((id) => this.isCardAvailable(id));
+            } else if (!this.isPremiumActive()) {
                 const freeCards = layoutOrder.filter((id) => SA_CONFIG.FREE_CARDS.includes(id));
                 const teaserCards = SA_CONFIG.PREMIUM_TEASERS.filter((id) => this.isCardAvailable(id));
                 availableCards = [...freeCards, ...teaserCards.filter(id => !freeCards.includes(id))];
@@ -10526,9 +10549,11 @@
         }
 
         isCardAvailable(id) {
+            if (this.isFreeOnlyMode()) {
+                return !this.isPremiumCard(id);
+            }
             if (this.getDisabledCards().includes(id)) return false;
             if (this.getDisabledTools().includes(id)) return false;
-            if (this.isFreeOnlyMode() && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
@@ -10538,8 +10563,10 @@
         }
 
         isToolAvailable(id) {
+            if (this.isFreeOnlyMode()) {
+                return !this.isPremiumCard(id);
+            }
             if (this.getDisabledTools().includes(id)) return false;
-            if (this.isFreeOnlyMode() && this.isPremiumCard(id)) return false;
             return true;
         }
 
@@ -11194,11 +11221,16 @@
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
             const toggleIcon = isExcluded 
-                ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#94a3b8"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
-                : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
+                : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
 
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
             const resolvedHtml = html;
+            const hasExplainBlock = resolvedHtml.includes('ska-card-info');
+            const shouldAppendExplain = !isToolCard && id !== 'overview' && SA_CONFIG.CARD_DESCRIPTIONS[id] && !hasExplainBlock;
+            const finalHtml = shouldAppendExplain
+                ? `${resolvedHtml}<div class="ska-card-footer">${this.renderFooterInfo('Kurz erklärt', SA_CONFIG.CARD_DESCRIPTIONS[id])}</div>`
+                : resolvedHtml;
 
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
@@ -11246,7 +11278,7 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = `<div class="ska-card-body-content">${resolvedHtml}</div>`;
+                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
@@ -11263,7 +11295,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = `<div class="ska-card-body-content">${resolvedHtml}</div>`;
+                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
