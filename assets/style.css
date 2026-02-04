@@ -191,15 +191,14 @@ body.skript-analyse-active .skript-analyse-container {
     letter-spacing: 0.02em;
     cursor: pointer;
     box-shadow: 0 12px 20px -12px rgba(15, 20, 26, 0.45);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 .ska-layout-cta-btn:hover {
     background: #1285da;
-    transform: translateY(-1px);
-    box-shadow: 0 16px 26px -14px rgba(15, 20, 26, 0.5);
+    box-shadow: 0 14px 24px -16px rgba(15, 20, 26, 0.5);
 }
 .ska-layout-cta-btn:active {
-    transform: translateY(0);
+    box-shadow: 0 10px 18px -14px rgba(15, 20, 26, 0.45);
 }
 .ska-layout-toolbar-left {
     display: flex;
@@ -234,15 +233,39 @@ body.skript-analyse-active .skript-analyse-container {
     max-width: 1040px;
     width: 92vw;
 }
-.ska-layout-modal-note {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+.ska-layout-modal-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1rem;
+}
+.ska-layout-modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.ska-layout-modal-subtitle {
+    font-size: 0.92rem;
+    color: #64748b;
+}
+.ska-layout-modal-hint {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+    padding: 0.6rem 0.75rem;
     border-radius: 12px;
-    padding: 0.75rem 0.9rem;
-    font-size: 0.85rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     color: #475569;
-    margin-bottom: 0.8rem;
-    box-shadow: 0 10px 18px -14px rgba(15, 20, 26, 0.25);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+.ska-layout-modal-hint-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    margin-top: 0.1rem;
 }
 .ska-layout-intro { margin-top: 0; color: #64748b; }
 .ska-layout-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
@@ -498,6 +521,10 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-problem-item.is-hidden-premium { display: none; }
 .ska-premium-upgrade-card { width: 100%; max-width: 1120px; margin: 2.8rem auto 2rem; background: linear-gradient(135deg, rgba(26, 147, 238, 0.14) 0%, #ffffff 72%); color: #0f172a; border: 1px solid #e2e8f0; border-radius: 26px; padding: 3rem; display: flex; flex-direction: column; gap: 2rem; box-shadow: 0 20px 42px -28px rgba(15, 20, 26, 0.38), 0 8px 20px -16px rgba(15, 20, 26, 0.24); text-align: center; position: relative; overflow: hidden !important; transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.35s ease, margin 0.35s ease, padding 0.35s ease, border-width 0.35s ease; max-height: 1400px; }
 .ska-premium-upgrade-card.is-dismissing { opacity: 0; transform: translateY(-8px); max-height: 0; margin: 0 auto; padding: 0; border-width: 0; }
+.ska-premium-upgrade-card.is-highlighted {
+    box-shadow: 0 0 0 3px rgba(26, 147, 238, 0.35), 0 24px 48px -28px rgba(15, 20, 26, 0.45);
+    border-color: rgba(26, 147, 238, 0.6);
+}
 /* 1. BASIS (Mobile First) - Kompakt & Sauber */
 .ska-premium-upgrade-ribbon {
     /* Positionierung */
@@ -974,9 +1001,7 @@ body.skript-analyse-active .skript-analyse-container {
 
 .ska-tool-tooltip--premium,
 .ska-tool-tile-tooltip {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    display: none !important;
 }
 
 .ska-tool-tooltip--premium::before,
@@ -2419,7 +2444,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-legend-box .ska-card-header { background: #0f141a; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 0.65rem 1rem; margin-bottom: 0; color: #ffffff; }
 .ska-legend-box .ska-card-header h3 { color: #ffffff; }
 .ska-legend-body { padding: 0.85rem 1.1rem 1.1rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.ska-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 1.2rem; }
+.ska-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem 1.2rem; margin-top: 10px; }
 .ska-legend-def { line-height: 1.45; }
 .ska-legend-def strong { color: var(--ska-text-main); font-weight: 700; margin-right: 0.35rem; }
 .ska-legend-help-btn { border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: #ffffff; padding: 0.3rem 0.7rem; border-radius: 999px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-align: center; transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
