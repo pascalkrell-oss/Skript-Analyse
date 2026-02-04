@@ -230,6 +230,10 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-layout-control { position: relative; display: inline-flex; align-items: center; }
 .ska-layout-control .ska-btn { gap: 0.4rem; }
 .ska-layout-modal .skriptanalyse-modal-content { max-width: 720px; }
+.ska-layout-modal--wide .skriptanalyse-modal-content {
+    max-width: 1040px;
+    width: 92vw;
+}
 .ska-layout-modal-note {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -276,6 +280,10 @@ body.skript-analyse-active .skript-analyse-container {
     align-items: center;
     gap: 0.35rem;
     cursor: grab;
+}
+.ska-layout-handle.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 .ska-layout-item.is-locked .ska-layout-handle { cursor: not-allowed; }
 .ska-layout-title { font-weight: 600; color: #0f141a; flex: 1; }
@@ -864,12 +872,13 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-protip-footer {
     width: 100%;
     display: block;
-    margin-top: 12px;
+    margin-top: 0;
     padding: 0.85rem 0.95rem;
     border-radius: 12px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     box-shadow: 0 12px 22px -18px rgba(15, 20, 26, 0.28);
+    position: static;
     grid-column: 1 / -1;
 }
 .ska-protip-header {
@@ -936,17 +945,17 @@ body.skript-analyse-active .skript-analyse-container {
     word-break: break-word;
     background: #ffffff;
     color: #0f141a;
-    text-align: center;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
     line-height: 1.45;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     z-index: 10000;
-    box-shadow: 0 14px 24px -16px rgba(15, 20, 26, 0.35);
+    box-shadow: 0 16px 28px -18px rgba(15, 20, 26, 0.35);
     border: 1px solid #e2e8f0;
     transition: all 0.2s ease;
 }
@@ -961,6 +970,30 @@ body.skript-analyse-active .skript-analyse-container {
     border-style: solid;
     border-color: #ffffff transparent transparent transparent;
     filter: drop-shadow(0 2px 1px rgba(15, 20, 26, 0.12));
+}
+
+.ska-tool-tooltip--premium,
+.ska-tool-tile-tooltip {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.ska-tool-tooltip--premium::before,
+.ska-tool-tile-tooltip::before {
+    content: 'PREMIUM';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
 }
 
 .ska-tool-wrapper:hover .ska-tool-tooltip,
@@ -1272,18 +1305,20 @@ body.skript-analyse-active .skript-analyse-container {
     left: 16px;
     background: #ffffff;
     color: #0f141a;
-    padding: 0.5rem 0.75rem;
+    padding: 0.7rem 0.85rem;
     border-radius: 12px;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     font-weight: 600;
+    line-height: 1.45;
     opacity: 0;
     visibility: hidden;
     transform: translateY(6px);
     transition: all 0.2s ease;
-    box-shadow: 0 14px 24px -16px rgba(15, 20, 26, 0.35);
+    box-shadow: 0 16px 28px -18px rgba(15, 20, 26, 0.35);
     border: 1px solid #e2e8f0;
     pointer-events: none;
     max-width: 220px;
+    text-align: left;
 }
 .ska-tool-tile.is-locked:hover .ska-tool-tile-tooltip {
     opacity: 1;
@@ -1417,10 +1452,10 @@ body.skript-analyse-active .skript-analyse-container {
 
 /* TELEPROMPTER */
 .ska-teleprompter-modal-content {
-    width: min(90vw, 1400px);
-    max-width: 1400px;
-    height: 80vh;
-    max-height: 80vh;
+    width: 96vw;
+    max-width: 1200px;
+    height: 92vh;
+    max-height: 92vh;
 }
 .ska-teleprompter-modal.is-fullscreen .ska-teleprompter-modal-content {
     width: 100vw;
@@ -1470,7 +1505,7 @@ body.skript-analyse-active .skript-analyse-container {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding: 0 1.25rem 0.75rem;
+    padding: 0.2rem 0;
 }
 .teleprompter-hotkey {
     background: #0f172a;
@@ -1483,10 +1518,51 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-teleprompter-body {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     flex: 1;
     min-height: 0;
     overflow: hidden;
+}
+.ska-teleprompter-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.9fr);
+    gap: 1.5rem;
+    height: 100%;
+    min-height: 0;
+}
+.ska-teleprompter-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+}
+.ska-teleprompter-controls-panel {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 0.5rem;
+    align-self: start;
+}
+.ska-teleprompter-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+.ska-teleprompter-panel-header small {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 600;
+    color: #94a3b8;
 }
 .teleprompter-content {
     background: radial-gradient(circle at top, rgba(30, 41, 59, 0.85), rgba(2, 6, 23, 0.95));
@@ -1649,17 +1725,18 @@ body.skript-analyse-active .skript-analyse-container {
     transform: scaleX(-1);
 }
 .teleprompter-controls {
-    background: #111827;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 0.75rem 1rem;
-    border-radius: 16px;
-    flex-wrap: wrap;
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border-radius: 14px;
+    flex-wrap: nowrap;
+    position: static;
+    z-index: 1;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 16px 28px -20px rgba(15, 20, 26, 0.25);
 }
 .teleprompter-control {
     background: #ffffff;
@@ -1670,6 +1747,7 @@ body.skript-analyse-active .skript-analyse-container {
     font-weight: 700;
     cursor: pointer;
     font-size: 0.9rem;
+    width: 100%;
 }
 .teleprompter-control--secondary {
     background: #0ea5e9;
@@ -1682,12 +1760,19 @@ body.skript-analyse-active .skript-analyse-container {
     background: #38bdf8;
 }
 .teleprompter-control-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    color: #0f172a;
     font-size: 0.85rem;
     font-weight: 600;
+    width: 100%;
+}
+.teleprompter-control-group.teleprompter-toggle {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 .teleprompter-control-group.teleprompter-toggle input {
     width: 18px;
@@ -1698,15 +1783,16 @@ body.skript-analyse-active .skript-analyse-container {
     white-space: nowrap;
 }
 .teleprompter-control-group input[type="range"] {
-    width: 140px;
+    width: 100%;
 }
 .teleprompter-control-group select {
-    background: #0f172a;
-    color: #f8fafc;
-    border: 1px solid #1e293b;
-    border-radius: 999px;
-    padding: 0.3rem 0.65rem;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.35rem 0.55rem;
     font-size: 0.8rem;
+    width: 100%;
 }
 .ska-teleprompter-card {
     display: flex;
@@ -2122,13 +2208,13 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-card-footer {
     margin-top: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding-top: 30px;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    display: block;
+}
+.ska-card-footer--protip {
+    padding: 0.8rem 1rem 1rem;
 }
 .ska-card-footer .ska-card-tips {
     flex: 0 0 100%;
@@ -3027,6 +3113,9 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-grid { grid-template-columns: 1fr; }
     .ska-toolbar { flex-direction: column; align-items: stretch; }
     .ska-tools-grid { grid-template-columns: 1fr; }
+    .ska-layout-grid { grid-template-columns: 1fr; }
+    .ska-teleprompter-layout { grid-template-columns: 1fr; }
+    .ska-teleprompter-controls-panel { position: static; }
     .skriptanalyse-analysis-bottom-grid { grid-template-columns: 1fr; }
     .skriptanalyse-compare-grid { grid-template-columns: 1fr; }
     .ska-footer { flex-direction: column; align-items: stretch; gap: 1.5rem; }

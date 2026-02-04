@@ -4702,7 +4702,7 @@
             if (modal) return modal;
 
             modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-teleprompter-modal';
+            modal.className = 'skriptanalyse-modal ska-teleprompter-modal ska-modal--teleprompter';
             modal.id = 'ska-teleprompter-modal';
             modal.ariaHidden = 'true';
             modal.dataset.removeOnClose = 'true';
@@ -4720,76 +4720,86 @@
                             <button type="button" class="teleprompter-chip" data-action="teleprompter-reset">Reset</button>
                         </div>
                     </div>
-                    <div class="teleprompter-hotkeys" aria-label="Teleprompter-Hotkeys">
-                        <span class="teleprompter-hotkey">Space · Start/Stop</span>
-                        <span class="teleprompter-hotkey">↑/↓ · Tempo</span>
-                        <span class="teleprompter-hotkey">+/- · Schriftgröße</span>
-                        <span class="teleprompter-hotkey">M · Spiegeln</span>
-                        <span class="teleprompter-hotkey">Esc · Schließen</span>
-                    </div>
                     <div class="skriptanalyse-modal-body ska-teleprompter-body">
-                        <div class="teleprompter-content">
-                            <div class="teleprompter-countdown" data-role="teleprompter-countdown" aria-hidden="true"></div>
-                            <div class="teleprompter-text" data-role-teleprompter-text></div>
-                        </div>
-                        <div class="teleprompter-guide">
-                            <div class="teleprompter-guide-main">
-                                <span class="teleprompter-guide-rate" data-role="teleprompter-rate">Tempo: --</span>
-                                <span class="teleprompter-guide-time" data-role="teleprompter-time">Restzeit: --</span>
+                        <div class="ska-teleprompter-layout">
+                            <div class="ska-teleprompter-stage">
+                                <div class="teleprompter-content">
+                                    <div class="teleprompter-countdown" data-role="teleprompter-countdown" aria-hidden="true"></div>
+                                    <div class="teleprompter-text" data-role-teleprompter-text></div>
+                                </div>
+                                <div class="teleprompter-guide">
+                                    <div class="teleprompter-guide-main">
+                                        <span class="teleprompter-guide-rate" data-role="teleprompter-rate">Tempo: --</span>
+                                        <span class="teleprompter-guide-time" data-role="teleprompter-time">Restzeit: --</span>
+                                    </div>
+                                    <progress class="teleprompter-progress" data-role="teleprompter-progress" value="0" max="100">0%</progress>
+                                    <div class="teleprompter-guide-sub">
+                                        <span data-role="teleprompter-progress-label">0%</span>
+                                        <span class="teleprompter-guide-divider">•</span>
+                                        <span data-role="teleprompter-progress-words">0 / 0 Wörter</span>
+                                    </div>
+                                </div>
+                                <div class="teleprompter-status-row">
+                                    <div class="teleprompter-status" data-role="teleprompter-speech-status">
+                                        <span class="teleprompter-status-dot" aria-hidden="true"></span>
+                                        <span data-role="teleprompter-speech-label">Sprechtempo-Follow aus</span>
+                                        <span class="teleprompter-status-metric" data-role="teleprompter-speech-metric">Match: --</span>
+                                    </div>
+                                    <div class="teleprompter-calibration" data-role="teleprompter-calibration-status">
+                                        <span class="teleprompter-calibration-label">Kalibrierung: Bereit</span>
+                                    </div>
+                                </div>
+                                <div class="teleprompter-speech-hint">
+                                    Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt deinem Live-Tempo.
+                                </div>
                             </div>
-                            <progress class="teleprompter-progress" data-role="teleprompter-progress" value="0" max="100">0%</progress>
-                            <div class="teleprompter-guide-sub">
-                                <span data-role="teleprompter-progress-label">0%</span>
-                                <span class="teleprompter-guide-divider">•</span>
-                                <span data-role="teleprompter-progress-words">0 / 0 Wörter</span>
+                            <div class="ska-teleprompter-controls-panel">
+                                <div class="ska-teleprompter-panel-header">
+                                    <span>Steuerung</span>
+                                    <small>Alles im Blick</small>
+                                </div>
+                                <div class="teleprompter-controls">
+                                    <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
+                                    <label class="teleprompter-control-group">
+                                        <span>Geschwindigkeit (WPM)</span>
+                                        <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
+                                        <span data-role="teleprompter-speed-label">${this.state.teleprompter.wpm || 120} WPM</span>
+                                    </label>
+                                    <label class="teleprompter-control-group">
+                                        <span>Schriftgröße</span>
+                                        <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
+                                        <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
+                                    </label>
+                                    <label class="teleprompter-control-group">
+                                        <span>Marker</span>
+                                        <select data-role="teleprompter-marker-mode">
+                                            <option value="none">Nur markieren</option>
+                                            <option value="pause">Auto-Pause</option>
+                                            <option value="slow">Slowdown</option>
+                                        </select>
+                                    </label>
+                                    <label class="teleprompter-control-group teleprompter-toggle">
+                                        <span>Countdown</span>
+                                        <input type="checkbox" data-role="teleprompter-countdown-toggle" ${this.state.teleprompter.countdownEnabled ? 'checked' : ''}>
+                                    </label>
+                                    <label class="teleprompter-control-group teleprompter-toggle">
+                                        <span>Sprechtempo-Follow</span>
+                                        <input type="checkbox" data-role="teleprompter-speech-toggle" ${this.state.teleprompter.speechEnabled ? 'checked' : ''}>
+                                    </label>
+                                    <button type="button" class="teleprompter-control teleprompter-control--secondary" data-action="teleprompter-calibrate">Kalibrieren (15s)</button>
+                                    <label class="teleprompter-control-group teleprompter-toggle">
+                                        <span>Spiegeln</span>
+                                        <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
+                                    </label>
+                                </div>
+                                <div class="teleprompter-hotkeys" aria-label="Teleprompter-Hotkeys">
+                                    <span class="teleprompter-hotkey">Space · Start/Stop</span>
+                                    <span class="teleprompter-hotkey">↑/↓ · Tempo</span>
+                                    <span class="teleprompter-hotkey">+/- · Schriftgröße</span>
+                                    <span class="teleprompter-hotkey">M · Spiegeln</span>
+                                    <span class="teleprompter-hotkey">Esc · Schließen</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="teleprompter-status-row">
-                            <div class="teleprompter-status" data-role="teleprompter-speech-status">
-                                <span class="teleprompter-status-dot" aria-hidden="true"></span>
-                                <span data-role="teleprompter-speech-label">Sprechtempo-Follow aus</span>
-                                <span class="teleprompter-status-metric" data-role="teleprompter-speech-metric">Match: --</span>
-                            </div>
-                            <div class="teleprompter-calibration" data-role="teleprompter-calibration-status">
-                                <span class="teleprompter-calibration-label">Kalibrierung: Bereit</span>
-                            </div>
-                        </div>
-                        <div class="teleprompter-speech-hint">
-                            Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt deinem Live-Tempo.
-                        </div>
-                        <div class="teleprompter-controls">
-                            <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
-                            <label class="teleprompter-control-group">
-                                <span>Geschwindigkeit (WPM)</span>
-                                <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
-                                <span data-role="teleprompter-speed-label">${this.state.teleprompter.wpm || 120} WPM</span>
-                            </label>
-                            <label class="teleprompter-control-group">
-                                <span>Schriftgröße</span>
-                                <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
-                                <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
-                            </label>
-                            <label class="teleprompter-control-group">
-                                <span>Marker</span>
-                                <select data-role="teleprompter-marker-mode">
-                                    <option value="none">Nur markieren</option>
-                                    <option value="pause">Auto-Pause</option>
-                                    <option value="slow">Slowdown</option>
-                                </select>
-                            </label>
-                            <label class="teleprompter-control-group teleprompter-toggle">
-                                <span>Countdown</span>
-                                <input type="checkbox" data-role="teleprompter-countdown-toggle" ${this.state.teleprompter.countdownEnabled ? 'checked' : ''}>
-                            </label>
-                            <label class="teleprompter-control-group teleprompter-toggle">
-                                <span>Sprechtempo-Follow</span>
-                                <input type="checkbox" data-role="teleprompter-speech-toggle" ${this.state.teleprompter.speechEnabled ? 'checked' : ''}>
-                            </label>
-                            <button type="button" class="teleprompter-control teleprompter-control--secondary" data-action="teleprompter-calibrate">Kalibrieren (15s)</button>
-                            <label class="teleprompter-control-group teleprompter-toggle">
-                                <span>Spiegeln</span>
-                                <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
-                            </label>
                         </div>
                     </div>
                 </div>`;
@@ -7429,6 +7439,9 @@
                         this.settings.lastGenre = select.value;
                         this.saveUIState();
                     }
+                    if (k === 'usecase') {
+                        this.updateOverviewGenreLabel();
+                    }
                 }
                 this.analyze(this.getText());
             });
@@ -8108,7 +8121,7 @@
         ensureLayoutModal() {
             if (this.layoutModal) return;
             const modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-layout-modal';
+            modal.className = 'skriptanalyse-modal ska-layout-modal ska-layout-modal--wide';
             modal.id = 'ska-layout-modal';
             modal.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-layout-modal"></div>
@@ -8177,15 +8190,21 @@
             const grid = this.layoutModal.querySelector('[data-role="layout-grid"]');
             if (!grid) return;
             const items = order.filter(id => id !== 'overview' && SA_CONFIG.CARD_TITLES[id] && this.isCardAvailable(id));
+            const isPremiumPlan = this.isPremiumActive();
+            const sortedItems = isPremiumPlan
+                ? items
+                : [
+                    ...items.filter(id => this.isCardUnlocked(id)),
+                    ...items.filter(id => !this.isCardUnlocked(id))
+                ];
             grid.innerHTML = '';
-            items.forEach((id) => {
-                const isPremium = this.isPremiumActive();
+            sortedItems.forEach((id) => {
                 const isUnlocked = this.isCardUnlocked(id);
                 const isVisible = !this.state.hiddenCards.has(id);
-                const canDrag = isPremium && isUnlocked;
+                const canDrag = isPremiumPlan && isUnlocked;
 
                 const item = document.createElement('div');
-                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}${isPremium ? '' : ' ska-layout-item--dnd-locked'}`;
+                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}${isPremiumPlan ? '' : ' ska-layout-item--dnd-locked'}`;
                 item.dataset.cardId = id;
                 item.setAttribute('draggable', canDrag ? 'true' : 'false');
 
@@ -8193,7 +8212,8 @@
                 handle.className = 'ska-layout-handle';
                 handle.setAttribute('aria-hidden', 'true');
                 handle.textContent = '⋮⋮';
-                if (!isPremium) {
+                if (!isPremiumPlan) {
+                    handle.classList.add('is-disabled');
                     const dndLock = document.createElement('span');
                     dndLock.className = 'ska-layout-dnd-lock';
                     dndLock.textContent = '🔒 Premium';
@@ -9703,7 +9723,7 @@
             });
             genreList += '</div></div>';
 
-            const gLbl = this.settings.usecase !== 'auto' ? (SA_CONFIG.GENRE_LABELS[this.settings.usecase] || this.settings.usecase).toUpperCase() : 'AUTO-DETECT';
+            const gLbl = this.getOverviewGenreLabel();
             const pauseText = pause > 0 ? ` &bull; ${(Number(pause) || 0).toFixed(1)}s Pause` : '';
             const genreContext = SA_CONFIG.GENRE_CONTEXT[this.settings.usecase];
             const genreNote = genreContext ? `<div class="ska-genre-context">${genreContext.overviewNote}</div>` : '';
@@ -9744,7 +9764,7 @@
             const html = `<div style="display:flex; flex-direction:column; gap:1.5rem; height:100%;">
                 <div>
                     <div style="font-size:3.2rem; font-weight:800; color:${SA_CONFIG.COLORS.blue}; line-height:1; letter-spacing:-0.03em;">${SA_Utils.formatMin(sec)} <span style="font-size:1.1rem; font-weight:500; color:#94a3b8; margin-left:-5px;">Min</span></div>
-                    <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
+                    <div class="ska-overview-genre-label" style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-top:0.4rem; letter-spacing:0.05em; margin-bottom:0.2rem;">SPRECHDAUER &bull; ${gLbl}</div>
                     <div style="font-size:0.8rem; color:#64748b; font-weight:500;">Ø ${rateLabel}${pauseText}</div>
                     ${benchmarkHtml}
                     ${genreNote}
@@ -9765,6 +9785,19 @@
             
             this.updateCard('overview', html, this.topPanel, 'skriptanalyse-card--overview', trafficBadgeHtml);
             this.observeOverviewHeight();
+        }
+
+        getOverviewGenreLabel() {
+            const genreKey = this.settings.usecase;
+            if (!genreKey || genreKey === 'auto') return 'AUTO-DETECT';
+            return (SA_CONFIG.GENRE_LABELS[genreKey] || genreKey).toUpperCase();
+        }
+
+        updateOverviewGenreLabel() {
+            const label = this.root ? this.root.querySelector('.ska-overview-genre-label') : null;
+            if (label) {
+                label.textContent = `SPRECHDAUER • ${this.getOverviewGenreLabel()}`;
+            }
         }
 
         renderDisabledState(id) {
@@ -11392,6 +11425,13 @@
             const resolvedHtml = html;
             const finalHtml = resolvedHtml;
             const proTipHtml = !isToolCard ? this.renderProTipFooter(id) : '';
+            const buildProTipFooter = () => {
+                if (!proTipHtml) return null;
+                const footer = document.createElement('div');
+                footer.className = 'ska-card-footer ska-card-footer--protip';
+                footer.innerHTML = proTipHtml;
+                return footer;
+            };
 
             // UPDATED HEADER WITH INFO BADGE
             const infoText = SA_CONFIG.CARD_DESCRIPTIONS[id];
@@ -11439,11 +11479,15 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>${proTipHtml}`;
+                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
                 card.appendChild(b);
+                const proTipFooter = buildProTipFooter();
+                if (proTipFooter) {
+                    card.appendChild(proTipFooter);
+                }
                 if (isLocked) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
@@ -11456,7 +11500,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>${proTipHtml}`;
+                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
@@ -11479,6 +11523,17 @@
                     body.querySelectorAll('.ska-problem-item.is-hidden-premium').forEach(item => item.classList.remove('is-hidden-premium'));
                     const note = body.querySelector('.ska-premium-note');
                     if (note) note.remove();
+                 }
+                 const oldFooter = card.querySelector('.ska-card-footer--protip');
+                 if (oldFooter) oldFooter.remove();
+                 const proTipFooter = buildProTipFooter();
+                 if (proTipFooter) {
+                    const lockEl = card.querySelector('.ska-premium-inline');
+                    if (lockEl) {
+                        card.insertBefore(proTipFooter, lockEl);
+                    } else {
+                        card.appendChild(proTipFooter);
+                    }
                  }
             }
         }
