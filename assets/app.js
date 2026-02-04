@@ -293,7 +293,7 @@
             bpm: '🎵 Audio-BPM-Matching',
             easy_language: '🧩 Leichte Sprache',
             teleprompter: '🪄 Teleprompter',
-            pacing: '⏱️ Sprech-Pacing',
+            pacing: 'Sprech-Pacing',
             word_sprint: '✍️ Schreib-Sprint & Fokus',
             bullshit: '🧨 Buzzword-Check',
             metaphor: '🪞 Metaphern & Phrasen',
@@ -3843,6 +3843,10 @@
             return this.getAppMode() === 'force_premium';
         }
 
+        isUpsellAllowed() {
+            return Boolean((typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.allowUpsell) || SKRIPT_ANALYSE_CONFIG.allowUpsell);
+        }
+
         getDisabledCards() {
             const disabled = typeof window !== 'undefined' ? window.SKA_CONFIG_PHP?.disabledCards : null;
             return Array.isArray(disabled) ? disabled : [];
@@ -4845,15 +4849,18 @@
             modal.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
                 <div class="skriptanalyse-modal-content ska-tool-modal-content ska-teleprompter-modal-content">
-                    <button type="button" class="ska-close-icon" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header ska-teleprompter-header">
+                    <div class="ska-modal-header ska-modal-header--dark ska-teleprompter-header">
                         <div class="ska-teleprompter-title">
-                            <h3>Teleprompter</h3>
-                            <span class="ska-teleprompter-badge">Studio Mode</span>
+                            <div>
+                                <h3>Teleprompter</h3>
+                                <span class="ska-teleprompter-badge">Studio Mode</span>
+                            </div>
                         </div>
                         <div class="ska-teleprompter-header-actions">
-                            <button type="button" class="teleprompter-chip" data-action="teleprompter-fullscreen">Fullscreen</button>
-                            <button type="button" class="teleprompter-chip" data-action="teleprompter-reset">Reset</button>
+                            <button type="button" class="ska-btn ska-btn--primary ska-btn--brand ska-teleprompter-start" data-action="teleprompter-toggle">Start</button>
+                            <button type="button" class="ska-icon-btn" data-action="teleprompter-fullscreen" aria-label="Fullscreen">⤢</button>
+                            <button type="button" class="ska-icon-btn" data-action="teleprompter-reset" aria-label="Reset">↺</button>
+                            <button type="button" class="ska-icon-btn" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body ska-teleprompter-body">
@@ -4895,7 +4902,6 @@
                                     <small>Alles im Blick</small>
                                 </div>
                                 <div class="teleprompter-controls">
-                                    <button type="button" class="teleprompter-control" data-action="teleprompter-toggle">Start</button>
                                     <label class="teleprompter-control-group">
                                         <span>Geschwindigkeit (WPM)</span>
                                         <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
@@ -5050,7 +5056,7 @@
             if (modal) return modal;
 
             modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-focus-modal sprint-modal';
+            modal.className = 'skriptanalyse-modal ska-focus-modal sprint-modal ska-modal--sprint';
             modal.id = 'ska-focus-modal';
             modal.ariaHidden = 'true';
             modal.dataset.removeOnClose = 'true';
@@ -5059,8 +5065,10 @@
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
                     <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
                     <div class="ska-focus-confetti" data-role="focus-confetti" aria-hidden="true"></div>
-                    <div class="ska-modal-header ska-focus-modal-header">
-                        <h3>Schreib-Sprint</h3>
+                    <div class="ska-modal-header ska-modal-header--dark ska-focus-modal-header">
+                        <div class="ska-focus-header-main">
+                            <h3>Schreib-Sprint</h3>
+                        </div>
                         <div class="focus-toolbar">
                             <label class="focus-field">
                                 <span>Zeit (Min.)</span>
@@ -5074,16 +5082,16 @@
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body ska-focus-modal-body">
-                        <div class="focus-status-row">
+                        <div class="ska-focus-statusline">
                             <div class="focus-stats">
                                 <span data-role="focus-timer">00:00</span>
                                 <span data-role="focus-words">0 / 0 Wörter</span>
                             </div>
-                            <div class="focus-progress" aria-hidden="true">
-                                <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
-                                <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
-                            </div>
                             <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
+                        </div>
+                        <div class="focus-progress focus-progress--large" aria-hidden="true">
+                            <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
+                            <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
                         </div>
                         <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                         <div class="ska-focus-confirm" data-role="focus-confirm" aria-hidden="true">
@@ -6005,21 +6013,21 @@
             if (!container) return;
             container.innerHTML = '';
             const colors = ['#38bdf8', '#f97316', '#22c55e', '#a855f7', '#f43f5e', '#eab308'];
-            const pieceCount = 36;
+            const pieceCount = 80;
             for (let i = 0; i < pieceCount; i += 1) {
                 const piece = document.createElement('span');
                 piece.className = 'ska-confetti-piece';
                 piece.style.left = `${Math.random() * 100}%`;
                 piece.style.top = `${-20 - Math.random() * 40}px`;
                 piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.animationDuration = `${0.9 + Math.random() * 0.8}s`;
-                piece.style.animationDelay = `${Math.random() * 0.2}s`;
+                piece.style.animationDuration = `${1.4 + Math.random() * 1.2}s`;
+                piece.style.animationDelay = `${Math.random() * 0.3}s`;
                 piece.style.transform = `rotate(${Math.random() * 360}deg)`;
                 container.appendChild(piece);
             }
             window.setTimeout(() => {
                 container.innerHTML = '';
-            }, 2000);
+            }, 3200);
         }
 
         startWordSprint(durationMinutes, targetWords) {
@@ -6976,7 +6984,10 @@
                 if(typeof global.complianceText !== 'undefined') this.settings.complianceText = global.complianceText;
                 if(typeof global.teleprompterMirror !== 'undefined') this.settings.teleprompterMirror = global.teleprompterMirror;
                 if(typeof global.layoutOrderByProfile !== 'undefined') this.settings.layoutOrderByProfile = global.layoutOrderByProfile || {};
-                
+
+                if (this.settings.usecase === 'auto') {
+                    this.settings.lastGenre = '';
+                }
                 // Sync Radio
                 const m = document.getElementById('ska-settings-modal');
                 if(m) {
@@ -6995,7 +7006,6 @@
                 role: this.settings.role,
                 usecase: this.settings.usecase,
                 timeMode: this.settings.timeMode,
-                lastGenre: this.settings.lastGenre,
                 charMode: this.settings.charMode,
                 numberMode: this.settings.numberMode,
                 manualWpm: this.settings.manualWpm,
@@ -7009,6 +7019,9 @@
                 teleprompterMirror: this.settings.teleprompterMirror,
                 layoutOrderByProfile: this.settings.layoutOrderByProfile
             };
+            if (this.settings.usecase !== 'auto') {
+                payload.lastGenre = this.settings.lastGenre;
+            }
             if (this.isPremiumActive()) {
                 if (!this.state.projectObject) {
                     this.state.projectObject = { settings: {} };
@@ -7104,7 +7117,7 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-project-manager"></div>
                 <div class="skriptanalyse-modal-content ska-project-manager-modal__content">
                     <button type="button" class="ska-close-icon" data-action="close-project-manager" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header"><h3>Meine gespeicherten Projekte</h3></div>
+                    <div class="ska-modal-header"><h3>Speichere Deine Projekte dauerhaft mit einer Premium-Mitgliedschaft.</h3></div>
                     <div class="skriptanalyse-modal-body">
                         <div class="ska-project-manager__save" data-role="project-save-panel">
                             <div class="ska-project-manager__save-header">
@@ -7125,7 +7138,7 @@
                             <div class="ska-project-manager__upsell-text">
                                 <strong>Speichere deine Skripte & Projekte dauerhaft mit einem Premium-Plan.</strong>
                                 <span>Greife jederzeit auf alle Projekte zu und verwalte Versionen zentral.</span>
-                                <a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade" data-action="project-upsell-upgrade">Premium freischalten</a>
+                                <a class="ska-btn ska-btn--primary ska-btn--compact ska-projects-upgrade-btn" href="#ska-premium-upgrade" data-action="project-upsell-upgrade">Premium freischalten</a>
                             </div>
                         </div>
                         <div class="ska-project-manager__list" data-role="project-manager-list"></div>
@@ -7151,7 +7164,7 @@
             this.ensureProjectManagerModal();
             const isPremium = this.isPremiumActive();
             if (this.projectManagerUpsell) {
-                this.projectManagerUpsell.hidden = isPremium;
+                this.projectManagerUpsell.hidden = isPremium || !this.isUpsellAllowed();
                 this.projectManagerUpsell.dataset.context = context;
             }
             if (this.projectSavePanel) {
@@ -7597,11 +7610,13 @@
                     } else {
                         this.settings[k] = select.value;
                     }
-                    if (k === 'usecase' && select.value !== 'auto') {
-                        this.settings.lastGenre = select.value;
-                        this.saveUIState();
-                    }
                     if (k === 'usecase') {
+                        if (select.value === 'auto') {
+                            this.settings.lastGenre = '';
+                        } else {
+                            this.settings.lastGenre = select.value;
+                        }
+                        this.saveUIState();
                         this.updateOverviewGenreLabel();
                     }
                 }
@@ -8175,6 +8190,12 @@
 
         renderToolsButtons(toolIds = []) {
             if (!this.toolsGrid) return;
+            if (this.isFreeOnlyMode()) {
+                if (this.toolsGrid) this.toolsGrid.innerHTML = '';
+                if (this.toolsModalStore) this.toolsModalStore.innerHTML = '';
+                if (this.toolsPanel) this.toolsPanel.classList.add('is-hidden');
+                return;
+            }
             const availableTools = toolIds.filter((id) => this.isToolAvailable(id));
             if (!availableTools.length) {
                 this.toolsGrid.innerHTML = '';
@@ -8256,6 +8277,11 @@
             if (!this.filterBar) return;
             this.filterBar.innerHTML = '';
             this.filterBar.classList.remove('is-compact');
+            this.filterBar.classList.remove('is-hidden');
+            if (this.isFreeOnlyMode()) {
+                this.filterBar.classList.add('is-hidden');
+                return;
+            }
             const wrap = document.createElement('div');
             wrap.className = 'ska-layout-cta-wrap';
             wrap.appendChild(this.renderLayoutButton());
@@ -8263,6 +8289,7 @@
         }
 
         renderLayoutButton() {
+            if (this.isFreeOnlyMode()) return document.createElement('span');
             const btn = document.createElement('button');
             btn.className = 'ska-layout-cta-btn';
             btn.textContent = 'Boxen-Layout anpassen';
@@ -8596,7 +8623,7 @@
                     this.filterBar.classList.remove('is-hidden');
                 }
                 if (this.toolsPanel) {
-                    this.toolsPanel.classList.remove('is-hidden');
+                    this.toolsPanel.classList.toggle('is-hidden', this.isFreeOnlyMode());
                 }
             }
 
@@ -9326,7 +9353,7 @@
             const secs = (read.speakingWordCount / wpm) * 60;
             const hint = read.wordCount > 0 ? `Scroll-Dauer: ${SA_Utils.formatMin(secs)} (${wpm} WPM)` : 'Zu wenig Text für den Teleprompter.';
             const isPremium = this.isPremiumActive();
-            const teaser = !isPremium ? `
+            const teaser = (!isPremium && this.isUpsellAllowed()) ? `
                 <div class="ska-teleprompter-teaser">
                     <div class="ska-teleprompter-teaser-header">
                         <span class="ska-teleprompter-teaser-badge">Premium Preview</span>
@@ -9387,6 +9414,10 @@
             });
 
             const previewHtml = SA_Utils.escapeHtml(raw || '').replace(/\n/g, '<br>');
+            const noteBox = `
+                <div class="ska-note-box">
+                    Starte den Timer und sprich deinen Text im Zieltempo. Die Anzeige zeigt dir live, ob du zu schnell oder zu langsam bist.
+                </div>`;
             const h = `
                 <div class="ska-pacing-head">
                     <div>
@@ -9417,9 +9448,10 @@
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-clicktrack" data-bpm="${bpmValue}" ${clickTrackDisabled ? 'disabled' : ''}>${clickTrackLabel}</button>
                     <button class="ska-btn ska-btn--secondary ska-btn--compact" data-action="pacing-reset">Reset</button>
                 </div>
+                ${noteBox}
                 ${this.renderTipSection('pacing', true)}`;
 
-            this.updateCard('pacing', h, targetGrid);
+            this.updateCard('pacing', h, targetGrid, 'ska-card--pacing');
             this.updatePacingUI(clamped);
         }
 
@@ -10223,7 +10255,7 @@
             const emphasisDirective = focusText => focusText ? `Schlüsselwort betonen: „${focusText}“ als Fokus setzen.` : 'Kernaussage pro Satz markieren und hervorheben.';
             const primaryKeyword = read && read.words && read.words.length ? (SA_Logic.findWordEchoes(read.cleanedText)[0] || '') : '';
 
-            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : this.settings.lastGenre;
+            const genreKey = this.settings.usecase !== 'auto' ? this.settings.usecase : '';
             const genreContext = genreKey ? SA_CONFIG.GENRE_CONTEXT[genreKey] : null;
             const genreCoachNote = genreContext ? `<div class="ska-genre-context">${genreContext.tipPrefix}: ${genreContext.tipFocus}.</div>` : '';
             const rateLabel = isSps ? `${sps} SPS` : `${wpm} WPM`;
@@ -11214,7 +11246,7 @@
             const container = this.legendContainer.parentElement;
             if (!container) return;
             const existing = container.querySelector('.ska-premium-upgrade-card');
-            if (this.isFreeOnlyMode()) {
+            if (this.isFreeOnlyMode() || !this.isUpsellAllowed()) {
                 if (existing) existing.remove();
                 return;
             }
@@ -11381,6 +11413,7 @@
             if (existing) existing.remove();
             if (this.isFreeOnlyMode()) return;
             if (this.isPremiumActive()) return;
+            if (!this.isUpsellAllowed()) return;
             const profile = this.normalizeProfile(this.settings.role);
             const allowedList = SA_CONFIG.PROFILE_CARDS[profile] || SA_CONFIG.CARD_ORDER;
             const relevant = allowedList.filter((id) => this.isCardAvailable(id));
@@ -11606,6 +11639,10 @@
             const buildHeader = () => {
                 const lockBadge = isLocked ? '<span class="ska-premium-badge">Premium</span>' : '';
                 const expandAction = id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal';
+                const headerClass = id === 'pacing' ? 'ska-card-header ska-card-header--dark' : 'ska-card-header';
+                const subtitle = id === 'pacing'
+                    ? '<p class="ska-card-subtitle">Ideal für neue Sprecher:innen: Das Tool hilft dir, Tempo & Timing sicher zu halten – perfekt fürs Timing-Training und saubere Takes.</p>'
+                    : '';
                 const expandBtn = isToolCard
                     ? `<button class="ska-tool-expand-btn" data-action="${expandAction}" data-tool-id="${id}" title="Werkzeug vergrößern" aria-label="Werkzeug vergrößern">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -11616,9 +11653,10 @@
                             </svg>
                         </button>`
                     : '';
-                return `<div class="ska-card-header">
+                return `<div class="${headerClass}">
                             <div class="ska-card-title-wrapper">
                                 <h3>${SA_CONFIG.CARD_TITLES[id]}</h3>
+                                ${subtitle}
                                 ${infoHtml}
                             </div>
                             <div class="ska-card-header-actions">
@@ -11651,7 +11689,7 @@
                 if (proTipFooter) {
                     card.appendChild(proTipFooter);
                 }
-                if (isLocked) {
+                if (isLocked && this.isUpsellAllowed()) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
@@ -11675,7 +11713,7 @@
                  }
                  const lock = card.querySelector('.ska-premium-inline');
                  if (isLocked) {
-                    if (!lock) {
+                    if (!lock && this.isUpsellAllowed()) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
                         lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
