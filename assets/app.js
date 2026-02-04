@@ -3844,7 +3844,15 @@
         }
 
         isUpsellAllowed() {
-            return Boolean((typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.allowUpsell) || SKRIPT_ANALYSE_CONFIG.allowUpsell);
+            const cfg = (typeof window !== 'undefined' && window.SKA_CONFIG_PHP && typeof window.SKA_CONFIG_PHP.allowUpsell === 'boolean')
+                ? window.SKA_CONFIG_PHP.allowUpsell
+                : null;
+            if (cfg !== null) return cfg;
+
+            if (typeof SKRIPT_ANALYSE_CONFIG.allowUpsell === 'boolean') return SKRIPT_ANALYSE_CONFIG.allowUpsell;
+
+            // Default: in freemium erlauben, in free_only nicht
+            return !this.isFreeOnlyMode();
         }
 
         getDisabledCards() {
@@ -11663,6 +11671,7 @@
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
             const showPremiumNotice = !isToolCard && isLocked && id !== 'overview';
+            const showLockOverlay = isLocked && !isToolCard && id !== 'overview' && !this.isFreeOnlyMode();
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -11741,10 +11750,10 @@
                 if (proTipFooter) {
                     card.appendChild(proTipFooter);
                 }
-                if (isToolCard && isLocked && this.isUpsellAllowed()) {
+                if (showLockOverlay) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
-                    lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                    lock.innerHTML = '<strong>Nur in Premium verfügbar</strong><span>Schalte Premium frei, um diese Analyse vollständig zu nutzen.</span><a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                     card.appendChild(lock);
                 }
                 
@@ -11764,11 +11773,11 @@
                      if(oldHeader) oldHeader.outerHTML = buildHeader();
                  }
                  const lock = card.querySelector('.ska-premium-inline');
-                 if (isLocked && isToolCard) {
-                    if (!lock && this.isUpsellAllowed()) {
+                 if (showLockOverlay) {
+                    if (!lock) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';
-                        lockEl.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
+                        lockEl.innerHTML = '<strong>Nur in Premium verfügbar</strong><span>Schalte Premium frei, um diese Analyse vollständig zu nutzen.</span><a class="ska-btn ska-btn--primary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
                         card.appendChild(lockEl);
                     }
                  } else {

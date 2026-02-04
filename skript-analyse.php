@@ -662,6 +662,8 @@ function ska_get_localized_config() {
 
     $cart_url = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : site_url( '/warenkorb/' );
     $premium_cart_url = add_query_arg( 'add-to-cart', $premium_product_monthly_id, $cart_url );
+    $allow_upsell = ( ska_get_app_mode() !== 'free_only' );
+    $allow_upsell = apply_filters( 'ska_allow_upsell', $allow_upsell );
 
     return array(
         'markers' => $markers_config,
@@ -681,6 +683,7 @@ function ska_get_localized_config() {
         'defaultAnalysisMode' => ska_get_default_analysis_mode(),
         'pdfFooterText' => ska_get_pdf_footer_text(),
         'appMode' => ska_get_app_mode(),
+        'allowUpsell' => (bool) $allow_upsell,
         'disabledCards' => ska_get_disabled_cards(),
         'disabledTools' => ska_get_disabled_tools(),
         'planMode' => $plan_mode,
