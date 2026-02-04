@@ -4850,17 +4850,22 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-teleprompter"></div>
                 <div class="skriptanalyse-modal-content ska-tool-modal-content ska-teleprompter-modal-content">
                     <div class="ska-modal-header ska-modal-header--dark ska-teleprompter-header">
-                        <div class="ska-teleprompter-title">
-                            <div>
-                                <h3>Teleprompter</h3>
+                        <div class="ska-teleprompter-header-left">
+                            <div class="ska-teleprompter-title">
+                                <div class="ska-teleprompter-title-text">
+                                    <h3>Teleprompter</h3>
+                                    <span class="ska-teleprompter-subtitle">Studio-Teleprompter</span>
+                                </div>
                                 <span class="ska-teleprompter-badge">Studio Mode</span>
                             </div>
                         </div>
                         <div class="ska-teleprompter-header-actions">
                             <button type="button" class="ska-btn ska-btn--primary ska-btn--brand ska-teleprompter-start" data-action="teleprompter-toggle">Start</button>
-                            <button type="button" class="ska-icon-btn" data-action="teleprompter-fullscreen" aria-label="Fullscreen">⤢</button>
-                            <button type="button" class="ska-icon-btn" data-action="teleprompter-reset" aria-label="Reset">↺</button>
-                            <button type="button" class="ska-icon-btn" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
+                            <div class="ska-teleprompter-icon-actions">
+                                <button type="button" class="ska-icon-btn" data-action="teleprompter-fullscreen" aria-label="Fullscreen">⤢</button>
+                                <button type="button" class="ska-icon-btn" data-action="teleprompter-reset" aria-label="Reset">↺</button>
+                                <button type="button" class="ska-icon-btn" data-action="close-teleprompter" aria-label="Schließen">&times;</button>
+                            </div>
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body ska-teleprompter-body">
@@ -4902,44 +4907,65 @@
                                     <small>Alles im Blick</small>
                                 </div>
                                 <div class="teleprompter-controls">
-                                    <label class="teleprompter-control-group">
-                                        <span>Geschwindigkeit (WPM)</span>
-                                        <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
-                                        <span data-role="teleprompter-speed-label">${this.state.teleprompter.wpm || 120} WPM</span>
-                                    </label>
-                                    <label class="teleprompter-control-group">
-                                        <span>Schriftgröße</span>
-                                        <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
-                                        <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
-                                    </label>
-                                    <label class="teleprompter-control-group">
-                                        <span>Marker</span>
-                                        <select data-role="teleprompter-marker-mode">
-                                            <option value="none">Nur markieren</option>
-                                            <option value="pause">Auto-Pause</option>
-                                            <option value="slow">Slowdown</option>
-                                        </select>
-                                    </label>
-                                    <label class="teleprompter-control-group teleprompter-toggle">
-                                        <span>Countdown</span>
-                                        <input type="checkbox" data-role="teleprompter-countdown-toggle" ${this.state.teleprompter.countdownEnabled ? 'checked' : ''}>
-                                    </label>
-                                    <label class="teleprompter-control-group teleprompter-toggle">
-                                        <span>Sprechtempo-Follow</span>
-                                        <input type="checkbox" data-role="teleprompter-speech-toggle" ${this.state.teleprompter.speechEnabled ? 'checked' : ''}>
-                                    </label>
-                                    <button type="button" class="teleprompter-control teleprompter-control--secondary" data-action="teleprompter-calibrate">Kalibrieren (15s)</button>
-                                    <label class="teleprompter-control-group teleprompter-toggle">
-                                        <span>Spiegeln</span>
-                                        <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
-                                    </label>
-                                </div>
-                                <div class="teleprompter-hotkeys" aria-label="Teleprompter-Hotkeys">
-                                    <span class="teleprompter-hotkey">Space · Start/Stop</span>
-                                    <span class="teleprompter-hotkey">↑/↓ · Tempo</span>
-                                    <span class="teleprompter-hotkey">+/- · Schriftgröße</span>
-                                    <span class="teleprompter-hotkey">M · Spiegeln</span>
-                                    <span class="teleprompter-hotkey">Esc · Schließen</span>
+                                    <div class="ska-teleprompter-section">
+                                        <div class="ska-teleprompter-section-title">Wiedergabe</div>
+                                        <div class="ska-teleprompter-section-body">
+                                            <button type="button" class="teleprompter-control teleprompter-control--secondary" data-action="teleprompter-toggle">Start / Pause</button>
+                                            <label class="teleprompter-control-group teleprompter-toggle">
+                                                <span>Countdown</span>
+                                                <input type="checkbox" data-role="teleprompter-countdown-toggle" ${this.state.teleprompter.countdownEnabled ? 'checked' : ''}>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="ska-teleprompter-section">
+                                        <div class="ska-teleprompter-section-title">Anzeige</div>
+                                        <div class="ska-teleprompter-section-body">
+                                            <label class="teleprompter-control-group">
+                                                <span>Schriftgröße</span>
+                                                <input type="range" min="20" max="64" step="2" value="${this.state.teleprompter.fontSize}" data-role="teleprompter-font">
+                                                <span data-role="teleprompter-font-label">${this.state.teleprompter.fontSize}px</span>
+                                            </label>
+                                            <label class="teleprompter-control-group teleprompter-toggle">
+                                                <span>Spiegeln</span>
+                                                <input type="checkbox" data-action="teleprompter-mirror" ${this.settings.teleprompterMirror ? 'checked' : ''}>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="ska-teleprompter-section">
+                                        <div class="ska-teleprompter-section-title">Tempo</div>
+                                        <div class="ska-teleprompter-section-body">
+                                            <label class="teleprompter-control-group">
+                                                <span>Geschwindigkeit (WPM)</span>
+                                                <input type="range" min="80" max="240" step="5" value="${this.state.teleprompter.wpm || 120}" data-role="teleprompter-speed">
+                                                <span data-role="teleprompter-speed-label">${this.state.teleprompter.wpm || 120} WPM</span>
+                                            </label>
+                                            <label class="teleprompter-control-group teleprompter-toggle">
+                                                <span>Sprechtempo-Follow</span>
+                                                <input type="checkbox" data-role="teleprompter-speech-toggle" ${this.state.teleprompter.speechEnabled ? 'checked' : ''}>
+                                            </label>
+                                            <button type="button" class="teleprompter-control" data-action="teleprompter-calibrate">Kalibrieren (15s)</button>
+                                        </div>
+                                    </div>
+                                    <div class="ska-teleprompter-section">
+                                        <div class="ska-teleprompter-section-title">Marker & Hotkeys</div>
+                                        <div class="ska-teleprompter-section-body">
+                                            <label class="teleprompter-control-group">
+                                                <span>Marker</span>
+                                                <select data-role="teleprompter-marker-mode">
+                                                    <option value="none">Nur markieren</option>
+                                                    <option value="pause">Auto-Pause</option>
+                                                    <option value="slow">Slowdown</option>
+                                                </select>
+                                            </label>
+                                            <div class="teleprompter-hotkeys" aria-label="Teleprompter-Hotkeys">
+                                                <span class="teleprompter-hotkey">Space · Start/Stop</span>
+                                                <span class="teleprompter-hotkey">↑/↓ · Tempo</span>
+                                                <span class="teleprompter-hotkey">+/- · Schriftgröße</span>
+                                                <span class="teleprompter-hotkey">M · Spiegeln</span>
+                                                <span class="teleprompter-hotkey">Esc · Schließen</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -5063,22 +5089,24 @@
             modal.innerHTML = `
                 <div class="skriptanalyse-modal-overlay" data-action="close-focus-mode"></div>
                 <div class="skriptanalyse-modal-content ska-focus-modal-content">
-                    <button type="button" class="ska-close-icon" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
                     <div class="ska-focus-confetti" data-role="focus-confetti" aria-hidden="true"></div>
                     <div class="ska-modal-header ska-modal-header--dark ska-focus-modal-header">
                         <div class="ska-focus-header-main">
                             <h3>Schreib-Sprint</h3>
                         </div>
-                        <div class="focus-toolbar">
-                            <label class="focus-field">
-                                <span>Zeit (Min.)</span>
-                                <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
-                            </label>
-                            <label class="focus-field">
-                                <span>Wortziel</span>
-                                <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
-                            </label>
-                            <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start</button>
+                        <div class="ska-focus-header-actions">
+                            <div class="focus-toolbar">
+                                <label class="focus-field">
+                                    <span>Zeit (Min.)</span>
+                                    <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
+                                </label>
+                                <label class="focus-field">
+                                    <span>Wortziel</span>
+                                    <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
+                                </label>
+                                <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start</button>
+                            </div>
+                            <button type="button" class="ska-icon-btn" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body ska-focus-modal-body">
@@ -5087,7 +5115,6 @@
                                 <span data-role="focus-timer">00:00</span>
                                 <span data-role="focus-words">0 / 0 Wörter</span>
                             </div>
-                            <button type="button" class="focus-exit" data-action="close-focus-mode">Fokus beenden</button>
                         </div>
                         <div class="focus-progress focus-progress--large" aria-hidden="true">
                             <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
@@ -6013,21 +6040,23 @@
             if (!container) return;
             container.innerHTML = '';
             const colors = ['#38bdf8', '#f97316', '#22c55e', '#a855f7', '#f43f5e', '#eab308'];
-            const pieceCount = 80;
+            const pieceCount = 140;
             for (let i = 0; i < pieceCount; i += 1) {
                 const piece = document.createElement('span');
                 piece.className = 'ska-confetti-piece';
                 piece.style.left = `${Math.random() * 100}%`;
                 piece.style.top = `${-20 - Math.random() * 40}px`;
                 piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.animationDuration = `${1.4 + Math.random() * 1.2}s`;
-                piece.style.animationDelay = `${Math.random() * 0.3}s`;
+                piece.style.animationDuration = `${2.4 + Math.random() * 1.6}s`;
+                piece.style.animationDelay = `${Math.random() * 0.4}s`;
                 piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                piece.style.width = `${8 + Math.random() * 6}px`;
+                piece.style.height = `${12 + Math.random() * 10}px`;
                 container.appendChild(piece);
             }
             window.setTimeout(() => {
                 container.innerHTML = '';
-            }, 3200);
+            }, 4200);
         }
 
         startWordSprint(durationMinutes, targetWords) {
@@ -11107,7 +11136,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an.';
+            return 'Lade Dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme bei Pascal an.';
         }
 
         getUpgradeReturnUrl() {
@@ -11427,6 +11456,26 @@
             this.bottomGrid.insertAdjacentElement('afterend', bar);
         }
 
+        renderPremiumLockedNotice(id) {
+            const isLocked = !this.isCardUnlocked(id);
+            if (!isLocked) return '';
+            const allowUpsell = this.isUpsellAllowed();
+            const description = allowUpsell
+                ? '<span>Schalte Premium frei, um diese Analyse vollständig zu nutzen.</span>'
+                : '';
+            const cta = allowUpsell
+                ? '<a class="ska-btn ska-btn--primary ska-btn--compact ska-premium-lock-banner__cta" href="#ska-premium-upgrade">Premium freischalten</a>'
+                : '';
+            return `
+                <div class="ska-premium-lock-banner">
+                    <div class="ska-premium-lock-banner__text">
+                        <strong>Nur in Premium verfügbar</strong>
+                        ${description}
+                    </div>
+                    ${cta}
+                </div>`;
+        }
+
         setupPremiumUpgradeScroll(grid) {
             if (!grid || grid.dataset.scrollBound) return;
             grid.dataset.scrollBound = 'true';
@@ -11613,6 +11662,7 @@
             const isExcluded = this.state.excludedCards.has(id);
             const toggleStateClass = isExcluded ? 'is-off' : 'is-on';
             const isLocked = !this.isCardUnlocked(id);
+            const showPremiumNotice = !isToolCard && isLocked && id !== 'overview';
             const toggleIcon = isExcluded 
                 ? `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>` 
                 : `<svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
@@ -11620,6 +11670,8 @@
             const toggleBtnHtml = (id !== 'overview' && isToggleable) ? `<button class="ska-whitelist-toggle ${toggleStateClass}" title="${isExcluded ? 'Analyse aktivieren' : 'Analyse deaktivieren'}">${toggleIcon}</button>` : '';
             const resolvedHtml = html;
             const finalHtml = resolvedHtml;
+            const premiumNoticeHtml = showPremiumNotice ? this.renderPremiumLockedNotice(id) : '';
+            const bodyHtml = `${showPremiumNotice ? `<div class="ska-premium-lock-banner-wrap">${premiumNoticeHtml}</div>` : ''}<div class="ska-card-body-content">${finalHtml}</div>`;
             const proTipHtml = !isToolCard ? this.renderProTipFooter(id) : '';
             const buildProTipFooter = () => {
                 if (!proTipHtml) return null;
@@ -11680,7 +11732,7 @@
                 b.style.display = 'flex';
                 b.style.flexDirection = 'column';
                 b.style.flex = '1';
-                b.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
+                b.innerHTML = bodyHtml;
                 
                 // HEADER FIRST, THEN BODY
                 card.innerHTML = h;
@@ -11689,7 +11741,7 @@
                 if (proTipFooter) {
                     card.appendChild(proTipFooter);
                 }
-                if (isLocked && this.isUpsellAllowed()) {
+                if (isToolCard && isLocked && this.isUpsellAllowed()) {
                     const lock = document.createElement('div');
                     lock.className = 'ska-premium-inline';
                     lock.innerHTML = '<strong>Premium-Funktionen</strong><span>Upgrade jetzt für volle Analyse & die praktischen Werkzeuge.</span><a class="ska-btn ska-btn--secondary ska-btn--compact" href="#ska-premium-upgrade">Premium freischalten</a>';
@@ -11701,7 +11753,7 @@
                  card.classList.toggle('is-minimized', false);
                  card.classList.toggle('is-locked', isLocked);
                  const body = card.querySelector('.ska-card-body');
-                 body.innerHTML = `<div class="ska-card-body-content">${finalHtml}</div>`;
+                 body.innerHTML = bodyHtml;
                  // Re-apply flex style just in case
                  body.style.display = 'flex';
                  body.style.flexDirection = 'column';
@@ -11712,7 +11764,7 @@
                      if(oldHeader) oldHeader.outerHTML = buildHeader();
                  }
                  const lock = card.querySelector('.ska-premium-inline');
-                 if (isLocked) {
+                 if (isLocked && isToolCard) {
                     if (!lock && this.isUpsellAllowed()) {
                         const lockEl = document.createElement('div');
                         lockEl.className = 'ska-premium-inline';

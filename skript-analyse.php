@@ -834,7 +834,7 @@ function ska_shortcode() {
 
         <div class="ska-footer">
             <div class="ska-footer-intro">
-                <p data-role="footer-plan-note">Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an</p>
+                <p data-role="footer-plan-note">Lade Dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme bei Pascal an.</p>
             </div>
             <div class="ska-footer-actions">
                 <div class="ska-tool-wrapper">

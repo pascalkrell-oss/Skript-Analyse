@@ -515,6 +515,40 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-premium-inline { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: inline-flex; flex-direction: column; gap: 0.5rem; align-items: center; background: rgba(15, 20, 26, 0.95); border: 1px solid rgba(56, 189, 248, 0.65); border-radius: 18px; padding: 1rem 1.2rem; box-shadow: 0 18px 36px -20px rgba(15, 23, 42, 0.6); text-align: center; color: #f8fafc; }
 .ska-premium-inline strong { font-size: 1.05rem; color: #f8fafc; }
 .ska-premium-inline span { font-size: 0.85rem; color: #cbd5f5; }
+.ska-premium-lock-banner-wrap {
+    width: 100%;
+    margin-bottom: 0.85rem;
+}
+.ska-premium-lock-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 0.85rem 1rem;
+    box-shadow: 0 12px 22px -20px rgba(15, 20, 26, 0.25);
+}
+.ska-premium-lock-banner__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: #475569;
+}
+.ska-premium-lock-banner__text strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.ska-premium-lock-banner__text span {
+    font-size: 0.82rem;
+    color: #64748b;
+}
+.ska-premium-lock-banner__cta {
+    white-space: nowrap;
+}
 .ska-premium-badge { background: #e0f2fe; color: #0369a1; border-radius: 999px; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; text-transform: uppercase; }
 .ska-premium-note { margin-top: 0.75rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
 .ska-premium-lock-note { margin-top: 0.8rem; font-size: 0.8rem; color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 10px; text-align: center; }
@@ -1556,10 +1590,25 @@ body.skript-analyse-active .skript-analyse-container {
     gap: 1rem;
     flex-wrap: wrap;
 }
+.ska-teleprompter-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+}
 .ska-teleprompter-title {
     display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: flex-start;
+    gap: 0.85rem;
+}
+.ska-teleprompter-title-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.ska-teleprompter-subtitle {
+    font-size: 0.78rem;
+    color: rgba(226, 232, 240, 0.8);
+    font-weight: 500;
 }
 .ska-teleprompter-badge {
     background: #1a93ee;
@@ -1573,8 +1622,13 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-teleprompter-header-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
+    align-items: center;
+}
+.ska-teleprompter-icon-actions {
+    display: inline-flex;
+    gap: 0.4rem;
     align-items: center;
 }
 .ska-teleprompter-start {
@@ -1656,6 +1710,8 @@ body.skript-analyse-active .skript-analyse-container {
     position: relative;
     font-family: sans-serif;
     line-height: 1.5;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 18px 32px -24px rgba(15, 23, 42, 0.6);
 }
 .teleprompter-text {
     max-width: 900px;
@@ -1808,20 +1864,42 @@ body.skript-analyse-active .skript-analyse-container {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 0.85rem;
-    border-radius: 14px;
+    gap: 0.9rem;
+    padding: 0;
+    border-radius: 0;
     flex-wrap: nowrap;
     position: static;
     z-index: 1;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.ska-teleprompter-section {
     background: #ffffff;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 16px 28px -20px rgba(15, 20, 26, 0.25);
+    border-radius: 16px;
+    padding: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    box-shadow: 0 12px 24px -20px rgba(15, 20, 26, 0.25);
+}
+.ska-teleprompter-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+.ska-teleprompter-section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
 }
 .teleprompter-control {
-    background: #ffffff;
-    color: #000000;
-    border: none;
+    background: #f8fafc;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
     padding: 0.4rem 1rem;
     border-radius: 999px;
     font-weight: 700;
@@ -1830,14 +1908,15 @@ body.skript-analyse-active .skript-analyse-container {
     width: 100%;
 }
 .teleprompter-control--secondary {
-    background: #0ea5e9;
+    background: #1a93ee;
     color: #ffffff;
+    border-color: #1a93ee;
 }
 .teleprompter-control:hover {
     background: #e2e8f0;
 }
 .teleprompter-control.teleprompter-control--secondary:hover {
-    background: #38bdf8;
+    background: #1376c2;
 }
 .teleprompter-control-group {
     display: flex;
@@ -1935,28 +2014,41 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-focus-header-main h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    letter-spacing: 0.01em;
+}
+.ska-focus-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 .ska-focus-modal-body {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
     height: 80vh;
     overflow: hidden;
 }
 .focus-toolbar {
     display: flex;
-    gap: 12px;
-    align-items: center;
+    gap: 0.6rem;
+    align-items: flex-end;
     flex-wrap: wrap;
+    background: rgba(15, 23, 42, 0.2);
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
 }
 .focus-field {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.7rem;
     color: #e2e8f0;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 .focus-field input {
     border: 1px solid #e2e8f0;
@@ -1964,6 +2056,8 @@ body.skript-analyse-active .skript-analyse-container {
     padding: 0.4rem 0.6rem;
     font-size: 0.9rem;
     min-width: 110px;
+    background: #ffffff;
+    color: #0f172a;
 }
 .focus-start-btn {
     background: #1a93ee;
@@ -1989,27 +2083,27 @@ body.skript-analyse-active .skript-analyse-container {
     flex-wrap: wrap;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 0.65rem 0.9rem;
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
 }
 .focus-stats {
     display: flex;
-    gap: 12px;
+    gap: 18px;
     font-weight: 600;
     color: #0f172a;
     font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 .focus-progress {
     position: relative;
-    width: 140px;
-    height: 8px;
+    width: 160px;
+    height: 10px;
     background: #e2e8f0;
     border-radius: 999px;
     overflow: hidden;
 }
 .focus-progress--large {
     width: 100%;
-    height: 12px;
+    height: 14px;
 }
 .focus-progress-fill {
     height: 100%;
@@ -2047,7 +2141,7 @@ body.skript-analyse-active .skript-analyse-container {
     width: 100%;
     max-width: 900px;
     margin: 0 auto;
-    padding: 40px;
+    padding: 36px 40px;
     border: none;
     outline: none;
     font-size: 1.2rem;
@@ -2058,7 +2152,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-focus-modal .focus-textarea {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border-radius: 18px;
     max-width: 100%;
     margin: 0;
 }
@@ -2122,7 +2216,7 @@ body.skript-analyse-active .skript-analyse-container {
         opacity: 1;
     }
     100% {
-        transform: translate3d(0, 80vh, 0) rotate(360deg);
+        transform: translate3d(0, 90vh, 0) rotate(360deg);
         opacity: 0;
     }
 }
@@ -2343,10 +2437,12 @@ body.skript-analyse-active .skript-analyse-container {
     width: 100%;
     padding: 0.85rem 1rem;
     border-top: 1px solid rgba(226, 232, 240, 0.9);
+    background: #f8fafc;
     display: block;
 }
 .ska-card-footer--protip {
     padding: 0.8rem 1rem 1rem;
+    background: #f8fafc;
 }
 .ska-card-footer .ska-card-tips {
     flex: 0 0 100%;
