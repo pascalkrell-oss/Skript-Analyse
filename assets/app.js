@@ -7849,66 +7849,9 @@
             const btn = document.createElement('button');
             btn.className = 'ska-btn ska-btn-outline ska-btn-rounded';
             btn.innerHTML = '<span class="icon">⚙️</span> Layout anpassen';
-            
-            const dropdown = document.createElement('div');
-            dropdown.className = 'ska-layout-dropdown hidden';
-            
-            const list = document.createElement('ul');
-            const allCards = this.getAllCardKeys();
-            
-            allCards.forEach(key => {
-                const isPremiumFeature = this.isPremiumCard(key);
-                const isUnlocked = this.isCardUnlocked(key);
-                const isActive = !this.state.hiddenCards.has(key);
-                
-                const li = document.createElement('li');
-                li.className = isUnlocked ? 'ska-opt-item' : 'ska-opt-item is-locked';
-                
-                const label = document.createElement('label');
-                const input = document.createElement('input');
-                input.type = 'checkbox';
-                input.checked = isActive;
-                input.disabled = !isUnlocked;
-                
-                input.addEventListener('change', (e) => {
-                    this.toggleCard(key, e.target.checked);
-                });
-                
-                const textSpan = document.createElement('span');
-                textSpan.textContent = this.getCardTitle(key);
-                
-                label.appendChild(input);
-                label.appendChild(textSpan);
-                
-                if (!isUnlocked && isPremiumFeature) {
-                    const lockIcon = document.createElement('span');
-                    lockIcon.className = 'ska-lock-icon';
-                    lockIcon.textContent = '🔒';
-                    label.appendChild(lockIcon);
-                }
-                
-                li.appendChild(label);
-                list.appendChild(li);
-            });
-            
-            dropdown.appendChild(list);
+            btn.setAttribute('data-action', 'open-layout-modal');
+
             container.appendChild(btn);
-            container.appendChild(dropdown);
-            
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('hidden');
-            });
-            
-            if (this.layoutDropdownCloseHandler) {
-                document.removeEventListener('click', this.layoutDropdownCloseHandler);
-            }
-            this.layoutDropdownCloseHandler = (e) => {
-                if (!container.contains(e.target)) {
-                    dropdown.classList.add('hidden');
-                }
-            };
-            document.addEventListener('click', this.layoutDropdownCloseHandler);
 
             return container;
         }
@@ -7926,12 +7869,12 @@
                         <h3>Layout anpassen</h3>
                     </div>
                     <div class="skriptanalyse-modal-body">
-                        <p style="margin-top:0; color:#64748b;">Ziehe die Boxen in die gewünschte Reihenfolge. Neue Boxen werden automatisch am Ende ergänzt.</p>
-                        <div data-role="layout-grid" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0.6rem;"></div>
+                        <p class="ska-layout-intro">Ziehe die Boxen in die gewünschte Reihenfolge. Neue Boxen werden automatisch am Ende ergänzt.</p>
+                        <div data-role="layout-grid" class="ska-layout-grid"></div>
                     </div>
-                    <div class="ska-modal-footer" style="display:flex; justify-content:space-between; gap:0.75rem;">
+                    <div class="ska-modal-footer ska-layout-footer">
                         <button type="button" class="ska-btn ska-btn--ghost" data-action="layout-reset">Reset Layout</button>
-                        <div style="display:flex; gap:0.75rem;">
+                        <div class="ska-layout-footer-actions">
                             <button type="button" class="ska-btn ska-btn--secondary" data-action="close-layout-modal">Abbrechen</button>
                             <button type="button" class="ska-btn ska-btn--primary" data-action="layout-save">Speichern</button>
                         </div>
@@ -7951,7 +7894,7 @@
 
             grid.addEventListener('dragstart', (event) => {
                 const item = event.target.closest('[data-card-id]');
-                if (!item) return;
+                if (!item || item.getAttribute('draggable') !== 'true') return;
                 draggingItem = item;
                 item.classList.add('is-dragging');
                 event.dataTransfer.effectAllowed = 'move';
@@ -7984,11 +7927,55 @@
             const grid = this.layoutModal.querySelector('[data-role="layout-grid"]');
             if (!grid) return;
             const items = order.filter(id => id !== 'overview' && SA_CONFIG.CARD_TITLES[id] && this.isCardAvailable(id));
-            grid.innerHTML = items.map((id) => `
-                <div data-card-id="${id}" draggable="true" style="display:flex; align-items:center; gap:0.6rem; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 0.75rem; background:#fff; cursor:grab;">
-                    <span aria-hidden="true" style="font-weight:700; color:#94a3b8;">⋮⋮</span>
-                    <span style="font-weight:600; color:#0f172a;">${SA_CONFIG.CARD_TITLES[id]}</span>
-                </div>`).join('');
+            grid.innerHTML = '';
+            items.forEach((id) => {
+                const isUnlocked = this.isCardUnlocked(id);
+                const isVisible = !this.state.hiddenCards.has(id);
+
+                const item = document.createElement('div');
+                item.className = `ska-layout-item${isUnlocked ? '' : ' is-locked'}`;
+                item.dataset.cardId = id;
+                item.setAttribute('draggable', isUnlocked ? 'true' : 'false');
+
+                const handle = document.createElement('span');
+                handle.className = 'ska-layout-handle';
+                handle.setAttribute('aria-hidden', 'true');
+                handle.textContent = '⋮⋮';
+
+                const title = document.createElement('span');
+                title.className = 'ska-layout-title';
+                title.textContent = SA_CONFIG.CARD_TITLES[id];
+
+                const toggle = document.createElement('label');
+                toggle.className = 'ska-layout-toggle';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = isVisible;
+                checkbox.disabled = !isUnlocked;
+                checkbox.addEventListener('change', (event) => {
+                    this.toggleCard(id, event.target.checked);
+                });
+
+                const toggleLabel = document.createElement('span');
+                toggleLabel.className = 'ska-layout-toggle-label';
+                toggleLabel.textContent = 'Sichtbar';
+
+                toggle.appendChild(checkbox);
+                toggle.appendChild(toggleLabel);
+
+                if (!isUnlocked) {
+                    const lockIcon = document.createElement('span');
+                    lockIcon.className = 'ska-layout-lock';
+                    lockIcon.textContent = '🔒';
+                    toggle.appendChild(lockIcon);
+                }
+
+                item.appendChild(handle);
+                item.appendChild(title);
+                item.appendChild(toggle);
+                grid.appendChild(item);
+            });
         }
 
         openLayoutModal() {
