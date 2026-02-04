@@ -271,7 +271,9 @@ function ska_handle_simulation_mode_request() {
     if ( $raw_role === 'reset' ) {
         unset( $_COOKIE['ska_simulation_mode'] );
         setcookie( 'ska_simulation_mode', '', time() - HOUR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
-        return;
+        delete_user_meta( get_current_user_id(), 'sa_simulation_mode' );
+        wp_safe_redirect( remove_query_arg( 'ska_sim_role' ) );
+        exit;
     }
 
     $role = ska_normalize_plan_status( $raw_role );
@@ -279,6 +281,9 @@ function ska_handle_simulation_mode_request() {
         $expire = time() + DAY_IN_SECONDS;
         $_COOKIE['ska_simulation_mode'] = $role;
         setcookie( 'ska_simulation_mode', $role, $expire, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true );
+        update_user_meta( get_current_user_id(), 'sa_simulation_mode', $role );
+        wp_safe_redirect( remove_query_arg( 'ska_sim_role' ) );
+        exit;
     }
 }
 add_action( 'init', 'ska_handle_simulation_mode_request' );
@@ -829,7 +834,7 @@ function ska_shortcode() {
 
         <div class="ska-footer">
             <div class="ska-footer-intro">
-                <p data-role="footer-plan-note">Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an. Klar strukturiert, zuverlässig und jederzeit kündbar.</p>
+                <p data-role="footer-plan-note">Lade dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme an.</p>
             </div>
             <div class="ska-footer-actions">
                 <div class="ska-tool-wrapper">
