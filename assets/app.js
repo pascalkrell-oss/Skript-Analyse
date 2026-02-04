@@ -3511,7 +3511,38 @@
             }
         }
 
+        getAppMode() {
+            if (typeof window !== 'undefined' && window.SKA_CONFIG_PHP?.appMode) {
+                return window.SKA_CONFIG_PHP.appMode;
+            }
+            return 'freemium';
+        }
+
+        isFreeOnlyMode() {
+            return this.getAppMode() === 'free_only';
+        }
+
+        isForcePremiumMode() {
+            return this.getAppMode() === 'force_premium';
+        }
+
+        getDisabledCards() {
+            const disabled = typeof window !== 'undefined' ? window.SKA_CONFIG_PHP?.disabledCards : null;
+            return Array.isArray(disabled) ? disabled : [];
+        }
+
+        getDisabledTools() {
+            const disabled = typeof window !== 'undefined' ? window.SKA_CONFIG_PHP?.disabledTools : null;
+            return Array.isArray(disabled) ? disabled : [];
+        }
+
         getUserPlanStatus() {
+            if (this.isForcePremiumMode()) {
+                return 'premium';
+            }
+            if (this.isFreeOnlyMode()) {
+                return 'basis';
+            }
             return this.state && this.state.planMode ? this.state.planMode : CURRENT_USER_PLAN;
         }
 
@@ -6650,26 +6681,33 @@
         updatePlanUI() {
             this.state.planMode = this.getUserPlanStatus();
             const label = document.querySelector('[data-role-plan-label]');
+            const isFreeOnly = this.isFreeOnlyMode();
             if (label) {
-                label.textContent = this.isPremiumActive() ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher';
+                label.textContent = isFreeOnly ? '100% Kostenlos & Sicher' : (this.isPremiumActive() ? 'Premium freigeschaltet' : '100% Kostenlos & Sicher');
             }
             const toggle = document.querySelector('[data-action="toggle-plan"]');
             if (toggle && toggle instanceof HTMLInputElement) {
                 toggle.checked = this.isPremiumActive();
-                toggle.disabled = !SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN;
+                toggle.disabled = isFreeOnly || (!SA_CONFIG.PRO_MODE && !SA_CONFIG.IS_ADMIN);
             }
                 const saveBtn = document.querySelector('[data-action="save-version"]');
                 if (saveBtn && saveBtn instanceof HTMLButtonElement) {
                     const isPremium = this.isPremiumActive();
-                    saveBtn.disabled = !isPremium;
-                    saveBtn.classList.toggle('is-disabled', !isPremium);
-                    saveBtn.setAttribute('aria-disabled', String(!isPremium));
                     const wrapper = saveBtn.closest('.ska-tool-wrapper');
                     const tooltip = wrapper ? wrapper.querySelector('.ska-tool-tooltip--premium') : null;
-                    if (tooltip) {
-                        tooltip.textContent = isPremium
-                            ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
-                            : 'Premium: Versionen speichern & vergleichen.';
+                    if (isFreeOnly) {
+                        if (wrapper) wrapper.style.display = 'none';
+                        if (tooltip) tooltip.remove();
+                    } else {
+                        if (wrapper) wrapper.style.display = '';
+                        saveBtn.disabled = !isPremium;
+                        saveBtn.classList.toggle('is-disabled', !isPremium);
+                        saveBtn.setAttribute('aria-disabled', String(!isPremium));
+                        if (tooltip) {
+                            tooltip.textContent = isPremium
+                                ? 'Speichert den aktuellen Stand für den Versions-Vergleich.'
+                                : 'Premium: Versionen speichern & vergleichen.';
+                        }
                     }
                 }
             document.body.classList.toggle('ska-plan-premium', this.isPremiumActive());
@@ -6684,10 +6722,23 @@
             this.syncPdfOptions();
             this.renderSettingsModal();
             this.updateProjectControls();
+            if (isFreeOnly) {
+                this.removePremiumUiElements();
+            }
+        }
+
+        removePremiumUiElements() {
+            document.querySelectorAll(
+                '.ska-premium-badge, .ska-premium-pill, .ska-premium-inline, .ska-premium-note, .ska-premium-upgrade-card, .ska-premium-lock-overlay, .ska-premium-teaser-note'
+            ).forEach(el => el.remove());
+            document.querySelectorAll('.ska-tool-tooltip--premium').forEach(el => el.remove());
+            document.querySelectorAll('a[href="#ska-premium-upgrade"]').forEach(el => el.remove());
+            const premiumHelp = document.getElementById('ska-help-premium');
+            if (premiumHelp) premiumHelp.remove();
         }
 
         updateProjectControls() {
-            const isPremium = CURRENT_USER_PLAN === 'premium';
+            const isPremium = this.isPremiumActive();
             if (this.projectManagerButton) {
                 this.projectManagerButton.title = isPremium ? 'Gespeicherte Projekte verwalten' : 'Gespeicherte Projekte (Premium)';
             }
@@ -7022,6 +7073,10 @@
         syncPdfOptions() {
             const modal = document.getElementById('ska-pdf-modal');
             if (!modal) return;
+            if (this.isFreeOnlyMode()) {
+                modal.querySelectorAll('.ska-compact-option--premium').forEach((option) => option.remove());
+                return;
+            }
             this.ensurePdfNotesOption();
             const isPremium = this.isPremiumActive();
             const premiumOptionIds = [
@@ -7061,6 +7116,7 @@
         ensurePdfNotesOption() {
             const modal = document.getElementById('ska-pdf-modal');
             if (!modal) return;
+            if (this.isFreeOnlyMode()) return;
             const grid = modal.querySelector('.ska-compact-options-grid');
             if (!grid) return;
             if (grid.querySelector('#pdf-opt-notes')) return;
@@ -7088,6 +7144,10 @@
         }
 
         showPremiumNotice(message = 'Diese Funktion ist in der Premium-Version verfügbar.') {
+            if (this.isFreeOnlyMode()) {
+                alert('Diese Funktion steht aktuell nicht zur Verfügung.');
+                return;
+            }
             alert(message);
         }
 
@@ -7726,6 +7786,7 @@
         renderLegend() {
             if (this.legendContainer) {
                 const isPremium = this.isPremiumActive();
+                const isFreeOnly = this.isFreeOnlyMode();
                 const legendItems = [
                     { title: 'Auffällige Sätze', text: 'Zeigt Sätze > 25 Wörter oder viele Kommas.' },
                     { title: 'Wort-Echos', text: 'Markiert Wiederholungen auf engem Raum.' },
@@ -7740,7 +7801,10 @@
                     { title: 'Ausklappen/Einklappen', text: 'Blendet die Auswahl kompakt ein oder aus.' },
                     { title: 'Export', text: 'Teleprompter als .txt/.json exportieren für Cutter & Sprecher.', premium: true }
                 ];
-                const filteredItems = legendItems.filter(item => isPremium || !item.premium);
+                let filteredItems = legendItems.filter(item => isPremium || !item.premium);
+                if (isFreeOnly) {
+                    filteredItems = legendItems.filter(item => !item.premium);
+                }
                 const legendHtml = filteredItems.map(item => `<div class="ska-legend-def"><strong>${item.title}:</strong> ${item.text}</div>`).join('');
                 const footerHtml = `
                     <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div>
@@ -7752,7 +7816,8 @@
 
         renderToolsButtons(toolIds = []) {
             if (!this.toolsGrid) return;
-            if (!toolIds.length) {
+            const availableTools = toolIds.filter((id) => this.isToolAvailable(id));
+            if (!availableTools.length) {
                 this.toolsGrid.innerHTML = '';
                 return;
             }
@@ -7772,21 +7837,22 @@
                 word_sprint: 'Sprint starten'
             };
             const stripBoxIcon = (label) => label.replace(/^[^\p{L}\p{N}]+\s*/u, '');
-            this.toolsGrid.innerHTML = toolIds.map((id) => {
+            this.toolsGrid.innerHTML = availableTools.map((id) => {
                 const title = stripBoxIcon(SA_CONFIG.CARD_TITLES[id] || id);
                 const description = SA_CONFIG.CARD_DESCRIPTIONS[id] || '';
                 const locked = !this.isCardUnlocked(id);
+                const showPremiumHints = !this.isFreeOnlyMode();
                 const icon = toolIcons[id] ? `<span class="ska-tool-tile-icon">${toolIcons[id]}</span>` : '';
                 const action = id === 'teleprompter'
                     ? 'open-teleprompter'
                     : (id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal');
                 const toolAttr = `data-tool-id="${id}"`;
-                const hint = locked ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
+                const hint = locked && showPremiumHints ? `<span class="ska-tool-tile-tooltip">${toolHints[id] || 'Premium: Werkzeug freischalten.'}</span>` : '';
                 return `
                     <button class="ska-tool-tile ${locked ? 'is-locked' : ''}" data-action="${action}" ${toolAttr}>
                         <div class="ska-tool-tile-header">
                             <strong>${icon}${title}</strong>
-                            ${locked ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
+                            ${locked && showPremiumHints ? '<span class="ska-tool-tile-badge">Premium</span>' : ''}
                         </div>
                         <p>${description}</p>
                         <span class="ska-tool-tile-cta">${toolCtaLabels[id] || 'Werkzeug öffnen'}</span>
@@ -8037,10 +8103,10 @@
                 })();
                 const hideByProfile = filterByProfile && !toolCards.has(id) && !allowed.has(id) && !isChecked;
                 const hideBySelection = !isChecked;
-                const hideByPlan = !isPlanVisible(id);
+                const hideByPlan = !isPlanVisible(id) || !this.isCardAvailable(id);
                 card.classList.toggle('is-hidden-profile', hideByProfile || hideBySelection);
                 card.classList.toggle('is-hidden-plan', hideByPlan);
-                const shouldLock = !this.isPremiumActive() && toolCards.has(id);
+                const shouldLock = !this.isPremiumActive() && !this.isFreeOnlyMode() && toolCards.has(id);
                 card.classList.toggle('ska-premium-locked', shouldLock);
                 if (shouldLock) {
                     let overlay = card.querySelector('.ska-premium-lock-overlay');
@@ -8077,7 +8143,10 @@
             const effectiveSettings = this.getEffectiveSettings();
             if (!this.isPremiumActive() && analysisRaw.length > SA_CONFIG.FREE_TEXT_LIMIT) {
                 if (!this.state.limitReached) {
-                    this.showPremiumNotice('Free-Version: Bitte kürzere Texte analysieren oder Premium freischalten.');
+                    const message = this.isFreeOnlyMode()
+                        ? 'Bitte kürzere Texte analysieren.'
+                        : 'Free-Version: Bitte kürzere Texte analysieren oder Premium freischalten.';
+                    this.showPremiumNotice(message);
                 }
                 this.state.limitReached = true;
                 return;
@@ -10316,6 +10385,12 @@
         }
 
         isPremiumActive() {
+            if (this.isForcePremiumMode()) {
+                return true;
+            }
+            if (this.isFreeOnlyMode()) {
+                return false;
+            }
             return this.getUserPlanStatus() === 'premium';
         }
 
@@ -10443,6 +10518,9 @@
         }
 
         isCardAvailable(id) {
+            if (this.getDisabledCards().includes(id)) return false;
+            if (this.getDisabledTools().includes(id)) return false;
+            if (this.isFreeOnlyMode() && this.isPremiumCard(id)) return false;
             if (this.settings.usecase === 'auto') return true;
             const genreCards = SA_CONFIG.GENRE_CARDS[this.settings.usecase];
             if (Array.isArray(genreCards)) {
@@ -10451,11 +10529,23 @@
             return true;
         }
 
+        isToolAvailable(id) {
+            if (this.getDisabledTools().includes(id)) return false;
+            if (this.isFreeOnlyMode() && this.isPremiumCard(id)) return false;
+            return true;
+        }
+
         isCardUnlocked(id) {
+            if (this.isFreeOnlyMode()) {
+                return SA_CONFIG.FREE_CARDS.includes(id);
+            }
             return this.isPremiumActive() || SA_CONFIG.FREE_CARDS.includes(id);
         }
 
         isCardTeaser(id) {
+            if (this.isFreeOnlyMode()) {
+                return false;
+            }
             return !this.isPremiumActive() && SA_CONFIG.PREMIUM_TEASERS.includes(id);
         }
 
@@ -10497,7 +10587,7 @@
         }
 
         applyFreeLimit(container) {
-            if (this.isPremiumActive() || !container) return;
+            if (this.isPremiumActive() || this.isFreeOnlyMode() || !container) return;
             const items = Array.from(container.querySelectorAll('.ska-problem-item'));
             if (items.length <= 5) return;
             items.slice(5).forEach(item => item.classList.add('is-hidden-premium'));
@@ -10511,7 +10601,7 @@
 
         getPremiumPlans() {
             return [
-                { id: 'flex', label: 'Monatlich', price: '25,00', priceLabel: 'Pro Monat', note: 'Volle Flexibilität, monatlich kündbar!', savings: '' },
+                { id: 'flex', label: 'Monatlich', price: '25,00', priceLabel: 'Pro Monat', note: 'Volle Flexibilität, monatlich kündbar!', savings: '', badge: 'Flex Model' },
                 { id: 'pro', label: 'Jährlich', price: '144,00', priceLabel: 'Pro Jahr', note: 'Volles Studio-Setup für nur 12 € im Monat', savings: '50% gegenüber Flex', badge: 'Bestseller' },
                 { id: 'studio', label: 'Lifetime', price: '399,00', priceLabel: 'Einmalig', note: 'Einmal zahlen, für immer nutzen (inkl. Updates)', savings: '', badge: 'Limitierter Deal' }
             ];
@@ -10520,6 +10610,10 @@
         getPremiumCheckoutProductId(planId = this.state.premiumPricePlan) {
             const productIds = this.getPremiumProductIds();
             const isYearly = planId === 'pro' || planId === 'yearly';
+            const isLifetime = planId === 'studio' || planId === 'lifetime';
+            if (isLifetime) {
+                return productIds.lifetime || productIds.monthly || productIds.yearly;
+            }
             if (isYearly) {
                 return productIds.yearly || productIds.monthly;
             }
@@ -10530,11 +10624,14 @@
             const checkoutButton = button || (this.root ? this.root.querySelector('#ska-premium-checkout-btn') : null);
             const monthlyId = checkoutButton ? Number(checkoutButton.dataset.productMonthly) : NaN;
             const yearlyId = checkoutButton ? Number(checkoutButton.dataset.productYearly) : NaN;
+            const lifetimeId = checkoutButton ? Number(checkoutButton.dataset.productLifetime) : NaN;
             const configMonthlyId = Number(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductMonthlyId);
             const configYearlyId = Number(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductYearlyId);
+            const configLifetimeId = Number(window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductLifetimeId);
             return {
                 monthly: Number.isFinite(monthlyId) ? monthlyId : (Number.isFinite(configMonthlyId) ? configMonthlyId : 0),
-                yearly: Number.isFinite(yearlyId) ? yearlyId : (Number.isFinite(configYearlyId) ? configYearlyId : 0)
+                yearly: Number.isFinite(yearlyId) ? yearlyId : (Number.isFinite(configYearlyId) ? configYearlyId : 0),
+                lifetime: Number.isFinite(lifetimeId) ? lifetimeId : (Number.isFinite(configLifetimeId) ? configLifetimeId : 0)
             };
         }
 
@@ -10555,7 +10652,10 @@
             if (!checkoutButton) return;
             const productIds = this.getPremiumProductIds(checkoutButton);
             const isYearly = planId === 'pro' || planId === 'yearly';
-            const productId = isYearly ? (productIds.yearly || productIds.monthly) : (productIds.monthly || productIds.yearly);
+            const isLifetime = planId === 'studio' || planId === 'lifetime';
+            const productId = isLifetime
+                ? (productIds.lifetime || productIds.monthly || productIds.yearly)
+                : (isYearly ? (productIds.yearly || productIds.monthly) : (productIds.monthly || productIds.yearly));
             const nextUrl = this.getPremiumCheckoutUrl(productId);
             if (checkoutButton.classList.contains('is-disabled') || checkoutButton.getAttribute('aria-disabled') === 'true') {
                 checkoutButton.dataset.href = nextUrl;
@@ -10719,6 +10819,10 @@
             const container = this.legendContainer.parentElement;
             if (!container) return;
             const existing = container.querySelector('.ska-premium-upgrade-card');
+            if (this.isFreeOnlyMode()) {
+                if (existing) existing.remove();
+                return;
+            }
             if (this.isPremiumActive()) {
                 if (existing) existing.remove();
                 return;
@@ -10733,7 +10837,7 @@
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const formattedFreePrice = this.formatPriceValue(freePrice);
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
-            const planDescription = this.getCheckoutPlanDescription();
+            const planDescription = 'Unlimitierte Analysen, alle Werkzeuge & PDF-Reports – in 2 Minuten startklar.';
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -10782,8 +10886,9 @@
                     }
                 };
             }
-            const premiumProductMonthlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductMonthlyId) ? SKA_CONFIG_PHP.premiumProductMonthlyId : 123;
-            const premiumProductYearlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductYearlyId) ? SKA_CONFIG_PHP.premiumProductYearlyId : 456;
+            const premiumProductMonthlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductMonthlyId) ? SKA_CONFIG_PHP.premiumProductMonthlyId : 3128;
+            const premiumProductYearlyId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductYearlyId) ? SKA_CONFIG_PHP.premiumProductYearlyId : 3130;
+            const premiumProductLifetimeId = (window.SKA_CONFIG_PHP && SKA_CONFIG_PHP.premiumProductLifetimeId) ? SKA_CONFIG_PHP.premiumProductLifetimeId : 3127;
             const html = `
                 <div class="ska-premium-upgrade-ribbon ska-ribbon"><span>UPGRADE!</span></div>
                 <button class="ska-premium-upgrade-close" type="button" data-action="close-premium-upgrade" aria-label="Upgrade-Box schließen">
@@ -10794,11 +10899,6 @@
                 </button>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
-                        <span class="ska-premium-upgrade-icon" aria-hidden="true">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13 2L3 14h7l-1 8 12-14h-7l1-6z"></path>
-                            </svg>
-                        </span>
                         <strong>Erhalte Zugriff auf alle Analysen & Funktionen</strong>
                     </div>
                     <span>${planDescription}</span>
@@ -10858,7 +10958,7 @@
                         </div>
                         <div class="ska-premium-upgrade-cta">
                             <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
-                            <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}">Jetzt Premium freischalten</a>
+                            <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}" data-product-lifetime="${premiumProductLifetimeId}">Jetzt Premium freischalten</a>
                         </div>
                     </div>
                 </div>`;
@@ -10884,6 +10984,7 @@
             if (!container) return;
             const existing = container.querySelector('.ska-profile-upsell-bar');
             if (existing) existing.remove();
+            if (this.isFreeOnlyMode()) return;
             if (this.isPremiumActive()) return;
             const profile = this.normalizeProfile(this.settings.role);
             const allowedList = SA_CONFIG.PROFILE_CARDS[profile] || SA_CONFIG.CARD_ORDER;
@@ -11333,6 +11434,7 @@
                         <div class="ska-admin-settings">
                             <nav class="ska-admin-settings-nav">
                                 <button type="button" class="ska-admin-settings-tab is-active" data-action="settings-tab" data-tab="general">Allgemein</button>
+                                <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="features">Features</button>
                                 <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="algorithm">Algorithmus-Tuning</button>
                                 <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="system">System & Cache</button>
                                 <button type="button" class="ska-admin-settings-tab" data-action="settings-tab" data-tab="pdf">PDF & Export</button>
@@ -11364,6 +11466,34 @@
                                     <div class="ska-admin-inline">
                                         <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-general">Speichern</button>
                                         <span class="ska-admin-meta" data-role="general-status"></span>
+                                    </div>
+                                </section>
+                                <section class="ska-admin-settings-panel" data-panel="features">
+                                    <h2>Features</h2>
+                                    <p>Steuere App-Modus sowie sichtbare Analyseboxen und Werkzeuge.</p>
+                                    <div class="ska-admin-grid">
+                                        <label class="ska-admin-field">
+                                            <span>App Mode</span>
+                                            <select class="ska-admin-select" data-role="settings-app-mode">
+                                                <option value="free_only">free_only – reines Free</option>
+                                                <option value="freemium">freemium – Standard</option>
+                                                <option value="force_premium">force_premium – alles frei</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <div class="ska-admin-grid">
+                                        <div class="ska-admin-field">
+                                            <span>Analyseboxen deaktivieren</span>
+                                            <ul class="ska-admin-list" data-role="settings-disabled-cards"></ul>
+                                        </div>
+                                        <div class="ska-admin-field">
+                                            <span>Werkzeuge deaktivieren</span>
+                                            <ul class="ska-admin-list" data-role="settings-disabled-tools"></ul>
+                                        </div>
+                                    </div>
+                                    <div class="ska-admin-inline">
+                                        <button type="button" class="ska-btn ska-btn--primary" data-action="admin-save-features">Speichern</button>
+                                        <span class="ska-admin-meta" data-role="features-status"></span>
                                     </div>
                                 </section>
                                 <section class="ska-admin-settings-panel" data-panel="algorithm">
@@ -11452,6 +11582,12 @@
             this.generalStatus = this.root.querySelector('[data-role="general-status"]');
             this.pdfFooterInput = this.root.querySelector('[data-role="settings-pdf-footer"]');
             this.pdfStatus = this.root.querySelector('[data-role="pdf-status"]');
+            this.appModeSelect = this.root.querySelector('[data-role="settings-app-mode"]');
+            this.disabledCardsList = this.root.querySelector('[data-role="settings-disabled-cards"]');
+            this.disabledToolsList = this.root.querySelector('[data-role="settings-disabled-tools"]');
+            this.featuresStatus = this.root.querySelector('[data-role="features-status"]');
+            this.disabledCardInputs = [];
+            this.disabledToolInputs = [];
 
             if (this.unlockToggle) {
                 const enabled = window.SKA_CONFIG_PHP ? Boolean(window.SKA_CONFIG_PHP.unlockButtonEnabled) : true;
@@ -11460,6 +11596,7 @@
             if (this.algorithmLongInput || this.algorithmNominalInput || this.algorithmPassiveInput) {
                 this.applyAlgorithmTuning(SA_CONFIG.ALGORITHM_TUNING);
             }
+            this.renderFeatureLists();
 
             if (this.searchInput) {
                 this.searchInput.addEventListener('input', () => {
@@ -11493,6 +11630,9 @@
                 }
                 if (action === 'admin-save-general') {
                     this.saveGeneralSettings();
+                }
+                if (action === 'admin-save-features') {
+                    this.saveFeatureSettings();
                 }
                 if (action === 'admin-save-algorithm') {
                     this.saveAlgorithmTuning();
@@ -11616,6 +11756,7 @@
                     if (typeof data.pdfFooterText === 'string') {
                         this.setPdfFooterText(data.pdfFooterText);
                     }
+                    this.setFeatureSettings(data);
                 })
                 .catch(() => {});
         }
@@ -11677,6 +11818,82 @@
                 SA_CONFIG.ALGORITHM_TUNING.nominalChainThreshold = resolveNumericSetting(tuning.nominalChainThreshold, 3);
                 SA_CONFIG.ALGORITHM_TUNING.passiveVoiceStrictness = resolveNumericSetting(tuning.passiveVoiceStrictness, 15);
             }
+        }
+
+        renderFeatureLists() {
+            if (!this.disabledCardsList || !this.disabledToolsList) return;
+            const toolIds = new Set(SA_CONFIG.TOOL_CARDS || []);
+            const cardOrder = SA_CONFIG.CARD_ORDER || Object.keys(SA_CONFIG.CARD_TITLES || {});
+            const cardIds = cardOrder.filter(id => id !== 'overview' && SA_CONFIG.CARD_TITLES[id] && !toolIds.has(id));
+            const toolCardIds = Array.from(toolIds).filter(id => SA_CONFIG.CARD_TITLES[id]);
+            const disabledCards = new Set(window.SKA_CONFIG_PHP?.disabledCards || []);
+            const disabledTools = new Set(window.SKA_CONFIG_PHP?.disabledTools || []);
+
+            this.disabledCardsList.innerHTML = '';
+            this.disabledCardInputs = [];
+            cardIds.forEach((id) => {
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                name.textContent = SA_CONFIG.CARD_TITLES[id];
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = id;
+                input.dataset.role = 'feature-card';
+                input.checked = disabledCards.has(id);
+                label.appendChild(input);
+                label.append(' Deaktiviert');
+                li.appendChild(name);
+                li.appendChild(label);
+                this.disabledCardsList.appendChild(li);
+                this.disabledCardInputs.push(input);
+            });
+
+            this.disabledToolsList.innerHTML = '';
+            this.disabledToolInputs = [];
+            toolCardIds.forEach((id) => {
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                name.textContent = SA_CONFIG.CARD_TITLES[id];
+                const label = document.createElement('label');
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = id;
+                input.dataset.role = 'feature-tool';
+                input.checked = disabledTools.has(id);
+                label.appendChild(input);
+                label.append(' Deaktiviert');
+                li.appendChild(name);
+                li.appendChild(label);
+                this.disabledToolsList.appendChild(li);
+                this.disabledToolInputs.push(input);
+            });
+        }
+
+        setFeatureSettings(data = {}) {
+            const appMode = typeof data.appMode === 'string'
+                ? data.appMode
+                : (window.SKA_CONFIG_PHP?.appMode || 'freemium');
+            if (this.appModeSelect) {
+                this.appModeSelect.value = appMode;
+            }
+            const disabledCards = Array.isArray(data.disabledCards)
+                ? data.disabledCards
+                : (window.SKA_CONFIG_PHP?.disabledCards || []);
+            const disabledTools = Array.isArray(data.disabledTools)
+                ? data.disabledTools
+                : (window.SKA_CONFIG_PHP?.disabledTools || []);
+            if (window.SKA_CONFIG_PHP) {
+                window.SKA_CONFIG_PHP.appMode = appMode;
+                window.SKA_CONFIG_PHP.disabledCards = disabledCards;
+                window.SKA_CONFIG_PHP.disabledTools = disabledTools;
+            }
+            this.disabledCardInputs.forEach((input) => {
+                input.checked = disabledCards.includes(input.value);
+            });
+            this.disabledToolInputs.forEach((input) => {
+                input.checked = disabledTools.includes(input.value);
+            });
         }
 
         handleUnlockToggle(input) {
@@ -11750,6 +11967,34 @@
                 })
                 .catch(() => {
                     if (this.generalStatus) this.generalStatus.textContent = 'Fehler beim Speichern.';
+                });
+        }
+
+        saveFeatureSettings() {
+            if (!this.apiBase) return;
+            const appMode = this.appModeSelect ? this.appModeSelect.value : 'freemium';
+            const disabledCards = this.disabledCardInputs
+                .filter(input => input.checked)
+                .map(input => input.value);
+            const disabledTools = this.disabledToolInputs
+                .filter(input => input.checked)
+                .map(input => input.value);
+            if (this.featuresStatus) this.featuresStatus.textContent = 'Speichern…';
+            this.apiFetch('/admin/settings', {
+                method: 'POST',
+                body: JSON.stringify({
+                    appMode,
+                    disabledCards,
+                    disabledTools
+                })
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    this.setFeatureSettings(data);
+                    if (this.featuresStatus) this.featuresStatus.textContent = 'Gespeichert.';
+                })
+                .catch(() => {
+                    if (this.featuresStatus) this.featuresStatus.textContent = 'Fehler beim Speichern.';
                 });
         }
 

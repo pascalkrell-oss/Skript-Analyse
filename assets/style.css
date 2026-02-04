@@ -106,7 +106,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-toolbar-actions { display: flex; gap: 0.8rem; margin-left: 0; align-items: center; flex-shrink: 0; flex-wrap: nowrap; }
 
 /* BUTTONS */
-.ska-btn { border: none; padding: 0 1.2rem; border-radius: 999px; font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: var(--ska-toolbar-control-height, 42px); line-height: 1.1; white-space: nowrap; transform: none !important; }
+.ska-btn { border: none; padding: 0 1.2rem; border-radius: 999px; font-weight: 500; cursor: pointer; font-size: 0.9rem; transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; height: var(--ska-toolbar-control-height, 42px); line-height: 1; white-space: nowrap; transform: none !important; }
 .ska-btn--compact { height: 34px; padding: 0 0.9rem; font-size: 0.8rem; }
 .ska-btn--primary { background: var(--ska-primary); color: white; }
 .ska-btn--primary:hover { background: var(--ska-primary-hover); transform: none; }
@@ -333,7 +333,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-sentiment-power .skriptanalyse-badge { margin-right: 0.25rem; }
 
 .ska-tool-wrapper { position: relative; display: inline-flex; align-items: center; }
-.ska-tool-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 32px; line-height: 1.1; }
+.ska-tool-btn { background: white; border: 1px solid var(--ska-border); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; color: var(--ska-text-muted); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; height: 32px; line-height: 1; }
 .ska-tool-btn svg { display: block; flex-shrink: 0; transform: translateY(0); margin-right: 4px; }
 .ska-tool-btn:hover { border-color: var(--ska-primary); color: var(--ska-primary); }
 .ska-tool-btn.is-disabled,
@@ -745,13 +745,15 @@ body.skript-analyse-active .skript-analyse-container {
 
 .skriptanalyse-card.ska-animate-enter { animation: ska-card-enter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 @keyframes ska-card-enter { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.ska-card-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; background: linear-gradient(135deg, #e4f1ff 0%, #f8fafc 72%); border-top-left-radius: var(--ska-radius-md); border-top-right-radius: var(--ska-radius-md); color: #1e293b; }
-.ska-card-header h3 { margin: 0; font-size: 0.85rem; color: #1e293b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
-.ska-card-header .ska-card-info-icon { background: #e7f3ff; border-color: #b6dbff; }
-.ska-card-header .ska-info-dot { color: #1a93ee; }
-.ska-card-header .ska-card-info-icon:hover { background: #d6ecff; }
+.ska-card-header { display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #0f141a; border-top-left-radius: var(--ska-radius-md); border-top-right-radius: var(--ska-radius-md); color: #ffffff; }
+.ska-card-header h3 { margin: 0; font-size: 0.85rem; color: #ffffff; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.ska-card-header .ska-card-info-icon { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: rgba(255, 255, 255, 0.8); }
+.ska-card-header .ska-info-dot { color: rgba(255, 255, 255, 0.85); }
+.ska-card-header .ska-card-info-icon:hover { background: rgba(255, 255, 255, 0.16); }
 .ska-card-header .ska-hide-btn,
-.ska-card-header .ska-whitelist-toggle { color: #64748b; }
+.ska-card-header .ska-whitelist-toggle { color: rgba(255, 255, 255, 0.75); }
+.ska-card-header .ska-hide-btn:hover,
+.ska-card-header .ska-whitelist-toggle:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; opacity: 1; }
 .ska-card-header {
     justify-content: flex-start !important;
     text-align: left !important;
@@ -3149,7 +3151,7 @@ body:not(.ska-plan-premium) .ska-compact-option--premium .ska-compact-option-inn
     .ska-editor-formatting { padding: 0.6rem 1rem; }
     .ska-textarea-wrapper { padding: 1rem; }
     .ska-card-body { padding: 1rem; }
-    .ska-card-header { padding: 0.85rem 1rem; }
+    .ska-card-header { padding: 0.65rem 0.9rem; }
     .ska-filterbar-actions { flex-direction: column; align-items: stretch; }
     .ska-filterbar-toggle { width: 100%; text-align: left; }
     .ska-premium-upgrade-card { padding: 1.3rem 1rem; }
