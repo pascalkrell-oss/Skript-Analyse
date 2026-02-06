@@ -914,7 +914,7 @@ function ska_shortcode() {
                         <div class="ska-help-grid">
                             <div class="ska-help-card">
                                 <h4>1. Text einfügen</h4>
-                                <p>Füge dein Skript in das Eingabefeld ein. Änderungen werden automatisch gespeichert und live analysiert.</p>
+                                <p>Füge Dein Skript in das Eingabefeld ein. Änderungen werden automatisch gespeichert und live analysiert.</p>
                             </div>
                             <div class="ska-help-card">
                                 <h4>2. Genre wählen</h4>
@@ -937,7 +937,7 @@ function ska_shortcode() {
                     <section id="ska-help-layout" class="ska-help-section">
                         <header>
                             <h4>🧭 Oberfläche & Navigation</h4>
-                            <p>So findest du dich sofort zurecht.</p>
+                            <p>So findest Du Dich sofort zurecht.</p>
                         </header>
                         <ul class="ska-help-list ska-help-list--arrows">
                             <li><strong>Steuerleiste:</strong> Genre, Tempo (WPM/SPS) und Zielzeit – steuert das Timing der Analyse.</li>
@@ -946,7 +946,7 @@ function ska_shortcode() {
                             <li><strong>Legende & Hilfe:</strong> Erklärt Marker, Badges und bietet den direkten Einstieg in diese Anleitung.</li>
                         </ul>
                         <div class="ska-help-box ska-help-box--help">
-                            <strong>Tipp:</strong> Nutze die Filter-Schalter, damit deine wichtigsten Karten dauerhaft sichtbar bleiben.
+                            <strong>Tipp:</strong> Nutze die Filter-Schalter, damit Deine wichtigsten Karten dauerhaft sichtbar bleiben.
                         </div>
                     </section>
 
@@ -970,7 +970,7 @@ function ska_shortcode() {
                                         <li><strong>WPM/SPS:</strong> Standard-Tempo oder Silben pro Sekunde für längere Wörter.</li>
                                         <li><strong>Zielzeit:</strong> Die Analyse zeigt, wie nah du am gewünschten Timing bist.</li>
                                         <li><strong>Pausen-Automatik <span class="ska-premium-badge">Premium</span>:</strong> Berechnet Pausen automatisch anhand von Satzstruktur & Markern.</li>
-                                        <li><strong>Persönliches WPM <span class="ska-premium-badge">Premium</span>:</strong> Nutze dein eigenes Sprecher-Tempo als Standard.</li>
+                                        <li><strong>Persönliches WPM <span class="ska-premium-badge">Premium</span>:</strong> Nutze Dein eigenes Sprecher-Tempo als Standard.</li>
                                     </ul>
                                 </div>
                                 <div class="ska-help-tab-panel" data-tab="ska-help-tab-2">
@@ -1024,7 +1024,7 @@ function ska_shortcode() {
                     <section id="ska-help-cards" class="ska-help-section">
                         <header>
                             <h4>🧩 Analyse-Karten (Themenübersicht)</h4>
-                            <p>Jede Karte gibt dir konkrete Hinweise zur Optimierung.</p>
+                            <p>Jede Karte gibt Dir konkrete Hinweise zur Optimierung.</p>
                         </header>
                         <div class="ska-help-columns">
                             <div>
@@ -1173,7 +1173,7 @@ function ska_shortcode() {
                     <section id="ska-help-privacy" class="ska-help-section">
                         <header>
                             <h4>🔒 Datenschutz & Support</h4>
-                            <p>Dein Text bleibt bei dir, Hilfe ist immer erreichbar.</p>
+                            <p>Dein Text bleibt bei Dir, Hilfe ist immer erreichbar.</p>
                         </header>
                         <div class="ska-help-columns">
                             <div>
@@ -1965,7 +1965,7 @@ function ska_admin_support_password_reset( WP_REST_Request $request ) {
     }
     $reset_url = network_site_url( 'wp-login.php?action=rp&key=' . $key . '&login=' . rawurlencode( $user->user_login ), 'login' );
     $message = "Hallo {$user->display_name},\n\n"
-        . "nutze den folgenden Link, um dein Passwort zurückzusetzen:\n"
+        . "nutze den folgenden Link, um Dein Passwort zurückzusetzen:\n"
         . $reset_url . "\n\n"
         . "Wenn du die Anfrage nicht gestellt hast, kannst du diese E-Mail ignorieren.";
     wp_mail( $user->user_email, 'Passwort zurücksetzen', $message );
