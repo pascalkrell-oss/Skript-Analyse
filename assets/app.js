@@ -841,65 +841,34 @@
                 { name: "Zeichen-Zählung", desc: "Präzise Zählung aller Zeichen (mit und ohne Leerzeichen) für die Abrechnung." },
                 { name: "Wort- & Satzstatistik", desc: "Detaillierte Aufschlüsselung der Wortanzahl und der durchschnittlichen Satzlänge." },
                 { name: "Lesbarkeits-Score", desc: "Ermittelt den Flesch-Index, um zu prüfen, wie verständlich dein Text geschrieben ist." },
-                { name: "Füllwort-Analyse (Basis)", desc: "Findet die häufigsten überflüssigen Füllwörter, die deinen Text unnötig aufblähen." },
                 { name: "Autosave", desc: "Dein Fortschritt wird automatisch lokal in deinem Browser gespeichert, damit nichts verloren geht." },
                 { name: "PDF-Export (Basis)", desc: "Lade dein Skript als einfaches PDF herunter, um es zu drucken oder zu teilen." }
             ],
             analysis: [
                 { name: "Schnell-Überblick", desc: "Erhalte sofort alle relevanten Metriken wie Gesamtdauer und Status auf einen Blick." },
-                { name: "Tonalität & Stil", desc: "Analysiert die emotionale Wirkung (positiv/negativ) und den Schreibstil deines Textes." },
-                { name: "Füllwörter", desc: "Markiert Wörter, die keine Information tragen und den Text schwächen." },
-                { name: "Denglisch-Detektor", desc: "Findet unnötige Anglizismen und schlägt oft bessere deutsche Alternativen vor." },
+                { name: "Stil & Tonalität", desc: "Analysiert die emotionale Wirkung (positiv/negativ) und den Schreibstil deines Textes." },
+                { name: "Regie & Rhythmus", desc: "Erkennt Regie-Anweisungen und zeigt Satz-Rhythmus für bessere Dynamik." },
                 { name: "Auffällige Sätze", desc: "Markiert extrem lange Schachtelsätze oder abgehackte Phrasen, die den Fluss stören." },
-                { name: "Stolpersteine & Phonetik", desc: "Identifiziert Zungenbrecher und Wortfolgen, die beim Sprechen schwierig sind." },
-                { name: "Aussprache-Check", desc: "Prüft Zahlen, Abkürzungen und Sonderzeichen auf ihre Sprechbarkeit." }
+                { name: "Stolperstellen", desc: "Identifiziert Zungenbrecher und Wortfolgen, die beim Sprechen schwierig sind." },
+                { name: "Aussprache-Check", desc: "Prüft Zahlen, Abkürzungen und Sonderzeichen auf ihre Sprechbarkeit." },
+                { name: "Füllwörter & Passiv", desc: "Findet Füllwörter und passive Formulierungen, die deinen Text schwächen." },
+                { name: "Bürokratie & Denglisch", desc: "Entdeckt Beamtendeutsch und unnötige Anglizismen im Text." },
+                { name: "Buzzword-Check", desc: "Entlarvt leere Marketing-Floskeln und macht Aussagen konkreter." }
             ]
         },
         premium: {
             tools: [
-                { name: "Alles aus der Basis-Version", desc: "Du erhältst selbstverständlich Zugriff auf alle Funktionen des kostenlosen Plans." },
-                { name: "Premium-Analyseboxen", desc: "Schalte die erweiterte Tiefenanalyse frei für maximale Textqualität.", featured: true },
-                { name: "Projekte speichern/laden", desc: "Speichere und lade deine Projekte sicher & Ende-zu-Ende verschlüsselt in deiner persönlichen Cloud.", featured: true },
-                { name: "Teleprompter", desc: "Mach deinen Bildschirm zum Studio: Dein Text läuft automatisch in deinem Sprechtempo mit - perfekt für fehlerfreie Video-Aufnahmen ohne Auswendiglernen.", featured: true },
-                { name: "Textvergleich (Versionen)", desc: "Deine Sicherheitsleine: Vergleiche deine aktuelle Version mit dem alten Entwurf und stelle bei Bedarf die gespeicherte Version mit einem Klick wieder her." },
-                { name: "Pro-PDF-Report", desc: "Beeindrucke Kunden & Chefs: Exportiere eine professionelle Analyse deiner Arbeit als PDF-Zertifikat, das deine Textqualität schwarz auf weiß belegt.", featured: true },
-                { name: "SPS-Modus", desc: "Analyse basierend auf 'Silben pro Sekunde' – der Standard für professionelle Sprachaufnahmen." },
-                { name: "Pausen-Automatik", desc: "Berechnet automatisch realistische Atem- und Sprechpausen an Satzzeichen." },
-                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
-                { name: "Schreib-Sprint & Fokus", desc: "Steigere deine Produktivität mit dem ablenkungsfreien Fokus-Modus und Wortzielen.", featured: true },
-                { name: "Sprech-Pacing", desc: "Perfektes Timing vor der Aufnahme: Sieh schon während des Schreibens exakt, wie viele Sekunden oder Minuten dein Text gesprochen dauern wird." }
+                { name: "Teleprompter, Pacing & Schreib-Sprint", desc: "Arbeite im Studio-Workflow mit Tempo-Guide, Fokus-Modus und Live-Pacing.", featured: true },
+                { name: "Projekte speichern & Versionen vergleichen", desc: "Speichere Projekte in der Cloud, vergleiche Versionen und stelle Entwürfe wieder her.", featured: true },
+                { name: "Pro-PDF-Report (mehr Details & Optionen)", desc: "Exportiere professionelle Reports mit erweiterten Optionen und Detailgrad.", featured: true },
+                { name: "SPS-Modus & Pausen-Automatik", desc: "Professionelles Timing mit Silben pro Sekunde und echten Sprechpausen." },
+                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." }
             ],
             analysis: [
-                { name: "Regie-Anweisung", desc: "Erkennt technische Anweisungen und formatiert sie korrekt für Sprecher." },
-                { name: "Satz-Rhythmus", desc: "Hypnotischer Lesefluss: Visualisiert die 'Melodie' deines Textes, damit deine Leser nicht durch monotone Satzlängen einschlafen.", featured: true },
-                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet die voraussichtliche Laufzeit ganzer Kapitel basierend auf Wortzahlen.", featured: true },
+                { name: "Pflichttext-Check", desc: "Validiert, ob rechtliche Disclaimer oder Pflichtpassagen exakt enthalten sind.", featured: true },
+                { name: "Keyword-Fokus", desc: "Prüft, ob definierte Keywords konsistent eingesetzt werden.", featured: true },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
-                { name: "Rollen-Verteilung", desc: "Analysiert, wie viel Sprechanteil verschiedene Charaktere oder Rollen haben." },
-                { name: "Keyword-Fokus", desc: "Prüft, ob deine definierten Keywords oft genug (oder zu oft) vorkommen." },
-                { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
-                { name: "Leichte Sprache", desc: "Prüft deinen Text auf Barrierefreiheit (B1/B2 Level) und Verständlichkeit." },
-                { name: "Semantische Redundanz", desc: "Lösche das Überflüssige: Findet Wort-Doppelungen und aufgeblähte Phrasen – macht deinen Text sofort straffer und schneller lesbar." },
-                { name: "Buzzword-Check", desc: "Schluss mit Bla-Bla: Entlarvt hohle Marketing-Floskeln und sorgt für authentische, glaubwürdige Kommunikation, der man vertraut." },
-                { name: "Metaphern & Phrasen", desc: "Analysiert die Bildsprache und prüft, ob Metaphern stimmig sind." },
-                { name: "Immersion & Show, don't tell", desc: "Der Bestseller-Effekt: Das System zeigt dir gnadenlos, wo du nur behauptest, statt echtes Kopfkino beim Leser zu erzeugen." },
-                { name: "Zielgruppen-Filter", desc: "Treffsicher formulieren: Prüft Wortwahl und Komplexität chirurgisch genau auf deine Zielgruppe – damit deine Message auch wirklich verstanden wird." },
-                { name: "Rhetorische Fragen", desc: "Zählt Fragen im Text und bewertet deren Wirkung auf den Zuhörer." },
-                { name: "Satz-Verschachtelung", desc: "Warnt vor zu komplexen Schachtelsätzen, die beim Hören schwer verständlich sind." },
-                { name: "Satzanfang-Varianz", desc: "Prüft, ob zu viele Sätze mit dem gleichen Wort beginnen (z.B. 'Dann... Dann...')." },
-                { name: "Pflichttext-Check", desc: "Validiert, ob rechtliche Disclaimer (z.B. Gewinnspiel-Infos) enthalten sind." },
-                { name: "Gender-Neutralität", desc: "Prüft den Text auf inklusive Sprache und macht neutrale Vorschläge." },
-                { name: "Wort-Echos", desc: "Findet unfreiwillige Wortwiederholungen auf engem Raum." },
-                { name: "Adjektiv-Dichte", desc: "Warnt vor übermäßigem Adjektiv-Gebrauch, der den Text schwammig macht." },
-                { name: "Adverbien-Check", desc: "Hilft dir, schwache Verben durch starke Verben (statt Adverbien) zu ersetzen." },
-                { name: "Passiv-Indikator", desc: "Markiert passive Formulierungen und hilft dir, aktiver zu schreiben." },
-                { name: "Bürokratie-Filter", desc: "Findet typisches Beamtendeutsch und Nominalstil, der schwer zu hören ist." },
-                { name: "Nominal-Ketten", desc: "Warnt vor aneinandergereihten Substantiven ('Donaudampfschifffahrt...')." },
-                { name: "Stimmungs-Intensität", desc: "Misst die emotionale Stärke deiner Worte auf einer Skala." },
-                { name: "Call to Action", desc: "Prüft, ob eine klare Handlungsaufforderung am Ende des Textes steht.", featured: true },
-                { name: "Verb-Fokus", desc: "Analysiert die Kraft deiner Verben – das Herzstück guter Texte." },
-                { name: "Audio-BPM-Matching", desc: "Hilft dir, den Text rhythmisch auf einen Musik-Takt (BPM) zu schreiben." },
-                { name: "Wortschatz-Reichtum", desc: "Misst die Diversität deines Vokabulars (Type-Token-Ratio)." },
-                { name: "Dialog-Balance", desc: "Prüft das Verhältnis von erzählendem Text zu wörtlicher Rede." }
+                { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." }
             ]
         }
     };
@@ -6481,6 +6450,9 @@
                 return true;
             }
             if (act === 'open-tool-modal') {
+                if (btn && btn.classList.contains('ska-tool-tile') && !this.isPremiumActive()) {
+                    return true;
+                }
                 this.openToolModal(btn.dataset.toolId);
                 return true;
             }
@@ -6495,6 +6467,9 @@
             }
             if (act === 'open-teleprompter') {
                 if (!this.isPremiumActive()) {
+                    if (btn && btn.classList.contains('ska-tool-tile')) {
+                        return true;
+                    }
                     this.showPremiumNotice('Der Teleprompter ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -6853,6 +6828,9 @@
 
             if (act === 'word-sprint-start') {
                 if (!this.isCardUnlocked('word_sprint')) {
+                    if (btn && btn.classList.contains('ska-tool-tile')) {
+                        return true;
+                    }
                     this.showPremiumNotice('Der Schreib-Sprint ist in der Premium-Version verfügbar.');
                     return true;
                 }
@@ -7171,7 +7149,7 @@
                 <div class="skriptanalyse-modal-overlay" data-action="close-project-manager"></div>
                 <div class="skriptanalyse-modal-content ska-project-manager-modal__content">
                     <button type="button" class="ska-close-icon" data-action="close-project-manager" aria-label="Schließen">&times;</button>
-                    <div class="ska-modal-header" data-role="project-manager-title"><h3>Meine gespeicherten Projekte</h3></div>
+                    <div class="ska-modal-header ska-project-manager-modal__header" data-role="project-manager-title"><h3>Meine gespeicherten Projekte</h3></div>
                     <div class="skriptanalyse-modal-body">
                         <div class="ska-project-manager__save" data-role="project-save-panel">
                             <div class="ska-project-manager__save-header">
@@ -7182,7 +7160,7 @@
                                 <input class="ska-input" data-role="project-save-title" type="text" placeholder="Projektname…" autocomplete="off">
                                 <div class="ska-project-manager__save-actions">
                                     <button type="button" class="ska-btn ska-btn--primary" data-action="project-save-new">Neu speichern</button>
-                                    <button type="button" class="ska-btn ska-btn--secondary" data-action="project-save-overwrite">Überschreiben</button>
+                                    <button type="button" class="ska-btn ska-btn--ghost" data-action="project-save-overwrite">Überschreiben</button>
                                 </div>
                             </div>
                             <div class="ska-project-manager__save-meta" data-role="project-save-meta"></div>
@@ -7191,6 +7169,7 @@
                             <div class="ska-project-manager__upsell-icon">⭐</div>
                             <div class="ska-project-manager__upsell-text">
                                 <strong>Speichere Deine Projekte dauerhaft mit einer Premium-Mitgliedschaft.</strong>
+                                <span class="ska-project-manager__upsell-subtext">Mit Premium kannst du Projekte speichern, Versionen vergleichen und Reports exportieren.</span>
                                 <a class="ska-btn ska-btn--primary ska-btn--compact ska-projects-upgrade-btn" href="#ska-premium-upgrade" data-action="project-upsell-upgrade">Premium freischalten</a>
                             </div>
                         </div>
@@ -8398,12 +8377,14 @@
             if (!grid || grid.dataset.dragBound) return;
             grid.dataset.dragBound = 'true';
             let draggingItem = null;
+            let placeholderItem = null;
 
             grid.addEventListener('dragstart', (event) => {
                 const item = event.target.closest('[data-card-id]');
                 if (!item || item.getAttribute('draggable') !== 'true') return;
                 draggingItem = item;
                 item.classList.add('is-dragging');
+                grid.classList.add('is-dragging');
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', item.dataset.cardId || '');
             });
@@ -8412,7 +8393,12 @@
                 if (draggingItem) {
                     draggingItem.classList.remove('is-dragging');
                 }
+                if (placeholderItem) {
+                    placeholderItem.classList.remove('is-drag-placeholder');
+                }
+                grid.classList.remove('is-dragging');
                 draggingItem = null;
+                placeholderItem = null;
             });
 
             grid.addEventListener('dragover', (event) => {
@@ -8421,6 +8407,11 @@
                 if (!target || target === draggingItem) return;
                 if (!this.isPremiumActive() && !SKA_FREE_CARDS.has(target.dataset.cardId)) return;
                 event.preventDefault();
+                if (placeholderItem && placeholderItem !== target) {
+                    placeholderItem.classList.remove('is-drag-placeholder');
+                }
+                placeholderItem = target;
+                placeholderItem.classList.add('is-drag-placeholder');
                 const rect = target.getBoundingClientRect();
                 const shouldInsertBefore = event.clientY < rect.top + rect.height / 2;
                 const referenceNode = shouldInsertBefore ? target : target.nextSibling;
@@ -9912,7 +9903,7 @@
 
             // AMPELSLIDER Tied to Flesch Score (Quality indicator)
             meterHtml = `
-                <div style="margin: 1.5rem 0 1rem 0;">
+                <div style="margin: 1.1rem 0 0.6rem 0;">
                     <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">
                         <span>Verständlichkeit</span>
                         <span style="color:${traffic.color}">${traffic.label}</span>
@@ -9952,7 +9943,7 @@
             const benchmarkLabel = isSps ? 'Benchmark (SPS)' : 'Benchmark (WPM)';
             const benchmarkHtml = this.renderBenchmarkBadge(benchmarkMetric, benchmarkValue, benchmarkLabel, { showPercentile: false });
 
-            let genreList = '<div class="ska-overview-genre-box"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
+            let genreList = '<div class="ska-overview-genre-box ska-overview-genre-box--compare"><h4>Sprechdauer im Vergleich</h4><div class="ska-genre-grid-layout">';
             const cP = r ? SA_Utils.getPausenTime(this.getText(), effectiveSettings) : 0;
             const curWord = r ? r.wordCount : 0;
             const curSyl = r ? r.totalSyllables : 0;
@@ -10064,6 +10055,7 @@
         }
 
         renderProTipFooter(cardKey) {
+            if (cardKey === 'overview') return '';
             const tips = SKA_PRO_TIPS[cardKey] || SKA_PRO_TIPS.default || [];
             if (!tips.length) return '';
             if (!this.state.proTipIndices) this.state.proTipIndices = {};
@@ -10076,7 +10068,7 @@
             return `
                 <div class="ska-protip-footer" data-protip-key="${cardKey}">
                     <div class="ska-protip-header">
-                        <div class="ska-protip-badge">💡 PROFI-TIPP ${totalLabel}</div>
+                        <div class="ska-protip-badge">💡 HILFESTELLUNG ${totalLabel}</div>
                         ${nextBtn}
                     </div>
                     <div class="ska-protip-text">${tip}</div>
@@ -11320,7 +11312,7 @@
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const formattedFreePrice = this.formatPriceValue(freePrice);
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
-            const planDescription = 'Unlimitierte Analysen, alle Werkzeuge & PDF-Reports – in 2 Minuten startklar.';
+            const planDescription = 'Free hilft dir, dein Skript schnell zu verbessern. Mit Premium arbeitest du wie im Studio: Teleprompter, Sprech-Pacing, Schreib-Sprint, Projekte & Versionen – plus Pro-Checks und Pro-PDF-Report.';
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -11382,7 +11374,7 @@
                 </button>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
-                        <strong>Erhalte Zugriff auf alle Analysen & Funktionen</strong>
+                        <strong>Premium ist dein Pro-Workflow fürs Skript</strong>
                     </div>
                     <span>${planDescription}</span>
                 </div>
@@ -11440,7 +11432,7 @@
                             ${renderFeatureList(UPGRADE_CONTENT.premium.analysis, true)}
                         </div>
                         <div class="ska-premium-upgrade-cta">
-                            <button class="ska-btn ska-btn--secondary" data-action="premium-info">Mehr Informationen</button>
+                            <a class="ska-btn ska-btn--secondary ska-premium-info-btn" href="https://dev.pascal-krell.de/extras/skript-analyse-info-seite/">Mehr Informationen</a>
                             <a class="ska-btn ska-btn--primary ska-premium-checkout-btn" id="ska-premium-checkout-btn" href="#" data-product-monthly="${premiumProductMonthlyId}" data-product-yearly="${premiumProductYearlyId}" data-product-lifetime="${premiumProductLifetimeId}">Jetzt Premium freischalten</a>
                         </div>
                     </div>
