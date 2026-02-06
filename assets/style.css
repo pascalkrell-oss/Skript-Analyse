@@ -66,6 +66,7 @@ body.skript-analyse-active .skript-analyse-container {
     font-family: 'Rubik', system-ui, -apple-system, sans-serif;
     background-color: var(--ska-bg-app);
     color: var(--ska-text-main);
+    --ska-radius: 18px;
     border-radius: var(--ska-radius);
     padding: 2rem; 
     max-width: 1200px;
@@ -104,7 +105,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-select-wrapper label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--ska-text-muted); margin: 0; letter-spacing: 0.02em; line-height: 1; }
 .ska-custom-select-wrapper { position: relative; min-width: 180px; }
 .ska-custom-select-wrapper::after { content: ''; position: absolute; top: 50%; right: 1rem; width: 8px; height: 8px; border-right: 2px solid var(--ska-text-muted); border-bottom: 2px solid var(--ska-text-muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
-.ska-select, .ska-input { width: 100%; padding: 0 2.5rem 0 1.2rem; border-radius: 999px; border: 1px solid var(--ska-border); background: var(--ska-surface-alt); font-size: 0.9rem; color: var(--ska-text-main); font-weight: 500; appearance: none; -webkit-appearance: none; outline: none; height: var(--ska-toolbar-control-height); line-height: 40px; display: block; }
+.ska-select, .ska-input { width: 100%; padding: 0 2.5rem 0 1.2rem; border-radius: var(--ska-radius); border: 1px solid var(--ska-border); background: var(--ska-surface-alt); font-size: 0.9rem; color: var(--ska-text-main); font-weight: 500; appearance: none; -webkit-appearance: none; outline: none; height: var(--ska-toolbar-control-height); line-height: 40px; display: block; }
 .ska-select:focus, .ska-input:focus { border-color: var(--ska-primary); box-shadow: 0 0 0 3px rgba(26, 147, 238, 0.15); background: white; }
 .ska-toolbar-actions { display: flex; gap: 0.8rem; margin-left: 0; align-items: center; flex-shrink: 0; flex-wrap: nowrap; }
 
@@ -216,7 +217,7 @@ body.skript-analyse-active .skript-analyse-container {
     margin-top: 1rem;
     background: transparent;
     border: none;
-    border-radius: 0;
+    border-radius: var(--ska-radius);
     width: 100%;
     max-width: 100%;
     margin-left: 0;
@@ -348,6 +349,22 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-layout-grid.is-dragging .ska-layout-item-badge-premium { opacity: 0; visibility: hidden; }
 .ska-layout-grid.is-dragging .ska-layout-dnd-lock { opacity: 0; visibility: hidden; }
 .ska-layout-grid.is-dragging .ska-layout-handle { cursor: grabbing; }
+.ska-layout-drag-preview {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    color: #0f141a;
+    border-radius: var(--ska-radius-inner);
+    border: 1px solid #e2e8f0;
+    font-size: 16px;
+    box-shadow: 0 10px 20px -16px rgba(15, 20, 26, 0.35);
+}
 .ska-layout-handle {
     font-weight: 700;
     color: #0f141a;
@@ -426,7 +443,7 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-layout-dropdown .ska-opt-item input { margin: 0; }
 .ska-layout-dropdown .ska-opt-item.is-locked label { cursor: not-allowed; opacity: 0.6; }
 .ska-layout-dropdown .ska-lock-icon { margin-left: auto; font-size: 0.9rem; }
-.ska-filter-pill { border: 1px solid var(--ska-border); background: #fff; padding: 0 0.75rem; border-radius: 999px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; height: 34px; min-height: 34px; transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+.ska-filter-pill { border: 1px solid var(--ska-border); background: #fff; padding: 0 0.75rem; border-radius: var(--ska-radius); font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; height: 34px; min-height: 34px; transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1), transform 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
 .ska-filter-pill input { accent-color: var(--ska-primary); }
 .ska-filter-pill.is-off { background: #f1f5f9; color: #cbd5e1; border-color: #e2e8f0; }
 .ska-filter-pill.is-off input { accent-color: #cbd5e1; }
@@ -471,7 +488,7 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-filterbar-profile { display: flex; flex-direction: column; gap: 0.35rem; }
 .ska-filterbar-profile label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #94a3b8; }
-.ska-filterbar-profile-toggle { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: #475569; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; }
+.ska-filterbar-profile-toggle { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: #475569; font-weight: 600; padding: 0.2rem 0.4rem; border-radius: var(--ska-radius); border: 1px solid #e2e8f0; background: #fff; }
 .ska-filterbar-profile-toggle input { margin: 0; accent-color: var(--ska-primary); }
 .ska-filterbar-profile-row {
     width: 100%;
@@ -1044,6 +1061,12 @@ body.skript-analyse-active .skript-analyse-container {
     font-size: 0.85rem;
     color: #334155;
     line-height: 1.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    will-change: opacity, transform;
+}
+.ska-protip-text.is-fading {
+    opacity: 0;
+    transform: translateY(4px);
 }
 .ska-protip-next {
     border: none;
@@ -1368,7 +1391,7 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-tools-grid .skriptanalyse-card {
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: var(--ska-radius);
     background: #ffffff;
     box-shadow: 0 12px 26px -22px rgba(15, 23, 42, 0.35);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -1384,7 +1407,7 @@ body.skript-analyse-active .skript-analyse-container {
 }
 .ska-tool-tile {
     border: 1px solid #e2e8f0;
-    border-radius: 18px;
+    border-radius: var(--ska-radius);
     background: #ffffff;
     padding: 1.35rem 1.4rem;
     display: flex;

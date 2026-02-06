@@ -837,6 +837,7 @@
         basic: {
             tools: [
                 { name: "WPM-Modus", desc: "Berechnet deine Lese- und Sprechgeschwindigkeit basierend auf Wortanzahl und Standard-Werten." },
+                { name: "Profil-Presets", desc: "Wechsel zwischen Analyse-Profilen für verschiedene Workflow-Schwerpunkte." },
                 { name: "Genre-Presets", desc: "Wähle aus Voreinstellungen (z.B. Werbespot, Hörbuch, Podcast, E-Learning), um die Analyse anzupassen." },
                 { name: "Zeichen-Zählung", desc: "Präzise Zählung aller Zeichen (mit und ohne Leerzeichen) für die Abrechnung." },
                 { name: "Wort- & Satzstatistik", desc: "Detaillierte Aufschlüsselung der Wortanzahl und der durchschnittlichen Satzlänge." },
@@ -847,13 +848,21 @@
             analysis: [
                 { name: "Schnell-Überblick", desc: "Erhalte sofort alle relevanten Metriken wie Gesamtdauer und Status auf einen Blick." },
                 { name: "Stil & Tonalität", desc: "Analysiert die emotionale Wirkung (positiv/negativ) und den Schreibstil deines Textes." },
-                { name: "Regie & Rhythmus", desc: "Erkennt Regie-Anweisungen und zeigt Satz-Rhythmus für bessere Dynamik." },
+                { name: "Regie-Anweisung", desc: "Erkennt Regie-Anweisungen und markiert sie im Skript." },
+                { name: "Satz-Rhythmus", desc: "Zeigt Satzlängen und Rhythmus für bessere Dynamik." },
                 { name: "Auffällige Sätze", desc: "Markiert extrem lange Schachtelsätze oder abgehackte Phrasen, die den Fluss stören." },
                 { name: "Stolperstellen", desc: "Identifiziert Zungenbrecher und Wortfolgen, die beim Sprechen schwierig sind." },
                 { name: "Aussprache-Check", desc: "Prüft Zahlen, Abkürzungen und Sonderzeichen auf ihre Sprechbarkeit." },
+                { name: "Wort-Echos", desc: "Findet Wortwiederholungen, die den Flow bremsen." },
+                { name: "Leichte Sprache", desc: "Erkennt überkomplexe Formulierungen für klare Sprache." },
                 { name: "Füllwörter & Passiv", desc: "Findet Füllwörter und passive Formulierungen, die deinen Text schwächen." },
-                { name: "Bürokratie & Denglisch", desc: "Entdeckt Beamtendeutsch und unnötige Anglizismen im Text." },
-                { name: "Buzzword-Check", desc: "Entlarvt leere Marketing-Floskeln und macht Aussagen konkreter." }
+                { name: "Bürokratie-Filter", desc: "Entdeckt Beamtendeutsch und zu komplizierte Konstruktionen." },
+                { name: "Nominal-Ketten", desc: "Markiert überlange Nominalketten, die schwer lesbar sind." },
+                { name: "Denglisch-Detektor", desc: "Findet unnötige Anglizismen und Denglisch." },
+                { name: "Buzzword-Check", desc: "Entlarvt leere Marketing-Floskeln und macht Aussagen konkreter." },
+                { name: "Metaphern & Phrasen", desc: "Erkennt Klischees und prüft die Bildsprache." },
+                { name: "Call to Action", desc: "Prüft, ob der CTA klar und prägnant gesetzt ist." },
+                { name: "Satzanfang-Varianz", desc: "Bewertet die Abwechslung der Satzanfänge." }
             ]
         },
         premium: {
@@ -861,14 +870,17 @@
                 { name: "Teleprompter, Pacing & Schreib-Sprint", desc: "Arbeite im Studio-Workflow mit Tempo-Guide, Fokus-Modus und Live-Pacing.", featured: true },
                 { name: "Projekte speichern & Versionen vergleichen", desc: "Speichere Projekte in der Cloud, vergleiche Versionen und stelle Entwürfe wieder her.", featured: true },
                 { name: "Pro-PDF-Report (mehr Details & Optionen)", desc: "Exportiere professionelle Reports mit erweiterten Optionen und Detailgrad.", featured: true },
-                { name: "SPS-Modus & Pausen-Automatik", desc: "Professionelles Timing mit Silben pro Sekunde und echten Sprechpausen." },
-                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." }
+                { name: "Teleprompter-Export (TXT/JSON)", desc: "Exportiere den Promptertext für externe Workflows und Tools." },
+                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
+                { name: "SPS-Modus & Pausen-Automatik", desc: "Professionelles Timing mit Silben pro Sekunde und echten Sprechpausen." }
             ],
             analysis: [
                 { name: "Pflichttext-Check", desc: "Validiert, ob rechtliche Disclaimer oder Pflichtpassagen exakt enthalten sind.", featured: true },
                 { name: "Keyword-Fokus", desc: "Prüft, ob definierte Keywords konsistent eingesetzt werden.", featured: true },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
-                { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." }
+                { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
+                { name: "Versions-Vergleich", desc: "Vergleicht unterschiedliche Textversionen für präzise Änderungen." },
+                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet Kapitelzeiten und Hörbuch-Abschnitte." }
             ]
         }
     };
@@ -6357,15 +6369,21 @@
                         const tipP = card.querySelector('.ska-protip-text');
                         const badge = card.querySelector('.ska-protip-count');
                         if (tipP) {
-                            tipP.classList.add('is-changing');
-                            setTimeout(() => {
+                            const fadeDuration = 200;
+                            if (tipP._fadeTimeout) {
+                                window.clearTimeout(tipP._fadeTimeout);
+                            }
+                            tipP.classList.add('is-fading');
+                            tipP._fadeTimeout = window.setTimeout(() => {
                                 if (!this.state.proTipIndices) this.state.proTipIndices = {};
                                 if (typeof this.state.proTipIndices[id] === 'undefined') this.state.proTipIndices[id] = 0;
                                 this.state.proTipIndices[id] = (this.state.proTipIndices[id] + 1) % tips.length;
                                 tipP.textContent = tips[this.state.proTipIndices[id]];
                                 if (badge) badge.textContent = `${this.state.proTipIndices[id] + 1}/${tips.length}`;
-                                tipP.classList.remove('is-changing');
-                            }, 300);
+                                window.requestAnimationFrame(() => {
+                                    tipP.classList.remove('is-fading');
+                                });
+                            }, fadeDuration);
                         }
                     }
                 }
@@ -8378,6 +8396,7 @@
             grid.dataset.dragBound = 'true';
             let draggingItem = null;
             let placeholderItem = null;
+            let dragPreview = null;
 
             grid.addEventListener('dragstart', (event) => {
                 const item = event.target.closest('[data-card-id]');
@@ -8387,6 +8406,19 @@
                 grid.classList.add('is-dragging');
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', item.dataset.cardId || '');
+                if (event.dataTransfer && event.dataTransfer.setDragImage) {
+                    dragPreview = document.createElement('div');
+                    dragPreview.className = 'ska-layout-drag-preview';
+                    dragPreview.textContent = '↕';
+                    document.body.appendChild(dragPreview);
+                    event.dataTransfer.setDragImage(dragPreview, 12, 12);
+                    window.setTimeout(() => {
+                        if (dragPreview && dragPreview.parentNode) {
+                            dragPreview.parentNode.removeChild(dragPreview);
+                            dragPreview = null;
+                        }
+                    }, 0);
+                }
             });
 
             grid.addEventListener('dragend', () => {
@@ -8396,9 +8428,13 @@
                 if (placeholderItem) {
                     placeholderItem.classList.remove('is-drag-placeholder');
                 }
+                if (dragPreview && dragPreview.parentNode) {
+                    dragPreview.parentNode.removeChild(dragPreview);
+                }
                 grid.classList.remove('is-dragging');
                 draggingItem = null;
                 placeholderItem = null;
+                dragPreview = null;
             });
 
             grid.addEventListener('dragover', (event) => {
@@ -8436,8 +8472,9 @@
             grid.innerHTML = '';
             sortedItems.forEach((id) => {
                 const isUnlocked = this.isCardUnlocked(id);
-                const isVisible = !this.state.hiddenCards.has(id);
                 const isFreeCard = SKA_FREE_CARDS.has(id);
+                const isVisible = !this.state.hiddenCards.has(id);
+                const isPremiumLockedInFree = !isPremiumPlan && !isFreeCard;
                 const canDrag = isPremiumPlan ? isUnlocked : (isUnlocked && isFreeCard);
 
                 const item = document.createElement('div');
@@ -8462,8 +8499,8 @@
 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.checked = isVisible;
-                checkbox.disabled = !isUnlocked;
+                checkbox.checked = isPremiumLockedInFree ? false : isVisible;
+                checkbox.disabled = !isUnlocked || isPremiumLockedInFree;
                 checkbox.addEventListener('change', (event) => {
                     this.toggleCard(id, event.target.checked);
                 });
