@@ -374,13 +374,32 @@
         FREE_CARDS: [
             'overview',
             'char',
-            'fillers',
-            'anglicism',
+            'coach',
+            'rhythm',
             'breath',
             'stumble',
-            'pronunciation'
+            'pronunciation',
+            'fillers',
+            'passive',
+            'nominal',
+            'nominal_chain',
+            'anglicism',
+            'bullshit',
+            'metaphor',
+            'echo',
+            'easy_language',
+            'cta',
+            'start_var'
         ],
-        PREMIUM_TEASERS: ['teleprompter', 'word_sprint', 'pacing', 'syllable_entropy', 'bpm', 'rhythm', 'keyword_focus'],
+        PREMIUM_TEASERS: [
+            'teleprompter',
+            'word_sprint',
+            'pacing',
+            'syllable_entropy',
+            'chapter_calc',
+            'keyword_focus',
+            'compliance_check'
+        ],
 
         GENRE_CARDS: {
             werbung: ['char', 'coach', 'cta', 'adjective', 'adverb', 'keyword_focus', 'bullshit', 'metaphor', 'immersion', 'bpm', 'vocabulary', 'rhythm', 'syllable_entropy', 'pacing', 'echo', 'passive', 'fillers', 'anglicism', 'start_var', 'compliance_check', 'dialog', 'teleprompter', 'word_sprint'],
@@ -515,15 +534,7 @@
         MARKERS: window.SKA_CONFIG_PHP && window.SKA_CONFIG_PHP.markers ? window.SKA_CONFIG_PHP.markers : []
     };
 
-    const SKA_FREE_CARDS = new Set([
-        'overview',
-        'char',
-        'fillers',
-        'anglicism',
-        'breath',
-        'stumble',
-        'pronunciation'
-    ]);
+    const SKA_FREE_CARDS = new Set(SA_CONFIG.FREE_CARDS);
 
     const SKA_PRO_TIPS = {
         overview: [
