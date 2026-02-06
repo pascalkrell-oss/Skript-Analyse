@@ -307,7 +307,7 @@
 
         CARD_DESCRIPTIONS: {
             overview: 'Die wichtigsten Zahlen: Zeit, Wörter sowie Flesch- & LIX-Index plus Stil-Dimensionen.',
-            char: 'Prüft, wie dein Text wirkt: Persönlich? Positiv? Verständlich?',
+            char: 'Prüft, wie Dein Text wirkt: Persönlich? Positiv? Verständlich?',
             stumble: 'Findet Zungenbrecher (Phonetik), S-Laut-Häufungen und lange Wortungetüme.',
             breath: 'Findet Sätze, die den natürlichen Atemfluss unterbrechen könnten.', 
             echo: 'Findet unschöne Wortwiederholungen auf engem Raum.',
@@ -338,7 +338,7 @@
             easy_language: 'Prüft Verständlichkeit nach Leichte-Sprache-Kriterien.',
             teleprompter: 'Erstellt eine scrollende Ansicht im berechneten Tempo.',
             pacing: 'Visualisiert den Soll-Fortschritt fürs Timing-Training.',
-            word_sprint: 'Motiviert dich mit Fokus-Timer, Wortziel und Countdown für deinen Schreib-Sprint.',
+            word_sprint: 'Motiviert Dich mit Fokus-Timer, Wortziel und Countdown für Deinen Schreib-Sprint.',
             bullshit: 'Findet Buzzwords und hohle Phrasen im Text.',
             metaphor: 'Zählt bekannte Redewendungen, um Klischees sichtbar zu machen.',
             audience: 'Prüft den Text gegen den gewählten Zielgruppen-Level.',
@@ -378,18 +378,14 @@
             'rhythm',
             'breath',
             'stumble',
-            'pronunciation',
             'fillers',
             'passive',
             'nominal',
-            'nominal_chain',
             'anglicism',
             'bullshit',
-            'metaphor',
             'echo',
             'easy_language',
-            'cta',
-            'start_var'
+            'cta'
         ],
         PREMIUM_TEASERS: [
             'teleprompter',
@@ -398,7 +394,13 @@
             'syllable_entropy',
             'chapter_calc',
             'keyword_focus',
-            'compliance_check'
+            'compliance_check',
+            'plosive',
+            'sentiment_intensity',
+            'pronunciation',
+            'metaphor',
+            'nominal_chain',
+            'start_var'
         ],
 
         GENRE_CARDS: {
@@ -496,18 +498,18 @@
         
         TIPS: {
             fillers: ["Hoch-Gewichtete Wörter sind 'Semantisches Rauschen'.", "Wörter like 'eigentlich' suggerieren Unsicherheit. Sei konkret!", "Nutze Füllwörter nur bewusst für einen sehr lockeren Umgangston.", "Je kürzer der Spot (Werbung), desto tödlicher ist jedes 'vielleicht'.", "Prüfe bei jedem Füllwort: Ändert sich der Sinn, wenn es fehlt? Wenn nein: Weg damit."],
-            nominal: ["Wörter auf -ung, -heit, -keit ersticken den Sprachfluss.", "Nominalstil klingt nach Behörde. Ein Skript sollte so klingen, wie Menschen wirklich reden.", "Suche nach dem 'versteckten Verb' in Substantiven wie 'die Bearbeitung' -> 'wir bearbeiten'.", "Textdichte durch Nominalstil ermüdet das Ohr deines Hörers sehr schnell.", "Verben sind die Motoren deiner Sprache – sie bringen Bewegung und Leben in das Skript."],
+            nominal: ["Wörter auf -ung, -heit, -keit ersticken den Sprachfluss.", "Nominalstil klingt nach Behörde. Ein Skript sollte so klingen, wie Menschen wirklich reden.", "Suche nach dem 'versteckten Verb' in Substantiven wie 'die Bearbeitung' -> 'wir bearbeiten'.", "Textdichte durch Nominalstil ermüdet das Ohr Deines Hörers sehr schnell.", "Verben sind die Motoren Deiner Sprache – sie bringen Bewegung und Leben in das Skript."],
             nominal_chain: ["Behördensprache ist der Feind von Audio.", "Löse diese Cluster auf, indem du sie in zwei einfachere Sätze mit Verben verwandelst.", "Ketten von Substantiven (-ung, -heit, -ät) machen den Text atemlos und hölzern.", "Baue mehr Verben ein: Sie ziehen den Satz nach vorn und klingen natürlicher.", "Vermeide Genitiv-Ketten – lieber mit Präpositionen auflösen."],
             role_dist: ["Nutze die Rollenerkennung für Zeit-Kalkulation.", "Zu viele kurze Einwürfe können den Fluss stören, zu lange Monologe ermüden.", "Achte auf ein ausgewogenes Verhältnis, wenn es ein Dialog sein soll.", "Wechsle zwischen Erzähler und Dialog, um Monotonie zu vermeiden.", "Achte auf klare Sprecherwechsel, damit der Hörer sofort folgt."],
             passive: ["Aktivsprache erzeugt Bilder im Kopf.", "Passiv versteckt den Handelnden ('Es wurde entschieden' vs 'Wir entschieden').", "Passiv wird nur bei Hilfsverb + Partizip II markiert (nicht: 'Es wird dunkel').", "Vermeide 'wurde/werden', wenn du Dynamik und Verantwortung transportieren willst.", "Aktive Sätze sind meist kürzer, prägnanter und überzeugender."],
-            anglicism: ["Bleib verständlich.", "Prüfe kritisch: Gibt es ein einfacheres deutsches Wort, das jeder sofort versteht?", "Anglizismen können modern wirken, aber auch eine Barriere zwischen dir und dem Hörer bauen.", "Nutze englische Begriffe nur dort, wo sie als etablierter Fachbegriff unverzichtbar sind.", "In Audio-Medien zählen vertraute Wörter mehr, da der Hörer nicht zurückblättern kann."],
-            echo: ["Variiere deine Wortwahl für mehr Lebendigkeit.", "Suche nach Synonymen, um den Text für den Sprecher lebendig zu halten.", "Echos innerhalb von zwei Sätzen fallen im Audio sofort als 'Sprechfehler' auf.", "Wortwiederholungen ermüden das Gehör. Nutze ein Thesaurus-Tool für Abwechslung.", "Ein reicher Wortschatz wirkt kompetenter und hält die Aufmerksamkeit des Hörers hoch."],
+            anglicism: ["Bleib verständlich.", "Prüfe kritisch: Gibt es ein einfacheres deutsches Wort, das jeder sofort versteht?", "Anglizismen können modern wirken, aber auch eine Barriere zwischen Dir und dem Hörer bauen.", "Nutze englische Begriffe nur dort, wo sie als etablierter Fachbegriff unverzichtbar sind.", "In Audio-Medien zählen vertraute Wörter mehr, da der Hörer nicht zurückblättern kann."],
+            echo: ["Variiere Deine Wortwahl für mehr Lebendigkeit.", "Suche nach Synonymen, um den Text für den Sprecher lebendig zu halten.", "Echos innerhalb von zwei Sätzen fallen im Audio sofort als 'Sprechfehler' auf.", "Wortwiederholungen ermüden das Gehör. Nutze ein Thesaurus-Tool für Abwechslung.", "Ein reicher Wortschatz wirkt kompetenter und hält die Aufmerksamkeit des Hörers hoch."],
             breath: ["Ein Gedanke pro Satz. Das gibt Raum zum Atmen.", "Viele Kommas sind oft ein Zeichen für Schachtelsätze. Trenne sie mit einem Punkt.", "Lange Sätze zwingen den Sprecher zu hohem Tempo – das stresst den Hörer.", "Prüfe: Kannst du den Satz laut lesen, ohne am Ende außer Atem zu sein?", "Kurze Sätze erhöhen die Textverständlichkeit bei komplexen Themen drastisch."],
             stumble: ["Einfache Phonetik hilft der Emotion.", "Vermeide Bandwurmwörter – sie sind schwer zu betonen und fehleranfällig.", "Lies kritische Stellen dreimal schnell hintereinander laut. Klappt es? Dann ist es okay."],
-            cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
+            cta: ["Der CTA gehört in die letzten 10% des Textes.", "Verwende den Imperativ ('Sichere Dir...'), um eine direkte Handlung auszulösen.", "Vermeide Konjunktive im CTA. 'Du könntest' ist viel schwächer als 'Mach es jetzt'.", "Wenn der CTA versteckt in der Mitte liegt, verpufft die Wirkung oft.", "Formuliere den CTA aktiv und eindeutig – ein Ziel pro Satz."],
             adjective: ["Streiche Adjektive, die im Substantiv stecken.", "Show, don't tell: Statt 'es war ein gefährlicher Hund', beschreibe das Knurren.", "Zu viele Adjektive wirken oft 'blumig' und schwächen starke Substantive und Verben.", "Nutze Adjektive sparsam, um echte Highlights zu setzen.", "Wörter auf -lich oder -ig klingen in Häufung oft nach Werbesprache."],
             adverb: ["Adverbien auf -weise sind schnell Füllmaterial. Prüfe, ob sie wirklich nötig sind.", "Adverbien sollen Bedeutung schärfen, nicht den Satz verwässern.", "Statt 'glücklicherweise' lieber den Effekt beschreiben.", "Ein starkes Verb ersetzt oft zwei Adverbien.", "Adverbien gezielt als Rhythmus- oder Tonalitäts-Tool nutzen."],
-            rhythm: ["Short-Short-Long ist ein klassischer Rhythmus.", "Monotonie tötet die Aufmerksamkeit. Vermeide viele gleich lange Sätze hintereinander.", "Nutze kurze Sätze für Fakten und Tempo. Nutze längere für Erklärungen.", "Ein guter Text tanzt: Variiere zwischen kurzen und mittellangen Sätzen.", "Die visuelle Welle zeigt dir sofort, wo dein Text ins Stocken gerät."],
+            rhythm: ["Short-Short-Long ist ein klassischer Rhythmus.", "Monotonie tötet die Aufmerksamkeit. Vermeide viele gleich lange Sätze hintereinander.", "Nutze kurze Sätze für Fakten und Tempo. Nutze längere für Erklärungen.", "Ein guter Text tanzt: Variiere zwischen kurzen und mittellangen Sätzen.", "Die visuelle Welle zeigt Dir sofort, wo Dein Text ins Stocken gerät."],
             syllable_entropy: ["Betonte und unbetonte Silben sollten rhythmisch balanciert sein.", "Viele Silben-Klumpen erzeugen Stolpern im Vortrag.", "Kürze Bandwurmwörter, wenn der Rhythmus hart bricht.", "Nutze Silbenwechsel als Taktgefühl für Claims.", "Glätte harte Übergänge durch Umstellen oder Kürzen."],
             dialog: ["Achte auf klare Sprecherwechsel.", "Werbespots wirken durch Dialoge ('Szenen') oft authentischer als reine Ansagen.", "Zu viel Dialog ohne Erzähler kann den Hörer orientierungslos machen.", "Hörbücher brauchen lebendige Figuren. Zu wenig Dialog wirkt oft trocken.", "Dialoge lockern lange Erklär-Passagen auf und erhöhen die Aufmerksamkeit."],
             gender: ["Sprache schafft Wirklichkeit.", "Oft sind Partizipien ('Mitarbeitende') eine elegante Lösung.", "Vermeide das generische Maskulinum in Corporate Communications.", "Neutrale Sprache wirkt moderner und professioneller.", "Überprüfe, ob 'Kunden' wirklich nur Männer meint, oder ob 'Kundschaft' besser passt."],
@@ -520,7 +522,7 @@
             bpm: ["Je schneller der Text, desto höher darf das Musiktempo sein.", "Eine ruhige Musik mit 60–90 BPM passt zu erklärenden Passagen.", "Für dynamische Texte sind 100–120 BPM oft stimmig.", "Längere Sätze mit Kommas strukturieren, damit die Atmung mitkommt.", "Tempo entsteht durch Variation – nicht durch dauerhafte Beschleunigung."],
             easy_language: ["Kurze Sätze und einfache Wörter erhöhen die Zugänglichkeit.", "Vermeide Passiv und Genitiv für Leichte Sprache.", "Prüfe Begriffe mit vielen Silben und ersetze sie durch Einfacheres.", "Ein Gedanke pro Satz – das erhöht Verständlichkeit sofort.", "Fachbegriffe nur, wenn nötig – sonst erklären oder ersetzen."],
             teleprompter: ["Nutze den Teleprompter im großen Fenster für einen ruhigen Blick.", "Passe die Schriftgröße an die Distanz zum Screen an.", "Der Scroll folgt dem berechneten Tempo.", "Halte Zeilen kurz, damit die Augen ruhiger springen.", "Setze sinnvolle Pausenmarker, damit der Vortrag natürlicher bleibt."],
-            pacing: ["Starte den Pacing-Takt und sprich synchron zum Balken.", "Der Soll-Fortschritt zeigt dir, wo du nach X Sekunden sein solltest.", "Trainiere mit verschiedenen Genres, um Tempo-Gefühl zu entwickeln.", "Halte Pausen sichtbar – sie zählen in die Timing-Logik ein.", "Nutze den Takt als Metronom für Sprecher-Rhythmus."],
+            pacing: ["Starte den Pacing-Takt und sprich synchron zum Balken.", "Der Soll-Fortschritt zeigt Dir, wo Du nach X Sekunden sein solltest.", "Trainiere mit verschiedenen Genres, um Tempo-Gefühl zu entwickeln.", "Halte Pausen sichtbar – sie zählen in die Timing-Logik ein.", "Nutze den Takt als Metronom für Sprecher-Rhythmus."],
             bullshit: ["Buzzwords klingen schnell nach Floskel.", "Formuliere konkret und messbar.", "Hass-Wörter in der Blacklist helfen beim Aufräumen.", "Konkrete Beispiele schlagen Buzzwords – ersetze Floskeln durch Nutzen.", "Wenn ein Satz nichts messbar sagt, streichen oder präzisieren."],
             metaphor: ["Klischees wirken vorhersehbar – prüfe Alternativen.", "Ein frisches Bild bleibt länger im Kopf als bekannte Sprüche.", "Metaphern sind stark, wenn sie zur Zielgruppe passen.", "Ein einziges gutes Bild schlägt fünf Floskeln.", "Originalität steigert die Sprecher-Wirkung spürbar."],
             audience: ["Für Kinder sind kurze Sätze und einfache Wörter Pflicht.", "News brauchen klare, direkte Formulierungen.", "Fachtexte dürfen komplexer sein, aber nicht verschachtelt.", "Sprich die Zielgruppe direkt an (Du/Sie) und bleibe konsistent.", "Teste jeden Satz: Würde die Zielgruppe das so sagen?"],
@@ -616,7 +618,7 @@
         ],
         redundancy: [
             'Wiederhole nur Schlüsselbegriffe – alle anderen Dopplungen streichen.',
-            'Wenn zwei Sätze dasselbe sagen, entscheide dich für den stärkeren.',
+            'Wenn zwei Sätze dasselbe sagen, entscheide Dich für den stärkeren.',
             'Prüfe Absätze auf Synonyme, die inhaltlich identisch sind.',
             'Vermeide Wiederholungen direkt in aufeinanderfolgenden Sätzen.',
             'Nutze Dopplungen nur, wenn sie bewusst als Stilmittel gesetzt sind.'
@@ -647,7 +649,7 @@
             'Vermeide Abkürzungen, wenn die Zielgruppe sie nicht täglich nutzt.',
             'Nutze Beispiele aus der Lebenswelt der Zielgruppe.',
             'Halte Fachbegriffe kurz und erkläre sie direkt im Satz.',
-            'Prüfe: Würde deine Zielgruppe das so selbst sagen?'
+            'Prüfe: Würde Deine Zielgruppe das so selbst sagen?'
         ],
         rhet_questions: [
             'Setze Fragen dort, wo du aktiv die Aufmerksamkeit zurückholen willst.',
@@ -658,7 +660,7 @@
         ],
         depth_check: [
             'Zwei Nebensätze sind genug – alles darüber teilen.',
-            'Komplexe Sätze laut lesen: Wenn du dich verhaspelst, kürzen.',
+            'Komplexe Sätze laut lesen: Wenn Du Dich verhaspelst, kürzen.',
             'Baue lange Sätze in Haupt- und Nebensätze mit klarer Struktur um.',
             'Setze Punkte statt Kommas, wenn die Aussage wechselt.',
             'Entferne Nebeninfos, die nicht direkt zur Kernaussage beitragen.'
@@ -757,7 +759,7 @@
         cta: [
             'CTA im letzten Drittel platzieren, damit der Text darauf zuläuft.',
             'Ein CTA pro Abschnitt – sonst verwässert die Handlung.',
-            'Nutze klare Verben („Hol dir“, „Teste“, „Starte“).',
+            'Nutze klare Verben („Hol Dir“, „Teste“, „Starte“).',
             'Halte den CTA kurz und sprechbar – keine Schachtelsätze.',
             'Kombiniere Nutzen + Handlung in einem Satz.'
         ],
@@ -806,7 +808,7 @@
         pacing: [
             'Pacing im Probe-Tempo testen, bevor du aufnimmst.',
             'Pausen bewusst markieren – sie zählen real in die Zeit.',
-            'Übe mit dem Balken, bis dein Sprechen ruhig mitläuft.',
+            'Übe mit dem Balken, bis Dein Sprechen ruhig mitläuft.',
             'Passe Zielzeiten an das Genre an, nicht an die Laune.',
             'Kurze Passagen zuerst üben – dann längere Texte.'
         ],
@@ -836,51 +838,58 @@
     const UPGRADE_CONTENT = {
         basic: {
             tools: [
-                { name: "WPM-Modus", desc: "Berechnet deine Lese- und Sprechgeschwindigkeit basierend auf Wortanzahl und Standard-Werten." },
+                { name: "WPM-Modus", desc: "Berechnet Deine Lese- und Sprechgeschwindigkeit basierend auf Wortanzahl und Standard-Werten." },
                 { name: "Profil-Presets", desc: "Wechsel zwischen Analyse-Profilen für verschiedene Workflow-Schwerpunkte." },
                 { name: "Genre-Presets", desc: "Wähle aus Voreinstellungen (z.B. Werbespot, Hörbuch, Podcast, E-Learning), um die Analyse anzupassen." },
                 { name: "Zeichen-Zählung", desc: "Präzise Zählung aller Zeichen (mit und ohne Leerzeichen) für die Abrechnung." },
                 { name: "Wort- & Satzstatistik", desc: "Detaillierte Aufschlüsselung der Wortanzahl und der durchschnittlichen Satzlänge." },
-                { name: "Lesbarkeits-Score", desc: "Ermittelt den Flesch-Index, um zu prüfen, wie verständlich dein Text geschrieben ist." },
-                { name: "Autosave", desc: "Dein Fortschritt wird automatisch lokal in deinem Browser gespeichert, damit nichts verloren geht." },
-                { name: "PDF-Export (Basis)", desc: "Lade dein Skript als einfaches PDF herunter, um es zu drucken oder zu teilen." }
+                { name: "Lesbarkeits-Score", desc: "Ermittelt den Flesch-Index, um zu prüfen, wie verständlich Dein Text geschrieben ist." },
+                { name: "Autosave", desc: "Dein Fortschritt wird automatisch lokal in Deinem Browser gespeichert, damit nichts verloren geht." },
+                { name: "PDF-Export (Basis)", desc: "Lade Dein Skript als einfaches PDF herunter, um es zu drucken oder zu teilen." }
             ],
             analysis: [
                 { name: "Schnell-Überblick", desc: "Erhalte sofort alle relevanten Metriken wie Gesamtdauer und Status auf einen Blick." },
-                { name: "Stil & Tonalität", desc: "Analysiert die emotionale Wirkung (positiv/negativ) und den Schreibstil deines Textes." },
+                { name: "Stil & Tonalität", desc: "Analysiert die emotionale Wirkung (positiv/negativ) und den Schreibstil Deines Textes." },
                 { name: "Regie-Anweisung", desc: "Erkennt Regie-Anweisungen und markiert sie im Skript." },
                 { name: "Satz-Rhythmus", desc: "Zeigt Satzlängen und Rhythmus für bessere Dynamik." },
                 { name: "Auffällige Sätze", desc: "Markiert extrem lange Schachtelsätze oder abgehackte Phrasen, die den Fluss stören." },
                 { name: "Stolperstellen", desc: "Identifiziert Zungenbrecher und Wortfolgen, die beim Sprechen schwierig sind." },
-                { name: "Aussprache-Check", desc: "Prüft Zahlen, Abkürzungen und Sonderzeichen auf ihre Sprechbarkeit." },
                 { name: "Wort-Echos", desc: "Findet Wortwiederholungen, die den Flow bremsen." },
-                { name: "Leichte Sprache", desc: "Erkennt überkomplexe Formulierungen für klare Sprache." },
-                { name: "Füllwörter & Passiv", desc: "Findet Füllwörter und passive Formulierungen, die deinen Text schwächen." },
+                { name: "Füllwörter", desc: "Findet Füllwörter, die Deinen Text schwächen." },
+                { name: "Passiv-Indikator", desc: "Erkennt passive Formulierungen, die Deinen Text distanzieren." },
                 { name: "Bürokratie-Filter", desc: "Entdeckt Beamtendeutsch und zu komplizierte Konstruktionen." },
-                { name: "Nominal-Ketten", desc: "Markiert überlange Nominalketten, die schwer lesbar sind." },
                 { name: "Denglisch-Detektor", desc: "Findet unnötige Anglizismen und Denglisch." },
                 { name: "Buzzword-Check", desc: "Entlarvt leere Marketing-Floskeln und macht Aussagen konkreter." },
-                { name: "Metaphern & Phrasen", desc: "Erkennt Klischees und prüft die Bildsprache." },
-                { name: "Call to Action", desc: "Prüft, ob der CTA klar und prägnant gesetzt ist." },
-                { name: "Satzanfang-Varianz", desc: "Bewertet die Abwechslung der Satzanfänge." }
+                { name: "Leichte Sprache", desc: "Erkennt überkomplexe Formulierungen für klare Sprache." },
+                { name: "Call to Action", desc: "Prüft, ob der CTA klar und prägnant gesetzt ist." }
             ]
         },
         premium: {
             tools: [
-                { name: "Teleprompter, Pacing & Schreib-Sprint", desc: "Arbeite im Studio-Workflow mit Tempo-Guide, Fokus-Modus und Live-Pacing.", featured: true },
-                { name: "Projekte speichern & Versionen vergleichen", desc: "Speichere Projekte in der Cloud, vergleiche Versionen und stelle Entwürfe wieder her.", featured: true },
+                { name: "Alles aus Basis inkl.", desc: "Alle Basis-Funktionen und Werkzeuge sind enthalten.", featured: true },
+                { name: "Teleprompter", desc: "Arbeite im Studio-Workflow mit Tempo-Guide und Teleprompter-Ansicht.", featured: true },
+                { name: "Sprech-Pacing", desc: "Trainiere Dein Timing mit Soll-Fortschritt und Metronom-Guide.", featured: true },
+                { name: "Schreib-Sprint & Fokus", desc: "Fokus-Modus mit Timer, Wortziel und Countdown.", featured: true },
+                { name: "Projekte speichern", desc: "Speichere Projekte in der Cloud und stelle Entwürfe wieder her.", featured: true },
+                { name: "Versionen vergleichen", desc: "Vergleiche Textversionen für präzise Änderungen.", featured: true },
                 { name: "Pro-PDF-Report (mehr Details & Optionen)", desc: "Exportiere professionelle Reports mit erweiterten Optionen und Detailgrad.", featured: true },
                 { name: "Teleprompter-Export (TXT/JSON)", desc: "Exportiere den Promptertext für externe Workflows und Tools." },
-                { name: "WPM-Kalibrierung", desc: "Miss deine persönliche Sprechgeschwindigkeit und eiche das System auf deine Stimme." },
-                { name: "SPS-Modus & Pausen-Automatik", desc: "Professionelles Timing mit Silben pro Sekunde und echten Sprechpausen." }
+                { name: "WPM-Kalibrierung", desc: "Miss Deine persönliche Sprechgeschwindigkeit und eiche das System auf Deine Stimme." },
+                { name: "SPS-Modus", desc: "Professionelles Timing mit Silben pro Sekunde." },
+                { name: "Pausen-Automatik", desc: "Rechnet echte Sprechpausen ins Timing ein." }
             ],
             analysis: [
                 { name: "Pflichttext-Check", desc: "Validiert, ob rechtliche Disclaimer oder Pflichtpassagen exakt enthalten sind.", featured: true },
                 { name: "Keyword-Fokus", desc: "Prüft, ob definierte Keywords konsistent eingesetzt werden.", featured: true },
                 { name: "Silben-Entropie", desc: "Misst die Informationsdichte pro Silbe – wichtig für Werbung und Nachrichten." },
                 { name: "Plosiv-Check", desc: "Warnt vor harten P-, T-, K-Lauten, die im Mikrofon Popp-Geräusche erzeugen." },
+                { name: "Stimmungs-Intensität", desc: "Zeigt den emotionalen Vibe-Verlauf im Skript." },
                 { name: "Versions-Vergleich", desc: "Vergleicht unterschiedliche Textversionen für präzise Änderungen." },
-                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet Kapitelzeiten und Hörbuch-Abschnitte." }
+                { name: "Hörbuch-Kapitel-Kalkulator", desc: "Berechnet Kapitelzeiten und Hörbuch-Abschnitte." },
+                { name: "Aussprache-Check", desc: "Prüft Zahlen, Abkürzungen und Sonderzeichen auf ihre Sprechbarkeit." },
+                { name: "Metaphern & Phrasen", desc: "Erkennt Klischees und prüft die Bildsprache." },
+                { name: "Nominal-Ketten", desc: "Markiert überlange Nominalketten, die schwer lesbar sind." },
+                { name: "Satzanfang-Varianz", desc: "Bewertet die Abwechslung der Satzanfänge." }
             ]
         }
     };
@@ -3644,7 +3653,7 @@
             const defaultAnalysisMode = typeof window !== 'undefined'
                 ? (window.SKA_CONFIG_PHP?.defaultAnalysisMode || 'live')
                 : 'live';
-            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false, layoutOrderByProfile: {} };
+            this.settings = { usecase: 'auto', lastGenre: '', charMode: 'spaces', numberMode: 'digit', branch: 'all', targetSec: 0, role: 'general', manualWpm: 0, timeMode: 'wpm', analysisMode: defaultAnalysisMode === 'click' ? 'click' : 'live', audienceTarget: '', bullshitBlacklist: '', commaPause: 0.2, periodPause: 0.5, paragraphPause: 1, focusKeywords: '', keywordDensityLimit: 2, complianceText: '', teleprompterMirror: false, metronomeMode: 'audio', layoutOrderByProfile: {} };
             
             const initialPlanMode = CURRENT_USER_PLAN;
             const unlockButtonEnabled = typeof window !== 'undefined'
@@ -4788,7 +4797,7 @@
             let m = document.getElementById('ska-benchmark-modal');
             if (m) m.remove();
 
-            const testText = 'Bitte lies diesen kurzen Testtext laut vor. Sprich deutlich und in deinem natürlichen Tempo. Wir messen die Zeit und berechnen daraus dein persönliches WPM. Du kannst den Test jederzeit wiederholen, um ein präzises Ergebnis zu erhalten.';
+            const testText = 'Bitte lies diesen kurzen Testtext laut vor. Sprich deutlich und in Deinem natürlichen Tempo. Wir messen die Zeit und berechnen daraus Dein persönliches WPM. Du kannst den Test jederzeit wiederholen, um ein präzises Ergebnis zu erhalten.';
             const wordCount = (testText.match(/\S+/g) || []).length;
 
             m = document.createElement('div');
@@ -4860,7 +4869,6 @@
                             </div>
                         </div>
                         <div class="ska-teleprompter-header-actions">
-                            <button type="button" class="ska-btn ska-btn--primary ska-btn--brand ska-teleprompter-start" data-action="teleprompter-toggle">Start</button>
                             <div class="ska-teleprompter-icon-actions">
                                 <button type="button" class="ska-icon-btn" data-action="teleprompter-fullscreen" aria-label="Fullscreen">⤢</button>
                                 <button type="button" class="ska-icon-btn" data-action="teleprompter-reset" aria-label="Reset">↺</button>
@@ -4898,7 +4906,7 @@
                                     </div>
                                 </div>
                                 <div class="teleprompter-speech-hint">
-                                    Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt deinem Live-Tempo.
+                                    Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt Deinem Live-Tempo.
                                 </div>
                             </div>
                             <div class="ska-teleprompter-controls-panel">
@@ -5271,7 +5279,12 @@
                     <div class="skriptanalyse-modal-overlay" data-action="close-tool-modal"></div>
                     <div class="skriptanalyse-modal-content ska-tool-modal-content">
                         <button type="button" class="ska-close-icon" data-action="close-tool-modal">&times;</button>
-                        <div class="ska-modal-header"><h3 data-role="tool-modal-title"></h3></div>
+                        <div class="ska-modal-header ska-modal-header--with-actions" data-role="tool-modal-header">
+                            <div class="ska-modal-header-main">
+                                <h3 data-role="tool-modal-title"></h3>
+                            </div>
+                            <div class="ska-modal-header-actions" data-role="tool-modal-actions"></div>
+                        </div>
                         <div class="skriptanalyse-modal-body" data-role="tool-modal-body"></div>
                     </div>
                 `;
@@ -5279,6 +5292,34 @@
             }
             const titleEl = modal.querySelector('[data-role="tool-modal-title"]');
             if (titleEl) titleEl.textContent = title;
+            const headerEl = modal.querySelector('[data-role="tool-modal-header"]');
+            const headerActions = modal.querySelector('[data-role="tool-modal-actions"]');
+            const isPacingModal = toolId === 'pacing';
+            if (modal) modal.classList.toggle('ska-tool-modal--pacing', isPacingModal);
+            if (headerEl) {
+                headerEl.classList.toggle('ska-modal-header--dark', isPacingModal);
+            }
+            if (headerActions) {
+                if (isPacingModal) {
+                    const metronomeMode = this.settings.metronomeMode === 'visual' ? 'visual' : 'audio';
+                    headerActions.innerHTML = `
+                        <div class="ska-metronome-toggle" role="group" aria-label="Metronom-Modus">
+                            <span>Metronom</span>
+                            <label>
+                                <input type="radio" name="ska-metronome-mode" value="audio" ${metronomeMode === 'audio' ? 'checked' : ''}>
+                                Audio
+                            </label>
+                            <label>
+                                <input type="radio" name="ska-metronome-mode" value="visual" ${metronomeMode === 'visual' ? 'checked' : ''}>
+                                Visuell
+                            </label>
+                        </div>
+                        <button type="button" class="ska-icon-btn" data-action="close-tool-modal" aria-label="Schließen">&times;</button>
+                    `;
+                } else {
+                    headerActions.innerHTML = '';
+                }
+            }
             const bodyEl = modal.querySelector('[data-role="tool-modal-body"]');
             if (bodyEl) {
                 bodyEl.dataset.cardId = toolId;
@@ -5290,6 +5331,9 @@
             SA_Utils.openModal(modal);
             document.body.classList.add('ska-modal-open');
             this.highlightProfileTools();
+            if (isPacingModal) {
+                this.updatePacingMetronomeUI();
+            }
         }
 
         applyTeleprompterMirror(modal = null) {
@@ -5416,7 +5460,7 @@
             if (!ctor) {
                 if (!this.state.teleprompter.speechWarningShown) {
                     this.state.teleprompter.speechWarningShown = true;
-                    alert('Live-Spracherkennung wird von deinem Browser nicht unterstützt. Bitte nutze Chrome oder Edge.');
+                    alert('Live-Spracherkennung wird von Deinem Browser nicht unterstützt. Bitte nutze Chrome oder Edge.');
                 }
                 this.updateTeleprompterSpeechStatus();
                 return false;
@@ -6272,6 +6316,14 @@
             const btn = this.bottomGrid ? this.bottomGrid.querySelector('[data-action="pacing-clicktrack"]') : null;
             if (!btn) return;
             const bpm = parseFloat(btn.dataset.bpm || '0');
+            const isVisualMode = this.settings.metronomeMode === 'visual';
+            if (isVisualMode) {
+                btn.textContent = bpm > 0 ? `Click-Track ${bpm} BPM` : 'Click-Track (BPM fehlt)';
+                btn.disabled = true;
+                btn.classList.add('is-disabled');
+                return;
+            }
+            btn.classList.remove('is-disabled');
             if (this.state.clickTrack.playing) {
                 btn.textContent = 'Click-Track stoppen';
             } else if (bpm > 0) {
@@ -6279,6 +6331,34 @@
             } else {
                 btn.textContent = 'Click-Track (BPM fehlt)';
             }
+        }
+
+        updatePacingMetronomeUI() {
+            const mode = this.settings.metronomeMode === 'visual' ? 'visual' : 'audio';
+            const metronomes = this.root.querySelectorAll('[data-role="pacing-metronome"]');
+            metronomes.forEach((el) => {
+                const bpm = parseFloat(el.dataset.bpm || '0');
+                const modeLabel = el.querySelector('.ska-metronome-mode');
+                const valueLabel = el.querySelector('.ska-metronome-label');
+                el.classList.toggle('is-visual', mode === 'visual');
+                el.classList.toggle('is-disabled', bpm <= 0);
+                if (modeLabel) {
+                    modeLabel.textContent = mode === 'visual' ? 'Visuelles Metronom' : 'Audio-Metronom';
+                }
+                if (valueLabel) {
+                    valueLabel.textContent = bpm > 0 ? `${bpm} BPM` : 'Kein BPM verfügbar';
+                }
+            });
+            const clickTrackButtons = this.root.querySelectorAll('[data-action="pacing-clicktrack"]');
+            clickTrackButtons.forEach((button) => {
+                const bpm = parseFloat(button.dataset.bpm || '0');
+                const shouldDisable = !this.isPremiumActive() || bpm <= 0 || mode === 'visual';
+                button.disabled = shouldDisable;
+                button.classList.toggle('is-disabled', shouldDisable);
+                if (mode === 'visual') {
+                    button.textContent = bpm > 0 ? `Click-Track ${bpm} BPM` : 'Click-Track (BPM fehlt)';
+                }
+            });
         }
 
         parseBullshitList() {
@@ -6825,6 +6905,10 @@
                     this.showPremiumNotice('Der Click-Track ist in der Premium-Version verfügbar.');
                     return true;
                 }
+                if (this.settings.metronomeMode === 'visual') {
+                    this.showToast('Visuelles Metronom aktiv – Audio-Ticks sind deaktiviert.');
+                    return true;
+                }
                 const bpm = parseFloat(btn.dataset.bpm || '0');
                 if (!bpm || bpm <= 0) {
                     this.showPremiumNotice('Kein BPM-Wert verfügbar. Ergänze mehr Text für eine Analyse.');
@@ -7027,6 +7111,7 @@
                 if(typeof global.keywordDensityLimit !== 'undefined') this.settings.keywordDensityLimit = global.keywordDensityLimit;
                 if(typeof global.complianceText !== 'undefined') this.settings.complianceText = global.complianceText;
                 if(typeof global.teleprompterMirror !== 'undefined') this.settings.teleprompterMirror = global.teleprompterMirror;
+                if(typeof global.metronomeMode !== 'undefined') this.settings.metronomeMode = global.metronomeMode;
                 if(typeof global.layoutOrderByProfile !== 'undefined') this.settings.layoutOrderByProfile = global.layoutOrderByProfile || {};
 
                 if (this.settings.usecase === 'auto') {
@@ -7061,6 +7146,7 @@
                 keywordDensityLimit: this.settings.keywordDensityLimit,
                 complianceText: this.settings.complianceText,
                 teleprompterMirror: this.settings.teleprompterMirror,
+                metronomeMode: this.settings.metronomeMode,
                 layoutOrderByProfile: this.settings.layoutOrderByProfile
             };
             if (this.settings.usecase !== 'auto') {
@@ -7636,6 +7722,16 @@
                 if (featureToggle && featureToggle.checked && !featureToggle.disabled) {
                     this.trackFeatureUsage(featureToggle.dataset.card);
                 }
+                const metronomeToggle = e.target.closest('input[name="ska-metronome-mode"]');
+                if (metronomeToggle) {
+                    this.settings.metronomeMode = metronomeToggle.value === 'visual' ? 'visual' : 'audio';
+                    if (this.settings.metronomeMode === 'visual') {
+                        this.stopClickTrackImmediate();
+                    }
+                    this.saveUIState();
+                    this.updatePacingMetronomeUI();
+                    return;
+                }
                 const select = e.target.closest('select');
                 if (!select) return;
                 const k = select.dataset.filter || (select.hasAttribute('data-role-select') ? 'role' : null);
@@ -7916,7 +8012,7 @@
 
                     if(act === 'confirm-reset') {
                         this.setText(''); 
-                        this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:'', teleprompterMirror:false, layoutOrderByProfile:{}}; 
+                        this.settings={usecase:'auto',lastGenre:'',charMode:'spaces',numberMode:'digit',branch:'all',targetSec:0,role:'general',manualWpm:0, timeMode:'wpm', audienceTarget:'', bullshitBlacklist:'', commaPause:0.2, periodPause:0.5, paragraphPause:1, focusKeywords:'', keywordDensityLimit:2, complianceText:'', teleprompterMirror:false, metronomeMode:'audio', layoutOrderByProfile:{}}; 
                         this.state.savedVersion=''; 
                         SA_Utils.storage.clear(SA_CONFIG.SAVED_VERSION_KEY);
                         this.state.hiddenCards.clear(); 
@@ -8235,7 +8331,7 @@
                 }
                 const legendHtml = filteredItems.map(item => `<div class="ska-legend-def"><strong>${item.title}:</strong> ${item.text}</div>`).join('');
                 const footerHtml = `
-                    <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in deinem Browser. Kein Text wird an einen Server gesendet.</div>
+                    <div class="ska-legend-def" style="grid-column: 1 / -1; border-top:1px solid #f1f5f9; padding-top:0.8rem; margin-top:0.4rem;"><strong>🔒 Datenschutz:</strong> Die Analyse erfolgt zu 100% lokal in Deinem Browser. Kein Text wird an einen Server gesendet.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>⏱️ Methodik:</strong> Zeitberechnung basiert auf Genre-WPM, Pausenmarkern und Zahlen-zu-Wort-Logik.</div>
                     <div class="ska-legend-def" style="grid-column: 1 / -1;"><strong>💡 Tipp:</strong> Kürzere Sätze & aktive Formulierungen verbessern den Flesch-Index spürbar.</div>`;
                 this.legendContainer.innerHTML = `<div class="ska-legend-box"><div class="ska-card-header"><div class="ska-card-title-wrapper"><h3>Legende & Hilfe</h3></div><div class="ska-card-header-actions"><button class="ska-legend-help-btn" data-action="open-help">Anleitung öffnen</button></div></div><div class="ska-legend-body"><div class="ska-legend-grid">${legendHtml}${footerHtml}</div></div></div>`;
@@ -8369,7 +8465,7 @@
                         <div class="ska-layout-modal-subtitle">Sichtbarkeit & Reihenfolge Deiner Analyseboxen</div>
                         <div class="ska-layout-modal-hint">
                             <span class="ska-layout-modal-hint-icon">💡</span>
-                            <span>Tipp: In der Free-Version kannst du deine kostenlosen Boxen ein-/ausblenden und sortieren. Premium-Boxen sind mit einer Premium-Mitgliedschaft verfügbar.</span>
+                            <span>Tipp: In der Free-Version kannst du Deine kostenlosen Boxen ein-/ausblenden und sortieren. Premium-Boxen sind mit einer Premium-Mitgliedschaft verfügbar.</span>
                         </div>
                     </div>
                     <div class="skriptanalyse-modal-body">
@@ -9008,7 +9104,7 @@
                 return this.updateCard('keyword_focus', h);
             }
 
-            h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.6rem;">Die Top-Substantive zeigen, worauf dein Skript tatsächlich fokussiert. Nutze sie, um Begriffe gezielt zu verstärken oder zu variieren.</div>`;
+            h += `<div style="font-size:0.85rem; color:#64748b; margin-bottom:0.6rem;">Die Top-Substantive zeigen, worauf Dein Skript tatsächlich fokussiert. Nutze sie, um Begriffe gezielt zu verstärken oder zu variieren.</div>`;
             if (focusKeywords.length) {
                 const statusLabel = focusLimit > 0
                     ? (focusOverLimit ? 'Keyword-Stuffing möglich' : 'Im grünen Bereich')
@@ -9363,15 +9459,33 @@
             if (avgScore > 0.25) { avgLabel = 'Eher positiv'; avgColor = SA_CONFIG.COLORS.success; }
             if (avgScore < -0.25) { avgLabel = 'Eher kritisch'; avgColor = SA_CONFIG.COLORS.warn; }
 
-            let h = `<div class="ska-intensity-map">`;
-            data.slice(0, 12).forEach(item => {
-                const val = Math.round((item.score + 1) * 50);
-                const color = item.score >= 0.4 ? '#22c55e' : (item.score <= -0.4 ? '#ef4444' : '#94a3b8');
-                h += `<div class="ska-intensity-bar" style="height:${Math.max(10, val)}%;">
-                        <span style="background:${color};"></span>
-                      </div>`;
+            const scores = (data || []).map(item => {
+                const score = Number.isFinite(item.score) ? item.score : 0;
+                return Math.max(-1, Math.min(1, score));
             });
-            h += `</div>`;
+            const curveScores = scores.length === 1 ? [scores[0], scores[0], scores[0]] : (scores.length ? scores : [0, 0, 0]);
+            const step = curveScores.length > 1 ? 100 / (curveScores.length - 1) : 100;
+            const points = curveScores.map((score, index) => {
+                const x = index * step;
+                const y = 20 - (score * 16);
+                return { x, y };
+            });
+            const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ');
+            const areaPath = `${linePath} L ${points[points.length - 1].x.toFixed(2)} 40 L 0 40 Z`;
+            let h = `
+                <div class="ska-sentiment-sparkline">
+                    <svg viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="skaSentimentFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="rgba(26, 147, 238, 0.25)" />
+                                <stop offset="100%" stop-color="rgba(26, 147, 238, 0)" />
+                            </linearGradient>
+                        </defs>
+                        <path class="ska-sentiment-area" d="${areaPath}" fill="url(#skaSentimentFill)"></path>
+                        <path class="ska-sentiment-line" d="${linePath}"></path>
+                    </svg>
+                </div>
+            `;
             h += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#64748b; margin-bottom:0.6rem;">
                     <span>Start ${start.toFixed(2)}</span>
                     <span>${trendLabel}</span>
@@ -9483,14 +9597,28 @@
                 : `${SA_Logic.getWpm(effectiveSettings)} WPM`;
             const btnLabel = this.state.pacing.playing ? 'Pause' : 'Start';
             const bpmValue = this.state.clickTrack ? this.state.clickTrack.bpm : 0;
-            const clickTrackLabel = this.state.clickTrack && this.state.clickTrack.playing
-                ? 'Click-Track stoppen'
-                : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)');
-            const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0;
+            const metronomeMode = this.settings.metronomeMode === 'visual' ? 'visual' : 'audio';
+            const isVisualMode = metronomeMode === 'visual';
+            if (isVisualMode && this.state.clickTrack && this.state.clickTrack.playing) {
+                this.stopClickTrackImmediate();
+            }
+            const clickTrackLabel = isVisualMode
+                ? 'Click-Track deaktiviert'
+                : (this.state.clickTrack && this.state.clickTrack.playing
+                    ? 'Click-Track stoppen'
+                    : (bpmValue > 0 ? `Click-Track ${bpmValue} BPM` : 'Click-Track (BPM fehlt)'));
+            const clickTrackDisabled = !this.isPremiumActive() || bpmValue <= 0 || isVisualMode;
             const checkpoints = [0, 0.25, 0.5, 0.75, 1].map((step) => ({
                 pct: Math.round(step * 100),
                 time: SA_Utils.formatMin(durationSec * step)
             }));
+            const metronomeDuration = bpmValue > 0 ? (60 / bpmValue) : 0.8;
+            const metronomeHtml = `
+                <div class="ska-pacing-metronome${isVisualMode ? ' is-visual' : ''}${bpmValue <= 0 ? ' is-disabled' : ''}" data-role="pacing-metronome" data-bpm="${bpmValue}" style="--ska-metronome-duration:${metronomeDuration}s">
+                    <span class="ska-metronome-dot" aria-hidden="true"></span>
+                    <span class="ska-metronome-label">${bpmValue > 0 ? `${bpmValue} BPM` : 'Kein BPM verfügbar'}</span>
+                    <span class="ska-metronome-mode">${isVisualMode ? 'Visuelles Metronom' : 'Audio-Metronom'}</span>
+                </div>`;
             const sectionPacingHtml = this.renderSectionPacing(sectionStats, isSps ? 'sps' : 'wpm', {
                 title: 'Abschnitts-Pacing',
                 compact: true,
@@ -9500,7 +9628,7 @@
             const previewHtml = SA_Utils.escapeHtml(raw || '').replace(/\n/g, '<br>');
             const noteBox = `
                 <div class="ska-note-box">
-                    Starte den Timer und sprich deinen Text im Zieltempo. Die Anzeige zeigt dir live, ob du zu schnell oder zu langsam bist.
+                    Starte den Timer und sprich Deinen Text im Zieltempo. Die Anzeige zeigt Dir live, ob Du zu schnell oder zu langsam bist.
                 </div>`;
             const h = `
                 <div class="ska-pacing-head">
@@ -9525,6 +9653,7 @@
                     <span class="ska-info-badge" data-role="pacing-target">${Math.round(clamped * 100)}% Soll-Position</span>
                     <span class="ska-info-badge" data-role="pacing-time">${SA_Utils.formatMin(durationSec * clamped)} / ${SA_Utils.formatMin(durationSec)}</span>
                 </div>
+                ${metronomeHtml}
                 ${sectionPacingHtml}
                 <div class="ska-pacing-preview" data-role="pacing-preview">${previewHtml || 'Kein Text vorhanden.'}</div>
                 <div class="ska-pacing-actions">
@@ -9537,6 +9666,7 @@
 
             this.updateCard('pacing', h, targetGrid, 'ska-card--pacing');
             this.updatePacingUI(clamped);
+            this.updatePacingMetronomeUI();
         }
 
         renderSyllableEntropyCard(data, active) {
@@ -11349,7 +11479,7 @@
             const priceLabel = selectedPlan.priceLabel || (selectedPlan.id === 'studio' ? 'Einmalig' : 'Pro Monat');
             const formattedFreePrice = this.formatPriceValue(freePrice);
             const formattedPremiumPrice = this.formatPriceValue(selectedPlan.price);
-            const planDescription = 'Free hilft dir, dein Skript schnell zu verbessern. Mit Premium arbeitest du wie im Studio: Teleprompter, Sprech-Pacing, Schreib-Sprint, Projekte & Versionen – plus Pro-Checks und Pro-PDF-Report.';
+            const planDescription = 'Free hilft Dir, Dein Skript schnell zu verbessern. Mit Premium arbeitest Du wie im Studio: Teleprompter, Sprech-Pacing, Schreib-Sprint, Projekte & Versionen – plus Pro-Checks und Pro-PDF-Report.';
             const renderSavingsBadge = (plan) => `
                 <span class="ska-premium-upgrade-savings${plan.savings ? '' : ' is-hidden'}">
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
@@ -11357,7 +11487,7 @@
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
             const renderFeatureList = (items, isPremium) => {
                 const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium' : 'ska-premium-upgrade-listing is-free';
-                const visibleCount = 5;
+                const visibleCount = items.length;
                 const hasMore = items.length > visibleCount;
                 const listItems = items.map((item, index) => {
                     const isHidden = index >= visibleCount;
@@ -11411,7 +11541,7 @@
                 </button>
                 <div class="ska-premium-upgrade-header">
                     <div class="ska-premium-upgrade-titleline">
-                        <strong>Premium ist dein Pro-Workflow fürs Skript</strong>
+                        <strong>Premium ist Dein Pro-Workflow fürs Skript</strong>
                     </div>
                     <span>${planDescription}</span>
                 </div>
@@ -11748,7 +11878,7 @@
                 const expandAction = id === 'word_sprint' ? 'word-sprint-start' : 'open-tool-modal';
                 const headerClass = id === 'pacing' ? 'ska-card-header ska-card-header--dark' : 'ska-card-header';
                 const subtitle = id === 'pacing'
-                    ? '<p class="ska-card-subtitle">Ideal für neue Sprecher:innen: Das Tool hilft dir, Tempo & Timing sicher zu halten – perfekt fürs Timing-Training und saubere Takes.</p>'
+                    ? '<p class="ska-card-subtitle">Ideal für neue Sprecher:innen: Das Tool hilft Dir, Tempo & Timing sicher zu halten – perfekt fürs Timing-Training und saubere Takes.</p>'
                     : '';
                 const expandBtn = isToolCard
                     ? `<button class="ska-tool-expand-btn" data-action="${expandAction}" data-tool-id="${id}" title="Werkzeug vergrößern" aria-label="Werkzeug vergrößern">
