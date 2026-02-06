@@ -235,9 +235,9 @@ body.skript-analyse-active .skript-analyse-container {
     background: var(--ska-primary);
     color: #ffffff;
     border: none;
-    border-radius: 12px;
-    padding: 0.85rem 1.6rem;
-    font-size: 0.9rem;
+    border-radius: var(--ska-radius-md);
+    padding: 0.95rem 1.9rem;
+    font-size: 0.98rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     cursor: pointer;
@@ -803,6 +803,11 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-premium-upgrade-base-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; justify-content: flex-start; }
 .ska-premium-upgrade-base-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 0.2rem 0.55rem; }
 .ska-premium-upgrade-price-note { font-size: 0.95rem; color: #475569; margin-top: -0.2rem; margin-bottom: 0.4rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; min-height: 1rem; line-height: 1.4; animation: ska-fade-in 0.25s ease both; }
+.ska-premium-upgrade-price-subline {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
 .ska-premium-upgrade-col.is-free .ska-premium-upgrade-price { margin-bottom: 0.35rem; }
 .ska-premium-upgrade-savings { font-size: 0.78rem; color: #0f172a; font-weight: 700; background: #dcfce7; border: 1px solid #bbf7d0; padding: 0.2rem 0.5rem; border-radius: 999px; display: inline-flex; white-space: nowrap; animation: ska-fade-in 0.25s ease both; transition: opacity 0.25s ease, transform 0.25s ease; line-height: 1; }
 .ska-premium-upgrade-savings.is-hidden { opacity: 0; visibility: hidden; transform: none; }
@@ -837,9 +842,28 @@ body.skript-analyse-active .skript-analyse-container {
     margin: 0 !important;
     width: 100% !important;
 }
-/* PREMIUM Spalte: 1 Spalte */ .ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing { display: flex !important; flex-direction: column !important; gap: 0.8rem !important; }
-
-/* BASIS Spalte: 1 Spalte */ .ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing { display: flex !important; flex-direction: column !important; gap: 0.8rem !important; }
+.ska-premium-upgrade-col.is-premium .ska-premium-upgrade-listing { display: flex !important; flex-direction: column !important; gap: 0.8rem !important; }
+.ska-premium-upgrade-col.is-free .ska-premium-upgrade-listing { display: flex !important; flex-direction: column !important; gap: 0.8rem !important; }
+.ska-premium-upgrade-listing.ska-plan-list-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+}
+@media (max-width: 700px) {
+    .ska-premium-upgrade-listing.ska-plan-list-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.ska-plan-list-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 18px;
+}
+@media (max-width: 700px) {
+    .ska-plan-list-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 /* Das Listen-Item (Linksbündig + Icon Platz) */
 .ska-premium-upgrade-listing li {
@@ -1747,6 +1771,49 @@ body.skript-analyse-active .skript-analyse-container {
     background: rgba(255, 255, 255, 0.16);
     border-color: rgba(255, 255, 255, 0.35);
 }
+.ska-modal--dark .skriptanalyse-modal-content {
+    background: linear-gradient(180deg, #0f141a, #0b0f14);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+}
+.ska-modal--dark .skriptanalyse-modal-body {
+    color: rgba(255, 255, 255, 0.75);
+}
+.ska-modal--dark .ska-modal-header {
+    background: linear-gradient(180deg, #0f141a, #0b0f14);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ska-modal--dark .ska-close-icon {
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+.ska-modal--dark .ska-close-icon:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+.ska-modal--dark .ska-panel {
+    background: linear-gradient(180deg, rgba(15, 20, 26, 0.92), rgba(11, 15, 20, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--ska-radius);
+    box-shadow: 0 18px 28px -22px rgba(0, 0, 0, 0.6);
+}
+.ska-modal--dark .ska-btn--secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.18);
+}
+.ska-modal--dark .ska-btn--secondary:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+.ska-modal--dark .ska-btn--ghost {
+    color: rgba(255, 255, 255, 0.7);
+}
+.ska-modal--dark .ska-btn--ghost:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
 
 /* SCRIPT EDITOR HEADER */
 .ska-panel-header {
@@ -1772,8 +1839,8 @@ body.skript-analyse-active .skript-analyse-container {
 .ska-teleprompter-modal-content {
     width: min(98vw, 1400px);
     max-width: 1400px;
-    height: 90vh;
-    max-height: 90vh;
+    height: 85vh;
+    max-height: 85vh;
 }
 .ska-teleprompter-modal.is-fullscreen .ska-teleprompter-modal-content {
     width: 100vw;
@@ -1870,9 +1937,6 @@ body.skript-analyse-active .skript-analyse-container {
     min-height: 0;
 }
 .ska-teleprompter-controls-panel {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: var(--ska-radius);
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -1890,6 +1954,9 @@ body.skript-analyse-active .skript-analyse-container {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: #64748b;
+}
+.ska-modal--dark .ska-teleprompter-panel-header {
+    color: rgba(255, 255, 255, 0.7);
 }
 .ska-teleprompter-panel-header small {
     text-transform: none;
@@ -1913,7 +1980,7 @@ body.skript-analyse-active .skript-analyse-container {
     box-shadow: 0 18px 32px -24px rgba(15, 23, 42, 0.6);
 }
 .ska-teleprompter-modal:not(.is-fullscreen) .teleprompter-content {
-    max-height: clamp(240px, 42vh, 380px);
+    max-height: clamp(180px, 35vh, 320px);
 }
 .ska-teleprompter-modal.is-fullscreen .teleprompter-content {
     max-height: none;
@@ -1966,8 +2033,6 @@ body.skript-analyse-active .skript-analyse-container {
     opacity: 1;
 }
 .teleprompter-guide {
-    background: #0f172a;
-    border-radius: 16px;
     padding: 0.9rem 1.25rem;
     color: #e2e8f0;
     display: flex;
@@ -1975,11 +2040,16 @@ body.skript-analyse-active .skript-analyse-container {
     gap: 0.5rem;
 }
 .teleprompter-guide-main {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
     font-weight: 600;
     font-size: 0.9rem;
+}
+@media (max-width: 700px) {
+    .teleprompter-guide-main {
+        grid-template-columns: 1fr;
+    }
 }
 .teleprompter-guide-sub {
     display: flex;
@@ -1987,6 +2057,9 @@ body.skript-analyse-active .skript-analyse-container {
     gap: 0.6rem;
     font-size: 0.8rem;
     color: #94a3b8;
+}
+.ska-modal--dark .teleprompter-guide-sub {
+    color: rgba(255, 255, 255, 0.6);
 }
 .teleprompter-guide-divider {
     color: #475569;
@@ -2080,14 +2153,11 @@ body.skript-analyse-active .skript-analyse-container {
     box-shadow: none;
 }
 .ska-teleprompter-section {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
     border-radius: 16px;
     padding: 0.9rem;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    box-shadow: 0 12px 24px -20px rgba(15, 20, 26, 0.25);
 }
 .ska-teleprompter-section-title {
     font-size: 0.72rem;
@@ -2096,31 +2166,44 @@ body.skript-analyse-active .skript-analyse-container {
     letter-spacing: 0.08em;
     color: #64748b;
 }
+.ska-modal--dark .ska-teleprompter-section {
+    background: rgba(15, 20, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 22px -20px rgba(0, 0, 0, 0.6);
+}
+.ska-modal--dark .ska-teleprompter-section-title {
+    color: rgba(255, 255, 255, 0.7);
+}
+.ska-modal--dark .ska-teleprompter-section-body {
+    color: rgba(255, 255, 255, 0.8);
+}
 .ska-teleprompter-section-body {
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
 }
 .teleprompter-control {
-    background: #f8fafc;
-    color: #0f172a;
-    border: 1px solid #e2e8f0;
     padding: 0.4rem 1rem;
-    border-radius: 999px;
+    border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
     font-size: 0.9rem;
     width: 100%;
 }
-.teleprompter-control--secondary {
+.ska-modal--dark .teleprompter-control {
+    background: #ffffff;
+    color: #0f141a;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+}
+.ska-modal--dark .teleprompter-control--secondary {
     background: var(--ska-primary);
     color: #ffffff;
-    border-color: var(--ska-primary);
+    border-color: transparent;
 }
-.teleprompter-control:hover {
+.ska-modal--dark .teleprompter-control:hover {
     background: #e2e8f0;
 }
-.teleprompter-control.teleprompter-control--secondary:hover {
+.ska-modal--dark .teleprompter-control.teleprompter-control--secondary:hover {
     background: var(--ska-primary-strong);
 }
 .teleprompter-control-group {
@@ -2133,6 +2216,9 @@ body.skript-analyse-active .skript-analyse-container {
     font-weight: 600;
     width: 100%;
 }
+.ska-modal--dark .teleprompter-control-group {
+    color: rgba(255, 255, 255, 0.85);
+}
 .teleprompter-control-group.teleprompter-toggle {
     flex-direction: row;
     align-items: center;
@@ -2142,6 +2228,15 @@ body.skript-analyse-active .skript-analyse-container {
     width: 18px;
     height: 18px;
     accent-color: var(--ska-primary);
+}
+.ska-modal--dark .teleprompter-control-group input[type="range"],
+.ska-modal--dark .teleprompter-control-group select {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.ska-modal--dark .teleprompter-control-group option {
+    color: #0f141a;
 }
 .teleprompter-control.teleprompter-export {
     white-space: nowrap;
@@ -2217,6 +2312,21 @@ body.skript-analyse-active .skript-analyse-container {
     gap: 1rem;
     flex-wrap: wrap;
 }
+.ska-focus-goalbar {
+    margin: 1rem 2rem 0;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.ska-focus-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0.6rem;
+}
 .ska-focus-header-main h3 {
     margin: 0;
     font-size: 1.15rem;
@@ -2232,18 +2342,18 @@ body.skript-analyse-active .skript-analyse-container {
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
-    height: 80vh;
-    overflow: hidden;
+    padding-top: 1rem;
 }
 .focus-toolbar {
-    display: flex;
-    gap: 0.6rem;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    background: rgba(15, 23, 42, 0.2);
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--ska-radius);
-    border: 1px solid rgba(148, 163, 184, 0.3);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+}
+@media (max-width: 700px) {
+    .focus-toolbar {
+        grid-template-columns: 1fr;
+    }
 }
 .focus-field {
     display: flex;
@@ -2256,25 +2366,33 @@ body.skript-analyse-active .skript-analyse-container {
     text-transform: uppercase;
 }
 .focus-field input {
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--ska-radius);
     padding: 0.4rem 0.6rem;
     font-size: 0.9rem;
     min-width: 110px;
-    background: #ffffff;
-    color: #0f172a;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+}
+.focus-field input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+.focus-field input:focus {
+    outline: none;
+    border-color: rgba(26, 147, 238, 0.7);
+    box-shadow: 0 0 0 2px rgba(26, 147, 238, 0.2);
 }
 .focus-start-btn {
     background: var(--ska-primary);
     color: #ffffff;
     border: none;
     padding: 0.55rem 1rem;
-    border-radius: 999px;
+    border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
 }
 .focus-start-btn:disabled {
-    background: #cbd5e1;
+    background: #475569;
     cursor: not-allowed;
 }
 .focus-start-btn.is-hidden {
@@ -2286,23 +2404,20 @@ body.skript-analyse-active .skript-analyse-container {
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
     padding: 0.75rem 1rem;
 }
 .focus-stats {
     display: flex;
     gap: 18px;
     font-weight: 600;
-    color: #0f172a;
+    color: #ffffff;
     font-family: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 .focus-progress {
     position: relative;
     width: 160px;
     height: 10px;
-    background: #e2e8f0;
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 999px;
     overflow: hidden;
 }
@@ -2352,14 +2467,57 @@ body.skript-analyse-active .skript-analyse-container {
     font-size: 1.2rem;
     background: transparent;
     resize: none;
-    color: #0f172a;
+    color: #ffffff;
 }
 .ska-focus-modal .focus-textarea {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 18px;
     max-width: 100%;
     margin: 0;
+}
+.ska-focus-section {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+}
+.ska-focus-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+.ska-focus-section--actions .ska-btn {
+    height: 42px;
+}
+.ska-focus-section--actions .ska-btn--ghost {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* SPEECH PACING MODAL (DARK) */
+.ska-tool-modal--pacing.ska-modal--dark .ska-modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.ska-tool-modal--pacing.ska-modal--dark .ska-pacing-title,
+.ska-tool-modal--pacing.ska-modal--dark .ska-pacing-sub {
+    color: rgba(255, 255, 255, 0.7);
+}
+.ska-tool-modal--pacing.ska-modal--dark .ska-pacing-bar {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.ska-tool-modal--pacing.ska-modal--dark .ska-pacing-marker {
+    background: #ffffff;
+    border-color: rgba(15, 20, 26, 0.85);
+}
+.ska-tool-modal--pacing.ska-modal--dark .ska-pacing-preview {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8);
+}
+.ska-tool-modal--pacing.ska-modal--dark .ska-info-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 /* SPEECH PACING */
