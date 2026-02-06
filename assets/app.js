@@ -4851,7 +4851,7 @@
             if (modal) return modal;
 
             modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-teleprompter-modal ska-modal--teleprompter';
+            modal.className = 'skriptanalyse-modal ska-teleprompter-modal ska-modal--teleprompter ska-modal--dark';
             modal.id = 'ska-teleprompter-modal';
             modal.ariaHidden = 'true';
             modal.dataset.removeOnClose = 'true';
@@ -4865,7 +4865,7 @@
                                     <h3>Teleprompter</h3>
                                     <span class="ska-teleprompter-subtitle">Studio-Teleprompter</span>
                                 </div>
-                                <span class="ska-teleprompter-badge">Studio Mode</span>
+                                <span class="ska-teleprompter-badge">STUDIO MODE</span>
                             </div>
                         </div>
                         <div class="ska-teleprompter-header-actions">
@@ -4883,7 +4883,7 @@
                                     <div class="teleprompter-countdown" data-role="teleprompter-countdown" aria-hidden="true"></div>
                                     <div class="teleprompter-text" data-role-teleprompter-text></div>
                                 </div>
-                                <div class="teleprompter-guide">
+                                <div class="teleprompter-guide ska-panel">
                                     <div class="teleprompter-guide-main">
                                         <span class="teleprompter-guide-rate" data-role="teleprompter-rate">Tempo: --</span>
                                         <span class="teleprompter-guide-time" data-role="teleprompter-time">Restzeit: --</span>
@@ -4909,7 +4909,7 @@
                                     Tipp: Sprechtempo-Follow startet mit Mikrofonfreigabe und folgt Deinem Live-Tempo.
                                 </div>
                             </div>
-                            <div class="ska-teleprompter-controls-panel">
+                            <div class="ska-teleprompter-controls-panel ska-panel">
                                 <div class="ska-teleprompter-panel-header">
                                     <span>Steuerung</span>
                                     <small>Alles im Blick</small>
@@ -5090,7 +5090,7 @@
             if (modal) return modal;
 
             modal = document.createElement('div');
-            modal.className = 'skriptanalyse-modal ska-focus-modal sprint-modal ska-modal--sprint';
+            modal.className = 'skriptanalyse-modal ska-focus-modal sprint-modal ska-modal--sprint ska-modal--dark';
             modal.id = 'ska-focus-modal';
             modal.ariaHidden = 'true';
             modal.dataset.removeOnClose = 'true';
@@ -5103,32 +5103,45 @@
                             <h3>Schreib-Sprint</h3>
                         </div>
                         <div class="ska-focus-header-actions">
-                            <div class="focus-toolbar">
-                                <label class="focus-field">
-                                    <span>Zeit (Min.)</span>
-                                    <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
-                                </label>
-                                <label class="focus-field">
-                                    <span>Wortziel</span>
-                                    <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
-                                </label>
-                                <button type="button" class="focus-start-btn" data-action="focus-start-timer" disabled>Start</button>
-                            </div>
                             <button type="button" class="ska-icon-btn" data-action="close-focus-mode" aria-label="Schließen">&times;</button>
                         </div>
                     </div>
+                    <div class="ska-focus-goalbar ska-panel">
+                        <div class="ska-focus-section-title">Ziele</div>
+                        <div class="focus-toolbar">
+                            <label class="focus-field">
+                                <span>Zeit (Min.)</span>
+                                <input type="number" min="1" data-role="focus-time-limit" placeholder="Optional">
+                            </label>
+                            <label class="focus-field">
+                                <span>Wortziel</span>
+                                <input type="number" min="1" data-role="focus-word-goal" placeholder="Optional">
+                            </label>
+                        </div>
+                    </div>
                     <div class="skriptanalyse-modal-body ska-focus-modal-body">
-                        <div class="ska-focus-statusline">
-                            <div class="focus-stats">
-                                <span data-role="focus-timer">00:00</span>
-                                <span data-role="focus-words">0 / 0 Wörter</span>
+                        <div class="ska-focus-section ska-panel ska-focus-section--sprint">
+                            <div class="ska-focus-section-title">Sprint</div>
+                            <div class="ska-focus-statusline">
+                                <div class="focus-stats">
+                                    <span data-role="focus-timer">00:00</span>
+                                    <span data-role="focus-words">0 / 0 Wörter</span>
+                                </div>
+                            </div>
+                            <div class="focus-progress focus-progress--large" aria-hidden="true">
+                                <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
+                                <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
+                            </div>
+                            <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
+                        </div>
+                        <div class="ska-focus-section ska-panel ska-focus-section--actions">
+                            <div class="ska-focus-section-title">Aktionen</div>
+                            <div class="ska-focus-actions">
+                                <button type="button" class="ska-btn ska-btn--primary focus-start-btn" data-action="focus-start-timer" disabled>Sprint starten</button>
+                                <button type="button" class="ska-btn ska-btn--secondary" data-action="focus-confirm-apply">Text übernehmen</button>
+                                <button type="button" class="ska-btn ska-btn--ghost" data-action="close-focus-mode">Sprint beenden</button>
                             </div>
                         </div>
-                        <div class="focus-progress focus-progress--large" aria-hidden="true">
-                            <div class="focus-progress-fill" data-role="focus-progress-fill"></div>
-                            <span class="focus-progress-check" data-role="focus-progress-check">✓</span>
-                        </div>
-                        <textarea class="focus-textarea" data-role="focus-textarea" spellcheck="true"></textarea>
                         <div class="ska-focus-confirm" data-role="focus-confirm" aria-hidden="true">
                             <div class="ska-focus-confirm__card">
                                 <p>Text in Editor übernehmen?</p>
@@ -5295,7 +5308,10 @@
             const headerEl = modal.querySelector('[data-role="tool-modal-header"]');
             const headerActions = modal.querySelector('[data-role="tool-modal-actions"]');
             const isPacingModal = toolId === 'pacing';
-            if (modal) modal.classList.toggle('ska-tool-modal--pacing', isPacingModal);
+            if (modal) {
+                modal.classList.toggle('ska-tool-modal--pacing', isPacingModal);
+                modal.classList.toggle('ska-modal--dark', isPacingModal);
+            }
             if (headerEl) {
                 headerEl.classList.toggle('ska-modal-header--dark', isPacingModal);
             }
@@ -11485,8 +11501,18 @@
                     ${plan.savings ? `Du sparst ${plan.savings}` : ''}
                 </span>`;
             const renderPlanNote = (plan) => `${plan.note} ${renderSavingsBadge(plan)}`;
+            const premiumStrongItems = new Set([
+                'Teleprompter',
+                'Sprech-Pacing',
+                'Schreib-Sprint & Fokus',
+                'Projekte speichern',
+                'Plosiv-Check',
+                'Keyword-Fokus',
+                'Versions-Vergleich',
+                'Hörbuch-Kapitel-Kalkulator'
+            ]);
             const renderFeatureList = (items, isPremium) => {
-                const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium' : 'ska-premium-upgrade-listing is-free';
+                const listClass = isPremium ? 'ska-premium-upgrade-listing is-premium ska-plan-list-grid' : 'ska-premium-upgrade-listing is-free ska-plan-list-grid';
                 const visibleCount = items.length;
                 const hasMore = items.length > visibleCount;
                 const listItems = items.map((item, index) => {
@@ -11494,9 +11520,10 @@
                     const hiddenClass = isHidden ? 'ska-hidden-feature' : '';
                     const styleAttr = isHidden ? 'style="display:none"' : '';
                     const featuredClass = item.featured ? 'is-featured' : '';
+                    const isStrong = isPremium && premiumStrongItems.has(item.name);
                     return `
                     <li class="${hiddenClass} ${featuredClass}" ${styleAttr} data-tooltip="${item.desc}">
-                        <span class="ska-feature-name">${item.featured ? `<strong>${item.name}</strong>` : item.name}</span>
+                        <span class="ska-feature-name${isStrong ? ' is-strong' : ''}">${isStrong ? `<strong>${item.name}</strong>` : item.name}</span>
                     </li>`;
                 }).join('');
                 const buttonHTML = hasMore ? `
@@ -11548,14 +11575,14 @@
                 <div class="ska-premium-upgrade-grid">
                         <div class="ska-premium-upgrade-col is-free">
                         <div class="ska-premium-upgrade-header-row">
-                            <div class="ska-premium-upgrade-title">BASIS</div>
+                            <div class="ska-premium-upgrade-title">Basis-Plan</div>
                             <span class="ska-premium-upgrade-badge ska-premium-upgrade-badge--free">Kostenlos</span>
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--free">
                             <span class="ska-premium-upgrade-price-value">${formattedFreePrice}</span>
                             <span class="ska-premium-upgrade-price-currency">€</span>
                         </div>
-                        <div class="ska-premium-upgrade-price-note"> </div>
+                        <div class="ska-premium-upgrade-price-note"><span class="ska-premium-upgrade-price-subline">Für immer!</span></div>
                         <div class="ska-premium-upgrade-section">
                             <h5>FUNKTIONEN & WERKZEUGE</h5>
                             ${renderFeatureList(UPGRADE_CONTENT.basic.tools, false)}
@@ -11567,7 +11594,7 @@
                     </div>
                     <div class="ska-premium-upgrade-col is-premium">
                         <div class="ska-premium-upgrade-header-row">
-                            <div class="ska-premium-upgrade-title">Premium</div>
+                            <div class="ska-premium-upgrade-title">Premium-Plan</div>
                             <span class="ska-premium-upgrade-badge" data-role="premium-cancel-badge">Monatlich kündbar</span>
                         </div>
                         <div class="ska-premium-upgrade-price ska-premium-upgrade-price--premium" data-role="premium-price">
