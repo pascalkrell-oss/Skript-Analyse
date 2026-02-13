@@ -5085,15 +5085,23 @@ html.is-iframe-mode .admin-bar {
 
 /* UI Feinjustierungen */
 .ska-toolbar .ska-select {
-    border-radius: 15px;
+    border-radius: 8px;
 }
 
 .ska-premium-plan-btn {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    gap: 0.35rem;
     text-align: center;
 }
 
-.ska-premium-upgrade-price,
 .ska-premium-upgrade-price-value {
     font-size: 44px;
+}
+
+.ska-tools-grid .ska-card-header h3,
+.ska-tools-grid .ska-card-header .ska-card-title,
+.ska-tool-tile strong {
+    text-align: left;
 }
