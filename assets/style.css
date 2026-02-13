@@ -5082,3 +5082,18 @@ html.is-iframe-mode .admin-bar {
     color: #dc2626;
     font-size: 0.85rem;
 }
+
+/* UI Feinjustierungen */
+.ska-toolbar .ska-select {
+    border-radius: 15px;
+}
+
+.ska-premium-plan-btn {
+    justify-content: center;
+    text-align: center;
+}
+
+.ska-premium-upgrade-price,
+.ska-premium-upgrade-price-value {
+    font-size: 44px;
+}

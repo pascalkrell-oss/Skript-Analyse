@@ -11338,7 +11338,7 @@
         }
 
         getCheckoutPlanDescription() {
-            return 'Lade Dir den Skript-Report als PDF herunter oder frage direkt eine Sprachaufnahme bei Pascal an.';
+            return 'Sichere Dir Deine Analyse-Ergebnisse: Lade Dir den detaillierten Skript-Report ganz bequem als PDF-Datei herunter oder nutze die Gelegenheit und frage direkt eine professionelle Sprachaufnahme für Dein Projekt bei Pascal an.';
         }
 
         getUpgradeReturnUrl() {
